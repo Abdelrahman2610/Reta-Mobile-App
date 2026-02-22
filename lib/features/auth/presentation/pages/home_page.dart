@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:reta/features/declarations/presentations/pages/declarations_page.dart';
+
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../cubit/home_cubit.dart';
 import 'login_page.dart';
-import 'signup_page.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'settings_page.dart';
+import 'signup_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -66,7 +68,7 @@ class _HomeViewState extends State<_HomeView> {
           // index 1 — مديونياتي
           const Center(child: Text('مديونياتي')),
           // index 2 — إقراراتي
-          const Center(child: Text('إقراراتي')),
+          DeclarationsPage(),
           // index 3 — مدفوعاتي
           const Center(child: Text('مدفوعاتي')),
           // index 4 — الإعدادات

@@ -16,6 +16,7 @@ dependencies:
   equatable: ^2.0.5
   image_picker: ^1.2.1
   flutter_svg: ^2.0.10
+  flutter_screenutil: ^5.9.3
 
 dev_dependencies:
   flutter_test:
