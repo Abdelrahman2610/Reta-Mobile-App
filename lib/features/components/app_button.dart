@@ -18,6 +18,7 @@ class AppButton extends StatelessWidget {
     this.fontWeight,
     this.borderColor,
     this.maxLines,
+    this.alignment,
   });
 
   final String? label;
@@ -36,6 +37,7 @@ class AppButton extends StatelessWidget {
 
   final Color? borderColor;
   final int? maxLines;
+  final Alignment? alignment;
 
   @override
   Widget build(BuildContext context) {
@@ -85,14 +87,17 @@ class AppButton extends StatelessWidget {
   }
 
   Widget _labelWidget() {
-    return Text(
-      label ?? '',
-      maxLines: maxLines ?? 1,
-      style: TextStyle(
-        color: textColor,
-        fontSize: fontSize.sp,
-        decoration: TextDecoration.none,
-        fontWeight: fontWeight,
+    return Container(
+      alignment: alignment ?? AlignmentDirectional.centerStart,
+      child: Text(
+        label ?? '',
+        maxLines: maxLines ?? 1,
+        style: TextStyle(
+          color: textColor,
+          fontSize: fontSize.sp,
+          decoration: TextDecoration.none,
+          fontWeight: fontWeight,
+        ),
       ),
     );
   }

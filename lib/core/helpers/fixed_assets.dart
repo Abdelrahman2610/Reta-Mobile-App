@@ -27,4 +27,6 @@ class FixedAssets {
   String icon10 = "${svg}icon10.svg";
   String icon11 = "${svg}icon11.svg";
   String icon12 = "${svg}icon12.svg";
+  String attachmentIC = "${svg}attachment_ic.svg";
+  String attachmentWhiteIC = "${svg}attachment_ic_white.svg";
 }
