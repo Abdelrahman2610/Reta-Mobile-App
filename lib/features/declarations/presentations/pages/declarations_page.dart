@@ -1,9 +1,10 @@
-import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/fixed_assets.dart';
 import 'package:reta/features/components/app_text.dart';
 import 'package:reta/features/components/image_svg_custom_widget.dart';
+import 'package:reta/features/declarations/presentations/components/empty_data_widget.dart';
+import 'package:reta/features/declarations/presentations/pages/properties_list_in_declaration_page.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_bar.dart';
@@ -39,6 +40,13 @@ class DeclarationsPage extends StatelessWidget {
                   color: AppColors.mainBlueIndigoDye,
                 ),
                 AppButton(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const PropertiesListInDeclarationPage(),
+                      ),
+                    );
+                  },
                   label: "إضافة إقرار",
                   width: 109.w,
                   height: 46.h,
@@ -47,6 +55,7 @@ class DeclarationsPage extends StatelessWidget {
                   textColor: Colors.white,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
+                  iconLeft: false,
                   icon: ImageSvgCustomWidget(
                     color: Colors.white,
                     imgPath: FixedAssets.instance.addIcon,
@@ -58,43 +67,7 @@ class DeclarationsPage extends StatelessWidget {
             ),
             SizedBox(height: 24.h),
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.white,
-                ),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20.w,
-                    vertical: 24.h,
-                  ),
-                  child: DottedBorder(
-                    options: RoundedRectDottedBorderOptions(
-                      color: AppColors.neutralLightDarkest,
-                      strokeCap: StrokeCap.round,
-                      dashPattern: const [3, 3],
-                      radius: Radius.circular(10),
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: AppColors.neutralLightLight,
-                      ),
-                      child: Center(
-                        child: Text(
-                          "لم يتم إضافة أي إقرار بعد",
-                          style: TextStyle(
-                            color: AppColors.neutralDarkLightest,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16.sp,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              child: EmptyDataWidget(title: "لم يتم إضافة أي إقرار بعد"),
             ),
             SizedBox(height: 38.h),
           ],

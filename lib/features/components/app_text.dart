@@ -15,12 +15,14 @@ class AppText extends StatelessWidget {
     this.textDecoration,
     this.textDirection,
     this.textOverflow,
+    this.decorationColor,
   });
 
   final String? text;
   final double? fontSize;
   final FontWeight? fontWeight;
   final Color? color;
+  final Color? decorationColor;
   final int? maxLines;
   final dynamic alignment;
   final TextAlign? textAlign;
@@ -43,6 +45,7 @@ class AppText extends StatelessWidget {
           fontWeight: fontWeight,
           color: color ?? AppColors.neutralDarkLightest,
           decoration: textDecoration ?? TextDecoration.none,
+          decorationColor: decorationColor,
           fontFamily: 'NotoSansArabic',
           overflow: textOverflow,
         ),

@@ -27,6 +27,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
       child: AppBar(
         backgroundColor: backgroundColor,
         centerTitle: isTitleCenter,
+        elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, color: backButtonIconColor),

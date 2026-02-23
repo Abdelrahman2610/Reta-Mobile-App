@@ -68,7 +68,11 @@ class AppButton extends StatelessWidget {
 
   Widget _buildContent() {
     if (icon == null) {
-      return _labelWidget();
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [_labelWidget()],
+      );
     }
 
     return Row(
