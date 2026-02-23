@@ -43,7 +43,7 @@ class AppText extends StatelessWidget {
           fontWeight: fontWeight,
           color: color ?? AppColors.neutralDarkLightest,
           decoration: textDecoration ?? TextDecoration.none,
-          fontFamily: 'El-Messiri',
+          fontFamily: 'NotoSansArabic',
           overflow: textOverflow,
         ),
       ),
