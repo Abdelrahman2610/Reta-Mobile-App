@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:reta/core/helpers/app_enum.dart';
-import 'package:reta/core/theme/app_colors.dart';
-import 'package:reta/features/components/app_bar.dart';
-import 'package:reta/features/components/app_button.dart';
-import 'package:reta/features/components/app_container.dart';
-import 'package:reta/features/declarations/presentations/pages/taxpayer_data_page.dart';
+import 'package:reta/features/declarations/presentations/components/shared_ownership_form.dart';
 
+import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/helpers/extensions/dimensions.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../components/app_bar.dart';
+import '../../../components/app_button.dart';
+import '../../../components/app_container.dart';
 import '../components/declaration_tabs.dart';
-import '../components/user_information.dart';
+import '../components/shared_form.dart';
 
-class ProviderDataPage extends StatelessWidget {
-  const ProviderDataPage({super.key});
+class TaxpayerDataPage extends StatelessWidget {
+  const TaxpayerDataPage({super.key});
 
-  final ApplicantType applicantType = ApplicantType.sharedOwnership;
+  final ApplicantType applicantType = ApplicantType.legalRepresentative;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +42,28 @@ class ProviderDataPage extends StatelessWidget {
                   children: [
                     DeclarationTabs(applicantType: applicantType),
                     10.hs,
-                    UserInformation(),
+                    switch (applicantType) {
+                      ApplicantType.owner => SizedBox.shrink(),
+                      ApplicantType.sharedOwnership => SharedOwnershipForm(),
+                      ApplicantType.beneficiary => SizedBox.shrink(),
+                      ApplicantType.agent => SharedForm(
+                        uploadDocumentTitle:
+                            'رفع سند إثبات صفة الوكيل (التوكيل الرسمي)',
+                        uploadDocumentDescription:
+                            'يجب أن يكون التوكيل ساريًا ومخوّلًا بتقديم الإقرار الضريبي.',
+                      ),
+                      ApplicantType.legalRepresentative => SharedForm(
+                        uploadDocumentTitle: 'رفع سند التمثيل القانوني',
+                        uploadDocumentDescription:
+                            '(قرار تعيين/تفويض رسمي/حكم قضائي/أي مستند رسمي يثبت صفة التمثيل القانوني)',
+                      ),
+                      ApplicantType.other => SharedForm(
+                        uploadDocumentTitle:
+                            'رفع سند يوضح سبب التقديم بهذه الصفة',
+                        uploadDocumentDescription:
+                            'تفويض/قرار إداري/خطاب رسمي/أي مستند رسمي يوضح العلاقة بين مقدم الطلب والمكلّف بأداء الضريبة',
+                      ),
+                    },
                     10.hs,
                     AppContainer(
                       padding: EdgeInsets.symmetric(

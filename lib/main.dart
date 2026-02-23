@@ -28,11 +28,8 @@ class MainApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         supportedLocales: const [Locale('ar'), Locale('en')],
         builder: (context, Widget? child) =>
-            Directionality(textDirection: TextDirection.rtl, child: child!),
-        home: Directionality(
-          textDirection: TextDirection.rtl,
-          child: LoginPage(),
-        ),
+            child!,
+        home: LoginPage(),
       ),
     );
   }

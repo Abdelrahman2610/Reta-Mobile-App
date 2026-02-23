@@ -28,6 +28,10 @@ class AppTextFormField extends StatelessWidget {
   final FocusNode? focusNode;
   final TextDirection? textDirection;
   final bool enabled;
+  final String? infoText;
+  final double? labelFontSize;
+  final Color? labelColor;
+  final String? description;
 
   const AppTextFormField({
     super.key,
@@ -52,6 +56,10 @@ class AppTextFormField extends StatelessWidget {
     this.focusNode,
     this.textDirection,
     this.enabled = true,
+    this.infoText,
+    this.labelFontSize,
+    this.labelColor,
+    this.description,
   });
 
   @override
@@ -63,88 +71,113 @@ class AppTextFormField extends StatelessWidget {
           children: [
             AppText(
               text: labelText,
-              fontSize: 12.sp,
+              fontSize: labelFontSize ?? 12.sp,
               fontWeight: FontWeight.w700,
-              color: AppColors.neutralDarkLightest,
+              color: labelColor ?? AppColors.neutralDarkLightest,
             ),
             if (labelRequired)
               AppText(
-                text: '*',
-                fontSize: 12.sp,
+                text: ' *',
+                fontSize: labelFontSize ?? 12.sp,
                 fontWeight: FontWeight.w700,
                 color: AppColors.errorDark,
               ),
           ],
         ),
-        8.hs,
-        TextFormField(
-          controller: controller,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          maxLines: maxLines ?? 1,
-          readOnly: readOnly ?? false,
-          onChanged: onChanged,
-          onFieldSubmitted: onFieldSubmitted,
-          onTap: onTap,
-          enabled: enabled,
-          validator: validator,
-          inputFormatters: inputFormatters,
-          textInputAction: textInputAction,
-          textDirection: textDirection,
-          style: TextStyle(
-            fontSize: 14.0.sp,
-            color: AppColors.neutralDarkLightest,
-            fontWeight: FontWeight.w400,
+        if (description != null)
+          AppText(
+            text: description,
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w700,
+            color: AppColors.neutralDarkLight,
+            maxLines: 2,
           ),
-          focusNode: focusNode,
-          onEditingComplete: onEditingComplete,
-          cursorColor: AppColors.black,
-          decoration: InputDecoration(
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 16.w,
-              vertical: 12.h,
-            ),
-            prefixIcon: prefixWidget,
-            suffixIcon: suffixWidget,
-            prefixIconConstraints: BoxConstraints(
-              maxHeight: 48.h,
-              minWidth: 48.w,
-            ),
-            filled: filledColor != null,
-            fillColor: filledColor,
-            suffixIconConstraints: BoxConstraints(
-              maxHeight: 48.h,
-              minWidth: 48.w,
-            ),
-            hintText: hintText,
-            hintStyle: TextStyle(
-              color: AppColors.neutralDarkLightest,
+        8.hs,
+        SizedBox(
+          height: maxLines != null && maxLines! > 1 ? null : 48.h,
+          child: TextFormField(
+            controller: controller,
+            obscureText: obscureText,
+            keyboardType: keyboardType,
+            maxLines: maxLines ?? 1,
+            minLines: maxLines != null && maxLines! > 1 ? 1 : null,
+            readOnly: readOnly ?? false,
+            onChanged: onChanged,
+            onFieldSubmitted: onFieldSubmitted,
+            onTap: onTap,
+            enabled: enabled,
+            validator: validator,
+            inputFormatters: inputFormatters,
+            textInputAction: textInputAction,
+            textDirection: textDirection,
+            style: TextStyle(
               fontSize: 14.0.sp,
+              color: enabled
+                  ? AppColors.neutralDarkDarkest
+                  : AppColors.neutralDarkLightest,
               fontWeight: FontWeight.w400,
             ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: AppColors.neutralLightDarkest),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: AppColors.neutralLightDarkest),
-            ),
-            disabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: AppColors.neutralLightDarkest),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: AppColors.highlightDarkest),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: AppColors.errorDark),
+            focusNode: focusNode,
+            onEditingComplete: onEditingComplete,
+            cursorColor: AppColors.black,
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16.w,
+                vertical: 14.h,
+              ),
+
+              prefixIcon: prefixWidget,
+              suffixIcon: suffixWidget,
+              prefixIconConstraints: BoxConstraints(
+                maxHeight: 48.h,
+                minWidth: 48.w,
+              ),
+              filled: filledColor != null,
+              fillColor: filledColor,
+              suffixIconConstraints: BoxConstraints(
+                maxHeight: 48.h,
+                minWidth: 48.w,
+              ),
+              hintText: hintText,
+              hintStyle: TextStyle(
+                color: AppColors.neutralDarkLightest,
+                fontSize: 14.0.sp,
+                fontWeight: FontWeight.w400,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: BorderSide(color: AppColors.neutralLightDarkest),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: BorderSide(color: AppColors.neutralLightDarkest),
+              ),
+              disabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: BorderSide(color: AppColors.neutralLightDarkest),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: BorderSide(color: AppColors.highlightDarkest),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: BorderSide(color: AppColors.errorDark),
+              ),
             ),
           ),
         ),
+        if (infoText != null)
+          Padding(
+            padding: EdgeInsets.only(top: 8.h),
+            child: AppText(
+              text: infoText,
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w400,
+              color: AppColors.neutralDarkLightest,
+            ),
+          ),
       ],
     );
   }
