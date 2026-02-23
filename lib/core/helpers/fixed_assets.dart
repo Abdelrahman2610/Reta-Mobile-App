@@ -12,4 +12,6 @@ class FixedAssets {
 
   //SVG
   String addIcon = "${svg}add_icon.svg";
+  String attachmentIC = "${svg}attachment_ic.svg";
+  String attachmentWhiteIC = "${svg}attachment_ic_white.svg";
 }

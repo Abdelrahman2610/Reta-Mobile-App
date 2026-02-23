@@ -4,7 +4,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? backButtonAction;
   final String title;
   final Color backgroundColor;
-  final Color backButtonIconColor;
+  final Color? backButtonIconColor;
   final TextStyle titleTextStyle;
   final bool? isTitleCenter;
   final List<Widget>? actions;
@@ -16,7 +16,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.isTitleCenter = true,
     required this.title,
     required this.backgroundColor,
-    required this.backButtonIconColor,
+    this.backButtonIconColor,
     required this.titleTextStyle,
   });
 
