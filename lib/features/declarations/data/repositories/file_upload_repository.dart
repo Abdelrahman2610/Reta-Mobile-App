@@ -8,12 +8,6 @@ import '../models/uploaded_file.dart';
 class FileUploadRepository {
   final Dio _dio = DioClient.instance.dio;
 
-  /// Uploads a single file and returns its temporary server path.
-  ///
-  /// [label] — e.g. 'national_id', 'power_of_attorney', 'ownership_deed', etc.
-  ///
-  /// The returned [UploadedFile] contains [path] and [originalName]
-  /// which you then embed in your declaration JSON body.
   Future<ApiResult<UploadedFile>> uploadFile({
     required File file,
     required String label,

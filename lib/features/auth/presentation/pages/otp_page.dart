@@ -4,11 +4,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../cubit/signup_cubit.dart';
 
-/// OTP Verification Page — shown after successful signup form submission.
-/// Handles 3 sub-steps internally:
-///   1. Intro  — "we sent a code to your number"
-///   2. Input  — 6-box OTP entry
-///   3. Success — checkmark + navigate to login
 class OtpPage extends StatefulWidget {
   final String phoneNumber;
 
@@ -138,9 +133,6 @@ class _OtpPageState extends State<OtpPage> {
   }
 }
 
-// ─────────────────────────────────────────
-// Screen 1 — Intro
-// ─────────────────────────────────────────
 class _IntroScreen extends StatelessWidget {
   final String phoneNumber;
   final VoidCallback onContinue;
@@ -159,7 +151,6 @@ class _IntroScreen extends StatelessWidget {
         children: [
           const SizedBox(height: 32),
 
-          // ── Icon ──
           Container(
             width: 90,
             height: 90,
@@ -176,7 +167,6 @@ class _IntroScreen extends StatelessWidget {
 
           const SizedBox(height: 28),
 
-          // ── Card ──
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(24),
@@ -224,7 +214,6 @@ class _IntroScreen extends StatelessWidget {
 
           const Spacer(),
 
-          // ── Button ──
           SizedBox(
             width: double.infinity,
             height: 52,
@@ -250,9 +239,6 @@ class _IntroScreen extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// Screen 2 — OTP Input
-// ─────────────────────────────────────────
 class _InputScreen extends StatelessWidget {
   final String phoneNumber;
   final List<TextEditingController> controllers;
@@ -285,7 +271,6 @@ class _InputScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 16),
 
-              // ── Card ──
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
@@ -332,7 +317,6 @@ class _InputScreen extends StatelessWidget {
 
                     const SizedBox(height: 28),
 
-                    // ── 6-box OTP input ──
                     Directionality(
                       textDirection: TextDirection.ltr,
                       child: Row(
@@ -403,7 +387,6 @@ class _InputScreen extends StatelessWidget {
 
                     const SizedBox(height: 20),
 
-                    // ── Resend ──
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -431,7 +414,6 @@ class _InputScreen extends StatelessWidget {
 
               const Spacer(),
 
-              // ── Confirm Button ──
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -473,9 +455,6 @@ class _InputScreen extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// Screen 3 — Success
-// ─────────────────────────────────────────
 class _SuccessScreen extends StatelessWidget {
   const _SuccessScreen({super.key});
 

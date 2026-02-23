@@ -1061,7 +1061,6 @@ class _StepDoneState extends State<_StepDone> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // ── Icon ──
             Container(
               width: 100,
               height: 100,

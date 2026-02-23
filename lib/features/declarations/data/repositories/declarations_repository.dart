@@ -6,11 +6,6 @@ import '/core/network/dio_client.dart';
 class DeclarationsRepository {
   final Dio _dio = DioClient.instance.dio;
 
-  // ── List / Fetch ──────────────────────────────────────────
-
-  /// Get all declarations for the logged-in user.
-  /// Optional filters: [status], [declarationNumber], [declarationTypeId],
-  /// [fromDate], [toDate] (format: 'YYYY-MM-DD').
   Future<ApiResult<Map<String, dynamic>>> getDeclarations({
     int? status,
     String? declarationNumber,
@@ -35,7 +30,6 @@ class DeclarationsRepository {
     });
   }
 
-  /// Get a single declaration with full details.
   Future<ApiResult<Map<String, dynamic>>> getDeclarationById(
     int id, {
     bool forEdit = false,
@@ -53,15 +47,6 @@ class DeclarationsRepository {
     });
   }
 
-  // ── Create ────────────────────────────────────────────────
-
-  /// Creates a new declaration with one property unit.
-  ///
-  /// [body] — the complete JSON map (taxpayer + unit data).
-  /// Build this map from your form state before calling this method.
-  ///
-  /// Returns the created declaration data including [declaration_id]
-  /// and the unit ID which you must save for subsequent updates.
   Future<ApiResult<Map<String, dynamic>>> createDeclaration(
     Map<String, dynamic> body,
   ) async {
@@ -71,12 +56,6 @@ class DeclarationsRepository {
     });
   }
 
-  // ── Update ────────────────────────────────────────────────
-
-  /// Updates an existing declaration.
-  ///
-  /// To update an existing unit, include `"id": unitId` in the unit object.
-  /// To add a new unit to the declaration, omit the `"id"` field.
   Future<ApiResult<Map<String, dynamic>>> updateDeclaration(
     int declarationId,
     Map<String, dynamic> body,
@@ -90,9 +69,6 @@ class DeclarationsRepository {
     });
   }
 
-  // ── Submit ────────────────────────────────────────────────
-
-  /// Submits a completed declaration for review.
   Future<ApiResult<Map<String, dynamic>>> submitDeclaration(
     int declarationId,
   ) async {
@@ -104,14 +80,6 @@ class DeclarationsRepository {
     });
   }
 
-  // ── Delete Units ──────────────────────────────────────────
-
-  /// Removes a specific property unit from a declaration.
-  ///
-  /// [unitType] values:
-  ///   'residential' | 'commercial' | 'administrative' | 'service' |
-  ///   'serviceFacility' | 'industrial' | 'production' | 'petroleum' |
-  ///   'mine' | 'fixedinstallation' | 'vacant' | 'hotel'
   Future<ApiResult<Map<String, dynamic>>> deleteUnit({
     required int declarationId,
     required String unitType,
@@ -125,8 +93,6 @@ class DeclarationsRepository {
     });
   }
 
-  // ── Wallet ────────────────────────────────────────────────
-
   Future<ApiResult<Map<String, dynamic>>> getWalletDetails(
     int declarationId,
   ) async {
@@ -138,8 +104,6 @@ class DeclarationsRepository {
     });
   }
 
-  // ── Under Declaration Properties ──────────────────────────
-
   Future<ApiResult<Map<String, dynamic>>> getUnderDeclarationProperties(
     int declarationId,
   ) async {
@@ -150,8 +114,6 @@ class DeclarationsRepository {
       return response.data as Map<String, dynamic>;
     });
   }
-
-  // ── Settlement ────────────────────────────────────────────
 
   Future<ApiResult<Map<String, dynamic>>> getSettlementOfDebts({
     String? declarationNumber,

@@ -462,9 +462,6 @@ class _SignupPageState extends State<SignupPage> {
   }
 }
 
-// ─────────────────────────────────────────
-// SectionTitle
-// ─────────────────────────────────────────
 class _SectionTitle extends StatelessWidget {
   final String title;
   const _SectionTitle({required this.title});
@@ -482,9 +479,6 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// Field  (standard text input)
-// ─────────────────────────────────────────
 class _Field extends StatelessWidget {
   final String label;
   final bool isRequired;
@@ -615,9 +609,6 @@ class _Field extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// DateField
-// ─────────────────────────────────────────
 class _DateField extends StatelessWidget {
   final String label;
   final bool isRequired;
@@ -717,9 +708,6 @@ class _DateField extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// Inline ExpandField
-// ─────────────────────────────────────────
 class _InlineExpandField extends StatelessWidget {
   final String label;
   final bool isRequired;
@@ -885,9 +873,6 @@ class _InlineExpandField extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// Inline Expand GenderField
-// ─────────────────────────────────────────
 class _InlineExpandGenderField extends StatelessWidget {
   final String label;
   final bool isRequired;
@@ -1045,9 +1030,6 @@ class _InlineExpandGenderField extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// Image UploadField
-// ─────────────────────────────────────────
 class _ImageUploadField extends StatelessWidget {
   final String label;
   final bool isRequired;

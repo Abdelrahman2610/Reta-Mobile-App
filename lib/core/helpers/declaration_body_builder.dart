@@ -1,27 +1,4 @@
-/// Helper class for building the declaration POST/PUT body.
-///
-/// This isolates the JSON construction logic from your cubits.
-/// Every method returns a [Map<String, dynamic>] ready to pass
-/// to [DeclarationsRepository.createDeclaration] or [updateDeclaration].
-///
-/// Usage example:
-/// ```dart
-/// final body = DeclarationBodyBuilder.buildTaxpayerSection(
-///   typeId: 1,
-///   firstName: 'أحمد',
-///   lastName: 'محمد',
-///   nationalityId: 1,
-///   nationalId: '29012011234567',
-///   phone: '01012345678',
-///   email: 'ahmed@example.com',
-///   nationalIdAttachment: uploadedNationalId.toAttachmentMap(),
-/// );
-/// ```
 class DeclarationBodyBuilder {
-
-  // ── Taxpayer (المكلف) ──────────────────────────────────────
-
-  /// Builds the `taxpayer` section for an INDIVIDUAL (type_id = 1).
   static Map<String, dynamic> buildIndividualTaxpayer({
     required String firstName,
     required String lastName,
@@ -46,15 +23,13 @@ class DeclarationBodyBuilder {
       'email': email,
       if (nationalIdAttachment != null)
         'national_id_attachment': nationalIdAttachment,
-      if (passportAttachment != null)
-        'passport_attachment': passportAttachment,
+      if (passportAttachment != null) 'passport_attachment': passportAttachment,
       if (otherAttachmentName != null)
         'other_attachment_name': otherAttachmentName,
       if (otherAttachment != null) 'other_attachment': otherAttachment,
     };
   }
 
-  /// Builds the `taxpayer` section for a COMPANY (type_id = 2).
   static Map<String, dynamic> buildCompanyTaxpayer({
     required String name,
     required int nationalityId,
@@ -81,9 +56,6 @@ class DeclarationBodyBuilder {
     };
   }
 
-  // ── Location (الموقع) ─────────────────────────────────────
-
-  /// Builds the location fields shared by ALL unit types.
   static Map<String, dynamic> buildLocationFields({
     required int governorateId,
     required int districtId,
@@ -91,7 +63,7 @@ class DeclarationBodyBuilder {
     String? villageOther,
     required int regionId,
     String? regionOther,
-    required dynamic realEstateId, // int or '-1'
+    required dynamic realEstateId,
     String? realEstateOther,
     int? realEstateFloorId,
     String? realEstateFloorOther,
@@ -115,19 +87,12 @@ class DeclarationBodyBuilder {
     };
   }
 
-  // ── Supporting documents ──────────────────────────────────
-
-  /// Builds a single supporting document entry.
   static Map<String, String> buildSupportingDoc({
     required String name,
     required String path,
     required String originalFileName,
-  }) =>
-      {'name': name, 'path': path, 'original_file_name': originalFileName};
+  }) => {'name': name, 'path': path, 'original_file_name': originalFileName};
 
-  // ── Full declaration wrapper ──────────────────────────────
-
-  /// Wraps taxpayer + unit into the final declaration body.
   static Map<String, dynamic> buildDeclarationBody({
     required int declarationTypeId,
     required int applicantRoleId,
@@ -140,7 +105,8 @@ class DeclarationBodyBuilder {
     return {
       'declaration_type_id': declarationTypeId,
       'applicant_role_id': applicantRoleId,
-      if (applicantRoleOther != null) 'applicant_role_other': applicantRoleOther,
+      if (applicantRoleOther != null)
+        'applicant_role_other': applicantRoleOther,
       if (powerOfAttorney != null) 'power_of_attorney': powerOfAttorney,
       if (jointOwnershipDocument != null)
         'joint_ownership_document': jointOwnershipDocument,

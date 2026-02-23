@@ -42,7 +42,6 @@ class _HomeViewState extends State<_HomeView> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          // index 0 — الرئيسية
           Column(
             children: [
               _buildHero(),
@@ -63,13 +62,13 @@ class _HomeViewState extends State<_HomeView> {
               ),
             ],
           ),
-          // index 1 — مديونياتي
+
           const Center(child: Text('مديونياتي')),
-          // index 2 — إقراراتي
+
           const Center(child: Text('إقراراتي')),
-          // index 3 — مدفوعاتي
+
           const Center(child: Text('مدفوعاتي')),
-          // index 4 — الإعدادات
+
           const SettingsPage(),
         ],
       ),
@@ -363,19 +362,23 @@ class _HomeViewState extends State<_HomeView> {
 
   Widget _buildBottomNav() {
     final items = [
-      _NavItem(icon: Icons.home_rounded, label: 'الرئيسية', index: 0),
+      _NavItem(icon: Icons.home_filled, label: 'الرئيسية', index: 0),
       _NavItem(
-        icon: Icons.account_balance_wallet_outlined,
+        imagePath: 'assets/images/debts.png',
         label: 'مديونياتي',
         index: 1,
       ),
       _NavItem(
-        icon: Icons.assignment_outlined,
+        icon: Icons.article_outlined,
         label: 'إقراراتي',
         index: 2,
         isFeatured: true,
       ),
-      _NavItem(icon: Icons.payment_outlined, label: 'مدفوعاتي', index: 3),
+      _NavItem(
+        imagePath: 'assets/images/payment.png',
+        label: 'مدفوعاتي',
+        index: 3,
+      ),
       _NavItem(icon: Icons.settings_outlined, label: 'الإعدادات', index: 4),
     ];
 
@@ -384,7 +387,7 @@ class _HomeViewState extends State<_HomeView> {
         color: AppColors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: AppColors.mainBlueSecondary.withOpacity(0.08),
             blurRadius: 16,
             offset: const Offset(0, -4),
           ),
@@ -415,26 +418,19 @@ class _HomeViewState extends State<_HomeView> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   color: AppColors.mainOrange,
                   borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.mainOrange.withOpacity(0.4),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
                 ),
-                child: Icon(item.icon, color: AppColors.white, size: 24),
+                child: Icon(item.icon, color: AppColors.white, size: 22),
               ),
               const SizedBox(height: 2),
               Text(
                 item.label,
                 style: AppTextStyles.captionM.copyWith(
-                  color: AppColors.mainOrange,
+                  color: AppColors.mainBlueSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -446,26 +442,33 @@ class _HomeViewState extends State<_HomeView> {
 
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(
-          () => _selectedIndex = item.index,
-        ), // ← simple, no Navigator
+        onTap: () => setState(() => _selectedIndex = item.index),
         behavior: HitTestBehavior.opaque,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              item.icon,
-              color: isSelected
-                  ? AppColors.mainBlueIndigoDye
-                  : AppColors.neutralDarkLightest,
-              size: 22,
-            ),
+            item.imagePath != null
+                ? Image.asset(
+                    item.imagePath!,
+                    width: 22,
+                    height: 22,
+                    color: isSelected
+                        ? AppColors.mainBlueSecondary
+                        : AppColors.neutralDarkLightest,
+                  )
+                : Icon(
+                    item.icon,
+                    color: isSelected
+                        ? AppColors.mainBlueIndigoDye
+                        : AppColors.neutralDarkLightest,
+                    size: 22,
+                  ),
             const SizedBox(height: 3),
             Text(
               item.label,
               style: AppTextStyles.captionM.copyWith(
                 color: isSelected
-                    ? AppColors.mainBlueIndigoDye
+                    ? AppColors.mainBlueSecondary
                     : AppColors.neutralDarkLightest,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
               ),
@@ -488,12 +491,14 @@ class _HomeViewState extends State<_HomeView> {
 }
 
 class _NavItem {
-  final IconData icon;
+  final IconData? icon;
+  final String? imagePath;
   final String label;
   final int index;
   final bool isFeatured;
   const _NavItem({
-    required this.icon,
+    this.icon,
+    this.imagePath,
     required this.label,
     required this.index,
     this.isFeatured = false,

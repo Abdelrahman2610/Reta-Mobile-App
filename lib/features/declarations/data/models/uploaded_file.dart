@@ -1,5 +1,3 @@
-/// Returned by the file upload endpoint.
-/// Use [toAttachmentMap()] when embedding in a declaration body.
 class UploadedFile {
   final String path;
   final String name;
@@ -18,11 +16,8 @@ class UploadedFile {
       originalName: json['original_name']?.toString() ?? '',
     );
   }
-
-  /// Converts to the format expected by all declaration endpoints.
-  /// Example usage: `"national_id_attachment": uploadedFile.toAttachmentMap()`
   Map<String, String> toAttachmentMap() => {
-        'path': path,
-        'original_file_name': originalName,
-      };
+    'path': path,
+    'original_file_name': originalName,
+  };
 }

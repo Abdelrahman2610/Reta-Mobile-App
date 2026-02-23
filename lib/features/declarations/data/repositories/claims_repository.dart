@@ -6,7 +6,6 @@ import '/core/network/dio_client.dart';
 class ClaimsRepository {
   final Dio _dio = DioClient.instance.dio;
 
-  /// List claims for a declaration with optional filters.
   Future<ApiResult<Map<String, dynamic>>> getClaimsList(
     int declarationId, {
     String? claimNumber,
@@ -30,7 +29,6 @@ class ClaimsRepository {
     });
   }
 
-  /// Get detail of a single claim.
   Future<ApiResult<Map<String, dynamic>>> getClaimDetail(int claimId) async {
     return safeApiCall(() async {
       final response = await _dio.get(ApiConstants.claimDetail(claimId));
@@ -38,7 +36,6 @@ class ClaimsRepository {
     });
   }
 
-  /// Get payment transaction details for a claim.
   Future<ApiResult<Map<String, dynamic>>> getClaimTransactionDetails(
     int claimId,
   ) async {
@@ -50,10 +47,6 @@ class ClaimsRepository {
     });
   }
 
-  /// Creates a new claim for the given properties.
-  ///
-  /// [propertyData] — list of maps, each with:
-  ///   { 'id': int, 'property_type_id': int, 'paid_by_wallet': bool }
   Future<ApiResult<Map<String, dynamic>>> storeClaim({
     required int declarationId,
     required List<Map<String, dynamic>> propertyData,
@@ -67,8 +60,6 @@ class ClaimsRepository {
     });
   }
 
-  /// Creates a claim for "taxpayer's knowledge" settlement-of-debts flow.
-  /// Each property item can include [amount] and [debtSupportingDocuments].
   Future<ApiResult<Map<String, dynamic>>> storeTaxpayerKnowledgeClaim({
     required int declarationId,
     required List<Map<String, dynamic>> propertyData,
@@ -82,7 +73,6 @@ class ClaimsRepository {
     });
   }
 
-  /// Cancels (deletes) a claim.
   Future<ApiResult<Map<String, dynamic>>> cancelClaim(int claimId) async {
     return safeApiCall(() async {
       final response = await _dio.delete(ApiConstants.cancelClaim(claimId));
@@ -90,7 +80,6 @@ class ClaimsRepository {
     });
   }
 
-  /// Initiates an online payment for a claim.
   Future<ApiResult<Map<String, dynamic>>> initiatePayment(int claimId) async {
     return safeApiCall(() async {
       final response = await _dio.post(ApiConstants.initialPayment(claimId));

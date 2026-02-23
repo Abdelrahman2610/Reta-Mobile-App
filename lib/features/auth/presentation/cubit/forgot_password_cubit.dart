@@ -2,38 +2,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // import '../../../../core/network/api_result.dart';
 // import '/features/auth/data/repositories/auth_repository.dart';
 
-// ─────────────────────────────────────────
-// ENUMS
-// ─────────────────────────────────────────
-
 enum ForgotTab { mobile, email }
 
-enum ForgotStep {
-  /// Step 1 — choose method & enter identifier
-  input,
-
-  /// Step 2 — enter the 6-digit OTP
-  otp,
-
-  /// Step 3 — OTP verified, show "login" success screen
-  otpSuccess,
-
-  /// Step 4 — set new password
-  newPassword,
-
-  /// Step 5 — all done
-  done,
-}
-
-// ─────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────
+enum ForgotStep { input, otp, otpSuccess, newPassword, done }
 
 class ForgotPasswordState {
   final ForgotTab selectedTab;
   final ForgotStep step;
 
-  // Step 1 fields
   final String mobile;
   final String email;
   final String? mobileError;
@@ -41,11 +17,9 @@ class ForgotPasswordState {
   final bool isLoading;
   final String? requestError;
 
-  // Step 2 — OTP
   final String otpValue;
   final String? otpError;
 
-  // Step 4 — new password
   final String newPassword;
   final String confirmPassword;
   final bool isNewPasswordVisible;
@@ -54,7 +28,6 @@ class ForgotPasswordState {
   final String? confirmPasswordError;
   final String? resetError;
 
-  // Internal token returned by the API after step-1 request
   final String? resetToken;
 
   const ForgotPasswordState({
@@ -126,14 +99,8 @@ class ForgotPasswordState {
   }
 }
 
-// ─────────────────────────────────────────
-// CUBIT
-// ─────────────────────────────────────────
-
 class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
   ForgotPasswordCubit() : super(const ForgotPasswordState());
-
-  // ── Tab ─────────────────────────────────
 
   void selectTab(ForgotTab tab) {
     emit(
@@ -147,8 +114,6 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
       ),
     );
   }
-
-  // ── Step 1 field changes ─────────────────
 
   void onMobileChanged(String v) {
     emit(
@@ -170,31 +135,13 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
     );
   }
 
-  // ── Step 1 submit — request OTP ──────────
-
   Future<void> requestReset() async {
     if (!_validateStep1()) return;
 
     emit(state.copyWith(isLoading: true, requestError: () => null));
 
     // TODO: wire to real API endpoint. Replace this placeholder with:
-    // final result = await _authRepository.forgotPassword(
-    //   type: state.selectedTab == ForgotTab.mobile ? 'mobile' : 'email',
-    //   value: state.selectedTab == ForgotTab.mobile ? state.mobile : state.email,
-    // );
-    //
-    // switch (result) {
-    //   case ApiSuccess(:final data):
-    //     emit(state.copyWith(
-    //       isLoading: false,
-    //       resetToken: () => data['token']?.toString(),
-    //       step: ForgotStep.otp,
-    //     ));
-    //   case ApiError(:final message):
-    //     emit(state.copyWith(isLoading: false, requestError: () => message));
-    // }
 
-    // ── Simulated success (remove when API is ready) ──
     await Future.delayed(const Duration(milliseconds: 800));
     emit(state.copyWith(isLoading: false, step: ForgotStep.otp));
   }
@@ -222,8 +169,6 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
     return true;
   }
 
-  // ── Step 2 OTP ───────────────────────────
-
   void onOtpChanged(String v) {
     emit(state.copyWith(otpValue: v, otpError: () => null));
   }
@@ -237,19 +182,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
     emit(state.copyWith(isLoading: true, otpError: () => null));
 
     // TODO: wire to real API endpoint. Replace this placeholder with:
-    // final result = await _authRepository.verifyOtp(
-    //   token: state.resetToken!,
-    //   otp: state.otpValue,
-    // );
-    //
-    // switch (result) {
-    //   case ApiSuccess():
-    //     emit(state.copyWith(isLoading: false, step: ForgotStep.otpSuccess));
-    //   case ApiError(:final message):
-    //     emit(state.copyWith(isLoading: false, otpError: () => message));
-    // }
 
-    // ── Simulated success ──
     await Future.delayed(const Duration(milliseconds: 800));
     emit(state.copyWith(isLoading: false, step: ForgotStep.otpSuccess));
   }
@@ -259,20 +192,13 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
     await requestReset();
   }
 
-  // ── Navigation helpers (called from UI) ──
-
-  /// Go back from OTP step to the input step.
   void goBackToInput() {
     emit(state.copyWith(step: ForgotStep.input));
   }
 
-  // ── From otpSuccess → newPassword ────────
-
   void proceedToNewPassword() {
     emit(state.copyWith(step: ForgotStep.newPassword));
   }
-
-  // ── Step 4 new password ──────────────────
 
   void onNewPasswordChanged(String v) {
     emit(
@@ -344,20 +270,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
     emit(state.copyWith(isLoading: true, resetError: () => null));
 
     // TODO: wire to real API endpoint. Replace this placeholder with:
-    // final result = await _authRepository.resetPassword(
-    //   token: state.resetToken!,
-    //   password: state.newPassword,
-    //   passwordConfirm: state.confirmPassword,
-    // );
-    //
-    // switch (result) {
-    //   case ApiSuccess():
-    //     emit(state.copyWith(isLoading: false, step: ForgotStep.done));
-    //   case ApiError(:final message):
-    //     emit(state.copyWith(isLoading: false, resetError: () => message));
-    // }
 
-    // ── Simulated success ──
     await Future.delayed(const Duration(milliseconds: 800));
     emit(state.copyWith(isLoading: false, step: ForgotStep.done));
   }

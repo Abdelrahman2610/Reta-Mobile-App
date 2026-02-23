@@ -8,7 +8,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.neutralLightLightest,
+      backgroundColor: AppColors.neutralLightLight,
       appBar: AppBar(
         backgroundColor: AppColors.mainBlueIndigoDye,
         elevation: 0,
@@ -92,7 +92,7 @@ class SettingsPage extends StatelessWidget {
                 onTap: () {},
               ),
               _SettingItem(
-                icon: Icons.info,
+                icon: Icons.privacy_tip_outlined,
                 label: 'الشروط والخصوصية',
                 onTap: () {},
                 showDivider: false,
@@ -101,13 +101,12 @@ class SettingsPage extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // ── Section: إجراءات الحساب ──
             _buildSectionLabel('إجراءات الحساب'),
             const SizedBox(height: 8),
             _buildSettingsCard([
               _SettingItem(
-                icon: Icons.login_outlined,
-                label: 'تسجيل الدخول',
+                icon: Icons.logout_outlined,
+                label: 'تسجيل الخروج',
                 onTap: () {},
                 showDivider: false,
               ),
@@ -124,69 +123,68 @@ class SettingsPage extends StatelessWidget {
       child: Text(
         label,
         textDirection: TextDirection.rtl,
-        style: AppTextStyles.bodyS.copyWith(color: AppColors.neutralDarkLight),
+        style: AppTextStyles.actionM.copyWith(
+          color: AppColors.neutralDarkLight,
+        ),
       ),
     );
   }
 
   Widget _buildSettingsCard(List<_SettingItem> items) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.neutralLightDark),
-      ),
-      child: Column(
-        children: items.map((item) {
-          return Column(
-            children: [
-              InkWell(
-                onTap: item.onTap,
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 16,
-                  ),
-                  child: Row(
-                    textDirection: TextDirection.rtl,
-                    children: [
-                      Icon(
-                        item.icon,
-                        color: AppColors.mainBlueIndigoDye,
-                        size: 22,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          item.label,
-                          textDirection: TextDirection.rtl,
-                          style: AppTextStyles.bodyM.copyWith(
-                            color: AppColors.neutralDarkDark,
-                            fontWeight: FontWeight.w600,
-                          ),
+    return Column(
+      children: items.map((item) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.neutralLightLightest,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: InkWell(
+              onTap: item.onTap,
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
+                child: Row(
+                  textDirection: TextDirection.rtl,
+                  children: [
+                    Icon(
+                      item.icon,
+                      color: AppColors.highlightDarkest,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        item.label,
+                        textDirection: TextDirection.rtl,
+                        style: AppTextStyles.actionL.copyWith(
+                          color: AppColors.neutralDarkDarkest,
                         ),
                       ),
-                      const Icon(
-                        Icons.arrow_back_ios_rounded,
-                        color: AppColors.neutralDarkLightest,
-                        size: 16,
-                      ),
-                    ],
-                  ),
+                    ),
+                    const Icon(
+                      Icons.arrow_back_ios_rounded,
+                      color: AppColors.neutralLightLightest,
+                      size: 16,
+                    ),
+                  ],
                 ),
               ),
-              if (item.showDivider)
-                Divider(
-                  height: 1,
-                  color: AppColors.neutralLightDark,
-                  indent: 16,
-                  endIndent: 16,
-                ),
-            ],
-          );
-        }).toList(),
-      ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
