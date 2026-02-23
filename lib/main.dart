@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:reta/features/auth/presentation/pages/home_page.dart';
+import 'package:reta/features/auth/presentation/pages/login_page.dart';
 
 import 'core/theme/app_theme.dart';
 
@@ -26,8 +26,13 @@ class MainApp extends StatelessWidget {
         //   GlobalCupertinoLocalizations.delegate,
         // ],
         debugShowCheckedModeBanner: false,
-        supportedLocales: const [Locale('en'), Locale('ar')],
-        home: HomePage(),
+        supportedLocales: const [Locale('ar'), Locale('en')],
+        builder: (context, Widget? child) =>
+            Directionality(textDirection: TextDirection.rtl, child: child!),
+        home: Directionality(
+          textDirection: TextDirection.rtl,
+          child: LoginPage(),
+        ),
       ),
     );
   }
