@@ -1,48 +1,43 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../core/theme/app_colors.dart';
-import 'app_text.dart';
+class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final VoidCallback? backButtonAction;
+  final String title;
+  final Color backgroundColor;
+  final Color backButtonIconColor;
+  final TextStyle titleTextStyle;
+  final bool? isTitleCenter;
+  final List<Widget>? actions;
 
-class RetaAppBar extends StatelessWidget {
-  const RetaAppBar({super.key, this.onBackTapped, this.title});
-
-  final VoidCallback? onBackTapped;
-  final String? title;
+  const MainAppBar({
+    super.key,
+    this.backButtonAction,
+    this.actions,
+    this.isTitleCenter = true,
+    required this.title,
+    required this.backgroundColor,
+    required this.backButtonIconColor,
+    required this.titleTextStyle,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 135.h,
-      alignment: AlignmentDirectional.bottomCenter,
-      padding: EdgeInsets.only(left: 24.w, right: 24.w, top: 70.h),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            offset: Offset(1, 10),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          InkWell(
-            onTap: onBackTapped ?? () => Navigator.pop(context),
-            child: Icon(Icons.arrow_back_ios),
-          ),
-          AppText(
-            text: title,
-            fontSize: 16.sp,
-            color: AppColors.neutralDarkDark,
-            fontWeight: FontWeight.w600,
-          ),
-          SizedBox.shrink(),
-        ],
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: AppBar(
+        backgroundColor: backgroundColor,
+        centerTitle: isTitleCenter,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, color: backButtonIconColor),
+          onPressed: backButtonAction ?? () => Navigator.maybePop(context),
+        ),
+        title: Text(title, style: titleTextStyle),
+        actions: actions,
       ),
     );
   }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(60);
 }
