@@ -9,7 +9,32 @@ import '../../../components/image_svg_custom_widget.dart';
 import 'app_attachment_item.dart';
 
 class NationalIDForm extends StatelessWidget {
-  const NationalIDForm({super.key});
+  const NationalIDForm({
+    super.key,
+    this.fontSize,
+    this.textColor,
+    this.filledColor,
+    this.enabled = true,
+    this.labelRequired = true,
+    this.containFile = true,
+    this.attachmentIconColor,
+    this.controller,
+    this.onFilePicked,
+    this.filePath,
+    required this.displayFile,
+  });
+
+  final double? fontSize;
+  final Color? textColor;
+  final Color? filledColor;
+  final bool enabled;
+  final bool labelRequired;
+  final bool containFile;
+  final Color? attachmentIconColor;
+  final TextEditingController? controller;
+  final VoidCallback? onFilePicked;
+  final String? filePath;
+  final bool displayFile;
 
   @override
   Widget build(BuildContext context) {
@@ -17,26 +42,38 @@ class NationalIDForm extends StatelessWidget {
       children: [
         AppTextFormField(
           labelText: 'الرقم القومي',
-          labelRequired: true,
-          labelColor: AppColors.neutralDarkDark,
+          labelRequired: labelRequired,
+          labelColor: textColor ?? AppColors.neutralDarkDark,
           validator: (value) => value == null ? 'هذا الحقل مطلوب' : null,
-          labelFontSize: 14.sp,
+          labelFontSize: fontSize ?? 14.sp,
+          enabled: enabled,
+          filledColor: filledColor,
+          controller: controller,
         ),
         16.hs,
         AppTextFormField(
           labelText: 'مرفق الرقم القومي',
-          labelRequired: true,
-          labelFontSize: 14.sp,
-          labelColor: AppColors.neutralDarkDark,
+          labelRequired: labelRequired,
+          labelFontSize: fontSize ?? 14.sp,
+          labelColor: textColor ?? AppColors.neutralDarkDark,
           readOnly: true,
           suffixWidget: ImageSvgCustomWidget(
             imgPath: FixedAssets.instance.attachmentWhiteIC,
             width: 16.w,
             height: 16.h,
-            color: AppColors.highlightDarkest,
+            color: displayFile
+                ? filePath != null
+                      ? AppColors.highlightDarkest
+                      : attachmentIconColor
+                : attachmentIconColor,
           ),
-          prefixWidget: AppAttachmentItem(onTap: () {}, containFile: true),
+          prefixWidget: AppAttachmentItem(
+            onTap: onFilePicked,
+            containFile: displayFile ? filePath != null : false,
+          ),
           infoText: 'ملف بصيغة Jpg أو pdf لا يتجاوز حجمه 5 ميجا بايت',
+          enabled: enabled,
+          filledColor: filledColor,
         ),
       ],
     );

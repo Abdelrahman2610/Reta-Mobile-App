@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/features/declarations/presentations/components/shared_ownership_form.dart';
 
@@ -10,14 +11,16 @@ import '../../../components/app_button.dart';
 import '../../../components/app_container.dart';
 import '../components/declaration_tabs.dart';
 import '../components/shared_form.dart';
+import '../cubit/applicant_cubit.dart';
 
 class TaxpayerDataPage extends StatelessWidget {
-  const TaxpayerDataPage({super.key});
+  const TaxpayerDataPage({super.key, required this.applicantType});
 
-  final ApplicantType applicantType = ApplicantType.legalRepresentative;
+  final ApplicantType applicantType;
 
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<ApplicantCubit>();
     return Scaffold(
       backgroundColor: AppColors.neutralLightMedium,
       body: SingleChildScrollView(
@@ -76,12 +79,7 @@ class TaxpayerDataPage extends StatelessWidget {
                         textColor: AppColors.white,
                         fontSize: 12.sp,
                         alignment: Alignment.center,
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => TaxpayerDataPage(),
-                          ),
-                        ),
+                        onTap: cubit.onTaxpayerNextTapped,
                       ),
                     ),
                     26.hs,

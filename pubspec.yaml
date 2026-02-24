@@ -19,6 +19,7 @@ dependencies:
   flutter_svg: ^2.0.10
   flutter_screenutil: ^5.9.3
   dropdown_button2: ^2.3.9
+  file_picker: ^8.1.2
 
 dev_dependencies:
   flutter_test:

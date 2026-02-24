@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/helpers/extensions/dimensions.dart';
-import '../../../../core/helpers/fixed_assets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_container.dart';
 import '../../../components/app_text.dart';
 import '../../../components/app_text_form_field.dart';
-import '../../../components/drop_down_icon.dart';
-import '../../../components/image_svg_custom_widget.dart';
-import 'app_attachment_item.dart';
+import '../cubit/applicant_cubit.dart';
+import 'nationality_form.dart';
 
 class UserInformation extends StatelessWidget {
-  const UserInformation({super.key});
+  const UserInformation({super.key, required this.cubit});
+
+  final ApplicantCubit cubit;
 
   @override
   Widget build(BuildContext context) {
@@ -31,51 +31,48 @@ class UserInformation extends StatelessWidget {
             labelText: 'الإسم الأول',
             enabled: false,
             filledColor: AppColors.neutralLightLight,
+            controller: cubit.applicantFirstNameController,
           ),
           16.hs,
           AppTextFormField(
             labelText: 'باقي الإسم',
             enabled: false,
             filledColor: AppColors.neutralLightLight,
+            controller: cubit.applicantLastNameController,
           ),
           16.hs,
           AppTextFormField(
             labelText: 'البريد الإلكتروني',
             enabled: false,
             filledColor: AppColors.neutralLightLight,
+            controller: cubit.applicantEmailController,
           ),
           16.hs,
           AppTextFormField(
             labelText: 'رقم الهاتف المحمول',
             enabled: false,
             filledColor: AppColors.neutralLightLight,
+            controller: cubit.applicantPhoneController,
           ),
           16.hs,
-          AppTextFormField(
-            labelText: 'الجنسية',
-            enabled: false,
+          NationalityForm(
+            nationality: cubit.applicantNationality,
+            onNationalityChanged: (_) {},
             filledColor: AppColors.neutralLightLight,
-            suffixWidget: DropDownIcon(),
-          ),
-          16.hs,
-          AppTextFormField(
-            labelText: 'الرقم القومي',
             enabled: false,
-            filledColor: AppColors.neutralLightLight,
+            fontSize: 12.sp,
+            textColor: AppColors.neutralDarkLightest,
+            labelRequired: false,
+            attachmentIconColor: AppColors.neutralDarkLightest,
+            nationalIdController: cubit.applicantNationalIdController,
+            onNationalIdFilePicked: () {},
+            nationalIdFilePath: cubit.applicantNationalIdFilePath,
+            passportController: cubit.applicantPassportNumberController,
+            onPassportFilePicked: () {},
+            passportFilePath: cubit.applicantPassportFilePath,
+            displayFile: false,
           ),
-          16.hs,
-          AppTextFormField(
-            labelText: 'مرفق الرقم القومي',
-            enabled: false,
-            filledColor: AppColors.neutralLightLight,
-            suffixWidget: ImageSvgCustomWidget(
-              imgPath: FixedAssets.instance.attachmentIC,
-              width: 16.w,
-              height: 16.h,
-            ),
-            prefixWidget: AppAttachmentItem(),
-            infoText: 'ملف بصيغة Jpg أو pdf لا يتجاوز حجمه 5 ميجا بايت',
-          ),
+
           16.hs,
         ],
       ),
