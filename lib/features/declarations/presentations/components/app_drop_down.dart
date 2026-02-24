@@ -46,7 +46,6 @@ class AppDropdownField<T> extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Label
         Directionality(
           textDirection: TextDirection.rtl,
           child: Row(
@@ -69,7 +68,6 @@ class AppDropdownField<T> extends StatelessWidget {
         ),
         8.hs,
 
-        // Dropdown
         SizedBox(
           height: 48.h,
           child: Directionality(
@@ -103,9 +101,7 @@ class AppDropdownField<T> extends StatelessWidget {
               buttonStyleData: ButtonStyleData(
                 height: 48.h,
                 padding: EdgeInsets.only(left: 2.w),
-                decoration: BoxDecoration(
-                  color: filledColor ?? Colors.transparent,
-                ),
+                decoration: BoxDecoration(color: Colors.transparent),
               ),
               iconStyleData: IconStyleData(
                 icon: DropDownIcon(),
@@ -184,7 +180,6 @@ class AppDropdownField<T> extends StatelessWidget {
           ),
         ),
 
-        // Info text
         if (infoText != null)
           Padding(
             padding: EdgeInsets.only(top: 8.h),

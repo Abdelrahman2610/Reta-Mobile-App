@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:reta/core/helpers/extensions/nationality.dart';
 
-import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../core/helpers/fixed_assets.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -10,16 +9,17 @@ import '../../../components/app_container.dart';
 import '../../../components/app_text.dart';
 import '../../../components/app_text_form_field.dart';
 import '../../../components/image_svg_custom_widget.dart';
+import '../cubit/applicant_cubit.dart';
+import '../cubit/applicant_states.dart';
 import 'app_attachment_item.dart';
 import 'nationality_form.dart';
 
 class SharedOwnershipForm extends StatelessWidget {
-  SharedOwnershipForm({super.key});
-
-  Nationality nationality = Nationality.egyptian;
+  const SharedOwnershipForm({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<ApplicantCubit>();
     return AppContainer(
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
       child: Column(
@@ -33,6 +33,7 @@ class SharedOwnershipForm extends StatelessWidget {
           24.hs,
           AppTextFormField(
             labelText: 'إسم المكلف بأداء الضريبة',
+            controller: cubit.taxpayerNameController,
             labelRequired: true,
             labelColor: AppColors.neutralDarkDark,
             validator: (value) => value == null ? 'هذا الحقل مطلوب' : null,
@@ -53,32 +54,81 @@ class SharedOwnershipForm extends StatelessWidget {
             ),
           ),
           16.hs,
-          NationalityForm(
-            nationality: nationality,
-            onNationalityChanged: onNationalityChanged,
+          BlocBuilder<ApplicantCubit, ApplicantState>(
+            buildWhen: (prev, curr) =>
+                (prev.taxpayerNationality != curr.taxpayerNationality) ||
+                (prev.taxpayerNationalIdFilePath !=
+                    curr.taxpayerNationalIdFilePath) ||
+                (prev.taxpayerPassportFilePath !=
+                    curr.taxpayerPassportFilePath),
+            builder: (context, state) {
+              return NationalityForm(
+                nationality:
+                    state.taxpayerNationality ?? cubit.taxpayerNationality,
+                onNationalityChanged: cubit.changeNationality,
+                nationalIdController: cubit.taxpayerNationalIdController,
+                onNationalIdFilePicked: () async {
+                  if (cubit.taxpayerNationalIdFilePath == null) {
+                    final path = await cubit.pickFile();
+                    if (path != null) cubit.setNationalIdFile(path);
+                  } else {
+                    cubit.removeNationalIdFile.call();
+                  }
+                },
+                nationalIdFilePath: cubit.taxpayerNationalIdFilePath,
+                passportController: cubit.taxpayerPassportNumberController,
+                onPassportFilePicked: () async {
+                  if (cubit.taxpayerPassportFilePath == null) {
+                    final path = await cubit.pickFile();
+                    if (path != null) cubit.setPassportFile(path);
+                  } else {
+                    cubit.removePassportFile.call();
+                  }
+                },
+                passportFilePath: cubit.taxpayerPassportFilePath,
+                attachmentIconColor: AppColors.neutralDarkLightest,
+              );
+            },
           ),
 
           16.hs,
-          AppTextFormField(
-            labelText: 'رفع سند الملكية على الشيوع/ إعلام الوراثة',
-            labelRequired: true,
-            labelColor: AppColors.neutralDarkDark,
-            labelFontSize: 14.sp,
-            suffixWidget: ImageSvgCustomWidget(
-              imgPath: FixedAssets.instance.attachmentWhiteIC,
-              width: 16.w,
-              height: 16.h,
-              color: AppColors.neutralDarkLightest,
-            ),
-            prefixWidget: AppAttachmentItem(onTap: () {}, containFile: true),
-            infoText: 'ملف بصيغة Jpg أو pdf لا يتجاوز حجمه 5 ميجا بايت',
+          BlocBuilder<ApplicantCubit, ApplicantState>(
+            buildWhen: (prev, curr) =>
+                prev.ownershipProofDocumentPath !=
+                curr.ownershipProofDocumentPath,
+            builder: (context, state) {
+              return AppTextFormField(
+                labelText: 'رفع سند الملكية على الشيوع/ إعلام الوراثة',
+                labelRequired: true,
+                labelColor: AppColors.neutralDarkDark,
+                labelFontSize: 14.sp,
+                suffixWidget: ImageSvgCustomWidget(
+                  imgPath: FixedAssets.instance.attachmentWhiteIC,
+                  width: 16.w,
+                  height: 16.h,
+                  color: cubit.ownershipProofDocumentPath != null
+                      ? AppColors.highlightDarkest
+                      : AppColors.neutralDarkLightest,
+                ),
+                prefixWidget: AppAttachmentItem(
+                  onTap: () async {
+                    if (cubit.ownershipProofDocumentPath == null) {
+                      final path = await cubit.pickFile();
+                      if (path != null) {
+                        cubit.setOwnershipProofDocumentFile(path);
+                      }
+                    } else {
+                      cubit.removeOwnershipProofDocumentFile.call();
+                    }
+                  },
+                  containFile: state.ownershipProofDocumentPath != null,
+                ),
+                infoText: 'ملف بصيغة Jpg أو pdf لا يتجاوز حجمه 5 ميجا بايت',
+              );
+            },
           ),
         ],
       ),
     );
-  }
-
-  void onNationalityChanged(String? value) {
-    nationality = value?.getNationality ?? Nationality.egyptian;
   }
 }
