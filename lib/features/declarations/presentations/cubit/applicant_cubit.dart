@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/helpers/extensions/taxpayer_types.dart';
+import 'package:reta/features/declarations/presentations/pages/units/unit_location_data_page.dart';
 
 import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/helpers/extensions/nationality.dart';
@@ -15,7 +16,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
   final formKey = GlobalKey<FormState>();
 
-  ApplicantType applicantType = ApplicantType.legalRepresentative;
+  ApplicantType applicantType = ApplicantType.owner;
 
   /// --------------------------- Applicant -----------------------------
   final applicantFirstNameController = TextEditingController();
@@ -247,6 +248,15 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         applicantType == ApplicantType.beneficiary) {
       // TODO: Call submit
       log("ApiBody: ${_buildPayload()}");
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BlocProvider.value(
+            value: this,
+            child: UnitLocationDataPage(applicantType: applicantType),
+          ),
+        ),
+      );
     } else {
       Navigator.push(
         context,
@@ -260,8 +270,17 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     }
   }
 
-  Future<void> onTaxpayerNextTapped() async {
+  Future<void> onTaxpayerNextTapped(BuildContext context) async {
     log("ApiBody: ${_buildPayload()}");
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider.value(
+          value: this,
+          child: UnitLocationDataPage(applicantType: applicantType),
+        ),
+      ),
+    );
   }
 
   Future<void> submit() async {

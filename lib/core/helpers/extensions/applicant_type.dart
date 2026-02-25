@@ -4,7 +4,7 @@ extension ApplicantTypeLabel on ApplicantType {
   String get label {
     switch (this) {
       case ApplicantType.owner:
-        return 'مالك';
+        return 'المالك';
       case ApplicantType.sharedOwnership:
         return 'مالك على الشيوع';
       case ApplicantType.beneficiary:

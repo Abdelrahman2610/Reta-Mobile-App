@@ -79,7 +79,7 @@ class TaxpayerDataPage extends StatelessWidget {
                         textColor: AppColors.white,
                         fontSize: 12.sp,
                         alignment: Alignment.center,
-                        onTap: cubit.onTaxpayerNextTapped,
+                        onTap: () => cubit.onTaxpayerNextTapped(context),
                       ),
                     ),
                     26.hs,

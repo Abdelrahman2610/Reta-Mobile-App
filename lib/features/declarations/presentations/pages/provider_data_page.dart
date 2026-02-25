@@ -29,6 +29,7 @@ class ProviderDataPage extends StatelessWidget {
     };
     return BlocProvider(
       create: (_) => ApplicantCubit()..initFromUser(user),
+      lazy: false,
       child: const _ProviderDataView(),
     );
   }
