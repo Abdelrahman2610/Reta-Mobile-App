@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:reta/features/declarations/presentations/pages/provider_data_page.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
-import '../../../declarations/presentations/pages/declarations_page.dart';
 import '../cubit/home_cubit.dart';
 import 'login_page.dart';
 import 'settings_page.dart';
@@ -68,7 +68,9 @@ class _HomeViewState extends State<_HomeView> {
           // index 1 — مديونياتي
           const Center(child: Text('مديونياتي')),
           // index 2 — إقراراتي
-          DeclarationsPage(),
+          //TODO: Remove this
+          // DeclarationsPage(),
+          ProviderDataPage(),
           // index 3 — مدفوعاتي
           const Center(child: Text('مدفوعاتي')),
           // index 4 — الإعدادات
