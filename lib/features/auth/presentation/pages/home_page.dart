@@ -1,11 +1,17 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:reta/features/declarations/presentations/pages/provider_data_page.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:reta/features/components/app_text.dart';
 
+import '../../../../core/helpers/fixed_assets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../components/image_svg_custom_widget.dart';
+import '../../../declarations/presentations/pages/declarations_page.dart';
 import '../cubit/home_cubit.dart';
 import 'login_page.dart';
 import 'settings_page.dart';
@@ -35,50 +41,179 @@ class _HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<_HomeView> {
+  setTabController() {
+    if (mainScreenTabController == null) {
+      mainScreenTabController = PersistentTabController();
+
+      mainScreenTabController!.notifyListeners();
+
+      mainScreenTabController!.addListener(() {
+        setState(() {});
+      });
+    }
+  }
+
   int _selectedIndex = 0;
+  PersistentTabController? mainScreenTabController;
+
+  @override
+  void initState() {
+    setTabController();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.neutralLightLight,
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: [
-          // index 0 — الرئيسية
-          Column(
-            children: [
-              _buildHero(),
-              Expanded(
-                child: Container(
-                  color: AppColors.neutralLightLight,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-                    child: Column(
-                      children: [
-                        _buildDeclarationCard(context),
-                        const SizedBox(height: 16),
-                        _buildAuthCard(context),
-                      ],
+      body: Directionality(
+        textDirection: TextDirection.rtl,
+        child: PersistentTabView(
+          navBarHeight: 84.h,
+          context,
+          controller: mainScreenTabController,
+          screens: [
+            // index 0 — الرئيسية
+            Column(
+              children: [
+                _buildHero(),
+                Expanded(
+                  child: Container(
+                    color: AppColors.neutralLightLight,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+                      child: Column(
+                        children: [
+                          _buildDeclarationCard(context),
+                          const SizedBox(height: 16),
+                          _buildAuthCard(context),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
+            // index 1 — مديونياتي
+            const Center(child: Text('مديونياتي')),
+
+            // index 2 — إقراراتي
+            // ProviderDataPage(),
+            DeclarationsPage(),
+
+            // index 3 — مدفوعاتي
+            const Center(child: Text('مدفوعاتي')),
+            // index 4 — الإعدادات
+            const SettingsPage(),
+          ],
+          items: navBarItems(selectedNavBarIndex()),
+          backgroundColor: Colors.white,
+          resizeToAvoidBottomInset: true,
+          animationSettings: const NavBarAnimationSettings(
+            navBarItemAnimation: ItemAnimationSettings(
+              duration: Duration(milliseconds: 200),
+            ),
+            screenTransitionAnimation: ScreenTransitionAnimationSettings(
+              animateTabTransition: true,
+            ),
           ),
-          // index 1 — مديونياتي
-          const Center(child: Text('مديونياتي')),
-          // index 2 — إقراراتي
-          //TODO: Remove this
-          // DeclarationsPage(),
-          ProviderDataPage(),
-          // index 3 — مدفوعاتي
-          const Center(child: Text('مدفوعاتي')),
-          // index 4 — الإعدادات
-          const SettingsPage(),
+          navBarStyle: NavBarStyle.style2,
+        ),
+      ),
+    );
+  }
+
+  List<PersistentBottomNavBarItem> navBarItems(int selectedIndex) {
+    return [
+      item(
+        FixedAssets.instance.unselectedHome,
+        FixedAssets.instance.selectedHome,
+        "الرئيسية",
+        checkIsNavBarSelected(0, selectedIndex),
+      ),
+
+      item(
+        FixedAssets.instance.unselectedDebt,
+        FixedAssets.instance.selectedDebt,
+        "مديونياتي",
+        checkIsNavBarSelected(1, selectedIndex),
+      ),
+      item(
+        FixedAssets.instance.declaration,
+        FixedAssets.instance.declaration,
+        "إقراراتي",
+        checkIsNavBarSelected(2, selectedIndex),
+        isHome: true,
+      ),
+      item(
+        FixedAssets.instance.unselectedPayment,
+        FixedAssets.instance.selectedPayment,
+        "مدفوعاتي",
+        checkIsNavBarSelected(3, selectedIndex),
+      ),
+      item(
+        FixedAssets.instance.selectedSettings,
+        FixedAssets.instance.unselectedSettings,
+        "الإعدادات",
+        checkIsNavBarSelected(4, selectedIndex),
+      ),
+    ];
+  }
+
+  PersistentBottomNavBarItem item(
+    String selectedIcon,
+    String unSelectedIcon,
+    String title,
+    bool isSelected, {
+    bool isHome = false,
+  }) {
+    return PersistentBottomNavBarItem(
+      icon: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ImageSvgCustomWidget(
+            imgPath: isHome || isSelected ? selectedIcon : unSelectedIcon,
+            color: isHome
+                ? null
+                : isSelected
+                ? AppColors.mainBlueIndigoDye
+                : AppColors.neutralDarkLightest,
+            height: isHome ? 44.h : 20.h,
+            width: isHome ? 44.w : 24.w,
+          ),
+          AppText(
+            text: title,
+            alignment: AlignmentDirectional.center,
+            textAlign: TextAlign.center,
+            color: isSelected
+                ? AppColors.mainBlueSecondary
+                : AppColors.neutralDarkLightest,
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w500,
+          ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(),
+      inactiveColorPrimary: CupertinoColors.systemGrey,
     );
+  }
+
+  bool checkIsNavBarSelected(index, selectedIndex) {
+    if (index == selectedIndex) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  int selectedNavBarIndex() {
+    if (mainScreenTabController == null) {
+      return 0;
+    } else if (mainScreenTabController != null) {
+      return mainScreenTabController!.index;
+    } else {
+      return 0;
+    }
   }
 
   Widget _buildHero() {
@@ -364,142 +499,4 @@ class _HomeViewState extends State<_HomeView> {
       ),
     );
   }
-
-  Widget _buildBottomNav() {
-    final items = [
-      _NavItem(icon: Icons.home_rounded, label: 'الرئيسية', index: 0),
-      _NavItem(
-        icon: Icons.account_balance_wallet_outlined,
-        label: 'مديونياتي',
-        index: 1,
-      ),
-      _NavItem(
-        icon: Icons.assignment_outlined,
-        label: 'إقراراتي',
-        index: 2,
-        isFeatured: true,
-      ),
-      _NavItem(icon: Icons.payment_outlined, label: 'مدفوعاتي', index: 3),
-      _NavItem(icon: Icons.settings_outlined, label: 'الإعدادات', index: 4),
-    ];
-
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 64,
-          child: Row(
-            textDirection: TextDirection.rtl,
-            children: items.map((item) => _buildNavItem(item)).toList(),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(_NavItem item) {
-    final isSelected = _selectedIndex == item.index;
-
-    if (item.isFeatured) {
-      return Expanded(
-        child: GestureDetector(
-          onTap: () => setState(() => _selectedIndex = item.index),
-          behavior: HitTestBehavior.opaque,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.mainOrange,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.mainOrange.withOpacity(0.4),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Icon(item.icon, color: AppColors.white, size: 24),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                item.label,
-                style: AppTextStyles.captionM.copyWith(
-                  color: AppColors.mainOrange,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(
-          () => _selectedIndex = item.index,
-        ), // ← simple, no Navigator
-        behavior: HitTestBehavior.opaque,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              item.icon,
-              color: isSelected
-                  ? AppColors.mainBlueIndigoDye
-                  : AppColors.neutralDarkLightest,
-              size: 22,
-            ),
-            const SizedBox(height: 3),
-            Text(
-              item.label,
-              style: AppTextStyles.captionM.copyWith(
-                color: isSelected
-                    ? AppColors.mainBlueIndigoDye
-                    : AppColors.neutralDarkLightest,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-              ),
-            ),
-            const SizedBox(height: 2),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              height: 3,
-              width: isSelected ? 20 : 0,
-              decoration: BoxDecoration(
-                color: AppColors.mainBlueIndigoDye,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItem {
-  final IconData icon;
-  final String label;
-  final int index;
-  final bool isFeatured;
-  const _NavItem({
-    required this.icon,
-    required this.label,
-    required this.index,
-    this.isFeatured = false,
-  });
 }

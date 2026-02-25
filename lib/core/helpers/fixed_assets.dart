@@ -29,4 +29,13 @@ class FixedAssets {
   String icon12 = "${svg}icon12.svg";
   String attachmentIC = "${svg}attachment_ic.svg";
   String attachmentWhiteIC = "${svg}attachment_ic_white.svg";
+  String selectedHome = "${svg}selected_home.svg";
+  String unselectedHome = "${svg}unselected_home.svg";
+  String selectedDebt = "${svg}selected_debt.svg";
+  String unselectedDebt = "${svg}unselected_debt.svg";
+  String unselectedPayment = "${svg}unselected_payment.svg";
+  String selectedPayment = "${svg}selected_payment.svg";
+  String declaration = "${svg}declaration.svg";
+  String selectedSettings = "${svg}selected_settings.svg";
+  String unselectedSettings = "${svg}unselected_settings.svg";
 }
