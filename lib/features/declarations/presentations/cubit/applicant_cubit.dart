@@ -16,7 +16,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
   final formKey = GlobalKey<FormState>();
 
-  ApplicantType applicantType = ApplicantType.sharedOwnership;
+  ApplicantType applicantType = ApplicantType.agent;
 
   /// --------------------------- Applicant -----------------------------
   final applicantFirstNameController = TextEditingController();

@@ -100,6 +100,8 @@ class _HomeViewState extends State<_HomeView> {
             // index 2 — إقراراتي
             // ProviderDataPage(),
             DeclarationsPage(),
+            // SelectApplicantTypePage(),
+            // SelectTypesOfPropertiesPage(),
 
             // index 3 — مدفوعاتي
             const Center(child: Text('مدفوعاتي')),

@@ -196,7 +196,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
           ],
           child: UnitData(
             applicantType: applicantType,
-            unitType: UnitType.commercial,
+            unitType: UnitType.residential,
           ),
         ),
       ),
