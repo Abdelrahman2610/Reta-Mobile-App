@@ -12,3 +12,18 @@ enum DeclarationsDataType { providerData, taxpayerData, locationData, unitData }
 enum Nationality { egyptian, foreign }
 
 enum TaxpayerTypes { natural, conventional }
+
+enum UnitType {
+  residential,
+  commercial,
+  administrative,
+  serviceUnit,
+  fixedInstallations,
+  vacantLand,
+  serviceFacility,
+  hotelFacility,
+  industrialFacility,
+  productionFacility,
+  petroleumFacility,
+  minesAndQuarries,
+}

@@ -7,9 +7,18 @@ import '../../../components/app_button.dart';
 import '../../../components/image_svg_custom_widget.dart';
 
 class CancelDeclarationButton extends StatelessWidget {
-  final Function onCancel;
+  final VoidCallback onCancel;
+  final String? label;
+  final bool withIcon;
+  final Color? borderColor;
 
-  const CancelDeclarationButton({super.key, required this.onCancel});
+  const CancelDeclarationButton({
+    super.key,
+    required this.onCancel,
+    this.label,
+    this.withIcon = true,
+    this.borderColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,21 +26,23 @@ class CancelDeclarationButton extends StatelessWidget {
       onTap: () {
         onCancel();
       },
-      label: "إلغاء الإقرار",
+      label: label ?? "إلغاء الإقرار",
       width: double.maxFinite,
       height: 48.h,
-      borderColor: AppColors.errorDark,
+      borderColor: borderColor ?? AppColors.errorDark,
       backgroundColor: Colors.white,
-      textColor: AppColors.errorDark,
+      textColor: borderColor ?? AppColors.errorDark,
       fontSize: 12,
       fontWeight: FontWeight.w600,
       iconLeft: false,
-      icon: ImageSvgCustomWidget(
-        color: AppColors.errorDark,
-        imgPath: FixedAssets.instance.closeIcon,
-        height: 18.h,
-        width: 18.w,
-      ),
+      icon: withIcon
+          ? ImageSvgCustomWidget(
+              color: AppColors.errorDark,
+              imgPath: FixedAssets.instance.closeIcon,
+              height: 18.h,
+              width: 18.w,
+            )
+          : SizedBox.shrink(),
     );
   }
 }

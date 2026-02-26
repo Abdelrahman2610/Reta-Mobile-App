@@ -8,10 +8,20 @@ import '../../../components/app_text.dart';
 import '../../../components/image_svg_custom_widget.dart';
 
 class AppAttachmentItem extends StatelessWidget {
-  const AppAttachmentItem({super.key, this.onTap, this.containFile = false});
+  const AppAttachmentItem({
+    super.key,
+    this.onTap,
+    this.containFile = false,
+    this.text,
+    this.backgroundColor,
+    this.textColor,
+  });
 
   final VoidCallback? onTap;
   final bool containFile;
+  final String? text;
+  final Color? backgroundColor;
+  final Color? textColor;
 
   @override
   Widget build(BuildContext context) {
@@ -23,28 +33,28 @@ class AppAttachmentItem extends StatelessWidget {
         decoration: BoxDecoration(
           color: containFile
               ? AppColors.errorDark
-              : AppColors.neutralLightDarkest,
+              : backgroundColor ?? AppColors.neutralLightDarkest,
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AppText(
-              text: containFile ? 'حذف الصورة' : 'JPG',
+              text: containFile ? 'حذف الصورة' : text ?? 'JPG',
               fontWeight: FontWeight.w600,
               fontSize: 12.sp,
               color: containFile
                   ? AppColors.white
-                  : AppColors.neutralDarkLightest,
+                  : textColor ?? AppColors.neutralDarkLightest,
             ),
             8.ws,
             ImageSvgCustomWidget(
-              imgPath: containFile
+              imgPath: containFile || textColor == AppColors.white
                   ? FixedAssets.instance.attachmentWhiteIC
                   : FixedAssets.instance.attachmentIC,
               width: 12.w,
               height: 12.h,
-              color: containFile ? AppColors.white : null,
+              color: containFile ? AppColors.white : textColor,
             ),
           ],
         ),
