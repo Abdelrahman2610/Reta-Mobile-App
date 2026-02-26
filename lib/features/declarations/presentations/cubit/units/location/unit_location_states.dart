@@ -1,4 +1,9 @@
+import '../../../../../../core/helpers/app_enum.dart';
+
 class UnitLocationState {
+  final UnitType? unitType;
+  final ApplicantType? applicantType;
+
   final String? selectedGovernorate;
   final String? selectedDistrict;
   final String? selectedNeighborhood;
@@ -26,6 +31,8 @@ class UnitLocationState {
     this.districtOtherText,
     this.neighborhoodOtherText,
     this.streetOtherText,
+    this.unitType,
+    this.applicantType,
   });
 
   UnitLocationState copyWith({

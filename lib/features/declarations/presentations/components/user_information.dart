@@ -32,6 +32,7 @@ class UserInformation extends StatelessWidget {
             enabled: false,
             filledColor: AppColors.neutralLightLight,
             controller: cubit.applicantFirstNameController,
+            labelColor: AppColors.neutralDarkLightest,
           ),
           16.hs,
           AppTextFormField(
@@ -39,6 +40,7 @@ class UserInformation extends StatelessWidget {
             enabled: false,
             filledColor: AppColors.neutralLightLight,
             controller: cubit.applicantLastNameController,
+            labelColor: AppColors.neutralDarkLightest,
           ),
           16.hs,
           AppTextFormField(
@@ -46,6 +48,7 @@ class UserInformation extends StatelessWidget {
             enabled: false,
             filledColor: AppColors.neutralLightLight,
             controller: cubit.applicantEmailController,
+            labelColor: AppColors.neutralDarkLightest,
           ),
           16.hs,
           AppTextFormField(
@@ -53,6 +56,7 @@ class UserInformation extends StatelessWidget {
             enabled: false,
             filledColor: AppColors.neutralLightLight,
             controller: cubit.applicantPhoneController,
+            labelColor: AppColors.neutralDarkLightest,
           ),
           16.hs,
           NationalityForm(

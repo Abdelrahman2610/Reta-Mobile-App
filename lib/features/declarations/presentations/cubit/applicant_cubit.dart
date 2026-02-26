@@ -12,11 +12,13 @@ import '../pages/taxpayer_data_page.dart';
 import 'applicant_states.dart';
 
 class ApplicantCubit extends Cubit<ApplicantState> {
-  ApplicantCubit() : super(const ApplicantState());
+  ApplicantCubit({required this.applicantType}) : super(const ApplicantState());
 
   final formKey = GlobalKey<FormState>();
 
-  ApplicantType applicantType = ApplicantType.agent;
+  final ApplicantType applicantType;
+  // ApplicantType applicantType = ApplicantType.owner;
+  UnitType unitType = UnitType.fixedInstallations;
 
   /// --------------------------- Applicant -----------------------------
   final applicantFirstNameController = TextEditingController();
@@ -253,7 +255,10 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         MaterialPageRoute(
           builder: (context) => BlocProvider.value(
             value: this,
-            child: UnitLocationDataPage(applicantType: applicantType),
+            child: UnitLocationDataPage(
+              applicantType: applicantType,
+              unitType: unitType,
+            ),
           ),
         ),
       );
@@ -261,10 +266,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => BlocProvider.value(
-            value: this,
-            child: TaxpayerDataPage(applicantType: applicantType),
-          ),
+          builder: (context) =>
+              BlocProvider.value(value: this, child: TaxpayerDataPage()),
         ),
       );
     }
@@ -277,7 +280,10 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       MaterialPageRoute(
         builder: (context) => BlocProvider.value(
           value: this,
-          child: UnitLocationDataPage(applicantType: applicantType),
+          child: UnitLocationDataPage(
+            applicantType: applicantType,
+            unitType: unitType,
+          ),
         ),
       ),
     );

@@ -310,14 +310,16 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   // ─────────────────────────────────────────
 
   void addAdditionalDocument() {
-    additionalDocuments.add(AdditionalDocument(id: _uuid.v4()));
-    emit(
-      state.copyWith(
-        hasAdditionalDocuments: state.hasAdditionalDocuments,
-        additionalDocuments: additionalDocuments,
-        additionalUpdateCount: (state.additionalUpdateCount + 1),
-      ),
-    );
+    if (additionalDocuments.length < 5) {
+      additionalDocuments.add(AdditionalDocument(id: _uuid.v4()));
+      emit(
+        state.copyWith(
+          hasAdditionalDocuments: state.hasAdditionalDocuments,
+          additionalDocuments: additionalDocuments,
+          additionalUpdateCount: (state.additionalUpdateCount + 1),
+        ),
+      );
+    }
   }
 
   void removeAdditionalDocument(String id) {

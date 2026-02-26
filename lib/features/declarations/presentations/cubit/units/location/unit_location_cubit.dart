@@ -11,7 +11,11 @@ import '../unit_data/unit_data_cubit.dart';
 const String kOther = 'أخرى';
 
 class UnitLocationCubit extends Cubit<UnitLocationState> {
-  UnitLocationCubit() : super(const UnitLocationState());
+  UnitLocationCubit({required this.unitType, required this.applicantType})
+    : super(const UnitLocationState());
+
+  final UnitType unitType;
+  final ApplicantType applicantType;
 
   final formKey = GlobalKey<FormState>();
 
@@ -194,10 +198,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
             BlocProvider.value(value: this),
             BlocProvider.value(value: unitDataCubit),
           ],
-          child: UnitData(
-            applicantType: applicantType,
-            unitType: UnitType.residential,
-          ),
+          child: UnitData(applicantType: applicantType, unitType: unitType),
         ),
       ),
     );
