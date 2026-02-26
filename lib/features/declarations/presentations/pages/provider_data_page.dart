@@ -12,6 +12,7 @@ import '../components/declaration_tabs.dart';
 import '../components/user_information.dart';
 import '../cubit/applicant_cubit.dart';
 import '../cubit/applicant_states.dart';
+import '../cubit/declaration_lookups_cubit.dart';
 
 class ProviderDataPage extends StatelessWidget {
   const ProviderDataPage({super.key, required this.applicantType});
@@ -21,21 +22,106 @@ class ProviderDataPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // final user = context.read<LoginCubit>().state.user;
+    // Map<String, dynamic> user = {
+    //   "firstName": "Khaled",
+    //   "lastName": "Abdelrazeq",
+    //   "phone": "01024783981",
+    //   "email": "khaled.abdelrazeq971@gmail.com",
+    //   "nationality": "egyptian",
+    //   "nationalId": "12345678912345",
+    //   "nationalIdFileURL": "https:www.google.com",
+    // };
+
     Map<String, dynamic> user = {
-      "firstName": "Khaled",
-      "lastName": "Abdelrazeq",
-      "phone": "01024783981",
-      "email": "khaled.abdelrazeq971@gmail.com",
-      "nationality": "egyptian",
-      "nationalId": "12345678912345",
-      "nationalIdFileURL": "https:www.google.com",
+      "id": 1,
+      "user_id": "1",
+      "first_name": "احمد",
+      "second_name": "محمد",
+      "third_name": "محمد",
+      "fourth_name": "علي",
+      "nationality_id": "63",
+      "national_id": "28612250100491",
+      "passport_num": null,
+      "factory_num": "987654335",
+      "governorate_id": "1",
+      "district_id": "1",
+      "village_id": "1",
+      "street_id": "1",
+      "street_other": null,
+      "real_estate_num": "12",
+      "mobile": "01223872695",
+      "deleted_at": null,
+      "created_at": "2026-01-29 19:32:41",
+      "updated_at": "2026-02-05 00:44:28",
+      "gender": "ذكر",
+      "birth_place": "القاهرة",
+      "birth_date": "1986-12-25",
+      "last_name": null,
+      "mobile_verified_at": null,
+      "ocr_verified": 0,
+      "full_name": "احمد محمد محمد علي",
+      "nationality": {
+        "id": 63,
+        "name": "مصر",
+        "code": "EG",
+        "order": -1,
+        "deleted_at": null,
+        "created_at": "2026-01-29 19:32:39",
+        "updated_at": "2026-01-29 19:32:39",
+      },
+      "governorate": {
+        "id": 1,
+        "name": "القاهرة",
+        "code": "01",
+        "order": 0,
+        "deleted_at": null,
+        "created_at": "2026-01-29T17:32:40.000000Z",
+        "updated_at": "2026-01-29T17:32:40.000000Z",
+      },
+      "national_id_file": [
+        {
+          "id": 450,
+          "url":
+              "public/national-id/qFDOMpVB9Ugn5rU8duQeoRp3nbVnrzf3LAauzU6G.pdf",
+          "attachmentable_type": "App\\Models\\Users\\Profile",
+          "attachmentable_id": "1",
+          "field_name": "national-id",
+          "created_at": "2026-02-04T22:44:28.907000Z",
+          "updated_at": "2026-02-04T22:44:28.907000Z",
+          "title": null,
+          "original_file_name": null,
+          "deleted_at": null,
+          "full_url":
+              "https://dev-rta-services.etax.com.eg/reta-services/public/api/files/public/national-id/qFDOMpVB9Ugn5rU8duQeoRp3nbVnrzf3LAauzU6G.pdf",
+          "name": null,
+          "path":
+              "public/national-id/qFDOMpVB9Ugn5rU8duQeoRp3nbVnrzf3LAauzU6G.pdf",
+        },
+      ],
+      "passport_num_file": [],
     };
-    return BlocProvider(
-      create: (_) =>
-          ApplicantCubit(applicantType: applicantType)..initFromUser(user),
-      lazy: false,
+    //TODO: Remove this MultiBlocProvider and uncomment BlocProvider
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) =>
+              ApplicantCubit(applicantType: applicantType)..initFromUser(user),
+          lazy: false,
+        ),
+        BlocProvider(
+          create: (_) => DeclarationLookupsCubit()..fetchLookups(),
+          lazy: false,
+        ),
+      ],
       child: const _ProviderDataView(),
     );
+
+    //   return BlocProvider(
+    //   create: (_) =>
+    //       ApplicantCubit(applicantType: applicantType)..initFromUser(user),
+    //   lazy: false,
+    //   child: const _ProviderDataView(),
+    // );
   }
 }
 

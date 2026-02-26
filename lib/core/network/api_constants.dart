@@ -1,5 +1,7 @@
 class ApiConstants {
-  static const String baseUrl = 'http://reta-services.local/api';
+  // static const String baseUrl = 'http://reta-services.local/api';
+  static const String baseUrl =
+      'http://dev-rta-services.etax.com.eg/reta-services/public/api';
 
   static const String login = '/login';
   static const String registerSendOtp = '/register/sendOTP';
