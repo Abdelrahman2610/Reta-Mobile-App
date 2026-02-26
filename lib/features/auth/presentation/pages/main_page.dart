@@ -17,8 +17,8 @@ import 'login_page.dart';
 import 'settings_page.dart';
 import 'signup_page.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class MainPage extends StatelessWidget {
+  const MainPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -29,18 +29,18 @@ class HomePage extends StatelessWidget {
       ),
     );
 
-    return BlocProvider(create: (_) => HomeCubit(), child: const _HomeView());
+    return BlocProvider(create: (_) => HomeCubit(), child: const _MainView());
   }
 }
 
-class _HomeView extends StatefulWidget {
-  const _HomeView();
+class _MainView extends StatefulWidget {
+  const _MainView();
 
   @override
-  State<_HomeView> createState() => _HomeViewState();
+  State<_MainView> createState() => _MainViewState();
 }
 
-class _HomeViewState extends State<_HomeView> {
+class _MainViewState extends State<_MainView> {
   setTabController() {
     if (mainScreenTabController == null) {
       mainScreenTabController = PersistentTabController();
