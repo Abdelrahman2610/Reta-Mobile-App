@@ -5,7 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../cubit/login_cubit.dart';
 import 'signup_page.dart';
-import 'home_page.dart';
+import 'guest_page.dart';
 import 'forgot_password_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -16,47 +16,64 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  // Mobile tab controllers
   final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
   final _phoneFocus = FocusNode();
-  final _passwordFocus = FocusNode();
 
+  // National-ID tab controllers
   final _nationalIdController = TextEditingController();
   final _passportController = TextEditingController();
   final _nationalIdFocus = FocusNode();
   final _passportFocus = FocusNode();
+
+  final _mobilePasswordController = TextEditingController();
+  final _idPasswordController = TextEditingController();
+  final _mobilePasswordFocus = FocusNode();
   final _idPasswordFocus = FocusNode();
 
   @override
-  void dispose() {
-    _phoneController.dispose();
-    _passwordController.dispose();
-    _phoneFocus.dispose();
-    _passwordFocus.dispose();
-    _nationalIdController.dispose();
-    _passportController.dispose();
-    _nationalIdFocus.dispose();
-    _passportFocus.dispose();
-    _idPasswordFocus.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.light,
       ),
     );
+  }
 
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _phoneFocus.dispose();
+    _nationalIdController.dispose();
+    _passportController.dispose();
+    _nationalIdFocus.dispose();
+    _passportFocus.dispose();
+    _mobilePasswordController.dispose();
+    _idPasswordController.dispose();
+    _mobilePasswordFocus.dispose();
+    _idPasswordFocus.dispose();
+    super.dispose();
+  }
+
+  void _clearAllControllers() {
+    _phoneController.clear();
+    _nationalIdController.clear();
+    _passportController.clear();
+    _mobilePasswordController.clear();
+    _idPasswordController.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => LoginCubit(),
       child: BlocListener<LoginCubit, LoginState>(
         listener: (context, state) {
           if (state.isSuccess) {
             Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => const HomePage()),
+              MaterialPageRoute(builder: (_) => const GuestPage()),
               (route) => false,
             );
           }
@@ -83,250 +100,12 @@ class _LoginPageState extends State<LoginPage> {
                               color: AppColors.mainBlueIndigoDye,
                             ),
                           ),
-                          const SizedBox(height: 20),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.08),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 24,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                _buildTabs(
-                                  state,
-                                  cubit,
-                                  onTabSwitch: () {
-                                    _phoneController.clear();
-                                    _passwordController.clear();
-                                    _nationalIdController.clear();
-                                    _passportController.clear();
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                if (state.selectedTab == LoginTab.mobile) ...[
-                                  _buildTextField(
-                                    context: context,
-                                    controller: _phoneController,
-                                    focusNode: _phoneFocus,
-                                    nextFocus: _passwordFocus,
-                                    hint: 'رقم الموبايل',
-                                    keyboardType: TextInputType.phone,
-                                    errorText: state.phoneError,
-                                    onChanged: cubit.onPhoneChanged,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  _buildTextField(
-                                    context: context,
-                                    controller: _passwordController,
-                                    focusNode: _passwordFocus,
-                                    hint: 'كلمة المرور',
-                                    obscureText: !state.isPasswordVisible,
-                                    errorText: state.passwordError,
-                                    onChanged: cubit.onPasswordChanged,
-                                    eyeToggle: IconButton(
-                                      icon: Icon(
-                                        state.isPasswordVisible
-                                            ? Icons.visibility_outlined
-                                            : Icons.visibility_off_outlined,
-                                        color: AppColors.neutralDarkLightest,
-                                        size: 20,
-                                      ),
-                                      onPressed: cubit.togglePasswordVisibility,
-                                    ),
-                                  ),
-                                ] else ...[
-                                  _buildTextField(
-                                    context: context,
-                                    controller: _nationalIdController,
-                                    focusNode: _nationalIdFocus,
-                                    nextFocus: _passportFocus,
-                                    hint: 'الرقم القومي',
-                                    keyboardType: TextInputType.number,
-                                    errorText: state.nationalIdError,
-                                    onChanged: cubit.onNationalIdChanged,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  _buildTextField(
-                                    context: context,
-                                    controller: _passportController,
-                                    focusNode: _passportFocus,
-                                    nextFocus: _idPasswordFocus,
-                                    hint: 'رقم جواز السفر',
-                                    keyboardType: TextInputType.text,
-                                    errorText: state.passportError,
-                                    onChanged: cubit.onPassportChanged,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  _buildTextField(
-                                    context: context,
-                                    controller: _passwordController,
-                                    focusNode: _idPasswordFocus,
-                                    hint: 'كلمة المرور',
-                                    obscureText: !state.isPasswordVisible,
-                                    errorText: state.passwordError,
-                                    onChanged: cubit.onPasswordChanged,
-                                    eyeToggle: IconButton(
-                                      icon: Icon(
-                                        state.isPasswordVisible
-                                            ? Icons.visibility_outlined
-                                            : Icons.visibility_off_outlined,
-                                        color: AppColors.neutralDarkLightest,
-                                        size: 20,
-                                      ),
-                                      onPressed: cubit.togglePasswordVisibility,
-                                    ),
-                                  ),
-                                ],
-
-                                if (state.credentialError != null ||
-                                    state.localError != null) ...[
-                                  const SizedBox(height: 12),
-                                  _buildErrorBanner(
-                                    state.credentialError ?? state.localError!,
-                                  ),
-                                ],
-
-                                const SizedBox(height: 10),
-
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              const ForgotPasswordPage(),
-                                        ),
-                                      );
-                                    },
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.zero,
-                                    ),
-                                    child: Text(
-                                      'هل نسيت كلمة المرور؟',
-                                      style: AppTextStyles.actionM.copyWith(
-                                        color: AppColors.highlightDarkest,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                const SizedBox(height: 16),
-
-                                SizedBox(
-                                  height: 52,
-                                  child: ElevatedButton(
-                                    onPressed:
-                                        state.isFormValid && !state.isLoading
-                                        ? cubit.login
-                                        : null,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: state.isFormValid
-                                          ? AppColors.highlightDarkest
-                                          : AppColors.neutralLightDark,
-                                      disabledBackgroundColor:
-                                          AppColors.neutralLightDark,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      elevation: 0,
-                                    ),
-                                    child: state.isLoading
-                                        ? const SizedBox(
-                                            width: 22,
-                                            height: 22,
-                                            child: CircularProgressIndicator(
-                                              color: AppColors.white,
-                                              strokeWidth: 2.5,
-                                            ),
-                                          )
-                                        : Text(
-                                            'تسجيل الدخول',
-                                            style: AppTextStyles.actionM
-                                                .copyWith(
-                                                  color: AppColors.white,
-                                                ),
-                                          ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
                           const SizedBox(height: 16),
-
-                          SizedBox(
-                            height: 52,
-                            child: OutlinedButton(
-                              onPressed: () {
-                                Navigator.of(context).pushAndRemoveUntil(
-                                  MaterialPageRoute(
-                                    builder: (_) => const HomePage(),
-                                  ),
-                                  (route) => false,
-                                );
-                              },
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(
-                                  color: AppColors.highlightDarkest,
-                                  width: 1.5,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: Text(
-                                'التصفح كزائر',
-                                style: AppTextStyles.actionM.copyWith(
-                                  color: AppColors.highlightDarkest,
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => const SignupPage(),
-                                    ),
-                                  );
-                                },
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                ),
-                                child: Text(
-                                  'أنشئ حسابًا جديدًا',
-                                  style: AppTextStyles.actionM.copyWith(
-                                    color: AppColors.highlightDarkest,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                ' ليس لديك حساب؟',
-                                style: AppTextStyles.actionM.copyWith(
-                                  color: AppColors.neutralDarkLightest,
-                                ),
-                              ),
-                            ],
-                          ),
+                          _buildFormCard(state, cubit),
+                          const SizedBox(height: 16),
+                          _buildBrowseAsGuestButton(context),
+                          const SizedBox(height: 8),
+                          _buildSignupRow(context),
                         ],
                       );
                     },
@@ -337,6 +116,258 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildFormCard(LoginState state, LoginCubit cubit) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildTabs(state, cubit),
+          const SizedBox(height: 16),
+          if (state.selectedTab == LoginTab.mobile)
+            _buildMobileFields(state, cubit)
+          else
+            _buildNationalIdFields(state, cubit),
+          _buildErrorBannerSection(state),
+          const SizedBox(height: 10),
+          _buildForgotPasswordButton(),
+          const SizedBox(height: 10),
+          _buildLoginButton(state, cubit),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileFields(LoginState state, LoginCubit cubit) {
+    return Column(
+      children: [
+        _buildTextField(
+          context: context,
+          controller: _phoneController,
+          focusNode: _phoneFocus,
+          nextFocus: _mobilePasswordFocus,
+          hint: 'رقم الموبايل',
+          keyboardType: TextInputType.phone,
+          textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.telephoneNumber],
+          errorText: state.phoneError,
+          onChanged: cubit.onPhoneChanged,
+        ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          context: context,
+          controller: _mobilePasswordController,
+          focusNode: _mobilePasswordFocus,
+          hint: 'كلمة المرور',
+          obscureText: !state.isPasswordVisible,
+          textInputAction: TextInputAction.done,
+          autofillHints: const [AutofillHints.password],
+          errorText: state.passwordError,
+          onChanged: cubit.onPasswordChanged,
+          onSubmitted: (_) => _submitIfValid(state, cubit),
+          eyeToggle: _buildEyeToggle(state, cubit),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNationalIdFields(LoginState state, LoginCubit cubit) {
+    return Column(
+      children: [
+        _buildTextField(
+          context: context,
+          controller: _nationalIdController,
+          focusNode: _nationalIdFocus,
+          nextFocus: _passportFocus,
+          hint: 'الرقم القومي',
+          keyboardType: TextInputType.number,
+          textInputAction: TextInputAction.next,
+          errorText: state.nationalIdError,
+          onChanged: cubit.onNationalIdChanged,
+        ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          context: context,
+          controller: _passportController,
+          focusNode: _passportFocus,
+          nextFocus: _idPasswordFocus,
+          hint: 'رقم جواز السفر',
+          keyboardType: TextInputType.text,
+          textInputAction: TextInputAction.next,
+          errorText: state.passportError,
+          onChanged: cubit.onPassportChanged,
+        ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          context: context,
+          controller: _idPasswordController,
+          focusNode: _idPasswordFocus,
+          hint: 'كلمة المرور',
+          obscureText: !state.isPasswordVisible,
+          textInputAction: TextInputAction.done,
+          autofillHints: const [AutofillHints.password],
+          errorText: state.passwordError,
+          onChanged: cubit.onPasswordChanged,
+          onSubmitted: (_) => _submitIfValid(state, cubit),
+          eyeToggle: _buildEyeToggle(state, cubit),
+        ),
+      ],
+    );
+  }
+
+  void _submitIfValid(LoginState state, LoginCubit cubit) {
+    if (state.isFormValid && !state.isLoading) cubit.login();
+  }
+
+  Widget _buildEyeToggle(LoginState state, LoginCubit cubit) {
+    return IconButton(
+      icon: Icon(
+        state.isPasswordVisible
+            ? Icons.visibility_outlined
+            : Icons.visibility_off_outlined,
+        color: AppColors.neutralDarkLightest,
+        size: 20,
+      ),
+      onPressed: cubit.togglePasswordVisibility,
+    );
+  }
+
+  Widget _buildErrorBannerSection(LoginState state) {
+    final errorMessage = state.credentialError ?? state.localError;
+    if (errorMessage == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: _buildErrorBanner(errorMessage),
+    );
+  }
+
+  Widget _buildForgotPasswordButton() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton(
+        onPressed: () {
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const ForgotPasswordPage()));
+        },
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+          minimumSize: const Size(48, 48),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        child: Text(
+          'هل نسيت كلمة المرور؟',
+          style: AppTextStyles.actionM.copyWith(
+            color: AppColors.highlightDarkest,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoginButton(LoginState state, LoginCubit cubit) {
+    final bool enabled = state.isFormValid && !state.isLoading;
+    return SizedBox(
+      height: 52,
+      child: ElevatedButton(
+        onPressed: enabled ? cubit.login : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: enabled
+              ? AppColors.highlightDarkest
+              : AppColors.neutralLightDark,
+          disabledBackgroundColor: AppColors.neutralLightDark,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          elevation: 0,
+        ),
+        child: state.isLoading
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  color: AppColors.white,
+                  strokeWidth: 2.5,
+                ),
+              )
+            : Text(
+                'تسجيل الدخول',
+                style: AppTextStyles.actionM.copyWith(color: AppColors.white),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildBrowseAsGuestButton(BuildContext context) {
+    return SizedBox(
+      height: 52,
+      child: OutlinedButton(
+        onPressed: () {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const GuestPage()),
+            (route) => false,
+          );
+        },
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppColors.highlightDarkest, width: 1.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        child: Text(
+          'التصفح كزائر',
+          style: AppTextStyles.actionM.copyWith(
+            color: AppColors.highlightDarkest,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignupRow(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const SignupPage()));
+          },
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            minimumSize: const Size(48, 48),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Text(
+            'أنشئ حسابًا جديدًا',
+            style: AppTextStyles.actionM.copyWith(
+              color: AppColors.highlightDarkest,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+        Text(
+          ' ليس لديك حساب؟',
+          style: AppTextStyles.actionM.copyWith(
+            color: AppColors.neutralDarkLightest,
+          ),
+        ),
+      ],
     );
   }
 
@@ -354,28 +385,12 @@ class _LoginPageState extends State<LoginPage> {
       child: Column(
         children: [
           Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.white.withOpacity(0.4),
-                  blurRadius: 20,
-                  spreadRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-                BoxShadow(
-                  color: AppColors.white.withOpacity(0.3),
-                  blurRadius: 40,
-                  spreadRadius: 12,
-                  offset: Offset.zero,
-                ),
-              ],
-            ),
+            width: 170,
+            height: 170,
+            decoration: BoxDecoration(shape: BoxShape.circle),
             child: Image.asset('assets/images/logo.png', fit: BoxFit.contain),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           Text(
             'مرحبا بك في خدمات مصلحة الضرائب العقارية',
             textDirection: TextDirection.rtl,
@@ -387,11 +402,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildTabs(
-    LoginState state,
-    LoginCubit cubit, {
-    required VoidCallback onTabSwitch,
-  }) {
+  Widget _buildTabs(LoginState state, LoginCubit cubit) {
     return Row(
       children: [
         Expanded(
@@ -399,7 +410,7 @@ class _LoginPageState extends State<LoginPage> {
             label: 'برقم جواز السفر',
             isSelected: state.selectedTab == LoginTab.nationalId,
             onTap: () {
-              onTabSwitch();
+              _clearAllControllers();
               cubit.selectTab(LoginTab.nationalId);
             },
           ),
@@ -410,7 +421,7 @@ class _LoginPageState extends State<LoginPage> {
             label: 'برقم الموبايل',
             isSelected: state.selectedTab == LoginTab.mobile,
             onTap: () {
-              onTabSwitch();
+              _clearAllControllers();
               cubit.selectTab(LoginTab.mobile);
             },
           ),
@@ -469,11 +480,22 @@ class _LoginPageState extends State<LoginPage> {
     bool obscureText = false,
     String? errorText,
     TextInputType keyboardType = TextInputType.text,
+    TextInputAction textInputAction = TextInputAction.next,
+    Iterable<String>? autofillHints,
     Widget? eyeToggle,
+    ValueChanged<String>? onSubmitted,
   }) {
-    final hasError = errorText != null;
-    final Widget? leftIcon = hasError
-        ? const Icon(Icons.error_outline, color: AppColors.errorDark, size: 20)
+    final bool hasError = errorText != null;
+
+    final Widget? prefixIcon = hasError
+        ? const Padding(
+            padding: EdgeInsets.all(12),
+            child: Icon(
+              Icons.error_outline,
+              color: AppColors.errorDark,
+              size: 20,
+            ),
+          )
         : eyeToggle;
 
     return TextField(
@@ -481,19 +503,23 @@ class _LoginPageState extends State<LoginPage> {
       focusNode: focusNode,
       obscureText: obscureText,
       keyboardType: keyboardType,
+      textInputAction: textInputAction,
       textDirection: TextDirection.rtl,
       textAlign: TextAlign.right,
+      autofillHints: autofillHints,
       onChanged: onChanged,
-      onSubmitted: nextFocus != null
-          ? (_) => FocusScope.of(context).requestFocus(nextFocus)
-          : null,
+      onSubmitted:
+          onSubmitted ??
+          (nextFocus != null
+              ? (_) => FocusScope.of(context).requestFocus(nextFocus)
+              : null),
       style: AppTextStyles.bodyM.copyWith(color: AppColors.neutralDarkDarkest),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: AppTextStyles.bodyM.copyWith(
           color: AppColors.neutralDarkLightest,
         ),
-        prefixIcon: leftIcon,
+        prefixIcon: prefixIcon,
         filled: true,
         fillColor: AppColors.white,
         contentPadding: const EdgeInsets.symmetric(

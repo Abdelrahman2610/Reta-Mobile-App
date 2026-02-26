@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -17,20 +18,24 @@ enum _OtpStep { intro, input, success }
 
 class _OtpPageState extends State<OtpPage> {
   _OtpStep _step = _OtpStep.intro;
+
   final List<TextEditingController> _controllers = List.generate(
     6,
     (_) => TextEditingController(),
   );
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
 
+  static const _timerDuration = Duration(minutes: 5);
+  Timer? _timer;
+  Duration _remaining = _timerDuration;
+  bool _canResend = false;
+  int remainingAttempts = 2;
+
   @override
   void dispose() {
-    for (final c in _controllers) {
-      c.dispose();
-    }
-    for (final f in _focusNodes) {
-      f.dispose();
-    }
+    for (final c in _controllers) c.dispose();
+    for (final f in _focusNodes) f.dispose();
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -50,14 +55,64 @@ class _OtpPageState extends State<OtpPage> {
     }
   }
 
+  void _startTimer() {
+    _timer?.cancel();
+    setState(() {
+      _remaining = _timerDuration;
+      _canResend = false;
+    });
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() {
+        if (_remaining.inSeconds > 0) {
+          _remaining -= const Duration(seconds: 1);
+        } else {
+          _canResend = true;
+          _timer?.cancel();
+        }
+      });
+    });
+  }
+
+  String get _timerLabel {
+    final m = _remaining.inMinutes.toString().padLeft(2, '0');
+    final s = (_remaining.inSeconds % 60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
+  void _goToInput() {
+    context.read<SignupCubit>().resendOtp();
+    setState(() => _step = _OtpStep.input);
+    _startTimer();
+  }
+
   Future<void> _confirmOtp(BuildContext context) async {
     if (_otpValue.length < 6) return;
     final success = await context.read<SignupCubit>().confirmOtp(_otpValue);
-    if (success && mounted) {
+    if (!mounted) return;
+
+    if (success) {
       setState(() => _step = _OtpStep.success);
       await Future.delayed(const Duration(seconds: 2));
       if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+    } else {
+      setState(() {
+        remainingAttempts = (remainingAttempts - 1).clamp(0, 2);
+      });
     }
+  }
+
+  Future<void> _resend() async {
+    if (!_canResend) return;
+    _clearOtp();
+    await context.read<SignupCubit>().resendOtp();
+    _startTimer();
+  }
+
+  void _clearOtp() {
+    for (final c in _controllers) c.clear();
+    _focusNodes[0].requestFocus();
+    setState(() {});
   }
 
   @override
@@ -65,25 +120,10 @@ class _OtpPageState extends State<OtpPage> {
     return Scaffold(
       backgroundColor: AppColors.neutralLightLight,
       appBar: AppBar(
-        backgroundColor: AppColors.mainBlueIndigoDye,
+        backgroundColor: AppColors.neutralLightLight,
         elevation: 0,
         centerTitle: true,
         automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.arrow_forward_ios,
-              color: AppColors.neutralLightLightest,
-            ),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
-        title: Text(
-          'تأكيد رقم الهاتف',
-          style: AppTextStyles.actionXL.copyWith(
-            color: AppColors.neutralLightLightest,
-          ),
-        ),
       ),
       body: BlocListener<SignupCubit, SignupState>(
         listener: (context, state) {
@@ -101,32 +141,28 @@ class _OtpPageState extends State<OtpPage> {
         },
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
-          child: _step == _OtpStep.intro
-              ? _IntroScreen(
-                  key: const ValueKey('intro'),
-                  phoneNumber: widget.phoneNumber,
-                  onContinue: () => setState(() => _step = _OtpStep.input),
-                )
-              : _step == _OtpStep.input
-              ? _InputScreen(
-                  key: const ValueKey('input'),
-                  phoneNumber: widget.phoneNumber,
-                  controllers: _controllers,
-                  focusNodes: _focusNodes,
-                  otpValue: _otpValue,
-                  onDigitEntered: _onDigitEntered,
-                  onKeyBack: _onKeyBack,
-                  onConfirm: () => _confirmOtp(context),
-                  onResend: () async {
-                    for (final c in _controllers) {
-                      c.clear();
-                    }
-                    _focusNodes[0].requestFocus();
-                    setState(() {});
-                    await context.read<SignupCubit>().resendOtp();
-                  },
-                )
-              : const _SuccessScreen(key: ValueKey('success')),
+          child: switch (_step) {
+            _OtpStep.intro => _IntroScreen(
+              key: const ValueKey('intro'),
+              phoneNumber: widget.phoneNumber,
+              onContinue: _goToInput,
+            ),
+            _OtpStep.input => _InputScreen(
+              key: const ValueKey('input'),
+              phoneNumber: widget.phoneNumber,
+              controllers: _controllers,
+              focusNodes: _focusNodes,
+              otpValue: _otpValue,
+              timerLabel: _timerLabel,
+              canResend: _canResend,
+              remainingAttempts: 2,
+              onDigitEntered: _onDigitEntered,
+              onKeyBack: _onKeyBack,
+              onConfirm: () => _confirmOtp(context),
+              onResend: _resend,
+            ),
+            _OtpStep.success => const _SuccessScreen(key: ValueKey('success')),
+          },
         ),
       ),
     );
@@ -150,7 +186,6 @@ class _IntroScreen extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 32),
-
           Container(
             width: 90,
             height: 90,
@@ -164,56 +199,33 @@ class _IntroScreen extends StatelessWidget {
               color: AppColors.mainBlueIndigoDye,
             ),
           ),
-
-          const SizedBox(height: 28),
-
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'تأكيد رقم الهاتف',
-                  textDirection: TextDirection.rtl,
-                  style: AppTextStyles.h4.copyWith(
-                    color: AppColors.mainBlueIndigoDye,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'سيتم إرسال رمز تحقق إلى رقم هاتفك',
-                  textDirection: TextDirection.rtl,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.bodyM.copyWith(
-                    color: AppColors.neutralDarkLightest,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  phoneNumber,
-                  textDirection: TextDirection.ltr,
-                  style: AppTextStyles.h5.copyWith(
-                    color: AppColors.neutralDarkDarkest,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 32),
+          Text(
+            'تأكيد رقم الهاتف',
+            textDirection: TextDirection.rtl,
+            style: AppTextStyles.h4.copyWith(
+              color: AppColors.mainBlueIndigoDye,
             ),
           ),
-
+          const SizedBox(height: 12),
+          Text(
+            'سيتم إرسال رمز تحقق إلى رقم هاتفك',
+            textDirection: TextDirection.rtl,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodyM.copyWith(
+              color: AppColors.neutralDarkLightest,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            phoneNumber,
+            textDirection: TextDirection.ltr,
+            style: AppTextStyles.h5.copyWith(
+              color: AppColors.neutralDarkDarkest,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const Spacer(),
-
           SizedBox(
             width: double.infinity,
             height: 52,
@@ -244,6 +256,9 @@ class _InputScreen extends StatelessWidget {
   final List<TextEditingController> controllers;
   final List<FocusNode> focusNodes;
   final String otpValue;
+  final String timerLabel;
+  final bool canResend;
+  final int remainingAttempts;
   final void Function(int, String) onDigitEntered;
   final void Function(int) onKeyBack;
   final VoidCallback onConfirm;
@@ -255,172 +270,304 @@ class _InputScreen extends StatelessWidget {
     required this.controllers,
     required this.focusNodes,
     required this.otpValue,
+    required this.timerLabel,
+    required this.canResend,
+    required this.remainingAttempts,
     required this.onDigitEntered,
     required this.onKeyBack,
     required this.onConfirm,
     required this.onResend,
   });
 
+  int get _secondsRemaining {
+    final parts = timerLabel.split(':');
+    if (parts.length != 2) return 0;
+    final m = int.tryParse(parts[0]) ?? 0;
+    final s = int.tryParse(parts[1]) ?? 0;
+    return m * 60 + s;
+  }
+
+  Color get _timerColor {
+    final secs = _secondsRemaining;
+    if (secs == 0) return AppColors.errorDark;
+    if (secs <= 60) return AppColors.mainOrange;
+    return AppColors.highlightDarkest;
+  }
+
+  bool get _attemptsExhausted => remainingAttempts <= 0;
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SignupCubit, SignupState>(
       builder: (context, state) {
+        final hasError = state.submitError != null && !_attemptsExhausted;
+        final bool buttonActive =
+            otpValue.length == 6 &&
+            !state.isLoading &&
+            !_attemptsExhausted &&
+            _secondsRemaining > 0;
+
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           child: Column(
             children: [
               const SizedBox(height: 16),
-
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+              Text(
+                'أدخل رمز التأكيد',
+                textDirection: TextDirection.rtl,
+                style: AppTextStyles.h2.copyWith(
+                  color: AppColors.mainBlueIndigoDye,
                 ),
-                child: Column(
-                  children: [
-                    Text(
-                      'أدخل رمز التحقق',
-                      textDirection: TextDirection.rtl,
-                      style: AppTextStyles.h4.copyWith(
-                        color: AppColors.mainBlueIndigoDye,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    RichText(
-                      textDirection: TextDirection.rtl,
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        style: AppTextStyles.bodyM.copyWith(
-                          color: AppColors.neutralDarkLightest,
-                        ),
-                        children: [
-                          const TextSpan(text: 'تم إرسال الرمز إلى '),
-                          TextSpan(
-                            text: phoneNumber,
-                            style: AppTextStyles.bodyM.copyWith(
-                              color: AppColors.neutralDarkDarkest,
-                              fontWeight: FontWeight.w700,
-                            ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'تم إرسال رمز تأكيد مكوّن من 6 أرقام\n إلى رقم الهاتف المسجل',
+                textDirection: TextDirection.rtl,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyM.copyWith(
+                  color: AppColors.neutralDarkLight,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'يرجى إدخال الرمز لإتمام تسجيل الدخول.',
+                textDirection: TextDirection.rtl,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyXL.copyWith(
+                  color: AppColors.neutralDarkDark,
+                ),
+              ),
+              const SizedBox(height: 28),
+
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(6, (i) {
+                    return SizedBox(
+                      width: 44,
+                      height: 52,
+                      child: KeyboardListener(
+                        focusNode: FocusNode(),
+                        onKeyEvent: (e) {
+                          if (e.logicalKey.keyLabel == 'Backspace') {
+                            onKeyBack(i);
+                          }
+                        },
+                        child: TextField(
+                          controller: controllers[i],
+                          focusNode: focusNodes[i],
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          maxLength: 1,
+                          onChanged: (v) => onDigitEntered(i, v),
+                          style: AppTextStyles.h4.copyWith(
+                            color: AppColors.neutralDarkDarkest,
                           ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    Directionality(
-                      textDirection: TextDirection.ltr,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: List.generate(6, (i) {
-                          return SizedBox(
-                            width: 44,
-                            height: 52,
-                            child: KeyboardListener(
-                              focusNode: FocusNode(),
-                              onKeyEvent: (e) {
-                                if (e.logicalKey.keyLabel == 'Backspace') {
-                                  onKeyBack(i);
-                                }
-                              },
-                              child: TextField(
-                                controller: controllers[i],
-                                focusNode: focusNodes[i],
-                                keyboardType: TextInputType.number,
-                                textAlign: TextAlign.center,
-                                maxLength: 1,
-                                onChanged: (v) => onDigitEntered(i, v),
-                                style: AppTextStyles.h4.copyWith(
-                                  color: AppColors.neutralDarkDarkest,
-                                ),
-                                decoration: InputDecoration(
-                                  counterText: '',
-                                  contentPadding: EdgeInsets.zero,
-                                  filled: true,
-                                  fillColor: AppColors.neutralLightLight,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                      color: AppColors.neutralLightDark,
+                          decoration: InputDecoration(
+                            counterText: '',
+                            contentPadding: EdgeInsets.zero,
+                            filled: true,
+                            fillColor: hasError
+                                ? AppColors.errorLight
+                                : AppColors.neutralLightLight,
+                            suffixIcon: hasError
+                                ? Container(
+                                    width: 28,
+                                    height: 28,
+                                    margin: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.errorMedium,
+                                      shape: BoxShape.circle,
                                     ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                      color: AppColors.neutralLightDark,
+                                    child: const Icon(
+                                      Icons.priority_high_rounded,
+                                      color: AppColors.white,
+                                      size: 14,
                                     ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                      color: AppColors.mainBlueIndigoDye,
-                                      width: 2,
-                                    ),
-                                  ),
-                                ),
+                                  )
+                                : null,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: hasError
+                                    ? AppColors.errorDark
+                                    : AppColors.neutralLightDark,
                               ),
                             ),
-                          );
-                        }),
-                      ),
-                    ),
-
-                    if (state.submitError != null) ...[
-                      const SizedBox(height: 10),
-                      Text(
-                        state.submitError!,
-                        textDirection: TextDirection.rtl,
-                        style: AppTextStyles.captionM.copyWith(
-                          color: AppColors.errorDark,
-                        ),
-                      ),
-                    ],
-
-                    const SizedBox(height: 20),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        TextButton(
-                          onPressed: state.isLoading ? null : onResend,
-                          child: Text(
-                            'إعادة إرسال الرمز',
-                            style: AppTextStyles.actionS.copyWith(
-                              color: AppColors.highlightDarkest,
-                              decoration: TextDecoration.underline,
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: hasError
+                                    ? AppColors.errorDark
+                                    : AppColors.neutralLightDark,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: hasError
+                                    ? AppColors.errorDark
+                                    : AppColors.highlightDark,
+                                width: 2,
+                              ),
                             ),
                           ),
                         ),
-                        Text(
-                          'لم تستلم الرمز؟ ',
-                          style: AppTextStyles.bodyS.copyWith(
-                            color: AppColors.neutralDarkLightest,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    );
+                  }),
                 ),
               ),
 
-              const Spacer(),
+              if (hasError) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.errorDark.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: AppColors.errorDark.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Row(
+                    textDirection: TextDirection.rtl,
+                    children: [
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        color: AppColors.errorDark,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'رمز التحقق الذي تم إدخاله غير صحيح',
+                          textDirection: TextDirection.rtl,
+                          style: AppTextStyles.bodyM.copyWith(
+                            color: AppColors.neutralDarkMedium,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 32),
+
+              if (_attemptsExhausted) ...[
+                Text(
+                  'تم استنفاذ عدد المحاولات المسموح بها',
+                  textDirection: TextDirection.rtl,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.actionL.copyWith(
+                    color: AppColors.errorDark,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'يرجى المحاولة مرة أخرى بعد مرور ٢٤ ساعة لطلب رمز تأكيد جديد',
+                  textDirection: TextDirection.rtl,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.actionM.copyWith(
+                    color: AppColors.neutralDarkDark,
+                  ),
+                ),
+              ] else ...[
+                Align(
+                  alignment: Alignment.center,
+                  child: RichText(
+                    textDirection: TextDirection.ltr,
+                    text: TextSpan(
+                      style: AppTextStyles.actionM.copyWith(
+                        color: AppColors.neutralDarkLightest,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: '$remainingAttempts',
+                          style: AppTextStyles.actionM.copyWith(
+                            color: AppColors.highlightDarkest,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const TextSpan(text: ' :عدد المحاولات المتبقية'),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'دقيقة',
+                      textDirection: TextDirection.rtl,
+                      style: AppTextStyles.actionM.copyWith(color: _timerColor),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      timerLabel,
+                      textDirection: TextDirection.ltr,
+                      style: AppTextStyles.actionM.copyWith(
+                        color: _timerColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'صالح لمدة',
+                      textDirection: TextDirection.rtl,
+                      style: AppTextStyles.actionM.copyWith(color: _timerColor),
+                    ),
+                    const SizedBox(width: 6),
+                    Icon(
+                      Icons.access_time_rounded,
+                      size: 16,
+                      color: _timerColor,
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                Align(
+                  alignment: Alignment.center,
+                  child: TextButton(
+                    onPressed: (canResend && !state.isLoading)
+                        ? onResend
+                        : null,
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      'أعد إرسال الرمز',
+                      textDirection: TextDirection.rtl,
+                      style: AppTextStyles.actionM.copyWith(
+                        color: canResend
+                            ? AppColors.highlightDarkest
+                            : AppColors.neutralDarkLightest,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 22),
 
               SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: (otpValue.length == 6 && !state.isLoading)
-                      ? onConfirm
-                      : null,
+                  onPressed: buttonActive ? onConfirm : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.highlightDarkest,
                     disabledBackgroundColor: AppColors.neutralLightDarkest,
@@ -440,13 +587,14 @@ class _InputScreen extends StatelessWidget {
                         )
                       : Text(
                           'تأكيد',
-                          style: AppTextStyles.actionL.copyWith(
-                            color: AppColors.white,
+                          style: AppTextStyles.actionM.copyWith(
+                            color: buttonActive
+                                ? AppColors.white
+                                : AppColors.neutralDarkLight,
                           ),
                         ),
                 ),
               ),
-              const SizedBox(height: 16),
             ],
           ),
         );

@@ -1,73 +1,84 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/network/api_result.dart';
-import '/features/declarations/data/repositories/declarations_repository.dart';
+import '../pages/declaration_summary.dart';
 
-class HomeState {
-  final bool isLoading;
-  final String? userName;
-  final int pendingDeclarationsCount;
-  final String? error;
+class HomeState extends Equatable {
+  final int selectedIndex;
+  final List<DeclarationSummary> declarations;
+  final bool isLoadingDeclarations;
+  final String? errorMessage;
 
   const HomeState({
-    this.isLoading = false,
-    this.userName,
-    this.pendingDeclarationsCount = 0,
-    this.error,
+    this.selectedIndex = 0,
+    this.declarations = const [],
+    this.isLoadingDeclarations = false,
+    this.errorMessage,
   });
 
   HomeState copyWith({
-    bool? isLoading,
-    String? Function()? userName,
-    int? pendingDeclarationsCount,
-    String? Function()? error,
+    int? selectedIndex,
+    List<DeclarationSummary>? declarations,
+    bool? isLoadingDeclarations,
+    String? errorMessage,
   }) {
     return HomeState(
-      isLoading: isLoading ?? this.isLoading,
-      userName: userName != null ? userName() : this.userName,
-      pendingDeclarationsCount:
-          pendingDeclarationsCount ?? this.pendingDeclarationsCount,
-      error: error != null ? error() : this.error,
+      selectedIndex: selectedIndex ?? this.selectedIndex,
+      declarations: declarations ?? this.declarations,
+      isLoadingDeclarations:
+          isLoadingDeclarations ?? this.isLoadingDeclarations,
+      errorMessage: errorMessage,
     );
   }
+
+  @override
+  List<Object?> get props => [
+    selectedIndex,
+    declarations,
+    isLoadingDeclarations,
+    errorMessage,
+  ];
 }
 
 class HomeCubit extends Cubit<HomeState> {
-  final DeclarationsRepository _declarationsRepository;
-
-  HomeCubit({DeclarationsRepository? declarationsRepository})
-    : _declarationsRepository =
-          declarationsRepository ?? DeclarationsRepository(),
-      super(const HomeState()) {
-    loadData();
+  HomeCubit() : super(const HomeState()) {
+    _loadDeclarations();
   }
 
-  Future<void> loadData() async {
-    emit(state.copyWith(isLoading: true, error: () => null));
+  void selectTab(int index) => emit(state.copyWith(selectedIndex: index));
 
-    final result = await _declarationsRepository.getDeclarations();
+  Future<void> refreshDeclarations() => _loadDeclarations();
 
-    switch (result) {
-      case ApiSuccess(:final data):
-        final declarations = data['data'] as List? ?? [];
-        String? name;
-        if (declarations.isNotEmpty) {
-          final taxpayer = declarations.first['taxpayer'] as Map?;
-          final first = taxpayer?['first_name']?.toString() ?? '';
-          final last = taxpayer?['last_name']?.toString() ?? '';
-          if (first.isNotEmpty) name = '$first $last'.trim();
-        }
-        final pending = declarations
-            .where((d) => (d['status'] as int? ?? 0) < 3)
-            .length;
-        emit(
-          state.copyWith(
-            isLoading: false,
-            userName: () => name,
-            pendingDeclarationsCount: pending,
-          ),
-        );
-      case ApiError(:final message):
-        emit(state.copyWith(isLoading: false, error: () => message));
+  Future<void> _loadDeclarations() async {
+    emit(state.copyWith(isLoadingDeclarations: true, errorMessage: null));
+    try {
+      // TODO: Replace with real repository call
+      await Future.delayed(const Duration(milliseconds: 600));
+      final results = [
+        DeclarationSummary(
+          id: '1',
+          declarationNumber: '2165484948',
+          ownerName: 'مالك على السريع',
+          submittedAt: DateTime(2026, 1, 8),
+          unitCount: 2,
+          status: DeclarationStatus.draft,
+        ),
+        DeclarationSummary(
+          id: '2',
+          declarationNumber: '2165484948',
+          ownerName: 'مالك على السريع',
+          submittedAt: DateTime(2026, 4, 12),
+          unitCount: 2,
+          status: DeclarationStatus.approved,
+        ),
+      ];
+      emit(state.copyWith(declarations: results, isLoadingDeclarations: false));
+    } catch (_) {
+      emit(
+        state.copyWith(
+          isLoadingDeclarations: false,
+          errorMessage: 'فشل في تحميل الإقرارات',
+        ),
+      );
     }
   }
 }

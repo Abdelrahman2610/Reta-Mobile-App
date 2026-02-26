@@ -55,34 +55,49 @@ class _ForgotPasswordShell extends StatelessWidget {
   }
 
   AppBar _buildAppBar(BuildContext context, ForgotPasswordState state) {
+    final canGoBack =
+        state.step == ForgotStep.input ||
+        state.step == ForgotStep.otp ||
+        state.step == ForgotStep.otpSuccess ||
+        state.step == ForgotStep.newPassword;
+
     return AppBar(
-      backgroundColor: AppColors.mainBlueIndigoDye,
+      backgroundColor: AppColors.neutralLightDarkest,
       elevation: 0,
       centerTitle: true,
       automaticallyImplyLeading: false,
       actions: [
-        IconButton(
-          icon: const Icon(
-            Icons.arrow_forward_ios,
-            color: AppColors.white,
-            size: 20,
+        if (canGoBack)
+          IconButton(
+            icon: const Icon(
+              Icons.arrow_forward_ios,
+              color: AppColors.mainBlueSecondary,
+              size: 20,
+            ),
+            onPressed: () => _handleBack(context, state),
           ),
-          onPressed: () {
-            final cubit = context.read<ForgotPasswordCubit>();
-            final step = cubit.state.step;
-            if (step == ForgotStep.input) {
-              Navigator.pop(context);
-            } else if (step == ForgotStep.otp) {
-              cubit.goBackToInput();
-            }
-          },
-        ),
       ],
       title: Text(
         'إعادة تعيين كلمة المرور',
-        style: AppTextStyles.actionXL.copyWith(color: AppColors.white),
+        style: AppTextStyles.actionXL.copyWith(
+          color: AppColors.mainBlueSecondary,
+        ),
       ),
     );
+  }
+
+  void _handleBack(BuildContext context, ForgotPasswordState state) {
+    final cubit = context.read<ForgotPasswordCubit>();
+    switch (state.step) {
+      case ForgotStep.input:
+        Navigator.pop(context);
+      case ForgotStep.otp:
+        cubit.goBackToInput();
+      case ForgotStep.newPassword:
+        cubit.goBackToInput();
+      default:
+        break;
+    }
   }
 
   Widget _buildStep(BuildContext context, ForgotPasswordState state) {
@@ -143,9 +158,7 @@ class _StepInputState extends State<_StepInput> {
                   color: AppColors.mainBlueIndigoDye,
                 ),
               ),
-
               const SizedBox(height: 24),
-
               Container(
                 decoration: BoxDecoration(
                   color: AppColors.white,
@@ -166,15 +179,12 @@ class _StepInputState extends State<_StepInput> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _buildTabs(state, cubit),
-
                     const SizedBox(height: 20),
-
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 200),
                       child: isMobile
                           ? _buildTextField(
                               key: const ValueKey('mobile'),
-                              context: context,
                               controller: _mobileController,
                               focusNode: _mobileFocus,
                               hint: 'أدخل رقم الموبايل',
@@ -184,7 +194,6 @@ class _StepInputState extends State<_StepInput> {
                             )
                           : _buildTextField(
                               key: const ValueKey('email'),
-                              context: context,
                               controller: _emailController,
                               focusNode: _emailFocus,
                               hint: 'أدخل البريد الإلكتروني',
@@ -193,14 +202,11 @@ class _StepInputState extends State<_StepInput> {
                               onChanged: cubit.onEmailChanged,
                             ),
                     ),
-
                     if (state.requestError != null) ...[
                       const SizedBox(height: 12),
-                      _buildErrorBanner(state.requestError!),
+                      _ErrorBanner(message: state.requestError!),
                     ],
-
                     const SizedBox(height: 24),
-
                     SizedBox(
                       height: 52,
                       child: ElevatedButton(
@@ -214,14 +220,7 @@ class _StepInputState extends State<_StepInput> {
                           elevation: 0,
                         ),
                         child: state.isLoading
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  color: AppColors.white,
-                                  strokeWidth: 2.5,
-                                ),
-                              )
+                            ? const _LoadingIndicator()
                             : Text(
                                 'إعادة تعيين كلمة المرور',
                                 style: AppTextStyles.actionL.copyWith(
@@ -244,7 +243,7 @@ class _StepInputState extends State<_StepInput> {
     return Row(
       children: [
         Expanded(
-          child: _buildSingleTab(
+          child: _TabItem(
             label: 'البريد الإلكتروني',
             isSelected: state.selectedTab == ForgotTab.email,
             onTap: () {
@@ -256,7 +255,7 @@ class _StepInputState extends State<_StepInput> {
         ),
         Container(width: 1, height: 40, color: AppColors.neutralLightDark),
         Expanded(
-          child: _buildSingleTab(
+          child: _TabItem(
             label: 'برقم الموبايل',
             isSelected: state.selectedTab == ForgotTab.mobile,
             onTap: () {
@@ -270,49 +269,8 @@ class _StepInputState extends State<_StepInput> {
     );
   }
 
-  Widget _buildSingleTab({
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        color: isSelected ? Colors.transparent : AppColors.neutralLightMedium,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Column(
-            children: [
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.h5.copyWith(
-                  color: isSelected
-                      ? AppColors.neutralDarkDarkest
-                      : AppColors.neutralDarkLightest,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
-              ),
-              const SizedBox(height: 8),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                height: 3,
-                width: isSelected ? 50 : 0,
-                decoration: BoxDecoration(
-                  color: AppColors.highlightDarkest,
-                  borderRadius: BorderRadius.circular(1.5),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildTextField({
     required Key key,
-    required BuildContext context,
     required TextEditingController controller,
     required FocusNode focusNode,
     required String hint,
@@ -321,48 +279,55 @@ class _StepInputState extends State<_StepInput> {
     String? errorText,
   }) {
     final hasError = errorText != null;
-    return TextField(
+    return Column(
       key: key,
-      controller: controller,
-      focusNode: focusNode,
-      keyboardType: keyboardType,
-      textDirection: TextDirection.rtl,
-      textAlign: TextAlign.right,
-      onChanged: onChanged,
-      style: AppTextStyles.bodyM.copyWith(color: AppColors.neutralDarkDarkest),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: AppTextStyles.bodyM.copyWith(
-          color: AppColors.neutralDarkLightest,
-        ),
-        prefixIcon: hasError
-            ? const Icon(
-                Icons.error_outline,
-                color: AppColors.errorDark,
-                size: 20,
-              )
-            : null,
-        filled: true,
-        fillColor: hasError ? AppColors.errorLight : AppColors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: hasError ? AppColors.errorDark : AppColors.neutralLightDark,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: controller,
+          focusNode: focusNode,
+          keyboardType: keyboardType,
+          textDirection: TextDirection.rtl,
+          textAlign: TextAlign.right,
+          onChanged: onChanged,
+          style: AppTextStyles.bodyM.copyWith(
+            color: AppColors.neutralDarkDarkest,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: AppTextStyles.bodyM.copyWith(
+              color: AppColors.neutralDarkLightest,
+            ),
+            fillColor: hasError ? AppColors.white : AppColors.white,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: hasError
+                    ? AppColors.errorMedium
+                    : AppColors.neutralLightDark,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: hasError
+                    ? AppColors.errorDark
+                    : AppColors.highlightDarkest,
+                width: 1.5,
+              ),
+            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           ),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: hasError ? AppColors.errorDark : AppColors.highlightDarkest,
-            width: 1.5,
-          ),
-        ),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-      ),
+        if (hasError) ...[
+          const SizedBox(height: 10),
+          _ErrorBanner(message: errorText),
+        ],
+      ],
     );
   }
 }
@@ -380,29 +345,28 @@ class _StepOtpState extends State<_StepOtp> {
     (_) => TextEditingController(),
   );
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
+  final List<FocusNode> _listenerNodes = List.generate(6, (_) => FocusNode());
 
   @override
   void dispose() {
-    for (final c in _controllers) {
-      c.dispose();
-    }
-    for (final f in _focusNodes) {
-      f.dispose();
-    }
+    for (final c in _controllers) c.dispose();
+    for (final f in _focusNodes) f.dispose();
+    for (final f in _listenerNodes) f.dispose();
     super.dispose();
   }
 
   String get _otpValue => _controllers.map((c) => c.text).join();
 
   void _onDigitEntered(int index, String value) {
+    if (!mounted) return;
     if (value.isNotEmpty && index < 5) {
       _focusNodes[index + 1].requestFocus();
     }
     context.read<ForgotPasswordCubit>().onOtpChanged(_otpValue);
-    setState(() {});
   }
 
   void _onKeyBack(int index) {
+    if (!mounted) return;
     if (_controllers[index].text.isEmpty && index > 0) {
       _focusNodes[index - 1].requestFocus();
       _controllers[index - 1].clear();
@@ -410,9 +374,18 @@ class _StepOtpState extends State<_StepOtp> {
     }
   }
 
+  void _clearBoxes() {
+    for (final c in _controllers) {
+      c.clear();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ForgotPasswordCubit, ForgotPasswordState>(
+    return BlocConsumer<ForgotPasswordCubit, ForgotPasswordState>(
+      listenWhen: (prev, curr) =>
+          prev.otpValue.isNotEmpty && curr.otpValue.isEmpty,
+      listener: (_, __) => _clearBoxes(),
       builder: (context, state) {
         final cubit = context.read<ForgotPasswordCubit>();
         final identifier = state.selectedTab == ForgotTab.mobile
@@ -427,7 +400,7 @@ class _StepOtpState extends State<_StepOtp> {
                 width: 90,
                 height: 90,
                 decoration: BoxDecoration(
-                  color: AppColors.mainBlueIndigoDye.withOpacity(0.1),
+                  color: AppColors.neutralDarkLightest.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -458,10 +431,10 @@ class _StepOtpState extends State<_StepOtp> {
                 child: Column(
                   children: [
                     Text(
-                      'Confirmation code',
+                      'رمز التحقق',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.h4.copyWith(
-                        color: AppColors.mainBlueIndigoDye,
+                        color: AppColors.mainBlueSecondary,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -486,62 +459,71 @@ class _StepOtpState extends State<_StepOtp> {
                     ),
 
                     const SizedBox(height: 28),
-
-                    Directionality(
-                      textDirection: TextDirection.ltr,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: List.generate(6, (i) {
-                          return SizedBox(
-                            width: 44,
-                            height: 52,
-                            child: KeyboardListener(
-                              focusNode: FocusNode(),
-                              onKeyEvent: (e) {
-                                if (e.logicalKey.keyLabel == 'Backspace') {
-                                  _onKeyBack(i);
-                                }
-                              },
-                              child: TextField(
-                                controller: _controllers[i],
-                                focusNode: _focusNodes[i],
-                                keyboardType: TextInputType.number,
-                                textAlign: TextAlign.center,
-                                maxLength: 1,
-                                onChanged: (v) => _onDigitEntered(i, v),
-                                style: AppTextStyles.h4.copyWith(
-                                  color: AppColors.neutralDarkDarkest,
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final boxSize = (constraints.maxWidth - 50) / 6;
+                        return Directionality(
+                          textDirection: TextDirection.ltr,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: List.generate(6, (i) {
+                              return SizedBox(
+                                width: boxSize,
+                                height: boxSize * 1.15,
+                                child: KeyboardListener(
+                                  focusNode: _listenerNodes[i],
+                                  onKeyEvent: (e) {
+                                    if (e is KeyDownEvent &&
+                                        e.logicalKey ==
+                                            LogicalKeyboardKey.backspace) {
+                                      _onKeyBack(i);
+                                    }
+                                  },
+                                  child: TextField(
+                                    controller: _controllers[i],
+                                    focusNode: _focusNodes[i],
+                                    keyboardType: TextInputType.number,
+                                    textAlign: TextAlign.center,
+                                    maxLength: 1,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                    onChanged: (v) => _onDigitEntered(i, v),
+                                    style: AppTextStyles.h4.copyWith(
+                                      color: AppColors.neutralDarkDarkest,
+                                    ),
+                                    decoration: InputDecoration(
+                                      counterText: '',
+                                      contentPadding: EdgeInsets.zero,
+                                      filled: true,
+                                      fillColor: AppColors.neutralLightLight,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                          color: AppColors.neutralLightDark,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                          color: AppColors.neutralLightDark,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                          color: AppColors.mainBlueIndigoDye,
+                                          width: 2,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                                decoration: InputDecoration(
-                                  counterText: '',
-                                  contentPadding: EdgeInsets.zero,
-                                  filled: true,
-                                  fillColor: AppColors.neutralLightLight,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                      color: AppColors.neutralLightDark,
-                                    ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                      color: AppColors.neutralLightDark,
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                      color: AppColors.mainBlueIndigoDye,
-                                      width: 2,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
+                              );
+                            }),
+                          ),
+                        );
+                      },
                     ),
 
                     if (state.otpError != null) ...[
@@ -556,20 +538,32 @@ class _StepOtpState extends State<_StepOtp> {
                     ],
 
                     const SizedBox(height: 20),
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        TextButton(
-                          onPressed: state.isLoading ? null : cubit.resendOtp,
-                          style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                          child: Text(
-                            'إعادة إرسال الرمز',
-                            style: AppTextStyles.actionS.copyWith(
-                              color: AppColors.highlightDarkest,
-                              decoration: TextDecoration.underline,
+                        if (state.resendCooldown > 0)
+                          Text(
+                            '(${state.resendCooldown}ث)',
+                            style: AppTextStyles.bodyS.copyWith(
+                              color: AppColors.neutralDarkLightest,
+                            ),
+                          )
+                        else
+                          TextButton(
+                            onPressed: state.isLoading ? null : cubit.resendOtp,
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                            ),
+                            child: Text(
+                              'إعادة إرسال الرمز',
+                              style: AppTextStyles.actionS.copyWith(
+                                color: AppColors.highlightDarkest,
+                                decoration: TextDecoration.underline,
+                              ),
                             ),
                           ),
-                        ),
+                        const SizedBox(width: 4),
                         Text(
                           'لم تستلم الرمز؟ ',
                           style: AppTextStyles.bodyS.copyWith(
@@ -600,14 +594,7 @@ class _StepOtpState extends State<_StepOtp> {
                     elevation: 0,
                   ),
                   child: state.isLoading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            color: AppColors.white,
-                            strokeWidth: 2.5,
-                          ),
-                        )
+                      ? const _LoadingIndicator()
                       : Text(
                           'تأكيد',
                           style: AppTextStyles.actionL.copyWith(
@@ -632,56 +619,35 @@ class _StepOtpSuccess extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 48, 24, 28),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: AppColors.successLight,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.check_rounded,
-              size: 56,
-              color: AppColors.successDark,
+          Text(
+            'تسجيل الدخول',
+            textDirection: TextDirection.rtl,
+            textAlign: TextAlign.right,
+            style: AppTextStyles.h2.copyWith(
+              color: AppColors.mainBlueIndigoDye,
             ),
           ),
-
           const SizedBox(height: 28),
-
+          Text(
+            'تمت إعادة تعيين كلمة مرورك بنجاح. انقر على "تأكيد" لتعيين كلمة مرور جديدة.',
+            textDirection: TextDirection.rtl,
+            textAlign: TextAlign.right,
+            style: AppTextStyles.h4.copyWith(
+              color: AppColors.mainBlueIndigoDye,
+            ),
+          ),
+          const SizedBox(height: 32),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: AppColors.white,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
-                ),
-              ],
             ),
             child: Column(
               children: [
-                Text(
-                  'تسجيل الدخول',
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.h3.copyWith(
-                    color: AppColors.mainBlueIndigoDye,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'تمت إعادة تعيين كلمة مرورك بنجاح الغر على "تأكيد" لتعيين كلمة مرور جديدة',
-                  textDirection: TextDirection.rtl,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.bodyM.copyWith(
-                    color: AppColors.neutralDarkLightest,
-                  ),
-                ),
-                const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   height: 52,
@@ -742,70 +708,48 @@ class _StepNewPasswordState extends State<_StepNewPassword> {
         final cubit = context.read<ForgotPasswordCubit>();
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'عيّن كلمة مرور جديدة',
-                textAlign: TextAlign.right,
-                textDirection: TextDirection.rtl,
-                style: AppTextStyles.h3.copyWith(
-                  color: AppColors.mainBlueIndigoDye,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 48, 24, 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'عيّن كلمة مرور جديدة',
+                  textAlign: TextAlign.right,
+                  textDirection: TextDirection.rtl,
+                  style: AppTextStyles.h2.copyWith(
+                    color: AppColors.mainBlueIndigoDye,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'أنشئ كلمة مرور جديدة تأكد من أنها مختلفة من كلمات المرور السابقة لأسباب أمنية',
-                textDirection: TextDirection.rtl,
-                textAlign: TextAlign.right,
-                style: AppTextStyles.bodyM.copyWith(
-                  color: AppColors.neutralDarkLightest,
+                const SizedBox(height: 16),
+                Text(
+                  'أنشئ كلمة مرور جديدة. تأكد من أنها مختلفة عن كلمات المرور السابقة لأسباب أمنية',
+                  textDirection: TextDirection.rtl,
+                  textAlign: TextAlign.right,
+                  style: AppTextStyles.h4.copyWith(
+                    color: AppColors.mainBlueIndigoDye,
+                  ),
                 ),
-              ),
-
-              const SizedBox(height: 24),
-
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 20,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 24,
-                ),
-                child: Column(
+                const SizedBox(height: 16),
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildLabel('كلمة المرور *'),
+                    _buildLabel('كلمة المرور'),
                     const SizedBox(height: 8),
-
                     _buildPasswordField(
                       controller: _newPasswordController,
                       focusNode: _newPasswordFocus,
                       nextFocus: _confirmPasswordFocus,
-                      hint: 'أدخل كلمة المرور',
+                      hint: 'أدخل كلمة مرورك الجديدة',
                       obscureText: !state.isNewPasswordVisible,
                       errorText: state.newPasswordError,
                       onChanged: cubit.onNewPasswordChanged,
                       onToggleVisibility: cubit.toggleNewPasswordVisibility,
                       isVisible: state.isNewPasswordVisible,
-                      context: context,
                     ),
-
                     const SizedBox(height: 16),
-
-                    _buildLabel('تأكيد كلمة المرور *'),
+                    _buildLabel('تأكيد كلمة المرور'),
                     const SizedBox(height: 8),
-
                     _buildPasswordField(
                       controller: _confirmPasswordController,
                       focusNode: _confirmPasswordFocus,
@@ -815,58 +759,54 @@ class _StepNewPasswordState extends State<_StepNewPassword> {
                       onChanged: cubit.onConfirmPasswordChanged,
                       onToggleVisibility: cubit.toggleConfirmPasswordVisibility,
                       isVisible: state.isConfirmPasswordVisible,
-                      context: context,
                     ),
-
                     if (state.resetError != null) ...[
                       const SizedBox(height: 12),
-                      _buildErrorBanner(state.resetError!),
+                      _ErrorBanner(message: state.resetError!),
                     ],
-
-                    const SizedBox(height: 24),
-
-                    SizedBox(
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed:
-                            (cubit.isNewPasswordValid && !state.isLoading)
-                            ? cubit.submitNewPassword
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: cubit.isNewPasswordValid
-                              ? AppColors.highlightDarkest
-                              : AppColors.neutralLightDark,
-                          disabledBackgroundColor: AppColors.neutralLightDark,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: state.isLoading
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  color: AppColors.white,
-                                  strokeWidth: 2.5,
-                                ),
-                              )
-                            : Text(
-                                'تحديث المرور',
-                                style: AppTextStyles.actionL.copyWith(
-                                  color: AppColors.white,
-                                ),
-                              ),
-                      ),
-                    ),
                   ],
                 ),
-              ),
-
-              const SizedBox(height: 24),
-
-              _buildPasswordRequirements(state.newPassword),
-            ],
+                SizedBox(height: 24),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 24,
+                  ),
+                  child: SizedBox(
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: (cubit.isNewPasswordValid && !state.isLoading)
+                          ? cubit.submitNewPassword
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: cubit.isNewPasswordValid
+                            ? AppColors.highlightDarkest
+                            : AppColors.neutralLightDark,
+                        disabledBackgroundColor: AppColors.neutralLightDark,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: state.isLoading
+                          ? const _LoadingIndicator()
+                          : Text(
+                              'تحديث كلمة المرور',
+                              style: AppTextStyles.actionL.copyWith(
+                                color: AppColors.white,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _buildPasswordRequirements(state.newPassword),
+              ],
+            ),
           ),
         );
       },
@@ -874,11 +814,28 @@ class _StepNewPasswordState extends State<_StepNewPassword> {
   }
 
   Widget _buildLabel(String text) {
-    return Text(
-      text,
+    return Row(
       textDirection: TextDirection.rtl,
-      textAlign: TextAlign.right,
-      style: AppTextStyles.h5.copyWith(color: AppColors.neutralDarkDarkest),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          text,
+          textDirection: TextDirection.rtl,
+          style: AppTextStyles.h5.copyWith(
+            color: AppColors.neutralDarkLightest,
+          ),
+        ),
+        const SizedBox(width: 4),
+        const Text(
+          '*',
+          style: TextStyle(
+            color: AppColors.errorDark,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            height: 1.2,
+          ),
+        ),
+      ],
     );
   }
 
@@ -892,133 +849,165 @@ class _StepNewPasswordState extends State<_StepNewPassword> {
     required ValueChanged<String> onChanged,
     required VoidCallback onToggleVisibility,
     required bool isVisible,
-    required BuildContext context,
   }) {
     final hasError = errorText != null;
-    return TextField(
-      controller: controller,
-      focusNode: focusNode,
-      obscureText: obscureText,
-      textDirection: TextDirection.rtl,
-      textAlign: TextAlign.right,
-      onChanged: onChanged,
-      onSubmitted: nextFocus != null
-          ? (_) => FocusScope.of(context).requestFocus(nextFocus)
-          : null,
-      style: AppTextStyles.bodyM.copyWith(color: AppColors.neutralDarkDarkest),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: AppTextStyles.bodyM.copyWith(
-          color: AppColors.neutralDarkLightest,
-        ),
-        prefixIcon: hasError
-            ? const Icon(
-                Icons.error_outline,
-                color: AppColors.errorDark,
-                size: 20,
-              )
-            : IconButton(
-                icon: Icon(
-                  isVisible
-                      ? Icons.visibility_outlined
-                      : Icons.visibility_off_outlined,
-                  color: AppColors.neutralDarkLightest,
-                  size: 20,
-                ),
-                onPressed: onToggleVisibility,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: controller,
+          focusNode: focusNode,
+          obscureText: obscureText,
+          textDirection: TextDirection.rtl,
+          textAlign: TextAlign.right,
+          onChanged: onChanged,
+          onSubmitted: nextFocus != null
+              ? (_) => FocusScope.of(context).requestFocus(nextFocus)
+              : null,
+          style: AppTextStyles.bodyM.copyWith(
+            color: AppColors.neutralDarkDarkest,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: AppTextStyles.bodyM.copyWith(
+              color: AppColors.neutralDarkLightest,
+            ),
+            // Visibility toggle is always the suffixIcon (LEFT in RTL).
+            // Error icon replaces it only when there is a validation error.
+            prefixIcon: hasError
+                ? const Icon(
+                    Icons.error_outline,
+                    color: AppColors.errorDark,
+                    size: 20,
+                  )
+                : IconButton(
+                    icon: Icon(
+                      isVisible
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      color: AppColors.neutralDarkLightest,
+                      size: 20,
+                    ),
+                    onPressed: onToggleVisibility,
+                  ),
+            filled: true,
+            fillColor: AppColors.white,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: hasError
+                    ? AppColors.errorDark
+                    : AppColors.neutralLightDark,
               ),
-        filled: true,
-        fillColor: AppColors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: hasError ? AppColors.errorDark : AppColors.neutralLightDark,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: hasError
+                    ? AppColors.errorDark
+                    : AppColors.highlightDarkest,
+                width: 1.5,
+              ),
+            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           ),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: hasError ? AppColors.errorDark : AppColors.highlightDarkest,
-            width: 1.5,
+        if (hasError) ...[
+          const SizedBox(height: 6),
+          Text(
+            errorText,
+            textDirection: TextDirection.rtl,
+            textAlign: TextAlign.right,
+            style: AppTextStyles.bodyS.copyWith(color: AppColors.errorDark),
           ),
-        ),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-      ),
+        ],
+      ],
     );
   }
 
   Widget _buildPasswordRequirements(String password) {
     final rules = [
-      _PasswordRule(label: 'على الأقل 8 أحرف', met: password.length >= 8),
       _PasswordRule(
-        label: 'حرف كبير واحد على الأقل (A-Z)',
+        label: 'يجب أن تحتوي على حرف كبير (A-Z).',
         met: password.contains(RegExp(r'[A-Z]')),
       ),
       _PasswordRule(
-        label: 'رقم واحد على الأقل (0-9)',
+        label: 'يجب أن تحتوي على حرف صغير (a-z).',
+        met: password.contains(RegExp(r'[a-z]')),
+      ),
+      _PasswordRule(
+        label: 'يجب أن تحتوي على رقم واحد على الأقل.',
         met: password.contains(RegExp(r'[0-9]')),
       ),
       _PasswordRule(
-        label: 'رمز خاص واحد على الأقل (!@#\$%^&*)',
-        met: password.contains(RegExp(r'[!@#\$%^&*]')),
+        label: r'يمكن إضافة رموز خاصة مثل (! @ # $ % ( )) وهي اختيارية.',
+        met: password.contains(RegExp(r'[!@#\$%^&*()\[\]{}|\<>,.?/~`\-_=+]')),
+        optional: true,
+      ),
+      _PasswordRule(
+        label: 'الحد الأدنى 8 أحرف والحد الأقصى 10 أحرف.',
+        met: password.length >= 8 && password.length <= 10,
+      ),
+      _PasswordRule(
+        label: 'لا يُسمح باستخدام المسافات.',
+        met: password.isNotEmpty && !password.contains(' '),
       ),
     ];
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.neutralLightLight,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.neutralLightDark),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            'متطلبات كلمة المرور',
-            textDirection: TextDirection.rtl,
-            style: AppTextStyles.h6.copyWith(
-              color: AppColors.neutralDarkDarkest,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          'متطلبات كلمة المرور:',
+          textDirection: TextDirection.rtl,
+          style: AppTextStyles.h5.copyWith(
+            color: AppColors.neutralDarkLightest,
+            fontWeight: FontWeight.bold,
           ),
-          const SizedBox(height: 10),
-          ...rules.map((r) => _buildRequirementRow(r)),
-        ],
-      ),
+        ),
+        const SizedBox(height: 10),
+        ...rules.map((r) => _buildRequirementRow(r)),
+      ],
     );
   }
 
   Widget _buildRequirementRow(_PasswordRule rule) {
+    final Color textColor = rule.met
+        ? AppColors.successDark
+        : rule.optional
+        ? const Color(0xFF9AA5B4)
+        : AppColors.neutralDarkLightest;
+
+    final Color bulletColor = rule.met
+        ? AppColors.successDark
+        : rule.optional
+        ? const Color(0xFF9AA5B4)
+        : AppColors.neutralDarkLightest;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         textDirection: TextDirection.rtl,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            '•',
+            style: TextStyle(color: bulletColor, fontSize: 14, height: 1.4),
+          ),
           Expanded(
             child: Text(
               rule.label,
               textDirection: TextDirection.rtl,
+              textAlign: TextAlign.right,
               style: AppTextStyles.bodyS.copyWith(
-                color: rule.met
-                    ? AppColors.successDark
-                    : AppColors.neutralDarkLightest,
+                color: textColor,
+                height: 1.5,
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Icon(
-            rule.met
-                ? Icons.check_circle_rounded
-                : Icons.radio_button_unchecked,
-            size: 16,
-            color: rule.met
-                ? AppColors.successDark
-                : AppColors.neutralLightDarkest,
           ),
         ],
       ),
@@ -1029,7 +1018,12 @@ class _StepNewPasswordState extends State<_StepNewPassword> {
 class _PasswordRule {
   final String label;
   final bool met;
-  const _PasswordRule({required this.label, required this.met});
+  final bool optional;
+  const _PasswordRule({
+    required this.label,
+    required this.met,
+    this.optional = false,
+  });
 }
 
 class _StepDone extends StatefulWidget {
@@ -1044,12 +1038,11 @@ class _StepDoneState extends State<_StepDone> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(milliseconds: 2500), () {
-      if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const LoginPage()),
-          (route) => false,
-        );
-      }
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+        (route) => false,
+      );
     });
   }
 
@@ -1069,14 +1062,12 @@ class _StepDoneState extends State<_StepDone> {
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.lock_reset_rounded,
+                Icons.lock_reset,
                 size: 52,
                 color: AppColors.successDark,
               ),
             ),
-
             const SizedBox(height: 28),
-
             Text(
               'تم تغيير كلمة المرور بنجاح!',
               textAlign: TextAlign.center,
@@ -1084,9 +1075,7 @@ class _StepDoneState extends State<_StepDone> {
                 color: AppColors.neutralDarkDarkest,
               ),
             ),
-
             const SizedBox(height: 10),
-
             Text(
               'جاري تحويلك لتسجيل الدخول...',
               textAlign: TextAlign.center,
@@ -1094,9 +1083,7 @@ class _StepDoneState extends State<_StepDone> {
                 color: AppColors.neutralDarkLightest,
               ),
             ),
-
             const SizedBox(height: 24),
-
             const CircularProgressIndicator(
               color: AppColors.highlightDarkest,
               strokeWidth: 2.5,
@@ -1108,30 +1095,102 @@ class _StepDoneState extends State<_StepDone> {
   }
 }
 
-Widget _buildErrorBanner(String message) {
-  return Container(
-    width: double.infinity,
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-    decoration: BoxDecoration(
-      color: AppColors.warningLight,
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Row(
-      textDirection: TextDirection.rtl,
-      children: [
-        const Icon(Icons.error, color: AppColors.warningMedium, size: 18),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            message,
-            textDirection: TextDirection.rtl,
-            style: AppTextStyles.bodyM.copyWith(
-              color: AppColors.neutralDarkMedium,
-              fontWeight: FontWeight.w600,
-            ),
+class _TabItem extends StatelessWidget {
+  const _TabItem({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        color: isSelected ? Colors.transparent : AppColors.neutralLightMedium,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            children: [
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.h5.copyWith(
+                  color: isSelected
+                      ? AppColors.neutralDarkDarkest
+                      : AppColors.neutralDarkLightest,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+              const SizedBox(height: 8),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                height: 3,
+                width: isSelected ? 50 : 0,
+                decoration: BoxDecoration(
+                  color: AppColors.highlightDarkest,
+                  borderRadius: BorderRadius.circular(1.5),
+                ),
+              ),
+            ],
           ),
         ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
+}
+
+class _ErrorBanner extends StatelessWidget {
+  const _ErrorBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.errorLight,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        textDirection: TextDirection.rtl,
+        children: [
+          const Icon(Icons.error, color: AppColors.errorMedium, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              textDirection: TextDirection.rtl,
+              style: AppTextStyles.bodyM.copyWith(
+                color: AppColors.neutralDarkMedium,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoadingIndicator extends StatelessWidget {
+  const _LoadingIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      width: 22,
+      height: 22,
+      child: CircularProgressIndicator(
+        color: AppColors.white,
+        strokeWidth: 2.5,
+      ),
+    );
+  }
 }

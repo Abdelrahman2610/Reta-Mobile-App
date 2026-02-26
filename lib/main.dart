@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:reta/features/auth/presentation/pages/home_page.dart';
 import 'package:reta/features/splash/presentation/pages/splash.dart';
+import 'features/auth/presentation/pages/guest_page.dart';
 import 'core/theme/app_theme.dart';
 
 void main() {
@@ -16,7 +16,7 @@ class MainApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       supportedLocales: const [Locale('en'), Locale('ar')],
       home: SplashPage(),
-      routes: {'/home': (context) => HomePage()},
+      routes: {'/home': (context) => GuestPage()},
     );
   }
 }

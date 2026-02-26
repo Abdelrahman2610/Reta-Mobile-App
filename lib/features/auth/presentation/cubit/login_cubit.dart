@@ -6,18 +6,22 @@ enum LoginTab { mobile, nationalId }
 
 class LoginState {
   final LoginTab selectedTab;
+
   final String phone;
-  final String password;
+
   final String nationalId;
   final String passportNumber;
+
+  final String password;
+
   final bool isPasswordVisible;
   final bool isLoading;
   final bool isSuccess;
+
   final String? phoneError;
   final String? passwordError;
   final String? nationalIdError;
   final String? passportError;
-  final String? generalError;
 
   final String? credentialError;
 
@@ -36,30 +40,28 @@ class LoginState {
     this.passwordError,
     this.nationalIdError,
     this.passportError,
-    this.generalError,
     this.credentialError,
     this.localError,
   });
 
   bool get isFormValid {
-    final noPhoneError = phoneError == null || phoneError!.isEmpty;
-    final noPasswordError = passwordError == null || passwordError!.isEmpty;
-    final noNationalIdError =
-        nationalIdError == null || nationalIdError!.isEmpty;
-    final noPassportError = passportError == null || passportError!.isEmpty;
+    final bool noPhoneErr = phoneError == null;
+    final bool noPasswordErr = passwordError == null;
+    final bool noNationalIdErr = nationalIdError == null;
+    final bool noPassportErr = passportError == null;
 
     if (selectedTab == LoginTab.mobile) {
       return phone.isNotEmpty &&
           password.isNotEmpty &&
-          noPhoneError &&
-          noPasswordError;
+          noPhoneErr &&
+          noPasswordErr;
     } else {
       return nationalId.isNotEmpty &&
           passportNumber.isNotEmpty &&
           password.isNotEmpty &&
-          noNationalIdError &&
-          noPassportError &&
-          noPasswordError;
+          noNationalIdErr &&
+          noPassportErr &&
+          noPasswordErr;
     }
   }
 
@@ -76,7 +78,6 @@ class LoginState {
     String? Function()? passwordError,
     String? Function()? nationalIdError,
     String? Function()? passportError,
-    String? Function()? generalError,
     String? Function()? credentialError,
     String? Function()? localError,
   }) {
@@ -99,7 +100,6 @@ class LoginState {
       passportError: passportError != null
           ? passportError()
           : this.passportError,
-      generalError: generalError != null ? generalError() : this.generalError,
       credentialError: credentialError != null
           ? credentialError()
           : this.credentialError,
@@ -119,28 +119,27 @@ class LoginCubit extends Cubit<LoginState> {
     emit(
       state.copyWith(
         selectedTab: tab,
-        password: '',
         phone: '',
+        password: '',
         nationalId: '',
         passportNumber: '',
         phoneError: () => null,
         passwordError: () => null,
         nationalIdError: () => null,
         passportError: () => null,
-        generalError: () => null,
         credentialError: () => null,
         localError: () => null,
+        isSuccess: false,
       ),
     );
   }
 
   void onPhoneChanged(String value) => emit(
     state.copyWith(
-      phone: value,
+      phone: value.trim(),
       phoneError: () => null,
       credentialError: () => null,
       localError: () => null,
-      generalError: () => null,
     ),
   );
 
@@ -150,27 +149,24 @@ class LoginCubit extends Cubit<LoginState> {
       passwordError: () => null,
       credentialError: () => null,
       localError: () => null,
-      generalError: () => null,
     ),
   );
 
   void onNationalIdChanged(String value) => emit(
     state.copyWith(
-      nationalId: value,
+      nationalId: value.trim(),
       nationalIdError: () => null,
       credentialError: () => null,
       localError: () => null,
-      generalError: () => null,
     ),
   );
 
   void onPassportChanged(String value) => emit(
     state.copyWith(
-      passportNumber: value,
+      passportNumber: value.trim(),
       passportError: () => null,
       credentialError: () => null,
       localError: () => null,
-      generalError: () => null,
     ),
   );
 
@@ -183,82 +179,78 @@ class LoginCubit extends Cubit<LoginState> {
     emit(
       state.copyWith(
         isLoading: true,
-        generalError: () => null,
         credentialError: () => null,
+        localError: () => null,
       ),
     );
 
-    final String loginType;
-    final String loginValue;
+    ApiResult result;
 
     if (state.selectedTab == LoginTab.mobile) {
-      loginType = 'mobile';
-      loginValue = state.phone;
+      result = await _authRepository.login(
+        loginValue: state.phone,
+        password: state.password,
+        loginType: 'mobile',
+      );
     } else {
-      if (state.nationalId.isNotEmpty) {
-        loginType = 'national_id';
-        loginValue = state.nationalId;
-      } else {
-        loginType = 'passport';
-        loginValue = state.passportNumber;
-      }
+      result = await _authRepository.loginWithNationalId(
+        nationalId: state.nationalId,
+        passportNumber: state.passportNumber,
+        password: state.password,
+      );
     }
-
-    final result = await _authRepository.login(
-      loginValue: loginValue,
-      password: state.password,
-      loginType: loginType,
-    );
 
     switch (result) {
       case ApiSuccess():
         emit(state.copyWith(isLoading: false, isSuccess: true));
 
       case ApiError(:final message, :final statusCode):
-        if (statusCode == 401 || statusCode == 422) {
-          if (state.selectedTab == LoginTab.mobile) {
-            emit(
-              state.copyWith(
-                isLoading: false,
-                phoneError: () => '',
-                passwordError: () => '',
-                credentialError: () => 'رقم الموبايل أو كلمة المرور غير صحيحة',
-              ),
-            );
-          } else {
-            emit(
-              state.copyWith(
-                isLoading: false,
-                nationalIdError: () => '',
-                passportError: () => '',
-                passwordError: () => '',
-                credentialError: () => 'البيانات المدخلة غير صحيحة',
-              ),
-            );
-          }
-        } else {
-          emit(
-            state.copyWith(isLoading: false, credentialError: () => message),
-          );
-        }
+        _handleApiError(statusCode: statusCode, message: message);
+    }
+  }
+
+  void _handleApiError({required int? statusCode, required String message}) {
+    if (statusCode == 401 || statusCode == 422) {
+      if (state.selectedTab == LoginTab.mobile) {
+        emit(
+          state.copyWith(
+            isLoading: false,
+            phoneError: () => '',
+            passwordError: () => '',
+            credentialError: () => 'رقم الموبايل أو كلمة المرور غير صحيحة',
+          ),
+        );
+      } else {
+        emit(
+          state.copyWith(
+            isLoading: false,
+            nationalIdError: () => '',
+            passportError: () => '',
+            passwordError: () => '',
+            credentialError: () => 'البيانات المدخلة غير صحيحة',
+          ),
+        );
+      }
+    } else {
+      emit(state.copyWith(isLoading: false, credentialError: () => message));
     }
   }
 
   bool _validate() {
-    if (state.selectedTab == LoginTab.mobile) {
-      return _validateMobile();
-    } else {
-      return _validateNationalId();
-    }
+    return state.selectedTab == LoginTab.mobile
+        ? _validateMobile()
+        : _validateNationalId();
   }
 
   bool _validateMobile() {
     String? phoneError;
     String? passwordError;
 
-    if (state.phone.isEmpty) {
+    final phone = state.phone.trim();
+
+    if (phone.isEmpty) {
       phoneError = 'هذا الحقل مطلوب';
-    } else if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(state.phone)) {
+    } else if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(phone)) {
       phoneError = 'رقم الموبايل غير صحيح';
     }
 
@@ -273,10 +265,11 @@ class LoginCubit extends Cubit<LoginState> {
         if (phoneError != null) phoneError,
         if (passwordError != null) passwordError,
       ].join(' • ');
+
       emit(
         state.copyWith(
-          phoneError: () => phoneError ?? '',
-          passwordError: () => passwordError ?? '',
+          phoneError: () => phoneError,
+          passwordError: () => passwordError,
           localError: () => bannerMsg,
         ),
       );
@@ -290,16 +283,19 @@ class LoginCubit extends Cubit<LoginState> {
     String? passportError;
     String? passwordError;
 
-    if (state.nationalId.isEmpty) {
+    final nationalId = state.nationalId.trim();
+    final passport = state.passportNumber.trim();
+
+    if (nationalId.isEmpty) {
       nationalIdError = 'هذا الحقل مطلوب';
-    } else if (!RegExp(r'^\d{14}$').hasMatch(state.nationalId)) {
+    } else if (!RegExp(r'^\d{14}$').hasMatch(nationalId)) {
       nationalIdError = 'الرقم القومي يجب أن يكون 14 رقماً';
     }
 
-    if (state.passportNumber.isEmpty) {
+    if (passport.isEmpty) {
       passportError = 'هذا الحقل مطلوب';
-    } else if (state.passportNumber.length < 6 ||
-        !RegExp(r'^[A-Za-z0-9]+$').hasMatch(state.passportNumber)) {
+    } else if (passport.length < 6 ||
+        !RegExp(r'^[A-Za-z0-9]+$').hasMatch(passport)) {
       passportError = 'رقم جواز السفر غير صحيح';
     }
 
@@ -317,11 +313,12 @@ class LoginCubit extends Cubit<LoginState> {
         if (passportError != null) passportError,
         if (passwordError != null) passwordError,
       ].join(' • ');
+
       emit(
         state.copyWith(
-          nationalIdError: () => nationalIdError ?? '',
-          passportError: () => passportError ?? '',
-          passwordError: () => passwordError ?? '',
+          nationalIdError: () => nationalIdError,
+          passportError: () => passportError,
+          passwordError: () => passwordError,
           localError: () => bannerMsg,
         ),
       );

@@ -97,4 +97,17 @@ class AuthRepository {
     final token = prefs.getString('access_token');
     return token != null && token.isNotEmpty;
   }
+
+  Future<ApiResult<LoginResponse>> loginWithNationalId({
+    required String nationalId,
+    required String passportNumber,
+    required String password,
+  }) async {
+    return await login(
+      loginValue: nationalId,
+
+      password: password,
+      loginType: 'national_id',
+    );
+  }
 }

@@ -21,37 +21,47 @@ class SignupState {
   final String restOfName;
   final String email;
   final String phone;
+
   final List<DropdownItem> nationalityOptions;
   final DropdownItem? selectedNationality;
   final bool isNationalityLoading;
   final bool isNationalityExpanded;
+
   final GenderType? selectedGender;
   final bool isGenderExpanded;
+
   final String nationalId;
   final bool hasNationalIdImage;
+  final File? nationalIdFile;
   final DateTime? birthDate;
   final DropdownItem? selectedBirthPlace;
   final bool isBirthPlaceExpanded;
   final bool showManualBirthPlace;
   final String manualBirthPlace;
+
   final List<DropdownItem> residenceOptions;
   final DropdownItem? selectedResidence;
   final bool isResidenceLoading;
   final bool isResidenceExpanded;
+
   final String passportNumber;
   final DateTime? passportExpiry;
   final DropdownItem? selectedPassportIssuePlace;
   final List<DropdownItem> passportIssuePlaceOptions;
   final bool isPassportIssuePlaceLoading;
   final bool isPassportIssuePlaceExpanded;
+
   final String password;
   final String confirmPassword;
   final bool isPasswordVisible;
   final bool isConfirmPasswordVisible;
+
   final bool agreedToTerms;
+
   final bool isLoading;
   final bool isSubmitSuccess;
   final String? submitError;
+
   final String? firstNameError;
   final String? restOfNameError;
   final String? emailError;
@@ -70,7 +80,6 @@ class SignupState {
   final String? passwordError;
   final String? confirmPasswordError;
   final String? termsError;
-  final File? nationalIdFile;
 
   const SignupState({
     this.nationalityType = NationalityType.egyptian,
@@ -86,6 +95,7 @@ class SignupState {
     this.isGenderExpanded = false,
     this.nationalId = '',
     this.hasNationalIdImage = false,
+    this.nationalIdFile,
     this.birthDate,
     this.selectedBirthPlace,
     this.isBirthPlaceExpanded = false,
@@ -109,7 +119,6 @@ class SignupState {
     this.isLoading = false,
     this.isSubmitSuccess = false,
     this.submitError,
-    this.nationalIdFile,
     this.firstNameError,
     this.restOfNameError,
     this.emailError,
@@ -130,42 +139,6 @@ class SignupState {
     this.termsError,
   });
 
-  bool get isFormValid {
-    final base =
-        firstName.isNotEmpty &&
-        restOfName.isNotEmpty &&
-        phone.isNotEmpty &&
-        selectedNationality != null &&
-        selectedGender != null &&
-        birthDate != null &&
-        password.isNotEmpty &&
-        confirmPassword == password &&
-        agreedToTerms &&
-        firstNameError == null &&
-        restOfNameError == null &&
-        phoneError == null &&
-        passwordError == null &&
-        confirmPasswordError == null;
-
-    if (nationalityType == NationalityType.egyptian) {
-      final birthPlaceValid =
-          selectedBirthPlace != null &&
-          (!showManualBirthPlace || manualBirthPlace.trim().isNotEmpty);
-      return base &&
-          nationalId.length == 14 &&
-          nationalIdError == null &&
-          hasNationalIdImage &&
-          birthPlaceValid &&
-          selectedResidence != null;
-    } else {
-      return base &&
-          passportNumber.isNotEmpty &&
-          passportExpiry != null &&
-          selectedPassportIssuePlace != null &&
-          selectedResidence != null;
-    }
-  }
-
   SignupState copyWith({
     NationalityType? nationalityType,
     String? firstName,
@@ -180,6 +153,7 @@ class SignupState {
     bool? isGenderExpanded,
     String? nationalId,
     bool? hasNationalIdImage,
+    File? Function()? nationalIdFile,
     DateTime? Function()? birthDate,
     DropdownItem? Function()? selectedBirthPlace,
     bool? isBirthPlaceExpanded,
@@ -203,7 +177,6 @@ class SignupState {
     bool? isLoading,
     bool? isSubmitSuccess,
     String? Function()? submitError,
-    File? Function()? nationalIdFile,
     String? Function()? firstNameError,
     String? Function()? restOfNameError,
     String? Function()? emailError,
@@ -242,6 +215,9 @@ class SignupState {
       isGenderExpanded: isGenderExpanded ?? this.isGenderExpanded,
       nationalId: nationalId ?? this.nationalId,
       hasNationalIdImage: hasNationalIdImage ?? this.hasNationalIdImage,
+      nationalIdFile: nationalIdFile != null
+          ? nationalIdFile()
+          : this.nationalIdFile,
       birthDate: birthDate != null ? birthDate() : this.birthDate,
       selectedBirthPlace: selectedBirthPlace != null
           ? selectedBirthPlace()
@@ -277,9 +253,6 @@ class SignupState {
       isLoading: isLoading ?? this.isLoading,
       isSubmitSuccess: isSubmitSuccess ?? this.isSubmitSuccess,
       submitError: submitError != null ? submitError() : this.submitError,
-      nationalIdFile: nationalIdFile != null
-          ? nationalIdFile()
-          : this.nationalIdFile,
       firstNameError: firstNameError != null
           ? firstNameError()
           : this.firstNameError,
@@ -343,6 +316,8 @@ class SignupCubit extends Cubit<SignupState> {
     _loadNationalities();
     _loadResidences();
   }
+
+  String? _pendingOtpToken;
 
   Future<void> _loadNationalities() async {
     emit(state.copyWith(isNationalityLoading: true));
@@ -447,23 +422,19 @@ class SignupCubit extends Cubit<SignupState> {
     }
   }
 
-  void onFirstNameChanged(String v) {
-    emit(
-      state.copyWith(
-        firstName: v,
-        firstNameError: () => v.trim().isEmpty ? 'الاسم الأول مطلوب' : null,
-      ),
-    );
-  }
+  void onFirstNameChanged(String v) => emit(
+    state.copyWith(
+      firstName: v,
+      firstNameError: () => v.trim().isEmpty ? 'الاسم الأول مطلوب' : null,
+    ),
+  );
 
-  void onRestOfNameChanged(String v) {
-    emit(
-      state.copyWith(
-        restOfName: v,
-        restOfNameError: () => v.trim().isEmpty ? 'باقي الاسم مطلوب' : null,
-      ),
-    );
-  }
+  void onRestOfNameChanged(String v) => emit(
+    state.copyWith(
+      restOfName: v,
+      restOfNameError: () => v.trim().isEmpty ? 'باقي الاسم مطلوب' : null,
+    ),
+  );
 
   void onEmailChanged(String v) {
     final emailRegex = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$');
@@ -472,7 +443,7 @@ class SignupCubit extends Cubit<SignupState> {
         email: v,
         emailError: () {
           if (v.trim().isEmpty) return null;
-          if (!emailRegex.hasMatch(v)) {
+          if (!emailRegex.hasMatch(v.trim())) {
             return 'صيغة البريد الإلكتروني غير صحيحة';
           }
           return null;
@@ -481,24 +452,21 @@ class SignupCubit extends Cubit<SignupState> {
     );
   }
 
-  void onPhoneChanged(String v) {
-    emit(
-      state.copyWith(
-        phone: v,
-        phoneError: () {
-          if (v.trim().isEmpty) return 'رقم الهاتف مطلوب';
-          if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(v)) {
-            return 'رقم الهاتف غير صحيح';
-          }
-          return null;
-        },
-      ),
-    );
-  }
+  void onPhoneChanged(String v) => emit(
+    state.copyWith(
+      phone: v,
+      phoneError: () {
+        if (v.trim().isEmpty) return 'رقم الهاتف مطلوب';
+        if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(v.trim())) {
+          return 'رقم الهاتف غير صحيح';
+        }
+        return null;
+      },
+    ),
+  );
 
-  void toggleNationalityExpand() {
-    emit(state.copyWith(isNationalityExpanded: !state.isNationalityExpanded));
-  }
+  void toggleNationalityExpand() =>
+      emit(state.copyWith(isNationalityExpanded: !state.isNationalityExpanded));
 
   void onNationalitySelected(DropdownItem item) {
     final isEgyptian = item.id == '1';
@@ -517,61 +485,58 @@ class SignupCubit extends Cubit<SignupState> {
     }
   }
 
-  void toggleGenderExpand() {
-    emit(state.copyWith(isGenderExpanded: !state.isGenderExpanded));
-  }
+  void toggleGenderExpand() =>
+      emit(state.copyWith(isGenderExpanded: !state.isGenderExpanded));
 
-  void onGenderSelected(GenderType gender) {
-    emit(
-      state.copyWith(
-        selectedGender: () => gender,
-        isGenderExpanded: false,
-        genderError: () => null,
-      ),
-    );
-  }
+  void onGenderSelected(GenderType gender) => emit(
+    state.copyWith(
+      selectedGender: () => gender,
+      isGenderExpanded: false,
+      genderError: () => null,
+    ),
+  );
 
-  void onNationalIdChanged(String v) {
-    emit(
-      state.copyWith(
-        nationalId: v,
-        nationalIdError: () {
-          if (v.trim().isEmpty) return 'الرقم القومي مطلوب';
-          if (!RegExp(r'^[0-9]+$').hasMatch(v)) return 'أرقام فقط';
-          if (v.length != 14) return 'الرقم القومي يجب أن يكون 14 رقماً';
-          return null;
-        },
-      ),
-    );
-  }
+  void onNationalIdChanged(String v) => emit(
+    state.copyWith(
+      nationalId: v,
+      nationalIdError: () {
+        if (v.trim().isEmpty) return 'الرقم القومي مطلوب';
+        if (!RegExp(r'^[0-9]+$').hasMatch(v)) return 'أرقام فقط';
+        if (v.length != 14) return 'الرقم القومي يجب أن يكون 14 رقماً';
+        return null;
+      },
+    ),
+  );
 
-  void onNationalIdImagePicked(File file) {
-    emit(
-      state.copyWith(
-        hasNationalIdImage: true,
-        nationalIdFile: () => file,
-        nationalIdImageError: () => null,
-      ),
-    );
-  }
+  void onNationalIdImagePicked(File file) => emit(
+    state.copyWith(
+      hasNationalIdImage: true,
+      nationalIdFile: () => file,
+      nationalIdImageError: () => null,
+    ),
+  );
 
-  void onNationalIdImageRemoved() {
-    emit(
-      state.copyWith(
-        hasNationalIdImage: false,
-        nationalIdFile: () => null,
-        nationalIdImageError: () => null,
-      ),
-    );
-  }
+  void onNationalIdImageRemoved() => emit(
+    state.copyWith(
+      hasNationalIdImage: false,
+      nationalIdFile: () => null,
+      nationalIdImageError: () => null,
+    ),
+  );
 
   void onBirthDateSelected(DateTime date) {
-    emit(state.copyWith(birthDate: () => date, birthDateError: () => null));
+    final now = DateTime.now();
+    final isValid = date.isBefore(now);
+    emit(
+      state.copyWith(
+        birthDate: () => date,
+        birthDateError: () => isValid ? null : 'تاريخ الميلاد غير صحيح',
+      ),
+    );
   }
 
-  void toggleBirthPlaceExpand() {
-    emit(state.copyWith(isBirthPlaceExpanded: !state.isBirthPlaceExpanded));
-  }
+  void toggleBirthPlaceExpand() =>
+      emit(state.copyWith(isBirthPlaceExpanded: !state.isBirthPlaceExpanded));
 
   void onBirthPlaceSelected(DropdownItem item) {
     final isOther = item.id == '10';
@@ -582,107 +547,95 @@ class SignupCubit extends Cubit<SignupState> {
         showManualBirthPlace: isOther,
         manualBirthPlace: isOther ? state.manualBirthPlace : '',
         birthPlaceError: () => null,
+        manualBirthPlaceError: () => null,
       ),
     );
   }
 
-  void onManualBirthPlaceChanged(String v) {
-    emit(
-      state.copyWith(
-        manualBirthPlace: v,
-        manualBirthPlaceError: () =>
-            v.trim().isEmpty ? 'محل الميلاد مطلوب' : null,
-      ),
-    );
-  }
+  void onManualBirthPlaceChanged(String v) => emit(
+    state.copyWith(
+      manualBirthPlace: v,
+      manualBirthPlaceError: () =>
+          v.trim().isEmpty ? 'محل الميلاد مطلوب' : null,
+    ),
+  );
 
-  void toggleResidenceExpand() {
-    emit(state.copyWith(isResidenceExpanded: !state.isResidenceExpanded));
-  }
+  void toggleResidenceExpand() =>
+      emit(state.copyWith(isResidenceExpanded: !state.isResidenceExpanded));
 
-  void onResidenceSelected(DropdownItem item) {
-    emit(
-      state.copyWith(
-        selectedResidence: () => item,
-        isResidenceExpanded: false,
-        residenceError: () => null,
-      ),
-    );
-  }
+  void onResidenceSelected(DropdownItem item) => emit(
+    state.copyWith(
+      selectedResidence: () => item,
+      isResidenceExpanded: false,
+      residenceError: () => null,
+    ),
+  );
 
-  void onPassportNumberChanged(String v) {
-    emit(
-      state.copyWith(
-        passportNumber: v,
-        passportNumberError: () {
-          if (v.trim().isEmpty) return 'رقم جواز السفر مطلوب';
-          if (v.length < 6) return 'رقم جواز السفر غير صحيح';
-          return null;
-        },
-      ),
-    );
-  }
+  void onPassportNumberChanged(String v) => emit(
+    state.copyWith(
+      passportNumber: v,
+      passportNumberError: () {
+        if (v.trim().isEmpty) return 'رقم جواز السفر مطلوب';
+        if (v.trim().length < 6) return 'رقم جواز السفر غير صحيح';
+        return null;
+      },
+    ),
+  );
 
   void onPassportExpirySelected(DateTime date) {
+    final now = DateTime.now();
+    final isValid = date.isAfter(now);
     emit(
       state.copyWith(
         passportExpiry: () => date,
-        passportExpiryError: () => null,
+        passportExpiryError: () => isValid ? null : 'جواز السفر منتهي الصلاحية',
       ),
     );
   }
 
-  void togglePassportIssuePlaceExpand() {
-    emit(
-      state.copyWith(
-        isPassportIssuePlaceExpanded: !state.isPassportIssuePlaceExpanded,
-      ),
-    );
-  }
+  void togglePassportIssuePlaceExpand() => emit(
+    state.copyWith(
+      isPassportIssuePlaceExpanded: !state.isPassportIssuePlaceExpanded,
+    ),
+  );
 
-  void onPassportIssuePlaceSelected(DropdownItem item) {
-    emit(
-      state.copyWith(
-        selectedPassportIssuePlace: () => item,
-        isPassportIssuePlaceExpanded: false,
-        passportIssuePlaceError: () => null,
-      ),
-    );
-  }
+  void onPassportIssuePlaceSelected(DropdownItem item) => emit(
+    state.copyWith(
+      selectedPassportIssuePlace: () => item,
+      isPassportIssuePlaceExpanded: false,
+      passportIssuePlaceError: () => null,
+    ),
+  );
 
-  void onPasswordChanged(String v) {
-    emit(
-      state.copyWith(
-        password: v,
-        passwordError: () {
-          if (v.isEmpty) return 'كلمة السر مطلوبة';
-          if (v.length < 8) return 'يجب أن تكون 8 أحرف على الأقل';
-          if (!v.contains(RegExp(r'[A-Z]'))) return 'يجب أن تحتوي على حرف كبير';
-          if (!v.contains(RegExp(r'[0-9]'))) return 'يجب أن تحتوي على رقم';
-          if (!v.contains(RegExp(r'[!@#\$%^&*]'))) {
-            return 'يجب أن تحتوي على رمز خاص';
-          }
-          return null;
-        },
-        confirmPasswordError: () {
-          if (state.confirmPassword.isEmpty) return null;
-          return state.confirmPassword != v ? 'كلمتا السر غير متطابقتين' : null;
-        },
-      ),
-    );
-  }
+  void onPasswordChanged(String v) => emit(
+    state.copyWith(
+      password: v,
+      passwordError: () {
+        if (v.isEmpty) return 'كلمة السر مطلوبة';
+        if (v.length < 8) return 'يجب أن تكون 8 أحرف على الأقل';
+        if (!v.contains(RegExp(r'[A-Z]'))) return 'يجب أن تحتوي على حرف كبير';
+        if (!v.contains(RegExp(r'[0-9]'))) return 'يجب أن تحتوي على رقم';
+        if (!v.contains(RegExp(r'[!@#\$%^&*]'))) {
+          return 'يجب أن تحتوي على رمز خاص';
+        }
+        return null;
+      },
+      confirmPasswordError: () {
+        if (state.confirmPassword.isEmpty) return null;
+        return state.confirmPassword != v ? 'كلمتا السر غير متطابقتين' : null;
+      },
+    ),
+  );
 
-  void onConfirmPasswordChanged(String v) {
-    emit(
-      state.copyWith(
-        confirmPassword: v,
-        confirmPasswordError: () {
-          if (v.isEmpty) return 'تأكيد كلمة السر مطلوب';
-          return v != state.password ? 'كلمتا السر غير متطابقتين' : null;
-        },
-      ),
-    );
-  }
+  void onConfirmPasswordChanged(String v) => emit(
+    state.copyWith(
+      confirmPassword: v,
+      confirmPasswordError: () {
+        if (v.isEmpty) return 'تأكيد كلمة السر مطلوب';
+        return v != state.password ? 'كلمتا السر غير متطابقتين' : null;
+      },
+    ),
+  );
 
   void togglePasswordVisibility() =>
       emit(state.copyWith(isPasswordVisible: !state.isPasswordVisible));
@@ -691,25 +644,24 @@ class SignupCubit extends Cubit<SignupState> {
     state.copyWith(isConfirmPasswordVisible: !state.isConfirmPasswordVisible),
   );
 
-  void toggleTerms(bool? v) {
-    emit(state.copyWith(agreedToTerms: v ?? false, termsError: () => null));
-  }
-
-  String? _pendingOtpToken;
+  void toggleTerms(bool? v) =>
+      emit(state.copyWith(agreedToTerms: v ?? false, termsError: () => null));
 
   Future<void> submit() async {
     if (!_validateAll()) return;
+
     emit(state.copyWith(isLoading: true, submitError: () => null));
 
     final nameParts = state.restOfName.trim().split(' ');
-    final lastName = nameParts.isNotEmpty ? nameParts.last : state.restOfName;
-    final nationalityCode = state.selectedNationality?.id ?? '1';
+    final lastName = nameParts.isNotEmpty
+        ? nameParts.last
+        : state.restOfName.trim();
     final gender = state.selectedGender == GenderType.male ? '1' : '2';
     final birthPlace = state.showManualBirthPlace
         ? state.manualBirthPlace.trim()
         : (state.selectedBirthPlace?.id ?? '');
     final bd = state.birthDate!;
-    final birthDate =
+    final birthDateStr =
         '${bd.year}-${bd.month.toString().padLeft(2, '0')}-${bd.day.toString().padLeft(2, '0')}';
 
     final request = RegisterRequest(
@@ -720,10 +672,10 @@ class SignupCubit extends Cubit<SignupState> {
       password: state.password,
       passwordConfirm: state.confirmPassword,
       nationalId: state.nationalId.trim(),
-      nationalityCode: nationalityCode,
+      nationalityCode: state.selectedNationality?.id ?? '1',
       gender: gender,
       birthPlace: birthPlace,
-      birthDate: birthDate,
+      birthDate: birthDateStr,
     );
 
     final result = await _authRepository.sendRegisterOtp(
@@ -734,7 +686,14 @@ class SignupCubit extends Cubit<SignupState> {
     switch (result) {
       case ApiSuccess(:final data):
         _pendingOtpToken = data['token']?.toString();
-        emit(state.copyWith(isLoading: false, isSubmitSuccess: true));
+        emit(
+          state.copyWith(
+            isLoading: false,
+            isSubmitSuccess: false,
+            submitError: () => null,
+          ),
+        );
+        emit(state.copyWith(isSubmitSuccess: true));
       case ApiError(:final message):
         emit(state.copyWith(isLoading: false, submitError: () => message));
     }
@@ -742,11 +701,14 @@ class SignupCubit extends Cubit<SignupState> {
 
   Future<bool> confirmOtp(String otp) async {
     if (_pendingOtpToken == null) return false;
+
     emit(state.copyWith(isLoading: true, submitError: () => null));
+
     final result = await _authRepository.confirmOtp(
       token: _pendingOtpToken!,
       otp: otp,
     );
+
     switch (result) {
       case ApiSuccess():
         emit(state.copyWith(isLoading: false));
@@ -758,9 +720,37 @@ class SignupCubit extends Cubit<SignupState> {
   }
 
   Future<void> resendOtp() async {
-    emit(state.copyWith(isSubmitSuccess: false, submitError: () => null));
-    await submit();
+    if (_pendingOtpToken == null) return;
+    emit(state.copyWith(isLoading: true, submitError: () => null));
+    final result = await _authRepository.sendRegisterOtp(
+      request: RegisterRequest(
+        firstName: state.firstName.trim(),
+        lastName: state.restOfName.trim().split(' ').last,
+        email: state.email.trim(),
+        mobile: state.phone.trim(),
+        password: state.password,
+        passwordConfirm: state.confirmPassword,
+        nationalId: state.nationalId.trim(),
+        nationalityCode: state.selectedNationality?.id ?? '1',
+        gender: state.selectedGender == GenderType.male ? '1' : '2',
+        birthPlace: state.showManualBirthPlace
+            ? state.manualBirthPlace.trim()
+            : (state.selectedBirthPlace?.id ?? ''),
+        birthDate: _formatDate(state.birthDate!),
+      ),
+      nationalIdFile: state.nationalIdFile,
+    );
+    switch (result) {
+      case ApiSuccess(:final data):
+        _pendingOtpToken = data['token']?.toString();
+        emit(state.copyWith(isLoading: false));
+      case ApiError(:final message):
+        emit(state.copyWith(isLoading: false, submitError: () => message));
+    }
   }
+
+  String _formatDate(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   bool _validateAll() {
     final firstNameError = state.firstName.trim().isEmpty
@@ -789,7 +779,6 @@ class SignupCubit extends Cubit<SignupState> {
     String? nationalIdImageError;
     String? birthPlaceError;
     String? manualBirthPlaceError;
-    String? residenceError;
     String? passportNumberError;
     String? passportExpiryError;
     String? passportIssuePlaceError;
@@ -807,7 +796,6 @@ class SignupCubit extends Cubit<SignupState> {
       if (state.showManualBirthPlace && state.manualBirthPlace.trim().isEmpty) {
         manualBirthPlaceError = 'محل الميلاد مطلوب';
       }
-      if (state.selectedResidence == null) residenceError = 'محل الإقامة مطلوب';
     } else {
       if (state.passportNumber.trim().isEmpty) {
         passportNumberError = 'رقم جواز السفر مطلوب';
@@ -818,7 +806,12 @@ class SignupCubit extends Cubit<SignupState> {
       if (state.selectedPassportIssuePlace == null) {
         passportIssuePlaceError = 'محل الإصدار مطلوب';
       }
-      if (state.selectedResidence == null) residenceError = 'محل الإقامة مطلوب';
+      if (state.selectedBirthPlace == null) {
+        birthPlaceError = 'محل الميلاد مطلوب';
+      }
+      if (state.showManualBirthPlace && state.manualBirthPlace.trim().isEmpty) {
+        manualBirthPlaceError = 'محل الميلاد مطلوب';
+      }
     }
 
     final hasError = [
@@ -835,7 +828,6 @@ class SignupCubit extends Cubit<SignupState> {
       nationalIdImageError,
       birthPlaceError,
       manualBirthPlaceError,
-      residenceError,
       passportNumberError,
       passportExpiryError,
       passportIssuePlaceError,
@@ -857,7 +849,6 @@ class SignupCubit extends Cubit<SignupState> {
           nationalIdImageError: () => nationalIdImageError,
           birthPlaceError: () => birthPlaceError,
           manualBirthPlaceError: () => manualBirthPlaceError,
-          residenceError: () => residenceError,
           passportNumberError: () => passportNumberError,
           passportExpiryError: () => passportExpiryError,
           passportIssuePlaceError: () => passportIssuePlaceError,
