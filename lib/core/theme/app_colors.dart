@@ -132,4 +132,6 @@ class AppColors {
 
   /// Transparent
   static const Color transparent = Colors.transparent;
+
+  static const Color color1 = Color(0xFF00A174);
 }

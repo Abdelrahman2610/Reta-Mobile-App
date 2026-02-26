@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/features/splash/presentation/pages/splash.dart';
-import 'features/auth/presentation/pages/guest_page.dart';
+
 import 'core/theme/app_theme.dart';
+import 'features/auth/presentation/pages/guest_page.dart';
 
 void main() {
   runApp(const MainApp());
@@ -12,11 +14,24 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: AppTheme.lightTheme,
-      supportedLocales: const [Locale('en'), Locale('ar')],
-      home: SplashPage(),
-      routes: {'/home': (context) => GuestPage()},
+    return ScreenUtilInit(
+      designSize: const Size(440, 956),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      child: MaterialApp(
+        theme: AppTheme.lightTheme,
+        // For RTL/LTR support:
+        // localizationsDelegates: const [
+        //   GlobalMaterialLocalizations.delegate,
+        //   GlobalWidgetsLocalizations.delegate,
+        //   GlobalCupertinoLocalizations.delegate,
+        // ],
+        debugShowCheckedModeBanner: false,
+        supportedLocales: const [Locale('ar'), Locale('en')],
+        builder: (context, Widget? child) => child!,
+        home: SplashPage(),
+        routes: {'/home': (context) => GuestPage()},
+      ),
     );
   }
 }

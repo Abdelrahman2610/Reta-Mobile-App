@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:flutter/material.dart';
+
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import 'declaration_guide_page.dart';
@@ -83,11 +84,12 @@ class _DeclarationsHome extends StatelessWidget {
             Expanded(
               child: Center(
                 child: DottedBorder(
-                  borderType: BorderType.RRect,
-                  radius: const Radius.circular(12),
-                  dashPattern: const [6, 4],
-                  color: AppColors.neutralDarkLightest,
-                  strokeWidth: 1.5,
+                  options: RoundedRectDottedBorderOptions(
+                    color: AppColors.neutralDarkLightest,
+                    dashPattern: const [6, 4],
+                    radius: Radius.circular(12),
+                    strokeWidth: 1.5,
+                  ),
                   child: Container(
                     width: MediaQuery.of(context).size.width * 0.9,
                     height: MediaQuery.of(context).size.width * 0.9,
