@@ -15,8 +15,8 @@ import '../../../../components/app_text_form_field.dart';
 import '../../components/app_drop_down_option.dart';
 import '../../components/declaration_data_tab.dart';
 import '../../components/units/unit_title.dart';
-import '../../cubit/units/unit_location_cubit.dart';
-import '../../cubit/units/unit_location_states.dart';
+import '../../cubit/units/location/unit_location_cubit.dart';
+import '../../cubit/units/location/unit_location_states.dart';
 
 class UnitLocationDataPage extends StatelessWidget {
   const UnitLocationDataPage({super.key, required this.applicantType});
@@ -315,7 +315,7 @@ class _UnitLocationDataPage extends StatelessWidget {
                     alignment: Alignment.center,
                     onTap: () {
                       if (cubit.validate()) {
-                        // TODO: navigate to next page
+                        cubit.onNextButtonTapped(context, applicantType);
                       }
                     },
                   ),

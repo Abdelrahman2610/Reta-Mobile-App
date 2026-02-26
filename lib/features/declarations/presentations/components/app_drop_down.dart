@@ -48,133 +48,138 @@ class AppDropdownField<T> extends StatelessWidget {
       children: [
         Directionality(
           textDirection: TextDirection.rtl,
-          child: Row(
-            children: [
-              AppText(
-                text: labelText,
-                fontSize: labelFontSize ?? 14.sp,
-                fontWeight: FontWeight.w700,
-                color: labelColor ?? AppColors.neutralDarkDark,
-              ),
-              if (labelRequired)
-                AppText(
-                  text: ' *',
-                  fontSize: labelFontSize ?? 14.sp,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.errorDark,
+          child: RichText(
+            softWrap: true,
+            overflow: TextOverflow.visible,
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: labelText,
+                  style: TextStyle(
+                    fontSize: labelFontSize ?? 14.sp,
+                    fontWeight: FontWeight.w700,
+                    color: labelColor ?? AppColors.neutralDarkDark,
+                  ),
                 ),
-            ],
+                if (labelRequired)
+                  TextSpan(
+                    text: ' *',
+                    style: TextStyle(
+                      fontSize: labelFontSize ?? 14.sp,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.errorDark,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
         8.hs,
 
-        SizedBox(
-          height: 48.h,
-          child: Directionality(
-            textDirection: TextDirection.rtl,
-            child: DropdownButtonFormField2<T>(
-              value: value,
-              items: items,
-              onChanged: enabled ? onChanged : null,
-              validator: validator,
-              isExpanded: true,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: AppColors.neutralDarkLightest,
-                fontWeight: FontWeight.w400,
-              ),
-              hint: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      hintText,
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                        color: AppColors.neutralDarkDarkest,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w400,
-                      ),
+        Directionality(
+          textDirection: TextDirection.rtl,
+          child: DropdownButtonFormField2<T>(
+            value: value,
+            items: items,
+            onChanged: enabled ? onChanged : null,
+            validator: validator,
+            isExpanded: true,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: AppColors.neutralDarkLightest,
+              fontWeight: FontWeight.w400,
+            ),
+            hint: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    hintText,
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      color: AppColors.neutralDarkDarkest,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w400,
                     ),
+                  ),
+                ),
+              ],
+            ),
+            buttonStyleData: ButtonStyleData(
+              height: 48.h,
+              padding: EdgeInsets.only(left: 2.w),
+              decoration: BoxDecoration(color: Colors.transparent),
+            ),
+            iconStyleData: IconStyleData(
+              icon: DropDownIcon(),
+              openMenuIcon: DropDownIcon(isOpened: true),
+            ),
+            dropdownStyleData: DropdownStyleData(
+              maxHeight: 300.h,
+              offset: Offset(0, -4.h),
+              isOverButton: false,
+              useSafeArea: true,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12.r),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              buttonStyleData: ButtonStyleData(
-                height: 48.h,
-                padding: EdgeInsets.only(left: 2.w),
-                decoration: BoxDecoration(color: Colors.transparent),
+              scrollbarTheme: ScrollbarThemeData(
+                radius: Radius.circular(40.r),
+                thickness: WidgetStateProperty.all(6),
+                thumbVisibility: WidgetStateProperty.all(true),
               ),
-              iconStyleData: IconStyleData(
-                icon: DropDownIcon(),
-                openMenuIcon: DropDownIcon(isOpened: true),
-              ),
-              dropdownStyleData: DropdownStyleData(
-                maxHeight: 300.h,
-                offset: Offset(0, -4.h),
-                isOverButton: false,
-                useSafeArea: true,
+            ),
+            menuItemStyleData: MenuItemStyleData(
+              height: 48.h,
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              selectedMenuItemBuilder: (context, child) => Container(
+                margin: EdgeInsets.symmetric(horizontal: 12.w),
                 decoration: BoxDecoration(
+                  color: AppColors.highlightLightest,
                   borderRadius: BorderRadius.circular(12.r),
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
                 ),
-                scrollbarTheme: ScrollbarThemeData(
-                  radius: Radius.circular(40.r),
-                  thickness: WidgetStateProperty.all(6),
-                  thumbVisibility: WidgetStateProperty.all(true),
-                ),
+                child: child,
               ),
-              menuItemStyleData: MenuItemStyleData(
-                height: 48.h,
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
-                selectedMenuItemBuilder: (context, child) => Container(
-                  margin: EdgeInsets.symmetric(horizontal: 12.w),
-                  decoration: BoxDecoration(
-                    color: AppColors.highlightLightest,
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: child,
-                ),
+            ),
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 6.w),
+              prefixIcon: prefixWidget,
+              prefixIconConstraints: BoxConstraints(
+                maxHeight: 48.h,
+                minWidth: 48.w,
               ),
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: 6.w),
-                prefixIcon: prefixWidget,
-                prefixIconConstraints: BoxConstraints(
-                  maxHeight: 48.h,
-                  minWidth: 48.w,
-                ),
-                filled: filledColor != null,
-                fillColor: filledColor,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: AppColors.neutralLightDarkest),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: AppColors.neutralLightDarkest),
-                ),
-                disabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: AppColors.neutralLightDarkest),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: AppColors.highlightDarkest),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: AppColors.errorDark),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: AppColors.errorDark),
-                ),
+              filled: filledColor != null,
+              fillColor: filledColor,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: BorderSide(color: AppColors.neutralLightDarkest),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: BorderSide(color: AppColors.neutralLightDarkest),
+              ),
+              disabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: BorderSide(color: AppColors.neutralLightDarkest),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: BorderSide(color: AppColors.highlightDarkest),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: BorderSide(color: AppColors.errorDark),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: BorderSide(color: AppColors.errorDark),
               ),
             ),
           ),

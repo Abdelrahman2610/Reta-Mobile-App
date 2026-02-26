@@ -7,25 +7,30 @@ import '../../../components/app_button.dart';
 import '../../../components/image_svg_custom_widget.dart';
 
 class AddNewPropertyButton extends StatelessWidget {
-  final Function onAdd;
+  final VoidCallback onAdd;
+  final String? label;
+  final EdgeInsets? padding;
 
-  const AddNewPropertyButton({super.key, required this.onAdd});
+  const AddNewPropertyButton({
+    super.key,
+    required this.onAdd,
+    this.label,
+    this.padding,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      padding: padding ?? EdgeInsets.symmetric(horizontal: 20.w),
       child: AppButton(
-        onTap: () {
-          onAdd();
-        },
-        label: "إضافة عقار جديد",
+        onTap: onAdd,
+        label: label ?? "إضافة عقار جديد",
         width: double.maxFinite,
         height: 48.h,
         borderColor: Colors.transparent,
         backgroundColor: AppColors.mainOrange,
         textColor: Colors.white,
-        fontSize: 12,
+        fontSize: 12.sp,
         fontWeight: FontWeight.w600,
         iconLeft: false,
         icon: ImageSvgCustomWidget(

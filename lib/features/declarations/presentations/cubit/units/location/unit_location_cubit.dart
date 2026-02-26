@@ -1,6 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reta/features/declarations/presentations/cubit/units/unit_location_states.dart';
+import 'package:reta/core/helpers/app_enum.dart';
+import 'package:reta/features/declarations/presentations/cubit/units/location/unit_location_states.dart';
+import 'package:reta/features/declarations/presentations/pages/units/unit_data.dart';
+
+import '../unit_data/unit_data_cubit.dart';
 
 const String kOther = 'أخرى';
 
@@ -176,6 +182,26 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   }
 
   bool validate() => formKey.currentState?.validate() ?? false;
+
+  void onNextButtonTapped(BuildContext context, ApplicantType applicantType) {
+    log("Payload: ${buildPayload()}");
+    final unitDataCubit = UnitDataCubit();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: this),
+            BlocProvider.value(value: unitDataCubit),
+          ],
+          child: UnitData(
+            applicantType: applicantType,
+            unitType: UnitType.commercial,
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Future<void> close() {

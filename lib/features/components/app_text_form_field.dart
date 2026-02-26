@@ -67,22 +67,30 @@ class AppTextFormField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            AppText(
-              text: labelText,
-              fontSize: labelFontSize ?? 12.sp,
-              fontWeight: FontWeight.w700,
-              color: labelColor ?? AppColors.neutralDarkLightest,
-            ),
-            if (labelRequired)
-              AppText(
-                text: ' *',
-                fontSize: labelFontSize ?? 12.sp,
-                fontWeight: FontWeight.w700,
-                color: AppColors.errorDark,
+        RichText(
+          softWrap: true,
+          overflow: TextOverflow.visible,
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: labelText,
+                style: TextStyle(
+                  fontSize: labelFontSize ?? 14.sp,
+                  fontWeight: FontWeight.w700,
+                  color: labelColor ?? AppColors.neutralDarkDark,
+                ),
               ),
-          ],
+              if (labelRequired)
+                TextSpan(
+                  text: ' *',
+                  style: TextStyle(
+                    fontSize: labelFontSize ?? 14.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.errorDark,
+                  ),
+                ),
+            ],
+          ),
         ),
         if (description != null)
           AppText(
@@ -93,78 +101,75 @@ class AppTextFormField extends StatelessWidget {
             maxLines: 2,
           ),
         8.hs,
-        SizedBox(
-          height: maxLines != null && maxLines! > 1 ? null : 48.h,
-          child: TextFormField(
-            controller: controller,
-            obscureText: obscureText,
-            keyboardType: keyboardType,
-            maxLines: maxLines ?? 1,
-            minLines: maxLines != null && maxLines! > 1 ? 1 : null,
-            readOnly: readOnly ?? false,
-            onChanged: onChanged,
-            onFieldSubmitted: onFieldSubmitted,
-            onTap: onTap,
-            enabled: enabled,
-            validator: validator,
-            inputFormatters: inputFormatters,
-            textInputAction: textInputAction,
-            textDirection: textDirection,
-            style: TextStyle(
+        TextFormField(
+          controller: controller,
+          obscureText: obscureText,
+          keyboardType: keyboardType,
+          maxLines: maxLines ?? 1,
+          minLines: maxLines != null && maxLines! > 1 ? 1 : null,
+          readOnly: readOnly ?? false,
+          onChanged: onChanged,
+          onFieldSubmitted: onFieldSubmitted,
+          onTap: onTap,
+          enabled: enabled,
+          validator: validator,
+          inputFormatters: inputFormatters,
+          textInputAction: textInputAction,
+          textDirection: textDirection,
+          style: TextStyle(
+            fontSize: 14.0.sp,
+            color: enabled
+                ? AppColors.neutralDarkDarkest
+                : AppColors.neutralDarkLightest,
+            fontWeight: FontWeight.w400,
+          ),
+          focusNode: focusNode,
+          onEditingComplete: onEditingComplete,
+          cursorColor: AppColors.black,
+          decoration: InputDecoration(
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 16.w,
+              vertical: 14.h,
+            ),
+
+            prefixIcon: prefixWidget,
+            suffixIcon: suffixWidget,
+            prefixIconConstraints: BoxConstraints(
+              maxHeight: 48.h,
+              minWidth: 48.w,
+            ),
+            filled: filledColor != null,
+            fillColor: filledColor,
+            suffixIconConstraints: BoxConstraints(
+              maxHeight: 48.h,
+              minWidth: 48.w,
+            ),
+            hintText: hintText,
+            hintStyle: TextStyle(
+              color: AppColors.neutralDarkLightest,
               fontSize: 14.0.sp,
-              color: enabled
-                  ? AppColors.neutralDarkDarkest
-                  : AppColors.neutralDarkLightest,
               fontWeight: FontWeight.w400,
             ),
-            focusNode: focusNode,
-            onEditingComplete: onEditingComplete,
-            cursorColor: AppColors.black,
-            decoration: InputDecoration(
-              isDense: true,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 16.w,
-                vertical: 14.h,
-              ),
-
-              prefixIcon: prefixWidget,
-              suffixIcon: suffixWidget,
-              prefixIconConstraints: BoxConstraints(
-                maxHeight: 48.h,
-                minWidth: 48.w,
-              ),
-              filled: filledColor != null,
-              fillColor: filledColor,
-              suffixIconConstraints: BoxConstraints(
-                maxHeight: 48.h,
-                minWidth: 48.w,
-              ),
-              hintText: hintText,
-              hintStyle: TextStyle(
-                color: AppColors.neutralDarkLightest,
-                fontSize: 14.0.sp,
-                fontWeight: FontWeight.w400,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: AppColors.neutralLightDarkest),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: AppColors.neutralLightDarkest),
-              ),
-              disabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: AppColors.neutralLightDarkest),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: AppColors.highlightDarkest),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: AppColors.errorDark),
-              ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: AppColors.neutralLightDarkest),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: AppColors.neutralLightDarkest),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: AppColors.neutralLightDarkest),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: AppColors.highlightDarkest),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: AppColors.errorDark),
             ),
           ),
         ),

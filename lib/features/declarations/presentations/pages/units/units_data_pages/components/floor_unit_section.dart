@@ -1,0 +1,88 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:reta/core/theme/app_colors.dart';
+
+import '../../../../../../../core/helpers/extensions/dimensions.dart';
+import '../../../../../../components/app_text_form_field.dart';
+import '../../../../components/app_drop_down.dart';
+import '../../../../components/app_drop_down_option.dart';
+import '../../../../cubit/units/unit_data/unit_data_cubit.dart';
+import '../../../../cubit/units/unit_data/unit_data_state.dart';
+
+class FloorUnitSection extends StatelessWidget {
+  const FloorUnitSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = context.read<UnitDataCubit>();
+    return BlocBuilder<UnitDataCubit, UnitDataState>(
+      buildWhen: (prev, curr) =>
+          prev.selectedFloorNumber != curr.selectedFloorNumber ||
+          prev.isFloorNumberOther != curr.isFloorNumberOther ||
+          prev.selectedUnitNumber != curr.selectedUnitNumber ||
+          prev.isUnitNumberOther != curr.isUnitNumberOther,
+      builder: (context, state) {
+        return Column(
+          children: [
+            AppDropdownField<String>(
+              labelText: 'رقم الدور',
+              labelFontSize: 16.sp,
+              labelRequired: true,
+              labelColor: AppColors.neutralDarkDark,
+              hintText: 'اختر رقم الدور',
+              value: state.selectedFloorNumber,
+              items: cubit.floorNumbers
+                  .map((f) => appDropDownOption(label: f))
+                  .toList(),
+              onChanged: cubit.selectFloorNumber,
+              validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
+            ),
+            if (state.isFloorNumberOther) ...[
+              16.hs,
+              AppTextFormField(
+                labelText: 'رقم الدور',
+                labelFontSize: 16.sp,
+                labelRequired: true,
+                labelColor: AppColors.neutralDarkDark,
+                controller: cubit.floorNumberOtherController,
+                hintText: 'ادخل رقم الدور',
+                keyboardType: TextInputType.number,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+              ),
+            ],
+            16.hs,
+
+            AppDropdownField<String>(
+              labelText: 'رقم الوحدة',
+              labelRequired: true,
+              hintText: 'اختر رقم الوحدة',
+              value: state.selectedUnitNumber,
+              items: cubit.unitNumbers
+                  .map((u) => appDropDownOption(label: u))
+                  .toList(),
+              onChanged: cubit.selectUnitNumber,
+              labelFontSize: 16.sp,
+              validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
+            ),
+            if (state.isUnitNumberOther) ...[
+              16.hs,
+              AppTextFormField(
+                labelText: 'رقم الوحدة',
+                labelFontSize: 16.sp,
+                labelRequired: true,
+                labelColor: AppColors.neutralDarkDark,
+                controller: cubit.unitNumberOtherController,
+                hintText: 'ادخل رقم الوحدة',
+                keyboardType: TextInputType.number,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
