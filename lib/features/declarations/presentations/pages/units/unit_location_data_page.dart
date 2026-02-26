@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/app_enum.dart';
-import 'package:reta/core/helpers/extensions/applicant_type.dart';
 import 'package:reta/features/declarations/presentations/components/app_drop_down.dart';
 
+import '../../../../../core/helpers/extensions/applicant_type.dart';
 import '../../../../../core/helpers/extensions/dimensions.dart';
+import '../../../../../core/helpers/extensions/unit_type.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../components/app_bar.dart';
 import '../../../../components/app_button.dart';
@@ -19,23 +20,27 @@ import '../../cubit/units/location/unit_location_cubit.dart';
 import '../../cubit/units/location/unit_location_states.dart';
 
 class UnitLocationDataPage extends StatelessWidget {
-  const UnitLocationDataPage({super.key, required this.applicantType});
+  const UnitLocationDataPage({
+    super.key,
+    required this.unitType,
+    required this.applicantType,
+  });
 
+  final UnitType unitType;
   final ApplicantType applicantType;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => UnitLocationCubit(),
-      child: _UnitLocationDataPage(applicantType: applicantType),
+      create: (_) =>
+          UnitLocationCubit(unitType: unitType, applicantType: applicantType),
+      child: _UnitLocationDataPage(),
     );
   }
 }
 
 class _UnitLocationDataPage extends StatelessWidget {
-  const _UnitLocationDataPage({required this.applicantType});
-
-  final ApplicantType applicantType;
+  const _UnitLocationDataPage();
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +49,7 @@ class _UnitLocationDataPage extends StatelessWidget {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: MainAppBar(
-          title: 'إقرار ${applicantType.label}',
+          title: 'إقرار ${cubit.applicantType.label}',
           backgroundColor: AppColors.mainBlueIndigoDye,
           backButtonIconColor: Colors.white,
           titleTextStyle: TextStyle(
@@ -61,7 +66,7 @@ class _UnitLocationDataPage extends StatelessWidget {
             child: Column(
               children: [
                 31.hs,
-                UnitTitle(title: 'وحدة سكنية'),
+                UnitTitle(title: cubit.unitType.label),
                 10.hs,
                 AppContainer(
                   height: 93,
@@ -315,7 +320,7 @@ class _UnitLocationDataPage extends StatelessWidget {
                     alignment: Alignment.center,
                     onTap: () {
                       if (cubit.validate()) {
-                        cubit.onNextButtonTapped(context, applicantType);
+                        cubit.onNextButtonTapped(context, cubit.applicantType);
                       }
                     },
                   ),

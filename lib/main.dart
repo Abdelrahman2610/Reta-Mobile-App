@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:reta/features/splash/presentation/pages/splash.dart';
 
+import 'core/helpers/app_enum.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/pages/guest_page.dart';
+import 'features/declarations/presentations/pages/provider_data_page.dart';
 
 void main() {
   runApp(const MainApp());
@@ -29,7 +30,8 @@ class MainApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         supportedLocales: const [Locale('ar'), Locale('en')],
         builder: (context, Widget? child) => child!,
-        home: SplashPage(),
+        // home: SplashPage(),
+        home: ProviderDataPage(applicantType: ApplicantType.owner),
         routes: {'/home': (context) => GuestPage()},
       ),
     );

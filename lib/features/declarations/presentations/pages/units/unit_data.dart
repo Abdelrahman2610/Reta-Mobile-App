@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/features/declarations/presentations/cubit/units/unit_data/unit_data_cubit.dart';
+import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/administrative_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/commercial_unit_page.dart';
+import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/fixed_installation_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/residential_unit_page.dart';
+import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/service_unit_page.dart';
 
 import '../../../../../core/helpers/extensions/applicant_type.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -39,20 +42,23 @@ class UnitData extends StatelessWidget {
         ),
         body: switch (unitType) {
           UnitType.residential => ResidentialUnitPage(
-            applicantType: applicantType,
             unitCubit: cubit,
+            applicantType: applicantType,
           ),
-          // TODO: Handle this case.
           UnitType.commercial => CommercialUnitPage(
+            unitCubit: cubit,
+            applicantType: applicantType,
+          ),
+          UnitType.administrative => AdministrativeUnitPage(unitCubit: cubit),
+          UnitType.serviceUnit => ServiceUnitPage(
             applicantType: applicantType,
             unitCubit: cubit,
           ),
           // TODO: Handle this case.
-          UnitType.administrative => throw UnimplementedError(),
-          // TODO: Handle this case.
-          UnitType.serviceUnit => throw UnimplementedError(),
-          // TODO: Handle this case.
-          UnitType.fixedInstallations => throw UnimplementedError(),
+          UnitType.fixedInstallations => FixedInstallationsPage(
+            applicantType: applicantType,
+            unitCubit: cubit,
+          ),
           // TODO: Handle this case.
           UnitType.vacantLand => throw UnimplementedError(),
           // TODO: Handle this case.

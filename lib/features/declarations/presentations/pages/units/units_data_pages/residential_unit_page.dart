@@ -25,8 +25,8 @@ import 'components/unit_buttons.dart';
 class ResidentialUnitPage extends StatelessWidget {
   const ResidentialUnitPage({
     super.key,
-    required this.applicantType,
     required this.unitCubit,
+    required this.applicantType,
   });
 
   final ApplicantType applicantType;
@@ -36,13 +36,14 @@ class ResidentialUnitPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: unitCubit,
-      child: _ResidentialUnitView(applicantType: applicantType),
+      child: _ResidentialUnitView(applicantType),
     );
   }
 }
 
 class _ResidentialUnitView extends StatelessWidget {
-  const _ResidentialUnitView({required this.applicantType});
+  const _ResidentialUnitView(this.applicantType);
+
   final ApplicantType applicantType;
 
   @override
@@ -109,7 +110,6 @@ class _ResidentialUnitView extends StatelessWidget {
                     labelText: 'نوع الإستخدام',
                     controller: TextEditingController(text: 'سكني'),
                     enabled: false,
-                    labelFontSize: 16.sp,
                     filledColor: AppColors.neutralLightLight,
                   ),
                   16.hs,
@@ -121,14 +121,12 @@ class _ResidentialUnitView extends StatelessWidget {
                     labelText: 'كود حساب الوحدة',
                     controller: cubit.unitCodeController,
                     hintText: 'ادخل كود حساب الوحدة',
-                    labelFontSize: 16.sp,
                   ),
                   16.hs,
 
                   AppTextFormField(
                     labelText: 'المساحة',
                     labelRequired: true,
-                    labelFontSize: 16.sp,
                     controller: cubit.areaController,
                     hintText: 'المساحة بالمتر المربع',
                     keyboardType: TextInputType.number,
@@ -144,7 +142,6 @@ class _ResidentialUnitView extends StatelessWidget {
                       return AppDropdownField<String>(
                         labelText: 'نوع الوحدة',
                         labelRequired: true,
-                        labelFontSize: 16.sp,
                         hintText: 'اختر نوع الوحدة',
                         value: state.selectedUnitSubType,
                         items: cubit.residentialUnitTypes
@@ -217,7 +214,6 @@ class _ResidentialUnitView extends StatelessWidget {
                     labelText: 'القيمة السوقية للوحدة',
                     controller: cubit.marketValueController,
                     hintText: 'ادخل القيمة السوقية للوحدة',
-                    labelFontSize: 16.sp,
                     keyboardType: TextInputType.number,
                   ),
                   16.hs,
@@ -233,7 +229,6 @@ class _ResidentialUnitView extends StatelessWidget {
                         text: 'حمل ملف',
                         backgroundColor: AppColors.highlightDarkest,
                         textColor: AppColors.white,
-                        labelFontSize: 16.sp,
                         filePath: state.ownershipDeedFilePath,
                         onFilePicked: () async {
                           final path = await cubit.pickFile();
@@ -256,7 +251,6 @@ class _ResidentialUnitView extends StatelessWidget {
                         labelText: 'عقد الإيجار (إن وجد)',
                         filePath: state.leaseContractFilePath,
                         text: 'حمل ملف',
-                        labelFontSize: 16.sp,
                         backgroundColor: AppColors.highlightDarkest,
                         textColor: AppColors.white,
                         onFilePicked: () async {

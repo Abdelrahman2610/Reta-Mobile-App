@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/core/theme/app_colors.dart';
 import 'package:reta/features/components/app_bar.dart';
 import 'package:reta/features/components/app_button.dart';
@@ -13,7 +14,9 @@ import '../cubit/applicant_cubit.dart';
 import '../cubit/applicant_states.dart';
 
 class ProviderDataPage extends StatelessWidget {
-  const ProviderDataPage({super.key});
+  const ProviderDataPage({super.key, required this.applicantType});
+
+  final ApplicantType applicantType;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +31,8 @@ class ProviderDataPage extends StatelessWidget {
       "nationalIdFileURL": "https:www.google.com",
     };
     return BlocProvider(
-      create: (_) => ApplicantCubit()..initFromUser(user),
+      create: (_) =>
+          ApplicantCubit(applicantType: applicantType)..initFromUser(user),
       lazy: false,
       child: const _ProviderDataView(),
     );
