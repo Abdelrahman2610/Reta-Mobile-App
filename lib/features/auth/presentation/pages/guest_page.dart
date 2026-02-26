@@ -197,7 +197,6 @@ class _HomeTab extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          // ✅ FIXED: switch to tab 2 instead of Navigator.push
           onTap: () => context.read<GuestCubit>().selectTab(2),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),

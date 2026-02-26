@@ -53,24 +53,25 @@ class HomeCubit extends Cubit<HomeState> {
     try {
       // TODO: Replace with real repository call
       await Future.delayed(const Duration(milliseconds: 600));
-      final results = [
-        DeclarationSummary(
-          id: '1',
-          declarationNumber: '2165484948',
-          ownerName: 'مالك على السريع',
-          submittedAt: DateTime(2026, 1, 8),
-          unitCount: 2,
-          status: DeclarationStatus.draft,
-        ),
-        DeclarationSummary(
-          id: '2',
-          declarationNumber: '2165484948',
-          ownerName: 'مالك على السريع',
-          submittedAt: DateTime(2026, 4, 12),
-          unitCount: 2,
-          status: DeclarationStatus.approved,
-        ),
-      ];
+      final results = <DeclarationSummary>[];
+      // final results = [
+      //   DeclarationSummary(
+      //     id: '1',
+      //     declarationNumber: '2165484948',
+      //     ownerName: 'مالك على السريع',
+      //     submittedAt: DateTime(2026, 1, 8),
+      //     unitCount: 2,
+      //     status: DeclarationStatus.draft,
+      //   ),
+      //   DeclarationSummary(
+      //     id: '2',
+      //     declarationNumber: '2165484948',
+      //     ownerName: 'مالك على السريع',
+      //     submittedAt: DateTime(2026, 4, 12),
+      //     unitCount: 2,
+      //     status: DeclarationStatus.approved,
+      //   ),
+      // ];
       emit(state.copyWith(declarations: results, isLoadingDeclarations: false));
     } catch (_) {
       emit(

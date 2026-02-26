@@ -27,10 +27,10 @@ class HomeTab extends StatelessWidget {
                   _DeclarationsSection(),
                   const SizedBox(height: 16),
                   _QuickActionCard(
-                    icon: Icons.receipt_long_outlined,
+                    imagePath: 'assets/images/icon(1).svg',
                     title: 'طلبات السداد',
                     subtitle:
-                        'جميع طلبات السداد التي تم إصدارها عند تقديم الإقرار ويمكن سدادها فقط عبر الدفع الإلكتروني أو الإيداع البنكي.',
+                        'جميع طلبات السداد التي تم إصدارها عند تقديم الإقرار، ويمكن سدادها لاحقًا عبر الدفع الإلكتروني أو الإيداع البنكي.',
                     badgeCount: 1,
                     onTap: () {
                       /* TODO: navigate to payment requests */
@@ -41,7 +41,7 @@ class HomeTab extends StatelessWidget {
                     icon: Icons.account_balance_wallet_outlined,
                     title: 'سداد المديونيات',
                     subtitle:
-                        'سداد المبالغ المستحقة عن الإقرارات الضريبية المقدمة سابقاً (مديونيات بعلم المكلف).',
+                        'سداد المبالغ المستحقة عن الإقرارات الضريبية المقدمة سابقًا (مديونيات بعلم المكلف).',
                     badgeCount: 2,
                     onTap: () {
                       /* TODO: navigate to debt payment */
@@ -149,11 +149,85 @@ class _HomeHero extends StatelessWidget {
   }
 }
 
+// class _DeclarationsSection extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return BlocBuilder<HomeCubit, HomeState>(
+//       builder: (context, state) {
+//         return Column(
+//           crossAxisAlignment: CrossAxisAlignment.stretch,
+//           children: [
+//             Row(
+//               textDirection: TextDirection.rtl,
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               children: [
+//                 Text(
+//                   'إقراراتي',
+//                   textDirection: TextDirection.rtl,
+//                   style: AppTextStyles.h4.copyWith(color: Color(0xFF005FAD)),
+//                 ),
+//                 TextButton(
+//                   onPressed: () => context.read<HomeCubit>().selectTab(2),
+//                   child: Text(
+//                     'عرض الكل',
+//                     style: AppTextStyles.bodyM.copyWith(
+//                       color: AppColors.highlightDarkest,
+//                       fontWeight: FontWeight.w400,
+//                       decoration: TextDecoration.underline,
+//                       decorationColor: AppColors.highlightDarkest,
+//                     ),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//             const SizedBox(height: 8),
+//             if (state.isLoadingDeclarations)
+//               _DeclarationsLoading()
+//             else if (state.errorMessage != null)
+//               _DeclarationsError(
+//                 message: state.errorMessage!,
+//                 onRetry: () => context.read<HomeCubit>().refreshDeclarations(),
+//               )
+//             else if (state.declarations.isEmpty)
+//               _DeclarationsEmpty()
+//             else
+//               SizedBox(
+//                 height: 160,
+//                 child: ListView.separated(
+//                   scrollDirection: Axis.horizontal,
+//                   reverse: true,
+//                   padding: const EdgeInsets.symmetric(
+//                     horizontal: 2,
+//                     vertical: 4,
+//                   ),
+//                   itemCount: state.declarations.length,
+//                   separatorBuilder: (_, __) => const SizedBox(width: 12),
+//                   itemBuilder: (_, i) =>
+//                       _DeclarationCard(declaration: state.declarations[i]),
+//                 ),
+//               ),
+//           ],
+//         );
+//       },
+//     );
+//   }
+// }
+
 class _DeclarationsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
+        if (!state.isLoadingDeclarations &&
+            state.errorMessage == null &&
+            state.declarations.isEmpty) {
+          return _NewUserCTA(
+            onTap: () {
+              // TODO: navigate to new declaration flow
+            },
+          );
+        }
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -164,17 +238,24 @@ class _DeclarationsSection extends StatelessWidget {
                 Text(
                   'إقراراتي',
                   textDirection: TextDirection.rtl,
-                  style: AppTextStyles.h5.copyWith(
-                    color: AppColors.mainBlueIndigoDye,
+                  style: AppTextStyles.h4.copyWith(
+                    color: const Color(0xFF005FAD),
                   ),
                 ),
                 TextButton(
                   onPressed: () => context.read<HomeCubit>().selectTab(2),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                   child: Text(
                     'عرض الكل',
-                    style: AppTextStyles.bodyS.copyWith(
-                      color: AppColors.mainBlueSecondary,
-                      fontWeight: FontWeight.w600,
+                    style: AppTextStyles.bodyM.copyWith(
+                      color: AppColors.highlightDarkest,
+                      fontWeight: FontWeight.w400,
+                      decoration: TextDecoration.underline,
+                      decorationColor: AppColors.highlightDarkest,
                     ),
                   ),
                 ),
@@ -188,8 +269,6 @@ class _DeclarationsSection extends StatelessWidget {
                 message: state.errorMessage!,
                 onRetry: () => context.read<HomeCubit>().refreshDeclarations(),
               )
-            else if (state.declarations.isEmpty)
-              _DeclarationsEmpty()
             else
               SizedBox(
                 height: 160,
@@ -213,6 +292,75 @@ class _DeclarationsSection extends StatelessWidget {
   }
 }
 
+class _NewUserCTA extends StatelessWidget {
+  final VoidCallback onTap;
+  const _NewUserCTA({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.warningDark,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          child: Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(40),
+                  color: const Color(0xFFF8F9FE),
+                ),
+                child: const Icon(
+                  Icons.article_outlined,
+                  color: AppColors.warningDark,
+                  size: 26,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'تقديم الإقرار الضريبي',
+                      textDirection: TextDirection.rtl,
+                      style: AppTextStyles.h5.copyWith(
+                        color: AppColors.neutralLightLightest,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'قدّم إقرارًا موحّدًا لجميع ممتلكاتك العقارية، مع إمكانية إضافة أكثر من عقار قبل الإرسال.',
+                      textDirection: TextDirection.rtl,
+                      style: AppTextStyles.bodyS.copyWith(
+                        color: AppColors.neutralLightLightest.withOpacity(0.90),
+                        height: 1.6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.arrow_back_ios_rounded,
+                color: AppColors.neutralLightLightest,
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _DeclarationCard extends StatelessWidget {
   final DeclarationSummary declaration;
   const _DeclarationCard({required this.declaration});
@@ -220,10 +368,11 @@ class _DeclarationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _statusColor(declaration.status);
-    final date = intl.DateFormat(
-      'd MMMM yyyy',
-      'ar',
-    ).format(declaration.submittedAt);
+    final date = '11/11/2023';
+    // final date = intl.DateFormat(
+    //   'd MMMM yyyy',
+    //   'ar',
+    // ).format(declaration.submittedAt);
 
     return Container(
       width: 210,
@@ -417,19 +566,24 @@ class _DeclarationsEmpty extends StatelessWidget {
 }
 
 class _QuickActionCard extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? imagePath;
   final String title;
   final String subtitle;
   final int badgeCount;
   final VoidCallback onTap;
 
   const _QuickActionCard({
-    required this.icon,
+    this.icon,
+    this.imagePath,
     required this.title,
     required this.subtitle,
     required this.badgeCount,
     required this.onTap,
-  });
+  }) : assert(
+         icon != null || imagePath != null,
+         'Provide either icon or imagePath',
+       );
 
   @override
   Widget build(BuildContext context) {
@@ -468,11 +622,7 @@ class _QuickActionCard extends StatelessWidget {
                         color: AppColors.neutralLightLight,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
-                        icon,
-                        color: AppColors.mainBlueIndigoDye,
-                        size: 24,
-                      ),
+                      child: _buildIconWidget(),
                     ),
                     if (badgeCount > 0)
                       Positioned(
@@ -536,6 +686,21 @@ class _QuickActionCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildIconWidget() {
+    if (imagePath != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: SvgPicture.asset(
+          imagePath!,
+          width: 44,
+          height: 44,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+    return Icon(icon, color: AppColors.mainBlueIndigoDye, size: 24);
   }
 }
 
