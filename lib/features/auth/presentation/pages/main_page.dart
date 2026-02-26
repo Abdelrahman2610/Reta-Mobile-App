@@ -29,7 +29,10 @@ class MainPage extends StatelessWidget {
       ),
     );
 
-    return BlocProvider(create: (_) => HomeCubit(), child: const _MainView());
+    return MultiBlocProvider(
+      providers: [BlocProvider(create: (_) => HomeCubit())],
+      child: const _MainView(),
+    );
   }
 }
 

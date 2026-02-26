@@ -9,7 +9,7 @@ class ApplicantState {
   final String? ownershipProofDocumentPath;
   final String? taxpayerNationalIdFilePath;
   final String? taxpayerPassportFilePath;
-  final TaxpayerTypes? taxpayerTypes;
+  final String? taxpayerTypes;
   final String? taxpayerAuthorizationFilePath;
   final String? taxpayerTaxCardFilePath;
   final String? taxpayerCommercialRegisterFilePath;
@@ -40,7 +40,7 @@ class ApplicantState {
     String? ownershipProofDocumentPath,
     String? taxpayerNationalIdFilePath,
     String? taxpayerPassportFilePath,
-    TaxpayerTypes? taxpayerTypes,
+    String? taxpayerTypes,
     String? taxpayerAuthorizationFilePath,
     String? taxpayerTaxCardFilePath,
     String? taxpayerCommercialRegisterFilePath,

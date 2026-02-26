@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reta/core/helpers/extensions/taxpayer_types.dart';
+import 'package:reta/features/declarations/presentations/cubit/declaration_lookups_cubit.dart';
 import 'package:reta/features/declarations/presentations/pages/units/unit_location_data_page.dart';
 
 import '../../../../core/helpers/app_enum.dart';
@@ -17,8 +17,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   final formKey = GlobalKey<FormState>();
 
   final ApplicantType applicantType;
-  // ApplicantType applicantType = ApplicantType.owner;
-  UnitType unitType = UnitType.fixedInstallations;
+  UnitType unitType = UnitType.residential;
 
   /// --------------------------- Applicant -----------------------------
   final applicantFirstNameController = TextEditingController();
@@ -33,23 +32,36 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
   void initFromUser(Map<String, dynamic>? user) {
     if (user == null) return;
-    applicantFirstNameController.text = user['firstName'] ?? '';
-    applicantLastNameController.text = user['lastName'] ?? '';
-    applicantPhoneController.text = user['phone'] ?? '';
+    String secondName = user['second_name'];
+    String thirdName = user['third_name'];
+    String fourthName = user['fourth_name'];
+    applicantFirstNameController.text = user['first_name'] ?? '';
+    applicantLastNameController.text = '$secondName $thirdName $fourthName'
+        .trim();
+    applicantPhoneController.text = user['mobile'] ?? '';
     applicantEmailController.text = user['email'] ?? '';
-    applicantNationalIdFilePath = user['nationalIdFileURL'] ?? '';
 
-    final nationality = user['nationality'];
-    if (nationality == 'egyptian') {
+    final nationalityName = user['nationality']?['name'] ?? '';
+    if (nationalityName == 'مصر') {
       applicantNationality = Nationality.egyptian;
     } else {
       applicantNationality = Nationality.foreign;
     }
 
     if (applicantNationality == Nationality.egyptian) {
-      applicantNationalIdController.text = user['nationalId'] ?? '';
+      applicantNationalIdController.text = user['national_id'] ?? '';
     } else {
-      applicantPassportNumberController.text = user['passportNumber'] ?? '';
+      applicantPassportNumberController.text = user['passport_num'] ?? '';
+    }
+
+    final nationalIdFiles = user['national_id_file'] as List?;
+    if (nationalIdFiles != null && nationalIdFiles.isNotEmpty) {
+      applicantNationalIdFilePath = nationalIdFiles.first['full_url'];
+    }
+
+    final passportFiles = user['passport_num_file'] as List?;
+    if (passportFiles != null && passportFiles.isNotEmpty) {
+      applicantPassportFilePath = passportFiles.first['full_url'];
     }
 
     emit(state.copyWith(applicantType: state.applicantType));
@@ -69,7 +81,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
   final taxpayerFirstNameController = TextEditingController();
   final taxpayerLastNameController = TextEditingController();
-  TaxpayerTypes taxpayerTypes = TaxpayerTypes.natural;
+  String? taxpayerTypes;
   final taxpayerPhoneController = TextEditingController();
   final taxpayerEmailController = TextEditingController();
 
@@ -89,7 +101,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   }
 
   void changeTaxpayerType(String? value) {
-    taxpayerTypes = value?.getTaxpayerType ?? TaxpayerTypes.natural;
+    taxpayerTypes = value;
     emit(state.copyWith(taxpayerTypes: taxpayerTypes));
   }
 
@@ -246,6 +258,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   // ──────────────────────────────────────────────────────
 
   Future<void> onNextTapped(BuildContext context) async {
+    final lookupsCubit = context.read<DeclarationLookupsCubit>();
     if (applicantType == ApplicantType.owner ||
         applicantType == ApplicantType.beneficiary) {
       // TODO: Call submit
@@ -253,8 +266,11 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => BlocProvider.value(
-            value: this,
+          builder: (context) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: this),
+              BlocProvider.value(value: lookupsCubit),
+            ],
             child: UnitLocationDataPage(
               applicantType: applicantType,
               unitType: unitType,
@@ -266,20 +282,30 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              BlocProvider.value(value: this, child: TaxpayerDataPage()),
+          builder: (context) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: this),
+              BlocProvider.value(value: lookupsCubit),
+            ],
+            child: TaxpayerDataPage(),
+          ),
+          // BlocProvider.value(value: this, child: TaxpayerDataPage()),
         ),
       );
     }
   }
 
   Future<void> onTaxpayerNextTapped(BuildContext context) async {
+    final lookupsCubit = context.read<DeclarationLookupsCubit>();
     log("ApiBody: ${_buildPayload()}");
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => BlocProvider.value(
-          value: this,
+        builder: (context) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: this),
+            BlocProvider.value(value: lookupsCubit),
+          ],
           child: UnitLocationDataPage(
             applicantType: applicantType,
             unitType: unitType,
@@ -361,7 +387,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       case ApplicantType.other:
         base = {
           ...base,
-          'taxpayerType': taxpayerTypes.name,
+          'taxpayerType': taxpayerTypes,
           'phoneNumber': taxpayerPhoneController.text.trim(),
           'email': taxpayerEmailController.text.trim(),
           if (applicantType == ApplicantType.agent)

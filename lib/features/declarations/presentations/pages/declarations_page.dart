@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/fixed_assets.dart';
 import 'package:reta/features/components/app_text.dart';
@@ -9,9 +10,23 @@ import 'package:reta/features/declarations/presentations/pages/properties_list_i
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_bar.dart';
 import '../../../components/app_button.dart';
+import '../cubit/declaration_lookups_cubit.dart';
 
 class DeclarationsPage extends StatelessWidget {
   const DeclarationsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      lazy: false,
+      create: (_) => DeclarationLookupsCubit()..fetchLookups(),
+      child: const _DeclarationsView(),
+    );
+  }
+}
+
+class _DeclarationsView extends StatelessWidget {
+  const _DeclarationsView({super.key});
 
   @override
   Widget build(BuildContext context) {
