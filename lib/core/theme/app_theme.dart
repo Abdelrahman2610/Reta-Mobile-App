@@ -33,7 +33,6 @@ class AppTheme {
       ),
 
       textTheme: const TextTheme(
-        // Headings
         displayLarge: AppTextStyles.h1,
         displayMedium: AppTextStyles.h2,
         displaySmall: AppTextStyles.h3,
@@ -44,12 +43,10 @@ class AppTheme {
         titleMedium: AppTextStyles.h6,
         titleSmall: AppTextStyles.h6,
 
-        // Body
         bodyLarge: AppTextStyles.bodyXL,
         bodyMedium: AppTextStyles.bodyL,
         bodySmall: AppTextStyles.bodyM,
 
-        // Labels
         labelLarge: AppTextStyles.actionL,
         labelMedium: AppTextStyles.actionM,
         labelSmall: AppTextStyles.captionM,

@@ -1,39 +1,14 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// import '../../../../core/network/api_result.dart';
-// import '/features/auth/data/repositories/auth_repository.dart';
-
-// ─────────────────────────────────────────
-// ENUMS
-// ─────────────────────────────────────────
 
 enum ForgotTab { mobile, email }
 
-enum ForgotStep {
-  /// Step 1 — choose method & enter identifier
-  input,
-
-  /// Step 2 — enter the 6-digit OTP
-  otp,
-
-  /// Step 3 — OTP verified, show "login" success screen
-  otpSuccess,
-
-  /// Step 4 — set new password
-  newPassword,
-
-  /// Step 5 — all done
-  done,
-}
-
-// ─────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────
+enum ForgotStep { input, otp, otpSuccess, newPassword, done }
 
 class ForgotPasswordState {
   final ForgotTab selectedTab;
   final ForgotStep step;
 
-  // Step 1 fields
   final String mobile;
   final String email;
   final String? mobileError;
@@ -41,11 +16,11 @@ class ForgotPasswordState {
   final bool isLoading;
   final String? requestError;
 
-  // Step 2 — OTP
   final String otpValue;
   final String? otpError;
 
-  // Step 4 — new password
+  final int resendCooldown;
+
   final String newPassword;
   final String confirmPassword;
   final bool isNewPasswordVisible;
@@ -54,7 +29,6 @@ class ForgotPasswordState {
   final String? confirmPasswordError;
   final String? resetError;
 
-  // Internal token returned by the API after step-1 request
   final String? resetToken;
 
   const ForgotPasswordState({
@@ -68,6 +42,7 @@ class ForgotPasswordState {
     this.requestError,
     this.otpValue = '',
     this.otpError,
+    this.resendCooldown = 0,
     this.newPassword = '',
     this.confirmPassword = '',
     this.isNewPasswordVisible = false,
@@ -89,6 +64,7 @@ class ForgotPasswordState {
     String? Function()? requestError,
     String? otpValue,
     String? Function()? otpError,
+    int? resendCooldown,
     String? newPassword,
     String? confirmPassword,
     bool? isNewPasswordVisible,
@@ -109,6 +85,7 @@ class ForgotPasswordState {
       requestError: requestError != null ? requestError() : this.requestError,
       otpValue: otpValue ?? this.otpValue,
       otpError: otpError != null ? otpError() : this.otpError,
+      resendCooldown: resendCooldown ?? this.resendCooldown,
       newPassword: newPassword ?? this.newPassword,
       confirmPassword: confirmPassword ?? this.confirmPassword,
       isNewPasswordVisible: isNewPasswordVisible ?? this.isNewPasswordVisible,
@@ -126,14 +103,10 @@ class ForgotPasswordState {
   }
 }
 
-// ─────────────────────────────────────────
-// CUBIT
-// ─────────────────────────────────────────
-
 class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
   ForgotPasswordCubit() : super(const ForgotPasswordState());
 
-  // ── Tab ─────────────────────────────────
+  Timer? _resendTimer;
 
   void selectTab(ForgotTab tab) {
     emit(
@@ -147,8 +120,6 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
       ),
     );
   }
-
-  // ── Step 1 field changes ─────────────────
 
   void onMobileChanged(String v) {
     emit(
@@ -170,59 +141,59 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
     );
   }
 
-  // ── Step 1 submit — request OTP ──────────
-
   Future<void> requestReset() async {
     if (!_validateStep1()) return;
 
     emit(state.copyWith(isLoading: true, requestError: () => null));
 
-    // TODO: wire to real API endpoint. Replace this placeholder with:
-    // final result = await _authRepository.forgotPassword(
-    //   type: state.selectedTab == ForgotTab.mobile ? 'mobile' : 'email',
-    //   value: state.selectedTab == ForgotTab.mobile ? state.mobile : state.email,
-    // );
-    //
-    // switch (result) {
-    //   case ApiSuccess(:final data):
-    //     emit(state.copyWith(
-    //       isLoading: false,
-    //       resetToken: () => data['token']?.toString(),
-    //       step: ForgotStep.otp,
-    //     ));
-    //   case ApiError(:final message):
-    //     emit(state.copyWith(isLoading: false, requestError: () => message));
-    // }
+    try {
+      // TODO: Replace with real API call
+      await Future.delayed(const Duration(milliseconds: 800));
 
-    // ── Simulated success (remove when API is ready) ──
-    await Future.delayed(const Duration(milliseconds: 800));
-    emit(state.copyWith(isLoading: false, step: ForgotStep.otp));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          step: ForgotStep.otp,
+          otpValue: '',
+          otpError: () => null,
+        ),
+      );
+
+      _startResendCooldown();
+    } catch (_) {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          requestError: () => 'حدث خطأ، يرجى المحاولة مرة أخرى',
+        ),
+      );
+    }
   }
 
   bool _validateStep1() {
     if (state.selectedTab == ForgotTab.mobile) {
-      if (state.mobile.isEmpty) {
+      if (state.mobile.trim().isEmpty) {
         emit(state.copyWith(mobileError: () => 'رقم الموبايل مطلوب'));
         return false;
       }
-      if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(state.mobile)) {
+      if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(state.mobile.trim())) {
         emit(state.copyWith(mobileError: () => 'رقم الموبايل غير صحيح'));
         return false;
       }
     } else {
-      if (state.email.isEmpty) {
+      if (state.email.trim().isEmpty) {
         emit(state.copyWith(emailError: () => 'البريد الإلكتروني مطلوب'));
         return false;
       }
-      if (!RegExp(r'^[\w\-.]+@[\w\-]+\.[a-zA-Z]{2,}$').hasMatch(state.email)) {
+      if (!RegExp(
+        r'^[\w\-.]+@[\w\-]+\.[a-zA-Z]{2,}$',
+      ).hasMatch(state.email.trim())) {
         emit(state.copyWith(emailError: () => 'البريد الإلكتروني غير صحيح'));
         return false;
       }
     }
     return true;
   }
-
-  // ── Step 2 OTP ───────────────────────────
 
   void onOtpChanged(String v) {
     emit(state.copyWith(otpValue: v, otpError: () => null));
@@ -236,54 +207,54 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
     emit(state.copyWith(isLoading: true, otpError: () => null));
 
-    // TODO: wire to real API endpoint. Replace this placeholder with:
-    // final result = await _authRepository.verifyOtp(
-    //   token: state.resetToken!,
-    //   otp: state.otpValue,
-    // );
-    //
-    // switch (result) {
-    //   case ApiSuccess():
-    //     emit(state.copyWith(isLoading: false, step: ForgotStep.otpSuccess));
-    //   case ApiError(:final message):
-    //     emit(state.copyWith(isLoading: false, otpError: () => message));
-    // }
+    try {
+      // TODO: Replace with real API call
+      await Future.delayed(const Duration(milliseconds: 800));
 
-    // ── Simulated success ──
-    await Future.delayed(const Duration(milliseconds: 800));
-    emit(state.copyWith(isLoading: false, step: ForgotStep.otpSuccess));
+      emit(state.copyWith(isLoading: false, step: ForgotStep.otpSuccess));
+    } catch (_) {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          otpError: () => 'رمز التحقق غير صحيح، يرجى المحاولة مرة أخرى',
+        ),
+      );
+    }
   }
 
-  void resendOtp() async {
+  Future<void> resendOtp() async {
+    if (state.resendCooldown > 0) return;
     emit(state.copyWith(otpValue: '', otpError: () => null));
     await requestReset();
   }
 
-  // ── Navigation helpers (called from UI) ──
-
-  /// Go back from OTP step to the input step.
   void goBackToInput() {
-    emit(state.copyWith(step: ForgotStep.input));
+    _resendTimer?.cancel();
+    emit(
+      state.copyWith(
+        step: ForgotStep.input,
+        otpValue: '',
+        otpError: () => null,
+        resendCooldown: 0,
+      ),
+    );
   }
-
-  // ── From otpSuccess → newPassword ────────
 
   void proceedToNewPassword() {
     emit(state.copyWith(step: ForgotStep.newPassword));
   }
-
-  // ── Step 4 new password ──────────────────
 
   void onNewPasswordChanged(String v) {
     emit(
       state.copyWith(
         newPassword: v,
         newPasswordError: () => _validatePassword(v),
-        confirmPasswordError: () => state.confirmPassword.isEmpty
-            ? null
-            : state.confirmPassword != v
-            ? 'كلمتا المرور غير متطابقتين'
-            : null,
+        confirmPasswordError: () {
+          if (state.confirmPassword.isEmpty) return null;
+          return state.confirmPassword != v
+              ? 'كلمتا المرور غير متطابقتين'
+              : null;
+        },
         resetError: () => null,
       ),
     );
@@ -319,12 +290,11 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
     return null;
   }
 
-  bool get isNewPasswordValid {
-    return state.newPassword.isNotEmpty &&
-        state.confirmPassword.isNotEmpty &&
-        state.newPassword == state.confirmPassword &&
-        _validatePassword(state.newPassword) == null;
-  }
+  bool get isNewPasswordValid =>
+      state.newPassword.isNotEmpty &&
+      state.confirmPassword.isNotEmpty &&
+      state.newPassword == state.confirmPassword &&
+      _validatePassword(state.newPassword) == null;
 
   Future<void> submitNewPassword() async {
     final pwErr = _validatePassword(state.newPassword);
@@ -343,22 +313,45 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
     emit(state.copyWith(isLoading: true, resetError: () => null));
 
-    // TODO: wire to real API endpoint. Replace this placeholder with:
-    // final result = await _authRepository.resetPassword(
-    //   token: state.resetToken!,
-    //   password: state.newPassword,
-    //   passwordConfirm: state.confirmPassword,
-    // );
-    //
-    // switch (result) {
-    //   case ApiSuccess():
-    //     emit(state.copyWith(isLoading: false, step: ForgotStep.done));
-    //   case ApiError(:final message):
-    //     emit(state.copyWith(isLoading: false, resetError: () => message));
-    // }
+    try {
+      // TODO: Replace with real API call
+      await Future.delayed(const Duration(milliseconds: 800));
 
-    // ── Simulated success ──
-    await Future.delayed(const Duration(milliseconds: 800));
-    emit(state.copyWith(isLoading: false, step: ForgotStep.done));
+      emit(state.copyWith(isLoading: false, step: ForgotStep.done));
+    } catch (_) {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          resetError: () =>
+              'حدث خطأ أثناء تحديث كلمة المرور، يرجى المحاولة مرة أخرى',
+        ),
+      );
+    }
+  }
+
+  void _startResendCooldown() {
+    const cooldownSeconds = 60;
+    emit(state.copyWith(resendCooldown: cooldownSeconds));
+
+    _resendTimer?.cancel();
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (isClosed) {
+        timer.cancel();
+        return;
+      }
+      final remaining = state.resendCooldown - 1;
+      if (remaining <= 0) {
+        timer.cancel();
+        emit(state.copyWith(resendCooldown: 0));
+      } else {
+        emit(state.copyWith(resendCooldown: remaining));
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _resendTimer?.cancel();
+    return super.close();
   }
 }

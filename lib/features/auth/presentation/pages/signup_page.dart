@@ -24,6 +24,7 @@ class _SignupPageState extends State<SignupPage> {
   final _passportNumController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPassController = TextEditingController();
+  final _manualBirthPlaceController = TextEditingController();
 
   @override
   void dispose() {
@@ -35,6 +36,7 @@ class _SignupPageState extends State<SignupPage> {
     _passportNumController.dispose();
     _passwordController.dispose();
     _confirmPassController.dispose();
+    _manualBirthPlaceController.dispose();
     super.dispose();
   }
 
@@ -42,13 +44,15 @@ class _SignupPageState extends State<SignupPage> {
     BuildContext context, {
     required String title,
     DateTime? initialDate,
+    DateTime? firstDate,
+    DateTime? lastDate,
     required void Function(DateTime) onPicked,
   }) async {
     final picked = await showDatePicker(
       context: context,
       initialDate: initialDate ?? DateTime(1990),
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2100),
+      firstDate: firstDate ?? DateTime(1900),
+      lastDate: lastDate ?? DateTime.now(),
       helpText: title,
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
@@ -141,7 +145,6 @@ class _SignupPageState extends State<SignupPage> {
                       errorText: state.firstNameError,
                       onChanged: cubit.onFirstNameChanged,
                     ),
-
                     _Field(
                       label: 'باقي الاسم',
                       isRequired: true,
@@ -150,7 +153,6 @@ class _SignupPageState extends State<SignupPage> {
                       errorText: state.restOfNameError,
                       onChanged: cubit.onRestOfNameChanged,
                     ),
-
                     _Field(
                       label: 'البريد الإلكتروني',
                       isRequired: false,
@@ -160,7 +162,6 @@ class _SignupPageState extends State<SignupPage> {
                       errorText: state.emailError,
                       onChanged: cubit.onEmailChanged,
                     ),
-
                     _Field(
                       label: 'رقم الهاتف المحمول',
                       isRequired: true,
@@ -170,7 +171,6 @@ class _SignupPageState extends State<SignupPage> {
                       errorText: state.phoneError,
                       onChanged: cubit.onPhoneChanged,
                     ),
-
                     _InlineExpandField(
                       label: 'الجنسية',
                       isRequired: true,
@@ -186,7 +186,6 @@ class _SignupPageState extends State<SignupPage> {
 
                     if (state.nationalityType == NationalityType.egyptian) ...[
                       _SectionTitle(title: 'بيانات الهوية'),
-
                       _Field(
                         label: 'الرقم القومي',
                         isRequired: true,
@@ -200,7 +199,6 @@ class _SignupPageState extends State<SignupPage> {
                           FilteringTextInputFormatter.digitsOnly,
                         ],
                       ),
-
                       _ImageUploadField(
                         label: 'مرفق الرقم القومي',
                         isRequired: true,
@@ -219,10 +217,10 @@ class _SignupPageState extends State<SignupPage> {
                           context,
                           title: 'تاريخ الميلاد',
                           initialDate: state.birthDate,
+                          lastDate: DateTime.now(),
                           onPicked: cubit.onBirthDateSelected,
                         ),
                       ),
-
                       _InlineExpandField(
                         label: 'محل الميلاد',
                         isRequired: true,
@@ -235,19 +233,15 @@ class _SignupPageState extends State<SignupPage> {
                         onToggle: cubit.toggleBirthPlaceExpand,
                         onSelected: cubit.onBirthPlaceSelected,
                       ),
-
                       if (state.showManualBirthPlace)
                         _Field(
                           label: 'إدخل محل الميلاد',
                           isRequired: true,
                           hint: 'الرياض',
-                          controller: TextEditingController(
-                            text: state.manualBirthPlace,
-                          ),
+                          controller: _manualBirthPlaceController,
                           errorText: state.manualBirthPlaceError,
                           onChanged: cubit.onManualBirthPlaceChanged,
                         ),
-
                       _InlineExpandGenderField(
                         label: 'النوع',
                         isRequired: true,
@@ -261,7 +255,6 @@ class _SignupPageState extends State<SignupPage> {
 
                     if (state.nationalityType == NationalityType.foreign) ...[
                       _SectionTitle(title: 'بيانات جواز السفر'),
-
                       _Field(
                         label: 'رقم جواز السفر',
                         isRequired: true,
@@ -280,6 +273,7 @@ class _SignupPageState extends State<SignupPage> {
                           context,
                           title: 'تاريخ الميلاد',
                           initialDate: state.birthDate,
+                          lastDate: DateTime.now(),
                           onPicked: cubit.onBirthDateSelected,
                         ),
                       ),
@@ -303,19 +297,27 @@ class _SignupPageState extends State<SignupPage> {
                         onToggle: cubit.toggleBirthPlaceExpand,
                         onSelected: cubit.onBirthPlaceSelected,
                       ),
-
                       if (state.showManualBirthPlace)
                         _Field(
                           label: 'إدخل محل الميلاد',
                           isRequired: true,
                           hint: 'الرياض',
-                          controller: TextEditingController(
-                            text: state.manualBirthPlace,
-                          ),
+                          controller: _manualBirthPlaceController,
                           errorText: state.manualBirthPlaceError,
                           onChanged: cubit.onManualBirthPlaceChanged,
                         ),
-
+                      _InlineExpandField(
+                        label: 'محل إصدار الجواز',
+                        isRequired: true,
+                        value: state.selectedPassportIssuePlace?.label,
+                        hint: 'اختر محل الإصدار',
+                        isExpanded: state.isPassportIssuePlaceExpanded,
+                        options: state.passportIssuePlaceOptions,
+                        isLoading: state.isPassportIssuePlaceLoading,
+                        errorText: state.passportIssuePlaceError,
+                        onToggle: cubit.togglePassportIssuePlaceExpand,
+                        onSelected: cubit.onPassportIssuePlaceSelected,
+                      ),
                       _InlineExpandGenderField(
                         label: 'النوع',
                         isRequired: true,
@@ -326,6 +328,7 @@ class _SignupPageState extends State<SignupPage> {
                         onSelected: cubit.onGenderSelected,
                       ),
                     ],
+
                     _Field(
                       label: 'كلمة السر',
                       isRequired: true,
@@ -345,7 +348,6 @@ class _SignupPageState extends State<SignupPage> {
                         onPressed: cubit.togglePasswordVisibility,
                       ),
                     ),
-
                     _Field(
                       label: 'تأكيد كلمة السر',
                       isRequired: true,
@@ -462,9 +464,6 @@ class _SignupPageState extends State<SignupPage> {
   }
 }
 
-// ─────────────────────────────────────────
-// SectionTitle
-// ─────────────────────────────────────────
 class _SectionTitle extends StatelessWidget {
   final String title;
   const _SectionTitle({required this.title});
@@ -482,9 +481,6 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// Field  (standard text input)
-// ─────────────────────────────────────────
 class _Field extends StatelessWidget {
   final String label;
   final bool isRequired;
@@ -615,9 +611,6 @@ class _Field extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// DateField
-// ─────────────────────────────────────────
 class _DateField extends StatelessWidget {
   final String label;
   final bool isRequired;
@@ -689,7 +682,7 @@ class _DateField extends StatelessWidget {
                     color: AppColors.neutralDarkLightest,
                   ),
                   Text(
-                    formatted ?? '',
+                    formatted ?? hint,
                     textDirection: TextDirection.rtl,
                     style: AppTextStyles.bodyM.copyWith(
                       color: formatted != null
@@ -717,9 +710,6 @@ class _DateField extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// Inline ExpandField
-// ─────────────────────────────────────────
 class _InlineExpandField extends StatelessWidget {
   final String label;
   final bool isRequired;
@@ -885,9 +875,6 @@ class _InlineExpandField extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// Inline Expand GenderField
-// ─────────────────────────────────────────
 class _InlineExpandGenderField extends StatelessWidget {
   final String label;
   final bool isRequired;
@@ -910,7 +897,6 @@ class _InlineExpandGenderField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const genders = [(GenderType.male, 'ذكر'), (GenderType.female, 'أنثى')];
-
     final displayValue = selectedGender == GenderType.male
         ? 'ذكر'
         : selectedGender == GenderType.female
@@ -1045,9 +1031,6 @@ class _InlineExpandGenderField extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// Image UploadField
-// ─────────────────────────────────────────
 class _ImageUploadField extends StatelessWidget {
   final String label;
   final bool isRequired;

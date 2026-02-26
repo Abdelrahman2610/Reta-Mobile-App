@@ -1,7 +1,5 @@
 import 'package:dio/dio.dart';
 
-/// Every repository method returns ApiResult.
-/// Use pattern matching or [when] to handle success/failure.
 sealed class ApiResult<T> {
   const ApiResult();
 }
@@ -17,7 +15,6 @@ final class ApiError<T> extends ApiResult<T> {
   const ApiError(this.message, {this.statusCode});
 }
 
-/// Wraps a Dio call and converts [DioException] into [ApiError].
 Future<ApiResult<T>> safeApiCall<T>(Future<T> Function() call) async {
   try {
     final result = await call();
@@ -30,7 +27,6 @@ Future<ApiResult<T>> safeApiCall<T>(Future<T> Function() call) async {
 }
 
 String _extractMessage(DioException e) {
-  // Try to read the API's error message
   try {
     final data = e.response?.data;
     if (data is Map) {

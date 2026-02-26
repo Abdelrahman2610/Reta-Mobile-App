@@ -19,10 +19,7 @@ class DioClient {
       ),
     );
 
-    dio.interceptors.addAll([
-      _AuthInterceptor(),
-      _LoggingInterceptor(),
-    ]);
+    dio.interceptors.addAll([_AuthInterceptor(), _LoggingInterceptor()]);
   }
 
   static DioClient get instance {
@@ -31,7 +28,6 @@ class DioClient {
   }
 }
 
-/// Automatically attaches the Bearer token to every request.
 class _AuthInterceptor extends Interceptor {
   @override
   Future<void> onRequest(
@@ -48,7 +44,6 @@ class _AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    // 401 → token expired → clear stored token
     if (err.response?.statusCode == 401) {
       SharedPreferences.getInstance().then((p) => p.remove('access_token'));
     }
@@ -56,25 +51,21 @@ class _AuthInterceptor extends Interceptor {
   }
 }
 
-/// Logs every request & response in debug mode.
 class _LoggingInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    // ignore: avoid_print
     print('→ ${options.method} ${options.uri}');
     handler.next(options);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    // ignore: avoid_print
     print('← ${response.statusCode} ${response.requestOptions.uri}');
     handler.next(response);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    // ignore: avoid_print
     print('✗ ${err.response?.statusCode} ${err.requestOptions.uri}');
     handler.next(err);
   }

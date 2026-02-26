@@ -7,9 +7,9 @@ class RegisterRequest {
   final String passwordConfirm;
   final String nationalId;
   final String nationalityCode;
-  final String gender; // '1' = male, '2' = female
-  final String birthPlace; // governorate id as string
-  final String birthDate; // 'YYYY-MM-DD'
+  final String gender;
+  final String birthPlace;
+  final String birthDate;
 
   const RegisterRequest({
     required this.firstName,

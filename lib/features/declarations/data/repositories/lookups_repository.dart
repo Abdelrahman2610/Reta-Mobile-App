@@ -6,10 +6,6 @@ import '/core/network/dio_client.dart';
 class LookupsRepository {
   final Dio _dio = DioClient.instance.dio;
 
-  // ── Master lookup (loads everything at once) ──────────────
-
-  /// Fetches ALL lookups in one call.
-  /// Recommended to call once on app start and cache locally.
   Future<ApiResult<Map<String, dynamic>>> getAllLookups() async {
     return safeApiCall(() async {
       final response = await _dio.get(ApiConstants.allLookups);
@@ -17,15 +13,12 @@ class LookupsRepository {
     });
   }
 
-  /// Lookups needed for the declaration list filter screen.
   Future<ApiResult<Map<String, dynamic>>> getListFilterLookups() async {
     return safeApiCall(() async {
       final response = await _dio.get(ApiConstants.listFilterLookups);
       return response.data as Map<String, dynamic>;
     });
   }
-
-  // ── Cascading location lookups ────────────────────────────
 
   Future<ApiResult<List<dynamic>>> getGovernorates() async {
     return safeApiCall(() async {
@@ -81,8 +74,6 @@ class LookupsRepository {
     });
   }
 
-  // ── Property lookups ──────────────────────────────────────
-
   Future<ApiResult<List<dynamic>>> getDeclarationTypes() async {
     return safeApiCall(() async {
       final response = await _dio.get(ApiConstants.declarationTypes);
@@ -117,8 +108,6 @@ class LookupsRepository {
       return _asList(response.data);
     });
   }
-
-  // ── Facility-specific lookups ─────────────────────────────
 
   Future<ApiResult<Map<String, dynamic>>> getIndustrialFacilityLookups() async {
     return safeApiCall(() async {
@@ -168,8 +157,6 @@ class LookupsRepository {
       return _asList(response.data);
     });
   }
-
-  // ── Helper ────────────────────────────────────────────────
 
   List<dynamic> _asList(dynamic data) {
     if (data is List) return data;

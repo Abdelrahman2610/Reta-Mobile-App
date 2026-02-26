@@ -1,31 +1,20 @@
 class ApiConstants {
-  // Base URL — change this when going to production
   static const String baseUrl = 'http://reta-services.local/api';
 
-  // ── Auth ──────────────────────────────────────────────────
   static const String login = '/login';
   static const String registerSendOtp = '/register/sendOTP';
   static const String registerConfirmOtp = '/register/confirmOTP';
-
-  // ── File Upload ───────────────────────────────────────────
   static const String uploadAttachment =
       '/declaration-system/declarations/upload-attachments';
-
-  // ── Declarations ──────────────────────────────────────────
-  static const String declarations =
-      '/declaration-system/declarations';
+  static const String declarations = '/declaration-system/declarations';
 
   static String declarationById(int id) =>
       '/declaration-system/declarations/$id';
 
   static String submitDeclaration(int id) =>
       '/declaration-system/declarations/$id/submit';
-
-  // ── Units (Delete) ────────────────────────────────────────
   static String deleteUnit(int declarationId, String unitType, int unitId) =>
       '/declaration-system/declarations/$declarationId/units/$unitType/$unitId';
-
-  // ── Lookups ───────────────────────────────────────────────
   static const String lookupBase = '/declaration-system/declaration-lookups';
 
   static const String allLookups = '$lookupBase/declaration-all-lookups';
@@ -60,8 +49,6 @@ class ApiConstants {
 
   static String unitsByRealEstate(int realEstateId) =>
       '$lookupBase/real-estates/$realEstateId/units';
-
-  // ── Claims ────────────────────────────────────────────────
   static const String storeClaim =
       '/declaration-system/declarations/user/claim';
 
@@ -76,20 +63,12 @@ class ApiConstants {
 
   static String claimTransactionDetails(int claimId) =>
       '/declaration-system/declarations/user/claims-payment-transaction-details/$claimId';
-
-  // ── Wallet ────────────────────────────────────────────────
   static String walletDetails(int declarationId) =>
       '/declaration-system/declarations/wallet/$declarationId';
-
-  // ── Payment ───────────────────────────────────────────────
   static String initialPayment(int claimId) =>
       '/declaration-system/initial-payment/$claimId';
-
-  // ── Under Declaration Properties ──────────────────────────
   static String underDeclarationProperties(int declarationId) =>
       '/declaration-system/UnderDeclarationProperties/list/$declarationId';
-
-  // ── Settlement ────────────────────────────────────────────
   static const String settlementOfDebts =
       '/declaration-system/declarations/settlement-of-debts-with-the-taxpayers-knowledge';
 }
