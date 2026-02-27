@@ -77,7 +77,7 @@ class _LoggingInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    print('✗ ${err.response?.statusCode} ${err.requestOptions.uri}');
+    print('✗ ${err.toString()} ${err.requestOptions.uri}');
     handler.next(err);
   }
 }

@@ -7,6 +7,7 @@ import 'package:reta/features/components/app_bar.dart';
 import 'package:reta/features/components/app_button.dart';
 import 'package:reta/features/components/app_container.dart';
 
+import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/helpers/extensions/dimensions.dart';
 import '../components/declaration_tabs.dart';
 import '../components/user_information.dart';
