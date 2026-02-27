@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/app_enum.dart';
-import 'package:reta/core/helpers/extensions/applicant_type.dart';
 import 'package:reta/features/declarations/presentations/components/app_drop_down.dart';
 
+import '../../../../../core/helpers/extensions/applicant_type.dart';
 import '../../../../../core/helpers/extensions/dimensions.dart';
+import '../../../../../core/helpers/extensions/unit_type.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../components/app_bar.dart';
 import '../../../../components/app_button.dart';
 import '../../../../components/app_container.dart';
 import '../../../../components/app_text.dart';
 import '../../../../components/app_text_form_field.dart';
+import '../../../data/models/declarations_lookups.dart';
 import '../../components/app_drop_down_option.dart';
 import '../../components/declaration_data_tab.dart';
 import '../../components/units/unit_title.dart';
@@ -19,23 +21,32 @@ import '../../cubit/units/location/unit_location_cubit.dart';
 import '../../cubit/units/location/unit_location_states.dart';
 
 class UnitLocationDataPage extends StatelessWidget {
-  const UnitLocationDataPage({super.key, required this.applicantType});
+  const UnitLocationDataPage({
+    super.key,
+    required this.unitType,
+    required this.applicantType,
+    required this.declarationId,
+  });
 
+  final UnitType unitType;
   final ApplicantType applicantType;
+  final int declarationId;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => UnitLocationCubit(),
-      child: _UnitLocationDataPage(applicantType: applicantType),
+      create: (_) => UnitLocationCubit(
+        unitType: unitType,
+        applicantType: applicantType,
+        declarationId: declarationId,
+      ),
+      child: _UnitLocationDataPage(),
     );
   }
 }
 
 class _UnitLocationDataPage extends StatelessWidget {
-  const _UnitLocationDataPage({required this.applicantType});
-
-  final ApplicantType applicantType;
+  const _UnitLocationDataPage();
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +55,7 @@ class _UnitLocationDataPage extends StatelessWidget {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: MainAppBar(
-          title: 'إقرار ${applicantType.label}',
+          title: 'إقرار ${cubit.applicantType.label}',
           backgroundColor: AppColors.mainBlueIndigoDye,
           backButtonIconColor: Colors.white,
           titleTextStyle: TextStyle(
@@ -61,7 +72,7 @@ class _UnitLocationDataPage extends StatelessWidget {
             child: Column(
               children: [
                 31.hs,
-                UnitTitle(title: 'وحدة سكنية'),
+                UnitTitle(title: cubit.unitType.label),
                 10.hs,
                 AppContainer(
                   height: 93,
@@ -88,15 +99,6 @@ class _UnitLocationDataPage extends StatelessWidget {
                   ),
                   child: BlocBuilder<UnitLocationCubit, UnitLocationState>(
                     builder: (context, state) {
-                      final districtsItems = cubit.getDistricts(
-                        state.selectedGovernorate,
-                      );
-                      final neighborhoodItems = cubit.getNeighborhoods(
-                        state.selectedDistrict,
-                      );
-                      final streetItems = cubit.getStreets(
-                        state.selectedNeighborhood,
-                      );
                       final buildingItems = cubit.getBuildingNumbers(
                         state.selectedStreet,
                       );
@@ -115,10 +117,22 @@ class _UnitLocationDataPage extends StatelessWidget {
                             labelRequired: true,
                             hintText: 'اختر المحافظة',
                             value: state.selectedGovernorate,
-                            items: cubit.governorates
-                                .map((g) => appDropDownOption(label: g))
-                                .toList(),
-                            onChanged: cubit.selectGovernorate,
+                            items: state.isLoadingGovernorates
+                                ? []
+                                : state.governoratesList
+                                      .map(
+                                        (g) => appDropDownOption(label: g.name),
+                                      )
+                                      .toList(),
+                            onChanged: (value) {
+                              final selected = state.governoratesList
+                                  .firstWhere(
+                                    (g) => g.name == value,
+                                    orElse: () =>
+                                        DeclarationLookup(id: 0, name: ''),
+                                  );
+                              cubit.selectGovernorate(value, selected.id);
+                            },
                             validator: (v) =>
                                 v == null ? 'هذا الحقل مطلوب' : null,
                           ),
@@ -130,15 +144,16 @@ class _UnitLocationDataPage extends StatelessWidget {
                             hintText: 'اختر المأمورية المتاحة',
                             value: _safeValue(
                               state.selectedDistrict,
-                              districtsItems,
+                              (state.districtsList ?? [])
+                                  .map((v) => v.name)
+                                  .toList(),
                             ),
                             enabled: state.selectedGovernorate != null,
                             filledColor: state.selectedGovernorate == null
                                 ? AppColors.neutralLightLight
                                 : null,
-                            items: cubit
-                                .getDistricts(state.selectedGovernorate)
-                                .map((d) => appDropDownOption(label: d))
+                            items: (state.districtsList ?? [])
+                                .map((d) => appDropDownOption(label: d.name))
                                 .toList(),
                             onChanged: cubit.selectDistrict,
                             validator: (v) =>
@@ -165,7 +180,9 @@ class _UnitLocationDataPage extends StatelessWidget {
                             hintText: 'اختر الشياخة',
                             value: _safeValue(
                               state.selectedNeighborhood,
-                              neighborhoodItems,
+                              (state.villagesList ?? [])
+                                  .map((s) => s.name)
+                                  .toList(),
                             ),
                             enabled:
                                 state.selectedDistrict != null &&
@@ -181,9 +198,9 @@ class _UnitLocationDataPage extends StatelessWidget {
                                             false)))
                                 ? AppColors.neutralLightLight
                                 : null,
-                            items: cubit
-                                .getNeighborhoods(state.selectedDistrict)
-                                .map((n) => appDropDownOption(label: n))
+
+                            items: (state.villagesList ?? [])
+                                .map((s) => appDropDownOption(label: s.name))
                                 .toList(),
                             onChanged: cubit.selectNeighborhood,
                             validator: (v) =>
@@ -210,7 +227,9 @@ class _UnitLocationDataPage extends StatelessWidget {
                             hintText: 'اختر الشارع',
                             value: _safeValue(
                               state.selectedStreet,
-                              streetItems,
+                              (state.streetsList ?? [])
+                                  .map((s) => s.name)
+                                  .toList(),
                             ),
                             enabled:
                                 state.selectedNeighborhood != null &&
@@ -226,9 +245,8 @@ class _UnitLocationDataPage extends StatelessWidget {
                                             false)))
                                 ? AppColors.neutralLightLight
                                 : null,
-                            items: cubit
-                                .getStreets(state.selectedNeighborhood)
-                                .map((s) => appDropDownOption(label: s))
+                            items: (state.streetsList ?? [])
+                                .map((s) => appDropDownOption(label: s.name))
                                 .toList(),
                             onChanged: cubit.selectStreet,
                             validator: (v) =>
@@ -315,7 +333,7 @@ class _UnitLocationDataPage extends StatelessWidget {
                     alignment: Alignment.center,
                     onTap: () {
                       if (cubit.validate()) {
-                        cubit.onNextButtonTapped(context, applicantType);
+                        cubit.onNextButtonTapped(context, cubit.applicantType);
                       }
                     },
                   ),

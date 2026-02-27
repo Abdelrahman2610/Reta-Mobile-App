@@ -1,5 +1,7 @@
 class ApiConstants {
-  static const String baseUrl = 'http://reta-services.local/api';
+  // static const String baseUrl = 'http://reta-services.local/api';
+  static const String baseUrl =
+      'http://dev-rta-services.etax.com.eg/reta-services/public/api';
 
   static const String login = '/login';
   static const String registerSendOtp = '/register/sendOTP';
@@ -71,4 +73,25 @@ class ApiConstants {
       '/declaration-system/UnderDeclarationProperties/list/$declarationId';
   static const String settlementOfDebts =
       '/declaration-system/declarations/settlement-of-debts-with-the-taxpayers-knowledge';
+
+  /// ------------------------------ Files label ---------------------------------
+  static const String nationalIdLabel = 'national_id_attachment';
+  static const String passportLabel = 'passport_attachment';
+  static const String ownershipProofDocumentLabel =
+      'joint_ownership_document'; //سند الملكية
+  static const String taxpayerAuthorizationLabel =
+      'power_of_attorney'; //سند التوكيل
+  static const String taxpayerTaxCardLabel =
+      'tax_card_attachment'; //سند الضريبة
+  static const String taxpayerCommercialRegisterLabel =
+      'commercial_register_attachment'; //سجل تجاري
+  static const String taxpayerOtherAttachmentLabel =
+      'other_attachment'; //مستند آخر
+  static const String ownershipDeedLabel = 'ownership_deed'; //سند تمليك
+  static const String leaseContractLabel = 'lease_contract'; //عقد ايجار
+  static const String permitPhotoLabel = 'license_photo'; //صورة رخصة
+  static const String constructionLicenseLabel =
+      'construction_license'; //رخصة بناء
+  static const String operatingLicenseLabel = 'operating_license'; //ترخيص تشغيل
+  static const String starCertificateLabel = 'star_certificate'; //شهادة_نجومية
 }

@@ -3,20 +3,27 @@ import 'dart:developer';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reta/core/helpers/extensions/taxpayer_types.dart';
+import 'package:reta/core/network/api_constants.dart';
+import 'package:reta/core/network/api_result.dart';
+import 'package:reta/features/declarations/presentations/cubit/declaration_lookups_cubit.dart';
 import 'package:reta/features/declarations/presentations/pages/units/unit_location_data_page.dart';
 
 import '../../../../core/helpers/app_enum.dart';
+import '../../../../core/helpers/extensions/applicant_type.dart';
 import '../../../../core/helpers/extensions/nationality.dart';
+import '../../../../core/services/upload_service.dart';
 import '../pages/taxpayer_data_page.dart';
 import 'applicant_states.dart';
 
 class ApplicantCubit extends Cubit<ApplicantState> {
-  ApplicantCubit({required this.applicantType}) : super(const ApplicantState());
+  ApplicantCubit({required this.applicantType, required this.declarationId})
+    : super(const ApplicantState());
 
   final formKey = GlobalKey<FormState>();
 
   final ApplicantType applicantType;
+  UnitType unitType = UnitType.residential;
+  final int declarationId;
 
   /// --------------------------- Applicant -----------------------------
   final applicantFirstNameController = TextEditingController();
@@ -26,28 +33,43 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   Nationality applicantNationality = Nationality.egyptian;
   final applicantNationalIdController = TextEditingController();
   String? applicantNationalIdFilePath;
+  String? applicantNationalIdOriginalName;
   final applicantPassportNumberController = TextEditingController();
   String? applicantPassportFilePath;
+  String? applicantPassportOriginalName;
 
   void initFromUser(Map<String, dynamic>? user) {
     if (user == null) return;
-    applicantFirstNameController.text = user['firstName'] ?? '';
-    applicantLastNameController.text = user['lastName'] ?? '';
-    applicantPhoneController.text = user['phone'] ?? '';
+    String secondName = user['second_name'];
+    String thirdName = user['third_name'];
+    String fourthName = user['fourth_name'];
+    applicantFirstNameController.text = user['first_name'] ?? '';
+    applicantLastNameController.text = '$secondName $thirdName $fourthName'
+        .trim();
+    applicantPhoneController.text = user['mobile'] ?? '';
     applicantEmailController.text = user['email'] ?? '';
-    applicantNationalIdFilePath = user['nationalIdFileURL'] ?? '';
 
-    final nationality = user['nationality'];
-    if (nationality == 'egyptian') {
+    final nationalityName = user['nationality']?['name'] ?? '';
+    if (nationalityName == 'مصر') {
       applicantNationality = Nationality.egyptian;
     } else {
       applicantNationality = Nationality.foreign;
     }
 
     if (applicantNationality == Nationality.egyptian) {
-      applicantNationalIdController.text = user['nationalId'] ?? '';
+      applicantNationalIdController.text = user['national_id'] ?? '';
     } else {
-      applicantPassportNumberController.text = user['passportNumber'] ?? '';
+      applicantPassportNumberController.text = user['passport_num'] ?? '';
+    }
+
+    final nationalIdFiles = user['national_id_file'] as List?;
+    if (nationalIdFiles != null && nationalIdFiles.isNotEmpty) {
+      applicantNationalIdFilePath = nationalIdFiles.first['full_url'];
+    }
+
+    final passportFiles = user['passport_num_file'] as List?;
+    if (passportFiles != null && passportFiles.isNotEmpty) {
+      applicantPassportFilePath = passportFiles.first['full_url'];
     }
 
     emit(state.copyWith(applicantType: state.applicantType));
@@ -63,21 +85,26 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   final taxpayerPassportNumberController = TextEditingController();
   String? taxpayerPassportFilePath;
   String? ownershipProofDocumentPath;
+  String? ownershipProofDocumentOriginName;
   String? ownershipDeedFilePath;
 
   final taxpayerFirstNameController = TextEditingController();
   final taxpayerLastNameController = TextEditingController();
-  TaxpayerTypes taxpayerTypes = TaxpayerTypes.natural;
+  String? taxpayerTypes;
   final taxpayerPhoneController = TextEditingController();
   final taxpayerEmailController = TextEditingController();
 
   final taxpayerTaxCardNumberController = TextEditingController();
   String? taxpayerTaxCardFilePath;
+  String? taxpayerTaxCardOriginalName;
   final taxpayerCommercialRegisterController = TextEditingController();
   String? taxpayerCommercialRegisterFilePath;
+  String? taxpayerCommercialRegisterOriginalName;
   final taxpayerOtherAttachmentNameController = TextEditingController();
   String? taxpayerOtherAttachmentFilePath;
+  String? taxpayerOtherAttachmentOriginalName;
   String? taxpayerAuthorizationFilePath;
+  String? taxpayerAuthorizationOriginName;
 
   /// ------------------ End of taxpayer information ------------------------
 
@@ -87,12 +114,24 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   }
 
   void changeTaxpayerType(String? value) {
-    taxpayerTypes = value?.getTaxpayerType ?? TaxpayerTypes.natural;
+    taxpayerTypes = value;
     emit(state.copyWith(taxpayerTypes: taxpayerTypes));
   }
 
-  void setNationalIdFile(String path) {
-    taxpayerNationalIdFilePath = path;
+  Future<void> setNationalIdFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: ApiConstants.nationalIdLabel,
+    );
+    switch (result) {
+      case ApiSuccess<UploadedFileModel>(:final data):
+        applicantNationalIdFilePath = data.path;
+        applicantNationalIdOriginalName = data.originalFileName;
+        emit(state.copyWith(isLoading: false));
+      case ApiError<UploadedFileModel>(:final message):
+        emit(state.copyWith(isLoading: false, errorMessage: message));
+    }
     emit(
       state.copyWith(taxpayerNationalIdFilePath: taxpayerNationalIdFilePath),
     );
@@ -103,8 +142,20 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     emit(state.copyWith(taxpayerNationalIdFilePath: 'remove'));
   }
 
-  void setPassportFile(String path) {
-    taxpayerPassportFilePath = path;
+  Future<void> setPassportFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: ApiConstants.passportLabel,
+    );
+    switch (result) {
+      case ApiSuccess<UploadedFileModel>(:final data):
+        applicantPassportFilePath = data.path;
+        applicantPassportOriginalName = data.originalFileName;
+        emit(state.copyWith(isLoading: false));
+      case ApiError<UploadedFileModel>(:final message):
+        emit(state.copyWith(isLoading: false, errorMessage: message));
+    }
     emit(state.copyWith(taxpayerPassportFilePath: taxpayerPassportFilePath));
   }
 
@@ -113,8 +164,20 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     emit(state.copyWith(taxpayerPassportFilePath: 'remove'));
   }
 
-  void setOwnershipProofDocumentFile(String path) {
-    ownershipProofDocumentPath = path;
+  Future<void> setOwnershipProofDocumentFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: ApiConstants.ownershipProofDocumentLabel,
+    );
+    switch (result) {
+      case ApiSuccess<UploadedFileModel>(:final data):
+        ownershipProofDocumentPath = data.path;
+        ownershipProofDocumentOriginName = data.originalFileName;
+        emit(state.copyWith(isLoading: false));
+      case ApiError<UploadedFileModel>(:final message):
+        emit(state.copyWith(isLoading: false, errorMessage: message));
+    }
     emit(
       state.copyWith(ownershipProofDocumentPath: ownershipProofDocumentPath),
     );
@@ -125,8 +188,20 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     emit(state.copyWith(ownershipProofDocumentPath: 'remove'));
   }
 
-  void setLegalAuthorizationFile(String path) {
-    taxpayerAuthorizationFilePath = path;
+  Future<void> setLegalAuthorizationFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: ApiConstants.taxpayerAuthorizationLabel,
+    );
+    switch (result) {
+      case ApiSuccess<UploadedFileModel>(:final data):
+        taxpayerAuthorizationFilePath = data.path;
+        taxpayerAuthorizationOriginName = data.originalFileName;
+        emit(state.copyWith(isLoading: false));
+      case ApiError<UploadedFileModel>(:final message):
+        emit(state.copyWith(isLoading: false, errorMessage: message));
+    }
     emit(
       state.copyWith(
         taxpayerAuthorizationFilePath: taxpayerAuthorizationFilePath,
@@ -139,8 +214,20 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     emit(state.copyWith(taxpayerAuthorizationFilePath: 'remove'));
   }
 
-  void setTaxCardFile(String path) {
-    taxpayerTaxCardFilePath = path;
+  Future<void> setTaxCardFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: ApiConstants.taxpayerTaxCardLabel,
+    );
+    switch (result) {
+      case ApiSuccess<UploadedFileModel>(:final data):
+        taxpayerTaxCardFilePath = data.path;
+        taxpayerTaxCardOriginalName = data.originalFileName;
+        emit(state.copyWith(isLoading: false));
+      case ApiError<UploadedFileModel>(:final message):
+        emit(state.copyWith(isLoading: false, errorMessage: message));
+    }
     emit(state.copyWith(taxpayerTaxCardFilePath: taxpayerTaxCardFilePath));
   }
 
@@ -149,8 +236,20 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     emit(state.copyWith(taxpayerTaxCardFilePath: 'remove'));
   }
 
-  void setCommercialRegisterFile(String path) {
-    taxpayerCommercialRegisterFilePath = path;
+  Future<void> setCommercialRegisterFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: ApiConstants.taxpayerCommercialRegisterLabel,
+    );
+    switch (result) {
+      case ApiSuccess<UploadedFileModel>(:final data):
+        taxpayerCommercialRegisterFilePath = data.path;
+        taxpayerCommercialRegisterOriginalName = data.originalFileName;
+        emit(state.copyWith(isLoading: false));
+      case ApiError<UploadedFileModel>(:final message):
+        emit(state.copyWith(isLoading: false, errorMessage: message));
+    }
     emit(
       state.copyWith(
         taxpayerCommercialRegisterFilePath: taxpayerCommercialRegisterFilePath,
@@ -163,8 +262,20 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     emit(state.copyWith(taxpayerCommercialRegisterFilePath: 'remove'));
   }
 
-  void setOtherAttachmentFile(String path) {
-    taxpayerOtherAttachmentFilePath = path;
+  Future<void> setOtherAttachmentFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: ApiConstants.taxpayerOtherAttachmentLabel,
+    );
+    switch (result) {
+      case ApiSuccess<UploadedFileModel>(:final data):
+        taxpayerOtherAttachmentFilePath = data.path;
+        taxpayerOtherAttachmentOriginalName = data.originalFileName;
+        emit(state.copyWith(isLoading: false));
+      case ApiError<UploadedFileModel>(:final message):
+        emit(state.copyWith(isLoading: false, errorMessage: message));
+    }
     emit(
       state.copyWith(
         taxpayerOtherAttachmentFilePath: taxpayerOtherAttachmentFilePath,
@@ -244,16 +355,23 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   // ──────────────────────────────────────────────────────
 
   Future<void> onNextTapped(BuildContext context) async {
+    final lookupsCubit = context.read<DeclarationLookupsCubit>();
     if (applicantType == ApplicantType.owner ||
         applicantType == ApplicantType.beneficiary) {
-      // TODO: Call submit
-      log("ApiBody: ${_buildPayload()}");
+      log("ApiBody: ${buildPayload()}");
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => BlocProvider.value(
-            value: this,
-            child: UnitLocationDataPage(applicantType: applicantType),
+          builder: (context) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: this),
+              BlocProvider.value(value: lookupsCubit),
+            ],
+            child: UnitLocationDataPage(
+              applicantType: applicantType,
+              unitType: unitType,
+              declarationId: declarationId,
+            ),
           ),
         ),
       );
@@ -261,23 +379,35 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => BlocProvider.value(
-            value: this,
-            child: TaxpayerDataPage(applicantType: applicantType),
+          builder: (context) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: this),
+              BlocProvider.value(value: lookupsCubit),
+            ],
+            child: TaxpayerDataPage(),
           ),
+          // BlocProvider.value(value: this, child: TaxpayerDataPage()),
         ),
       );
     }
   }
 
   Future<void> onTaxpayerNextTapped(BuildContext context) async {
-    log("ApiBody: ${_buildPayload()}");
+    final lookupsCubit = context.read<DeclarationLookupsCubit>();
+    log("ApiBody: ${buildPayload()}");
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => BlocProvider.value(
-          value: this,
-          child: UnitLocationDataPage(applicantType: applicantType),
+        builder: (context) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: this),
+            BlocProvider.value(value: lookupsCubit),
+          ],
+          child: UnitLocationDataPage(
+            applicantType: applicantType,
+            unitType: unitType,
+            declarationId: declarationId,
+          ),
         ),
       ),
     );
@@ -290,7 +420,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
     try {
       // TODO:Call API
-      final payload = _buildPayload();
+      final payload = buildPayload();
       debugPrint('Payload: $payload');
 
       // await repository.submitApplicant(payload);
@@ -301,106 +431,132 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     }
   }
 
-  Map<String, dynamic> _buildPayload() {
-    Map<String, dynamic> base = {'applicantType': applicantType.name};
+  Map<String, dynamic> buildPayload() {
+    final applicantRoleId = applicantType.id;
 
-    switch (applicantType) {
-      case ApplicantType.owner:
-      case ApplicantType.beneficiary:
-        base = {
-          ...base,
-          'firstName': applicantFirstNameController.text.trim(),
-          'lastName': applicantLastNameController.text.trim(),
-          'nationality': applicantNationality.name,
-          'phone': applicantPhoneController.text.trim(),
-          'email': applicantEmailController.text.trim(),
+    final Map<String, dynamic> payload = {
+      'declaration_type_id': 1, // TODO: Need to change this
+      'applicant_role_id': applicantRoleId,
+    };
+
+    // ── سند التوكيل ──────────────────────────────────
+    if (applicantType == ApplicantType.agent ||
+        applicantType == ApplicantType.legalRepresentative ||
+        applicantType == ApplicantType.other) {
+      if (taxpayerAuthorizationFilePath != null) {
+        payload['power_of_attorney'] = {
+          'path': taxpayerAuthorizationFilePath,
+          'original_file_name': taxpayerAuthorizationOriginName,
         };
-        if (applicantNationality == Nationality.egyptian) {
-          return {
-            ...base,
-            'nationalId': applicantNationalIdController.text.trim(),
-            'nationalIdFile': applicantNationalIdFilePath,
-          };
-        } else {
-          return {
-            ...base,
-            'passportNumber': applicantPassportNumberController.text.trim(),
-            'passportFile': applicantPassportFilePath,
+      }
+    }
+
+    // ── سند الملكية على الشيوع ───────────────────────
+    if (applicantType == ApplicantType.sharedOwnership) {
+      if (ownershipProofDocumentPath != null) {
+        payload['joint_ownership_document'] = {
+          'path': ownershipProofDocumentPath,
+          'original_file_name': ownershipProofDocumentOriginName,
+        };
+      }
+    }
+
+    payload['taxpayer'] = _buildTaxpayerPayload();
+
+    return payload;
+  }
+
+  Map<String, dynamic> _buildTaxpayerPayload() {
+    // للمالك والمنتفع — المكلف هو نفس المقدم
+    if (applicantType == ApplicantType.owner ||
+        applicantType == ApplicantType.beneficiary) {
+      final Map<String, dynamic> taxpayer = {
+        'type_id': 1,
+        'first_name': applicantFirstNameController.text.trim(),
+        'last_name': applicantLastNameController.text.trim(),
+        'nationality_id': applicantNationality.id,
+        'phone': applicantPhoneController.text.trim(),
+        'email': applicantEmailController.text.trim(),
+      };
+
+      if (applicantNationality == Nationality.egyptian) {
+        taxpayer['national_id'] = applicantNationalIdController.text.trim();
+        if (applicantNationalIdFilePath != null) {
+          taxpayer['national_id_attachment'] = {
+            'path': applicantNationalIdFilePath,
+            'original_file_name': applicantNationalIdOriginalName,
           };
         }
-      case ApplicantType.sharedOwnership:
-        base = {
-          ...base,
-          'taxpayerName': taxpayerNameController.text.trim(),
-          'nationality': applicantNationality.name,
-          'ownershipProofDocumentPath': ownershipProofDocumentPath,
-        };
-
-        if (applicantNationality == Nationality.egyptian) {
-          return {
-            ...base,
-            'nationalId': taxpayerNationalIdController.text.trim(),
-            'nationalIdFile': taxpayerNationalIdFilePath,
-          };
-        } else {
-          return {
-            ...base,
-            'passportNumber': taxpayerPassportNumberController.text.trim(),
-            'passportFile': taxpayerPassportFilePath,
+      } else {
+        taxpayer['passport_number'] = applicantPassportNumberController.text
+            .trim();
+        if (applicantPassportFilePath != null) {
+          taxpayer['passport_attachment'] = {
+            'path': applicantPassportFilePath,
+            'original_file_name': applicantPassportOriginalName,
           };
         }
+      }
+      return taxpayer;
+    }
 
-      case ApplicantType.agent:
-      case ApplicantType.legalRepresentative:
-      case ApplicantType.other:
-        base = {
-          ...base,
-          'taxpayerType': taxpayerTypes.name,
-          'phoneNumber': taxpayerPhoneController.text.trim(),
-          'email': taxpayerEmailController.text.trim(),
-          if (applicantType == ApplicantType.agent)
-            'authorizationFilePath': taxpayerAuthorizationFilePath,
-          if (applicantType == ApplicantType.legalRepresentative)
-            'legalAuthorizationFilePath': taxpayerAuthorizationFilePath,
-          if (applicantType == ApplicantType.other)
-            'otherFilePath': taxpayerAuthorizationFilePath,
-        };
-
-        if (taxpayerTypes == TaxpayerTypes.natural) {
-          base = {
-            ...base,
-            'taxpayerName':
-                '${taxpayerFirstNameController.text.trim()} ${taxpayerLastNameController.text.trim()}',
-            'nationality': taxpayerNationality.name,
-          };
-          if (applicantNationality == Nationality.egyptian) {
-            return {
-              ...base,
-              'nationalId': taxpayerNationalIdController.text.trim(),
-              'nationalIdFile': taxpayerNationalIdFilePath,
-            };
-          } else {
-            return {
-              ...base,
-              'passportNumber': taxpayerPassportNumberController.text.trim(),
-              'passportFile': taxpayerPassportFilePath,
-            };
-          }
-        } else if (taxpayerTypes == TaxpayerTypes.conventional) {
-          return {
-            ...base,
-            'taxpayerName': taxpayerNameController.text.trim(),
-            'cardNumber': taxpayerTaxCardNumberController.text.trim(),
-            'cardFile': taxpayerTaxCardFilePath,
-            'commercialRegister': taxpayerCommercialRegisterController.text
-                .trim(),
-            'commercialRegisterFile': taxpayerCommercialRegisterFilePath,
-            'otherAttachmentName': taxpayerOtherAttachmentNameController.text
-                .trim(),
-            'otherAttachmentFile': taxpayerOtherAttachmentFilePath,
+    // للباقي — المكلف شخص آخر
+    if (taxpayerTypes == 'طبيعي') {
+      final Map<String, dynamic> taxpayer = {
+        'type_id': 1,
+        'first_name': taxpayerFirstNameController.text.trim(),
+        'last_name': taxpayerLastNameController.text.trim(),
+        'nationality_id': taxpayerNationality.id,
+        'phone': taxpayerPhoneController.text.trim(),
+        'email': taxpayerEmailController.text.trim(),
+      };
+      if (taxpayerNationality == Nationality.egyptian) {
+        taxpayer['national_id'] = taxpayerNationalIdController.text.trim();
+        if (taxpayerNationalIdFilePath != null) {
+          taxpayer['national_id_attachment'] = {
+            'path': taxpayerNationalIdFilePath,
+            'original_file_name': applicantPassportNumberController,
           };
         }
-        return base;
+      } else {
+        taxpayer['passport_number'] = taxpayerPassportNumberController.text
+            .trim();
+        if (taxpayerPassportFilePath != null) {
+          taxpayer['passport_attachment'] = {
+            'path': taxpayerPassportFilePath,
+            'original_file_name': applicantPassportOriginalName,
+          };
+        }
+      }
+      return taxpayer;
+    } else {
+      // اعتباري
+      return {
+        'type_id': 2,
+        'name': taxpayerNameController.text.trim(),
+        'nationality_id': taxpayerNationality.id,
+        'tax_card_number': taxpayerTaxCardNumberController.text.trim(),
+        'commercial_register': taxpayerCommercialRegisterController.text.trim(),
+        if (taxpayerTaxCardFilePath != null)
+          'tax_card_attachment': {
+            'path': taxpayerTaxCardFilePath,
+            'original_file_name': taxpayerTaxCardOriginalName,
+          },
+        if (taxpayerCommercialRegisterFilePath != null)
+          'commercial_register_attachment': {
+            'path': taxpayerCommercialRegisterFilePath,
+            'original_file_name': taxpayerCommercialRegisterOriginalName,
+          },
+        if (taxpayerOtherAttachmentNameController.text.isNotEmpty) ...{
+          'other_attachment_name': taxpayerOtherAttachmentNameController.text
+              .trim(),
+          if (taxpayerOtherAttachmentFilePath != null)
+            'other_attachment': {
+              'path': taxpayerOtherAttachmentFilePath,
+              'original_file_name': taxpayerOtherAttachmentOriginalName,
+            },
+        },
+      };
     }
   }
 

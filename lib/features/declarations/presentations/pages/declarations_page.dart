@@ -15,6 +15,7 @@ import '../components/declarations_card_item.dart';
 import '../cubit/declaration/declaration_cubit.dart';
 import '../cubit/declaration/declaration_states.dart';
 import 'select_applicant_type_page.dart';
+import '../cubit/declaration_lookups_cubit.dart';
 
 class DeclarationsPage extends StatelessWidget {
   const DeclarationsPage({super.key});
@@ -23,7 +24,7 @@ class DeclarationsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       lazy: false,
-      create: (_) => DeclarationCubit()..fetchList(),
+      create: (_) => DeclarationCubit()..fetchList()..fetchLookups(),
       child: _DeclarationsView(),
     );
   }

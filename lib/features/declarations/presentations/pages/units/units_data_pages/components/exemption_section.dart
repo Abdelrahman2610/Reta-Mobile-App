@@ -25,18 +25,20 @@ class ExemptionSection extends StatelessWidget {
         return Column(
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Checkbox(
+                  value: state.isExempt,
+                  onChanged: (v) => cubit.toggleExempt(v ?? false),
+                  activeColor: AppColors.highlightDarkest,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadiusGeometry.circular(4.r),
+                  ),
+                ),
                 AppText(
                   text: 'هل الوحدة معفاة؟',
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w700,
                   color: AppColors.neutralDarkDark,
-                ),
-                Checkbox(
-                  value: state.isExempt,
-                  onChanged: (v) => cubit.toggleExempt(v ?? false),
-                  activeColor: AppColors.highlightDarkest,
                 ),
               ],
             ),

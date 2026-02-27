@@ -12,8 +12,11 @@ class UnitDataState {
   final int additionalUpdateCount;
   final List<AdditionalDocument>? additionalDocuments;
   final String? ownershipDeedFilePath; // سند التمليك
+  final String? ownershipDeedOriginalName;
   final String? leaseContractFilePath; // عقد الإيجار
+  final String? leaseContractOriginalName;
   final String? permitPhotoFilePath; // صورة الرخصة/الترخيص
+  final String? permitPhotoOriginalName;
   final String? selectedUnitSubType; // نوع الوحدة (شقة، فيلا...)
   final List<String>? selectedAmenities; // ملحق بالوحدة
   ///------------------------ وحدة خدمية فقط -----------------------------
@@ -38,10 +41,15 @@ class UnitDataState {
 
   // ── file paths ───────────────────────────
   final String? constructionLicenseFilePath;
+  final String? constructionLicenseOriginalName;
   final String? operatingLicenseFilePath;
+  final String? operatingLicenseOriginalName;
   final String? starCertificateFilePath;
+  final String? starCertificateOriginalName;
   final String? constructionPermitFilePath;
+  final String? constructionPermitOriginalName;
   final String? allAssetsBalanceSheetFilePath;
+  final String? allAssetsBalanceSheetOriginalName;
 
   // ── loading / error ──────────────────────
   final bool isLoading;
@@ -60,8 +68,11 @@ class UnitDataState {
     this.additionalUpdateCount = 0,
     this.additionalDocuments,
     this.ownershipDeedFilePath,
+    this.ownershipDeedOriginalName,
     this.leaseContractFilePath,
+    this.leaseContractOriginalName,
     this.permitPhotoFilePath,
+    this.permitPhotoOriginalName,
     this.isServiceUnitExempt,
     this.selectedServiceExemptionReason,
     this.isTaxpayerOwner,
@@ -73,10 +84,15 @@ class UnitDataState {
     this.selectedStarRating,
     this.hasSubUnits,
     this.constructionLicenseFilePath,
+    this.constructionLicenseOriginalName,
     this.operatingLicenseFilePath,
+    this.operatingLicenseOriginalName,
     this.starCertificateFilePath,
+    this.starCertificateOriginalName,
     this.constructionPermitFilePath,
+    this.constructionPermitOriginalName,
     this.allAssetsBalanceSheetFilePath,
+    this.allAssetsBalanceSheetOriginalName,
     this.isLoading = false,
     this.errorMessage,
     this.successMessage,
@@ -98,8 +114,11 @@ class UnitDataState {
     List<AdditionalDocument>? additionalDocuments,
     int? additionalUpdateCount,
     Object? ownershipDeedFilePath = _undefined,
+    Object? ownershipDeedOriginalName = _undefined,
     Object? leaseContractFilePath = _undefined,
+    Object? leaseContractOriginalName = _undefined,
     Object? permitPhotoFilePath = _undefined,
+    Object? permitPhotoOriginalName = _undefined,
     bool? isServiceUnitExempt,
     String? selectedServiceExemptionReason,
     bool? isTaxpayerOwner,
@@ -111,10 +130,15 @@ class UnitDataState {
     String? selectedStarRating,
     bool? hasSubUnits,
     Object? constructionLicenseFilePath = _undefined,
+    Object? constructionLicenseOriginalName = _undefined,
     Object? operatingLicenseFilePath = _undefined,
+    Object? operatingLicenseOriginalName = _undefined,
     Object? starCertificateFilePath = _undefined,
+    Object? starCertificateOriginalName = _undefined,
     Object? constructionPermitFilePath = _undefined,
+    Object? constructionPermitOriginalName = _undefined,
     Object? allAssetsBalanceSheetFilePath = _undefined,
+    Object? allAssetsBalanceSheetOriginalName = _undefined,
     bool? isLoading,
     String? errorMessage,
     String? successMessage,
@@ -139,12 +163,21 @@ class UnitDataState {
       ownershipDeedFilePath: ownershipDeedFilePath == _undefined
           ? this.ownershipDeedFilePath
           : ownershipDeedFilePath as String?,
+      ownershipDeedOriginalName: ownershipDeedOriginalName == _undefined
+          ? this.ownershipDeedOriginalName
+          : ownershipDeedOriginalName as String?,
       leaseContractFilePath: leaseContractFilePath == _undefined
           ? this.leaseContractFilePath
           : leaseContractFilePath as String?,
+      leaseContractOriginalName: leaseContractOriginalName == _undefined
+          ? this.leaseContractOriginalName
+          : leaseContractOriginalName as String?,
       permitPhotoFilePath: permitPhotoFilePath == _undefined
           ? this.permitPhotoFilePath
           : permitPhotoFilePath as String?,
+      permitPhotoOriginalName: permitPhotoOriginalName == _undefined
+          ? this.permitPhotoOriginalName
+          : permitPhotoOriginalName as String?,
       isServiceUnitExempt: isServiceUnitExempt ?? this.isServiceUnitExempt,
       selectedServiceExemptionReason:
           selectedServiceExemptionReason ?? this.selectedServiceExemptionReason,
@@ -162,18 +195,36 @@ class UnitDataState {
       constructionLicenseFilePath: constructionLicenseFilePath == _undefined
           ? this.constructionLicenseFilePath
           : constructionLicenseFilePath as String?,
+      constructionLicenseOriginalName:
+          constructionLicenseOriginalName == _undefined
+          ? this.constructionLicenseOriginalName
+          : constructionLicenseOriginalName as String?,
       operatingLicenseFilePath: operatingLicenseFilePath == _undefined
           ? this.operatingLicenseFilePath
           : operatingLicenseFilePath as String?,
+      operatingLicenseOriginalName: operatingLicenseOriginalName == _undefined
+          ? this.operatingLicenseOriginalName
+          : operatingLicenseOriginalName as String?,
       starCertificateFilePath: starCertificateFilePath == _undefined
           ? this.starCertificateFilePath
           : starCertificateFilePath as String?,
+      starCertificateOriginalName: starCertificateOriginalName == _undefined
+          ? this.starCertificateOriginalName
+          : starCertificateOriginalName as String?,
       constructionPermitFilePath: constructionPermitFilePath == _undefined
           ? this.constructionPermitFilePath
           : constructionPermitFilePath as String?,
+      constructionPermitOriginalName:
+          constructionPermitOriginalName == _undefined
+          ? this.constructionPermitOriginalName
+          : constructionPermitOriginalName as String?,
       allAssetsBalanceSheetFilePath: allAssetsBalanceSheetFilePath == _undefined
           ? this.allAssetsBalanceSheetFilePath
           : allAssetsBalanceSheetFilePath as String?,
+      allAssetsBalanceSheetOriginalName:
+          allAssetsBalanceSheetOriginalName == _undefined
+          ? this.allAssetsBalanceSheetOriginalName
+          : allAssetsBalanceSheetOriginalName as String?,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
       successMessage: successMessage,

@@ -14,9 +14,7 @@ import '../components/shared_form.dart';
 import '../cubit/applicant_cubit.dart';
 
 class TaxpayerDataPage extends StatelessWidget {
-  const TaxpayerDataPage({super.key, required this.applicantType});
-
-  final ApplicantType applicantType;
+  const TaxpayerDataPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -43,9 +41,9 @@ class TaxpayerDataPage extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Column(
                   children: [
-                    DeclarationTabs(applicantType: applicantType),
+                    DeclarationTabs(applicantType: cubit.applicantType),
                     10.hs,
-                    switch (applicantType) {
+                    switch (cubit.applicantType) {
                       ApplicantType.owner => SizedBox.shrink(),
                       ApplicantType.sharedOwnership => SharedOwnershipForm(),
                       ApplicantType.beneficiary => SizedBox.shrink(),

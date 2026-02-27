@@ -13,14 +13,14 @@ import '../../../components/units/unit_title.dart';
 import '../../../cubit/units/unit_data/unit_data_cubit.dart';
 import '../../../cubit/units/unit_data/unit_data_state.dart';
 import 'components/additional_documents_section.dart';
+import 'components/exemption_section.dart';
 import 'components/file_upload_field.dart';
 import 'components/floor_unit_section.dart';
-import 'components/private_residence.dart';
 import 'components/tax_contact_section.dart';
 import 'components/unit_buttons.dart';
 
-class CommercialUnitPage extends StatelessWidget {
-  const CommercialUnitPage({
+class ServiceUnitPage extends StatelessWidget {
+  const ServiceUnitPage({
     super.key,
     required this.applicantType,
     required this.unitCubit,
@@ -33,18 +33,19 @@ class CommercialUnitPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: unitCubit,
-      child: _ResidentialUnitView(applicantType: applicantType),
+      child: _ServiceUnitView(applicantType: applicantType),
     );
   }
 }
 
-class _ResidentialUnitView extends StatelessWidget {
-  const _ResidentialUnitView({required this.applicantType});
+class _ServiceUnitView extends StatelessWidget {
+  const _ServiceUnitView({required this.applicantType});
   final ApplicantType applicantType;
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<UnitDataCubit>();
+
     return Form(
       key: cubit.formKey,
       child: SingleChildScrollView(
@@ -52,7 +53,7 @@ class _ResidentialUnitView extends StatelessWidget {
         child: Column(
           children: [
             31.hs,
-            UnitTitle(title: 'وحدة تجارية'),
+            UnitTitle(title: 'وحدة خدمية'),
             10.hs,
             AppContainer(
               height: 93,
@@ -77,26 +78,12 @@ class _ResidentialUnitView extends StatelessWidget {
               child: Column(
                 children: [
                   AppText(
-                    text: 'بيانات الوحدة السكنية',
+                    text: 'بيانات الوحدة الخدمية',
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w700,
                     color: AppColors.mainBlueIndigoDye,
                   ),
                   24.hs,
-                  if (applicantType == ApplicantType.owner)
-                    BlocBuilder<UnitDataCubit, UnitDataState>(
-                      buildWhen: (prev, curr) => prev.isExempt != curr.isExempt,
-                      builder: (context, state) {
-                        return Column(
-                          children: [
-                            PrivateResidence(
-                              isSelected: state.isExempt,
-                              onTap: cubit.changePrivateResidence,
-                            ),
-                            16.hs,
-                          ],
-                        );
-                      },
-                    ),
 
                   const FloorUnitSection(),
                   16.hs,
@@ -121,7 +108,7 @@ class _ResidentialUnitView extends StatelessWidget {
 
                   AppTextFormField(
                     labelText: 'نوع الوحدة',
-                    controller: TextEditingController(text: 'تجاري'),
+                    controller: TextEditingController(text: 'خدمي'),
                     enabled: false,
                     filledColor: AppColors.neutralLightLight,
                   ),
@@ -131,28 +118,20 @@ class _ResidentialUnitView extends StatelessWidget {
                     labelText: 'المساحة',
                     labelRequired: true,
                     controller: cubit.areaController,
-                    hintText: 'ادخل المساحة بالمتر المربع',
+                    hintText: 'المساحة بالمتر المربع',
                     keyboardType: TextInputType.number,
                     validator: (v) =>
                         v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
                   ),
                   16.hs,
 
-                  AppTextFormField(
-                    labelText: 'نوع النشاط',
-                    labelRequired: true,
-                    controller: cubit.activityTypeController,
-                    hintText: 'ادخل نوع النشاط',
-                    keyboardType: TextInputType.number,
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
-                  ),
+                  const ExemptionSection(),
                   16.hs,
 
                   AppTextFormField(
                     labelText: 'القيمة السوقية للوحدة',
                     controller: cubit.marketValueController,
-                    hintText: 'ادخل	القيمة السوقية للوحدة التجارية',
+                    hintText: 'ادخل القيمة السوقية للوحدة التجارية',
                     keyboardType: TextInputType.number,
                   ),
                   16.hs,
@@ -165,16 +144,15 @@ class _ResidentialUnitView extends StatelessWidget {
                       return FileUploadField(
                         labelText: 'سند تمليك الوحدة',
                         labelRequired: true,
-                        text: 'حمل ملف',
                         description: 'عقد مسجل/عقد ابتدائي/حكم قضائي',
+                        text: 'حمل ملف',
                         backgroundColor: AppColors.highlightDarkest,
                         textColor: AppColors.white,
+                        infoText: 'عقد مسجل/عقد ابتدائي/حكم قضائي',
                         filePath: state.ownershipDeedFilePath,
                         onFilePicked: () async {
                           final path = await cubit.pickFile();
-                          if (path != null) {
-                            cubit.setOwnershipDeedFile(path);
-                          }
+                          if (path != null) cubit.setOwnershipDeedFile(path);
                         },
                         onFileRemoved: () => cubit.removeOwnershipDeedFile(),
                       );
@@ -189,10 +167,10 @@ class _ResidentialUnitView extends StatelessWidget {
                     builder: (context, state) {
                       return FileUploadField(
                         labelText: 'عقد الإيجار (إن وجد)',
-                        filePath: state.leaseContractFilePath,
                         text: 'حمل ملف',
                         backgroundColor: AppColors.highlightDarkest,
                         textColor: AppColors.white,
+                        filePath: state.leaseContractFilePath,
                         onFilePicked: () async {
                           final path = await cubit.pickFile();
                           if (path != null) cubit.setLeaseContractFile(path);
@@ -209,10 +187,10 @@ class _ResidentialUnitView extends StatelessWidget {
                     builder: (context, state) {
                       return FileUploadField(
                         labelText: 'صورة الرخصة',
-                        filePath: state.permitPhotoFilePath,
                         text: 'حمل ملف',
                         backgroundColor: AppColors.highlightDarkest,
                         textColor: AppColors.white,
+                        filePath: state.permitPhotoFilePath,
                         onFilePicked: () async {
                           final path = await cubit.pickFile();
                           if (path != null) cubit.setPermitPhotoFile(path);
