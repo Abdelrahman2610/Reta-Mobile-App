@@ -12,11 +12,11 @@ import '../pages/taxpayer_data_page.dart';
 import 'applicant_states.dart';
 
 class ApplicantCubit extends Cubit<ApplicantState> {
-  ApplicantCubit() : super(const ApplicantState());
+  ApplicantCubit({required this.applicantType}) : super(const ApplicantState());
 
   final formKey = GlobalKey<FormState>();
 
-  ApplicantType applicantType = ApplicantType.agent;
+  final ApplicantType applicantType;
 
   /// --------------------------- Applicant -----------------------------
   final applicantFirstNameController = TextEditingController();

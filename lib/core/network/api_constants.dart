@@ -1,5 +1,5 @@
 class ApiConstants {
-  static const String baseUrl = 'http://reta-services.local/api';
+  static const String baseUrl = 'http://10.0.2.2:3000/api';
 
   static const String login = '/login';
   static const String registerSendOtp = '/register/sendOTP';
@@ -8,7 +8,7 @@ class ApiConstants {
       '/declaration-system/declarations/upload-attachments';
   static const String declarations = '/declaration-system/declarations';
 
-  static String declarationById(int id) =>
+  static String declarationById(String id) =>
       '/declaration-system/declarations/$id';
 
   static String submitDeclaration(int id) =>

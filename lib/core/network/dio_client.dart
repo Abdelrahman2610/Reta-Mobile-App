@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'api_constants.dart';
 
 class DioClient {
@@ -66,7 +67,7 @@ class _LoggingInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    print('✗ ${err.response?.statusCode} ${err.requestOptions.uri}');
+    print('✗ ${err.toString()} ${err.requestOptions.uri}');
     handler.next(err);
   }
 }
