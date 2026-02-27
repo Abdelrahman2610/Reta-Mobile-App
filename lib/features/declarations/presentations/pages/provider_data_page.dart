@@ -15,9 +15,14 @@ import '../cubit/applicant_states.dart';
 import '../cubit/declaration_lookups_cubit.dart';
 
 class ProviderDataPage extends StatelessWidget {
-  const ProviderDataPage({super.key, required this.applicantType});
+  const ProviderDataPage({
+    super.key,
+    required this.applicantType,
+    required this.declarationId,
+  });
 
   final ApplicantType applicantType;
+  final int declarationId;
 
   @override
   Widget build(BuildContext context) {
@@ -104,8 +109,10 @@ class ProviderDataPage extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) =>
-              ApplicantCubit(applicantType: applicantType)..initFromUser(user),
+          create: (_) => ApplicantCubit(
+            applicantType: applicantType,
+            declarationId: declarationId,
+          )..initFromUser(user),
           lazy: false,
         ),
         BlocProvider(

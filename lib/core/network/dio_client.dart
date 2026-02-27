@@ -22,9 +22,9 @@ class DioClient {
 
     dio.interceptors.add(
       LogInterceptor(
-        request: false,
-        requestBody: false,
-        responseBody: false,
+        request: true,
+        requestBody: true,
+        responseBody: true,
         error: true,
       ),
     );
@@ -46,7 +46,7 @@ class _AuthInterceptor extends Interceptor {
     final prefs = await SharedPreferences.getInstance();
     // final token = prefs.getString('access_token');
     final token =
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIyIiwianRpIjoiZmU2YTgzMDEwYmRjNzBkMzdjMTY3NWYxNTMzNmYyY2Q3YjFmOWYzOWUzMGFhYTUxODQyMDdjMTllMTQ1ZGIyNGZmYmUyZTdmMTJiNTY3NmIiLCJpYXQiOjE3NzIxMzc1MjkuMTUwMzEzLCJuYmYiOjE3NzIxMzc1MjkuMTUwMzE2LCJleHAiOjE3NzIzMTAzMjkuMTI5ODIyLCJzdWIiOiIxIiwic2NvcGVzIjpbXX0.DVkQQ37hwDbzAg6BiPWF4D7lcujP0QH4eLwH1fZol8csFDVTPKCi_NicqPt_epkIv2NnXoitTSMEtHFBVq8wj8ceYAVAzXm6aNPRWpyVdNEJT0ehBKQGUXSGgwvC6AsJXVJ5yneu1FAdcIWafDm0fHSyOz2gwKgvWky0PCBj3fcxzF2JaUOxeg3Qj1eNr202CsXgM4Plkf2Ka8IN2YGllfwgsUgcdDiynV21umxhczQoAXQzFfgcws_Zh0Ck4X2Sj6aV1TGTZ5oic592UtspR4r2qz67BYlPI8yWGPaZd2KrPTzE74k-N5AyfGWE1UIvafkWvxna7KUjI8oP26oaT1RMMpRyWhS-tuvUUHbeSMvriElwezJQqEX_bpF24bm7u7Obb_ChTKexGEatBLlAqT1C8zwfK33fi95dfRtFn7kjdS3nn6kXsg1NGZVXHI-3fJ93iYWyOdrmtmJ2wYcpElgLfl0SDOHbKN36udcJtfu0MhbyTE-XanQIwK2cyLfThB4NDf_DU3nJtxqDT75uszc7-U5mH7SmubXXyh_HUYghN7PZ4-maNyvPpeG7DV7R7acQsFqM4PGnF-q37bJA2pujhGwuvBQCnhKlc3Adh45Cc-gY3Ndnm_bHuXpZ2ibgVhyJKidYt0p-yKXaUrNMeVFp_50nwnNJDrKp9vaEicY";
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIyIiwianRpIjoiMDExYzAzNDEwZGMzMGEwOTk3NzE2M2M0ZTA5Y2UxYzdjODUyNjYxNTJhYzFlYzg0YzVlODdlZWY0NzY0OTEzNjc3MDg1Y2M2MGQ0Yjg2NTYiLCJpYXQiOjE3NzIyMTA3NjUuMDY1NTUzLCJuYmYiOjE3NzIyMTA3NjUuMDY1NTY2LCJleHAiOjE3NzIzODM1NjUuMDUxMjA3LCJzdWIiOiIxIiwic2NvcGVzIjpbXX0.VvUoxAkcZhZ97XEKJkf2nJOk3hqMYxi5Hbjs1_1B3tKHrgq10aD_TLY54GOSckR7w4Tn7WK6ax4zOg8XdJmesSaXx8t2vrHff22LsRp5wcVOd0pgwWNO_IrJVSHymCSpWF5Hb6aZvS8ritcyV_UxXPTc13XVaG7bzTujsj9KWm3iHYMygOw0iFWW3vs-FW9hoWKJKGzBMaY9H-twKcxhSRSXnObUOJk-Wxzipfk4KbVzAUY-BgMQM2Obc0JFfsd9RrOsz9aFJZzhn94IYUngrH6-2iTtyUDjDuPXpZcvT_arAvApfN6rQtCXKLQhnqAICiw6-N7D-OKDNHDd8dc_UsZ_5L3ITV0t_KdE6PHyFN9s2jZELpik8bu4x4g2QwJanWj6rVxy13OFxwFaZm7AWuKWiGLHmzSMPdqWazTvuSnNesYHXmLzeW4kElFzEeQ_2l3ye_4aRroe-9AhHTlBUJniFyKCjMjqWQqSLSn9KLEJ7OE_S8KP2msFk0ZDARYhKX02XVCbOqPST4eUCQE2Q_hnCi-BnagmqvvwI-_aq2KB2TM3qo0KMkAQJglE0SJV7qku2FMxpzXEXzb5wZYZ1g44f2wP0rQCtvteD3Xje8oxCniTj8OdmN1y_7T9R8s49bA-1OMEZX228erpEE2QR2vwp5iIEyzPHGVHYpA7zNU";
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
     }

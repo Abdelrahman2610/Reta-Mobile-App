@@ -1,9 +1,6 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../../../../core/helpers/app_enum.dart';
 import '../../../../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../../../../core/theme/app_colors.dart';
 import '../../../../../../components/app_container.dart';
@@ -13,9 +10,10 @@ import '../../../../components/submit_declaration_button.dart';
 import '../../../../cubit/units/unit_data/unit_data_cubit.dart';
 
 class UnitButtons extends StatelessWidget {
-  const UnitButtons({super.key, required this.cubit});
+  const UnitButtons({super.key, required this.cubit, required this.onSubmit});
 
   final UnitDataCubit cubit;
+  final VoidCallback onSubmit;
 
   @override
   Widget build(BuildContext context) {
@@ -42,14 +40,7 @@ class UnitButtons extends StatelessWidget {
                   label: 'حفظ البيانات',
                   borderColor: AppColors.successDark,
                   withIcon: false,
-                  onSubmit: () {
-                    if (cubit.validate()) {
-                      // TODO: حفظ
-                      log(
-                        "Payload: ${cubit.buildPayload(UnitType.residential)}",
-                      );
-                    }
-                  },
+                  onSubmit: onSubmit,
                 ),
               ),
               SizedBox(width: 10.w),

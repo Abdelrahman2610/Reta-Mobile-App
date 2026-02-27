@@ -17,4 +17,23 @@ extension ApplicantTypeLabel on ApplicantType {
         return 'أخرى';
     }
   }
+
+  int get id {
+    switch (this) {
+      case ApplicantType.owner:
+        return 1;
+      case ApplicantType.sharedOwnership:
+        return 2;
+      case ApplicantType.beneficiary:
+        return 3;
+      case ApplicantType.agent:
+        return 5;
+      case ApplicantType.legalRepresentative:
+        return 6;
+      case ApplicantType.other:
+        return 7;
+      default:
+        return 1;
+    }
+  }
 }

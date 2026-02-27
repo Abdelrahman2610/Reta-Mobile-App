@@ -154,7 +154,7 @@ class _AdministrativeUnitView extends StatelessWidget {
                           final path = await cubit.pickFile();
                           if (path != null) cubit.setOwnershipDeedFile(path);
                         },
-                        onFileRemoved: () => cubit.setOwnershipDeedFile(null),
+                        onFileRemoved: () => cubit.removeOwnershipDeedFile(),
                       );
                     },
                   ),
@@ -176,7 +176,7 @@ class _AdministrativeUnitView extends StatelessWidget {
                           final path = await cubit.pickFile();
                           if (path != null) cubit.setLeaseContractFile(path);
                         },
-                        onFileRemoved: () => cubit.setLeaseContractFile(null),
+                        onFileRemoved: () => cubit.removeLeaseContractFile(),
                       );
                     },
                   ),
@@ -197,7 +197,7 @@ class _AdministrativeUnitView extends StatelessWidget {
                           final path = await cubit.pickFile();
                           if (path != null) cubit.setPermitPhotoFile(path);
                         },
-                        onFileRemoved: () => cubit.setPermitPhotoFile(null),
+                        onFileRemoved: () => cubit.removePermitPhotoFile(),
                       );
                     },
                   ),
@@ -209,7 +209,7 @@ class _AdministrativeUnitView extends StatelessWidget {
             ),
             16.hs,
 
-            UnitButtons(cubit: cubit),
+            UnitButtons(cubit: cubit, onSubmit: () {}),
             26.hs,
           ],
         ),
