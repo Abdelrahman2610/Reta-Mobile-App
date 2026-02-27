@@ -10,7 +10,9 @@ import '../../../components/app_text.dart';
 import '../components/select_applicant_type_item.dart';
 
 class SelectApplicantTypePage extends StatelessWidget {
-  const SelectApplicantTypePage({super.key});
+  const SelectApplicantTypePage({super.key, required this.declarationId});
+
+  final int declarationId;
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +60,7 @@ class SelectApplicantTypePage extends StatelessWidget {
                               context,
                               screen: ProviderDataPage(
                                 applicantType: ApplicantType.owner,
+                                declarationId: declarationId,
                               ),
                               withNavBar: true,
                               pageTransitionAnimation:
@@ -75,6 +78,7 @@ class SelectApplicantTypePage extends StatelessWidget {
                               context,
                               screen: ProviderDataPage(
                                 applicantType: ApplicantType.sharedOwnership,
+                                declarationId: declarationId,
                               ),
                               withNavBar: true,
                               pageTransitionAnimation:
@@ -92,6 +96,7 @@ class SelectApplicantTypePage extends StatelessWidget {
                               context,
                               screen: ProviderDataPage(
                                 applicantType: ApplicantType.beneficiary,
+                                declarationId: declarationId,
                               ),
                               withNavBar: true,
                               pageTransitionAnimation:
@@ -109,6 +114,7 @@ class SelectApplicantTypePage extends StatelessWidget {
                               context,
                               screen: ProviderDataPage(
                                 applicantType: ApplicantType.agent,
+                                declarationId: declarationId,
                               ),
                               withNavBar: true,
                               pageTransitionAnimation:
@@ -127,6 +133,7 @@ class SelectApplicantTypePage extends StatelessWidget {
                               screen: ProviderDataPage(
                                 applicantType:
                                     ApplicantType.legalRepresentative,
+                                declarationId: declarationId,
                               ),
                               withNavBar: true,
                               pageTransitionAnimation:
@@ -145,6 +152,7 @@ class SelectApplicantTypePage extends StatelessWidget {
                               context,
                               screen: ProviderDataPage(
                                 applicantType: ApplicantType.other,
+                                declarationId: declarationId,
                               ),
                               withNavBar: true,
                               pageTransitionAnimation:

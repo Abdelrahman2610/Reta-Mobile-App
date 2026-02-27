@@ -14,17 +14,25 @@ import '../../../components/circular_progress_indicator_platform_widget.dart';
 import '../components/declarations_card_item.dart';
 import '../cubit/declaration/declaration_cubit.dart';
 import '../cubit/declaration/declaration_states.dart';
-import 'select_applicant_type_page.dart';
 import '../cubit/declaration_lookups_cubit.dart';
+import 'select_applicant_type_page.dart';
 
 class DeclarationsPage extends StatelessWidget {
   const DeclarationsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      lazy: false,
-      create: (_) => DeclarationCubit()..fetchList()..fetchLookups(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          lazy: false,
+          create: (_) => DeclarationCubit()..fetchList(),
+        ),
+        BlocProvider(
+          lazy: false,
+          create: (_) => DeclarationLookupsCubit()..fetchLookups(),
+        ),
+      ],
       child: _DeclarationsView(),
     );
   }
@@ -69,7 +77,9 @@ class _DeclarationsView extends StatelessWidget {
                           onTap: () {
                             PersistentNavBarNavigator.pushNewScreen(
                               context,
-                              screen: const SelectApplicantTypePage(),
+                              screen: const SelectApplicantTypePage(
+                                declarationId: -1,
+                              ),
                               withNavBar: true,
                               pageTransitionAnimation:
                                   PageTransitionAnimation.slideUp,

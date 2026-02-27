@@ -30,13 +30,6 @@ class MainApp extends StatelessWidget {
         supportedLocales: const [Locale('ar'), Locale('en')],
         builder: (context, Widget? child) => child!,
         home: SplashPage(),
-        // home: BlocProvider(
-        //   create: (_) => DeclarationLookupsCubit()..fetchLookups(),
-        //   child: ProviderDataPage(
-        //     applicantType: ApplicantType.owner,
-        //     declarationId: 70,
-        //   ),
-        // ),
         // home: MainPage(),
         routes: {'/home': (context) => GuestPage()},
       ),
