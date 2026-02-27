@@ -239,7 +239,7 @@ class _FixedInstallationsView extends StatelessWidget {
                               }
                             },
                             onFileRemoved: () =>
-                                cubit.setOwnershipDeedFile(null),
+                                cubit.removeOwnershipDeedFile(),
                           );
                         },
                       ),
@@ -253,7 +253,7 @@ class _FixedInstallationsView extends StatelessWidget {
             ),
             16.hs,
 
-            UnitButtons(cubit: cubit),
+            UnitButtons(cubit: cubit, onSubmit: () {}),
             26.hs,
           ],
         ),

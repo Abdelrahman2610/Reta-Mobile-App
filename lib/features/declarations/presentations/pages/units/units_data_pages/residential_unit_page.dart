@@ -121,6 +121,15 @@ class _ResidentialUnitView extends StatelessWidget {
                     labelText: 'كود حساب الوحدة',
                     controller: cubit.unitCodeController,
                     hintText: 'ادخل كود حساب الوحدة',
+                    keyboardType: TextInputType.number,
+                    validator: (v) {
+                      if (v == null || v.isEmpty) return null;
+                      // if (v.length != 14) return 'يجب أن يكون 14 رقماً';
+                      if (!RegExp(r'^\d+$').hasMatch(v)) {
+                        return 'يجب أن يحتوي على أرقام فقط';
+                      }
+                      return null;
+                    },
                   ),
                   16.hs,
 
@@ -130,8 +139,16 @@ class _ResidentialUnitView extends StatelessWidget {
                     controller: cubit.areaController,
                     hintText: 'المساحة بالمتر المربع',
                     keyboardType: TextInputType.number,
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+                    validator: (v) {
+                      if (v == null || v.isEmpty) return 'هذا الحقل مطلوب';
+                      if (double.tryParse(v) == null) {
+                        return 'يجب إدخال رقم صحيح';
+                      }
+                      if (double.parse(v) <= 0) {
+                        return 'يجب أن تكون المساحة أكبر من صفر';
+                      }
+                      return null;
+                    },
                   ),
                   16.hs,
 
@@ -156,7 +173,7 @@ class _ResidentialUnitView extends StatelessWidget {
 
                   AppText(
                     text: 'ملحق بالوحدة',
-                    fontSize: 14.sp,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.w700,
                     color: AppColors.neutralDarkDark,
                   ),
@@ -215,6 +232,13 @@ class _ResidentialUnitView extends StatelessWidget {
                     controller: cubit.marketValueController,
                     hintText: 'ادخل القيمة السوقية للوحدة',
                     keyboardType: TextInputType.number,
+                    validator: (v) {
+                      if (v == null || v.isEmpty) return null;
+                      if (double.tryParse(v) == null) {
+                        return 'يجب إدخال رقم صحيح';
+                      }
+                      return null;
+                    },
                   ),
                   16.hs,
 
@@ -236,7 +260,7 @@ class _ResidentialUnitView extends StatelessWidget {
                             cubit.setOwnershipDeedFile(path);
                           }
                         },
-                        onFileRemoved: () => cubit.setOwnershipDeedFile(null),
+                        onFileRemoved: () => cubit.removeOwnershipDeedFile(),
                       );
                     },
                   ),
@@ -257,7 +281,7 @@ class _ResidentialUnitView extends StatelessWidget {
                           final path = await cubit.pickFile();
                           if (path != null) cubit.setLeaseContractFile(path);
                         },
-                        onFileRemoved: () => cubit.setLeaseContractFile(null),
+                        onFileRemoved: () => cubit.removeLeaseContractFile(),
                       );
                     },
                   ),
@@ -269,7 +293,14 @@ class _ResidentialUnitView extends StatelessWidget {
             ),
             16.hs,
 
-            UnitButtons(cubit: cubit),
+            UnitButtons(
+              cubit: cubit,
+              onSubmit: () {
+                if (cubit.validate()) {
+                  cubit.submit(context, UnitType.residential);
+                }
+              },
+            ),
             26.hs,
           ],
         ),
