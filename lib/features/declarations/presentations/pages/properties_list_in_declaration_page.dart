@@ -3,7 +3,9 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_details_states.dart';
+import 'package:reta/features/declarations/presentations/pages/select_applicant_type_page.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_bar.dart';
@@ -71,7 +73,19 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                     if (declarationModel.statusId != "3")
                       SizedBox(height: 30.h),
                     if (declarationModel.statusId != "3")
-                      AddNewPropertyButton(onAdd: () {}),
+                      AddNewPropertyButton(
+                        onAdd: () {
+                          PersistentNavBarNavigator.pushNewScreen(
+                            context,
+                            screen: SelectApplicantTypePage(
+                              declarationId: declarationModel.id ?? -1,
+                            ),
+                            withNavBar: true,
+                            pageTransitionAnimation:
+                                PageTransitionAnimation.slideUp,
+                          );
+                        },
+                      ),
                     SizedBox(height: 10.h),
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
