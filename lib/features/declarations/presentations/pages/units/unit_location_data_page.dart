@@ -26,11 +26,13 @@ class UnitLocationDataPage extends StatelessWidget {
     required this.unitType,
     required this.applicantType,
     required this.declarationId,
+    this.locationData,
   });
 
   final UnitType unitType;
   final ApplicantType applicantType;
   final int declarationId;
+  final Map<String, dynamic>? locationData;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +41,7 @@ class UnitLocationDataPage extends StatelessWidget {
         unitType: unitType,
         applicantType: applicantType,
         declarationId: declarationId,
+        locationData: locationData,
       ),
       child: _UnitLocationDataPage(),
     );

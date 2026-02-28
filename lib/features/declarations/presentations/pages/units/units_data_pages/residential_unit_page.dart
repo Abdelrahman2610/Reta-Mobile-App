@@ -295,9 +295,15 @@ class _ResidentialUnitView extends StatelessWidget {
 
             UnitButtons(
               cubit: cubit,
-              onSubmit: () {
+              onSaveData: () {
                 if (cubit.validate()) {
-                  cubit.submit(context, UnitType.residential);
+                  cubit.onSaveDataTapped(context, UnitType.residential);
+                }
+              },
+              onCancel: () => cubit.onCancelButtonTapped(context),
+              onSaveAndAddOther: () {
+                if (cubit.validate()) {
+                  cubit.onSaveAndAddOther(context, UnitType.residential);
                 }
               },
             ),

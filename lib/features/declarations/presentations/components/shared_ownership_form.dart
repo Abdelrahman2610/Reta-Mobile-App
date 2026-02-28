@@ -36,7 +36,7 @@ class SharedOwnershipForm extends StatelessWidget {
             controller: cubit.taxpayerNameController,
             labelRequired: true,
             labelColor: AppColors.neutralDarkDark,
-            validator: (value) => value == null ? 'هذا الحقل مطلوب' : null,
+            validator: (v) => v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
             labelFontSize: 14.sp,
             prefixWidget: Row(
               mainAxisSize: MainAxisSize.min,

@@ -1,18 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/core/helpers/fixed_assets.dart';
+import 'package:reta/features/declarations/presentations/pages/units/unit_location_data_page.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_bar.dart';
 import '../../../components/app_text.dart';
 import '../components/select_types_of_properties_item.dart';
+import '../cubit/applicant_cubit.dart';
+import '../cubit/declaration_lookups_cubit.dart';
 
 class SelectTypesOfPropertiesPage extends StatelessWidget {
-  final bool showSpecialProperties;
+  final ApplicantType applicantType;
+  final int declarationId;
+  final Map<String, dynamic>? locationData;
 
   const SelectTypesOfPropertiesPage({
     super.key,
-    this.showSpecialProperties = true,
+    required this.applicantType,
+    required this.declarationId,
+    this.locationData,
   });
 
   @override
@@ -63,6 +72,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                         title: "الوحدات السكنية",
                         subTitle: "وحدات مخصصة للسكن مثل الشقق والفيلات.",
                         icon: FixedAssets.instance.icon1,
+                        onTap: () => onUniTapped(UnitType.residential, context),
                       ),
                       SizedBox(height: 16.h),
                       SelectTypesOfPropertiesItem(
@@ -70,6 +80,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                         subTitle:
                             "وحدات مخصصة لمزاولة الأنشطة التجارية مثل المحلات والمعارض.",
                         icon: FixedAssets.instance.icon2,
+                        onTap: () => onUniTapped(UnitType.commercial, context),
                       ),
                       SizedBox(height: 16.h),
                       SelectTypesOfPropertiesItem(
@@ -77,6 +88,8 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                         subTitle:
                             "وحدات مخصصة للأعمال الإدارية مثل المكاتب ومقار الشركات.",
                         icon: FixedAssets.instance.icon3,
+                        onTap: () =>
+                            onUniTapped(UnitType.administrative, context),
                       ),
                       SizedBox(height: 16.h),
                       SelectTypesOfPropertiesItem(
@@ -84,6 +97,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                         subTitle:
                             "وحدات تُستخدم لتقديم خدمات مثل العيادات والمدارس.",
                         icon: FixedAssets.instance.icon4,
+                        onTap: () => onUniTapped(UnitType.serviceUnit, context),
                       ),
                       SizedBox(height: 16.h),
                       SelectTypesOfPropertiesItem(
@@ -91,6 +105,8 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                         subTitle:
                             "تركيبات مثبتة بشكل دائم مثل الأبراج أو الخزانات أو اللوحات.",
                         icon: FixedAssets.instance.icon5,
+                        onTap: () =>
+                            onUniTapped(UnitType.fixedInstallations, context),
                       ),
                       SizedBox(height: 16.h),
                       SelectTypesOfPropertiesItem(
@@ -98,13 +114,14 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                         subTitle:
                             "أراضٍ غير مبنية ويتم استخدامها في نشاط فعلي.",
                         icon: FixedAssets.instance.icon6,
+                        onTap: () => onUniTapped(UnitType.vacantLand, context),
                       ),
                     ],
                   ),
                 ),
               ),
-              if (showSpecialProperties) SizedBox(height: 15.h),
-              if (showSpecialProperties)
+              if (locationData == null) SizedBox(height: 15.h),
+              if (locationData == null)
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
@@ -130,18 +147,24 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                           subTitle:
                               "منشآت مستقلة تُستخدم لتقديم خدمات متخصصة مثل المدرارس والمستشفيات.",
                           icon: FixedAssets.instance.icon7,
+                          onTap: () =>
+                              onUniTapped(UnitType.serviceFacility, context),
                         ),
                         SizedBox(height: 16.h),
                         SelectTypesOfPropertiesItem(
                           title: "المنشآت الفندقية",
                           subTitle: "منشآت مخصصة للإقامة والخدمات السياحية.",
                           icon: FixedAssets.instance.icon8,
+                          onTap: () =>
+                              onUniTapped(UnitType.hotelFacility, context),
                         ),
                         SizedBox(height: 16.h),
                         SelectTypesOfPropertiesItem(
                           title: "المنشآت الصناعية",
                           subTitle: "منشآت مخصصة للأنشطة الصناعية والإنتاج.",
                           icon: FixedAssets.instance.icon9,
+                          onTap: () =>
+                              onUniTapped(UnitType.industrialFacility, context),
                         ),
                         SizedBox(height: 16.h),
                         SelectTypesOfPropertiesItem(
@@ -149,12 +172,16 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                           subTitle:
                               "منشآت تقوم بأنشطة إنتاجية غير صناعية مباشرة مثل مزارع الدواجن.",
                           icon: FixedAssets.instance.icon10,
+                          onTap: () =>
+                              onUniTapped(UnitType.productionFacility, context),
                         ),
                         SizedBox(height: 16.h),
                         SelectTypesOfPropertiesItem(
                           title: "منشآت بترولية",
                           subTitle: "منشآت مرتبطة بأنشطة قطاع البترول.",
                           icon: FixedAssets.instance.icon11,
+                          onTap: () =>
+                              onUniTapped(UnitType.petroleumFacility, context),
                         ),
                         SizedBox(height: 16.h),
                         SelectTypesOfPropertiesItem(
@@ -162,6 +189,8 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                           subTitle:
                               "مواقع مخصصة لأعمال التعدين والمحاجر والملاحات.",
                           icon: FixedAssets.instance.icon12,
+                          onTap: () =>
+                              onUniTapped(UnitType.minesAndQuarries, context),
                         ),
                       ],
                     ),
@@ -169,6 +198,28 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                 ),
               SizedBox(height: 31.h),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void onUniTapped(UnitType unitType, BuildContext context) {
+    final applicantCubit = context.read<ApplicantCubit>();
+    final lookupsCubit = context.read<DeclarationLookupsCubit>();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: applicantCubit),
+            BlocProvider.value(value: lookupsCubit),
+          ],
+          child: UnitLocationDataPage(
+            unitType: unitType,
+            applicantType: applicantType,
+            declarationId: declarationId,
+            locationData: locationData,
           ),
         ),
       ),

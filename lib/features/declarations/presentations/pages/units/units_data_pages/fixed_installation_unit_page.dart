@@ -140,8 +140,10 @@ class _FixedInstallationsView extends StatelessWidget {
                         items: cubit.yesNoOptions
                             .map((o) => appDropDownOption(label: o))
                             .toList(),
-                        onChanged: (v) =>
-                            cubit.setIsTaxpayerOwner(v == kYes ? true : false),
+                        onChanged: (v) => cubit.setIsTaxpayerOwner(
+                          v == kYes ? true : false,
+                          context,
+                        ),
                         validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
                       ),
                       16.hs,
@@ -253,7 +255,20 @@ class _FixedInstallationsView extends StatelessWidget {
             ),
             16.hs,
 
-            UnitButtons(cubit: cubit, onSubmit: () {}),
+            UnitButtons(
+              cubit: cubit,
+              onSaveData: () {
+                if (cubit.validate()) {
+                  cubit.onSaveDataTapped(context, UnitType.fixedInstallations);
+                }
+              },
+              onCancel: () => cubit.onCancelButtonTapped(context),
+              onSaveAndAddOther: () {
+                if (cubit.validate()) {
+                  cubit.onSaveAndAddOther(context, UnitType.fixedInstallations);
+                }
+              },
+            ),
             26.hs,
           ],
         ),

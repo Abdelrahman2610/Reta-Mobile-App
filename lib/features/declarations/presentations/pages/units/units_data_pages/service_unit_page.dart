@@ -207,7 +207,20 @@ class _ServiceUnitView extends StatelessWidget {
             ),
             16.hs,
 
-            UnitButtons(cubit: cubit, onSubmit: () {}),
+            UnitButtons(
+              cubit: cubit,
+              onSaveData: () {
+                if (cubit.validate()) {
+                  cubit.onSaveDataTapped(context, UnitType.serviceUnit);
+                }
+              },
+              onCancel: () => cubit.onCancelButtonTapped(context),
+              onSaveAndAddOther: () {
+                if (cubit.validate()) {
+                  cubit.onSaveAndAddOther(context, UnitType.serviceUnit);
+                }
+              },
+            ),
             26.hs,
           ],
         ),

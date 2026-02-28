@@ -14,6 +14,7 @@ import '../../../../../../core/services/upload_service.dart';
 import '../../../../data/models/additional_document.dart';
 import '../../../../data/models/building_info.dart';
 import '../../../../data/models/declarations_lookups.dart';
+import '../../../pages/select_types_of_properties_page.dart';
 import '../../applicant_cubit.dart';
 import '../../declaration_lookups_cubit.dart';
 import '../location/unit_location_cubit.dart';
@@ -23,11 +24,15 @@ const String kYes = 'نعم';
 const String kNo = 'لا';
 
 class UnitDataCubit extends Cubit<UnitDataState> {
-  UnitDataCubit({required this.lookups, required this.declarationId})
-    : super(const UnitDataState());
+  UnitDataCubit({
+    required this.lookups,
+    required this.declarationId,
+    required this.applicantType,
+  }) : super(const UnitDataState());
 
   final DeclarationLookupsModel lookups;
   final int declarationId;
+  final ApplicantType applicantType;
 
   final formKey = GlobalKey<FormState>();
   final _uuid = const Uuid();
@@ -237,7 +242,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   // Actions - تركيبات ثابتة
   // ─────────────────────────────────────────
 
-  void setIsTaxpayerOwner(bool? value) {
+  void setIsTaxpayerOwner(bool? value, BuildContext context) {
+    if (value ?? false) {
+      // final user = context.read<LoginCubit>().state.user;
+      installationOwnerController.text = 'عادل عبد المقصود ابراهيم';
+    }
     emit(state.copyWith(isTaxpayerOwner: value));
   }
 
@@ -313,15 +322,28 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     );
   }
 
-  void setAdditionalDocumentFile(String id, String path) {
-    final index = additionalDocuments.indexWhere((doc) => doc.id == id);
-    additionalDocuments[index].filePath = path;
-    emit(
-      state.copyWith(
-        hasAdditionalDocuments: state.hasAdditionalDocuments,
-        additionalDocuments: additionalDocuments,
-        additionalUpdateCount: (state.additionalUpdateCount + 1),
-      ),
+  Future<void> setAdditionalDocumentFile(String id, String filePath) async {
+    emit(state.copyWith(isLoading: true));
+
+    final result = await UploadService.instance.uploadFile(
+      filePath: filePath,
+      label: 'supporting_documents',
+    );
+
+    _handleUploadResult(
+      result,
+      onSuccess: (data) {
+        final index = additionalDocuments.indexWhere((doc) => doc.id == id);
+        additionalDocuments[index].filePath = data.path;
+        additionalDocuments[index].originalFileName = data.originalFileName;
+        additionalDocuments[index].fullUrl = data.fullUrl;
+        emit(
+          state.copyWith(
+            isLoading: false,
+            additionalUpdateCount: state.additionalUpdateCount + 1,
+          ),
+        );
+      },
     );
   }
 
@@ -669,6 +691,65 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     }
   }
 
+  Future<void> onSaveDataTapped(BuildContext context, UnitType unitType) async {
+    await submit(context, unitType);
+    if (context.mounted && state.successMessage != null) {
+      //TODO: Navigate to the next page
+    }
+  }
+
+  Future<void> onSaveAndAddOther(
+    BuildContext context,
+    UnitType unitType,
+  ) async {
+    await submit(context, unitType);
+    if (context.mounted && state.successMessage != null) {
+      //TODO: Navigate to the next page
+      final locationCubit = context.read<UnitLocationCubit>();
+      Map<String, dynamic> locationData = {
+        'governorate': locationCubit.state.selectedGovernorate,
+        'district': locationCubit.state.selectedDistrict,
+        'neighborhood': locationCubit.state.selectedNeighborhood,
+        'street': locationCubit.state.selectedStreet,
+        'buildingNumber': locationCubit.state.selectedBuildingNumber,
+      };
+      locationData['village_other'] = locationCubit
+          .neighborhoodOtherController
+          .text
+          .trim();
+      locationData['is_other_village'] =
+          locationCubit.state.isNeighborhoodOther;
+      locationData['region_other'] = locationCubit.streetOtherController.text
+          .trim();
+      locationData['is_other_region'] = locationCubit.state.isStreetOther;
+      locationData['real_estate_other'] = locationCubit
+          .buildingNumberOtherController
+          .text
+          .trim();
+      locationData['is_other_real_state'] =
+          locationCubit.state.isBuildingNumberOther;
+      Navigator.pop(context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: context.read<ApplicantCubit>()),
+              BlocProvider.value(
+                value: context.read<DeclarationLookupsCubit>(),
+              ),
+            ],
+            child: SelectTypesOfPropertiesPage(
+              applicantType: applicantType,
+              declarationId: declarationId,
+              locationData: locationData,
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
   Future<void> submit(BuildContext context, UnitType unitType) async {
     final applicantCubit = context.read<ApplicantCubit>();
     final locationCubit = context.read<UnitLocationCubit>();
@@ -683,6 +764,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         )
         .id;
 
+    log("LocationPayload: ${locationCubit.buildLocationPayload()}");
     final payload = {
       ...applicantCubit.buildPayload(),
       'unit': {
@@ -707,7 +789,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
             successMessage: 'تم حفظ الإقرار بنجاح',
           ),
         );
-      // TODO: navigate to success page
       case ApiError(:final message):
         log('Failed to create declaration: $message');
         emit(state.copyWith(isLoading: false, errorMessage: message));
@@ -718,13 +799,19 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     UnitType unitType,
     DeclarationLookupsModel lookups,
   ) {
+    log('CommercialPayload: unitType: ${unitType}');
     switch (unitType) {
       case UnitType.residential:
         return buildResidentialPayload(lookups);
       case UnitType.commercial:
+        activityTypeController.text = 'تجاري';
+        return buildCommercialPayload(lookups, 'تجاري');
       case UnitType.administrative:
+        activityTypeController.text = 'إداري';
+        return buildCommercialPayload(lookups, 'إداري');
       case UnitType.serviceUnit:
-        return buildCommercialPayload(lookups);
+        activityTypeController.text = 'خدمي';
+        return buildCommercialPayload(lookups, 'خدمي');
       case UnitType.fixedInstallations:
         return buildFixedInstallationsPayload();
       case UnitType.vacantLand:
@@ -747,14 +834,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   Map<String, dynamic> buildResidentialPayload(
     DeclarationLookupsModel lookups,
   ) {
-    // نوع الوحدة
-    final unitTypeId = lookups.residentialUnitTypes
-        .firstWhere(
-          (t) => t.name == state.selectedUnitSubType,
-          orElse: () => DeclarationLookup(id: -1, name: ''),
-        )
-        .id;
-
     // الملحقات
     final attachmentIds = (state.selectedAmenities ?? [])
         .map((amenityName) {
@@ -772,7 +851,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       ..._buildBaseUnitPayload(),
       'usage_type': 'سكني',
       'area': double.tryParse(areaController.text.trim()) ?? 0,
-      'unit_type_id': unitTypeId,
       'attachments': attachmentIds,
       'exempted_as_private_residence': state.isExempt,
       'exempted_as_residence': state.isExempt,
@@ -791,10 +869,22 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   // وحدة تجارية / إدارية / خدمية
-  Map<String, dynamic> buildCommercialPayload(DeclarationLookupsModel lookups) {
+  Map<String, dynamic> buildCommercialPayload(
+    DeclarationLookupsModel lookups,
+    String unitType,
+  ) {
+    log('buildCommercialPayload...');
+    final unitTypeId = lookups.commercialUnitTypes
+        .firstWhere(
+          (t) => t.name == unitType,
+          orElse: () => DeclarationLookup(id: -1, name: ''),
+        )
+        .id;
+
     return {
       ..._buildBaseUnitPayload(),
       'usage_type': 'غير سكني',
+      'unit_type_id': unitTypeId,
       'area': double.tryParse(areaController.text.trim()) ?? 0,
       'activity_type': activityTypeController.text.trim(),
       if (state.ownershipDeedFilePath != null)
@@ -818,13 +908,24 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   // تركيبات ثابتة
   Map<String, dynamic> buildFixedInstallationsPayload() {
+    final installationTypeId = lookups.installationTypes
+        .firstWhere(
+          (t) => t.name == state.selectedInstallationType,
+          orElse: () => DeclarationLookup(id: -1, name: ''),
+        )
+        .id;
+
     return {
       ..._buildBaseUnitPayload(),
-      'installation_type': state.selectedInstallationType,
-      'is_taxpayer_owner': state.isTaxpayerOwner,
+      'installation_type_id': installationTypeId,
+      'installation_type_other': (installationTypeId == -1)
+          ? otherInstallationTypeController.text.trim()
+          : null,
+      'is_taxpayer_owner_of_installation': state.isTaxpayerOwner,
+      'installation_owner_name': installationOwnerController.text.trim(),
       'installation_owner': installationOwnerController.text.trim(),
-      'contract_start_date': contractStartDateController.text.trim(),
-      'contract_end_date': contractEndDateController.text.trim(),
+      'contract_start': contractStartDateController.text.trim(),
+      'contract_end': contractEndDateController.text.trim(),
       'annual_rental_value': annualRentalValueController.text.trim(),
       if (state.ownershipDeedFilePath != null)
         'ownership_deed': {
@@ -974,7 +1075,9 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           (d) => {
             'name': d.nameController.text.trim(),
             'path': d.filePath,
-            'original_file_name': d.nameController.text.trim(),
+            'original_file_name':
+                d.originalFileName ?? d.nameController.text.trim(),
+            'full_url': d.fullUrl,
           },
         )
         .toList();
@@ -990,6 +1093,14 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         )
         .id;
     return floorId;
+  }
+
+  void onCancelButtonTapped(BuildContext context) {
+    // Navigator.of(context).pushAndRemoveUntil(
+    //   MaterialPageRoute(builder: (_) => const MainPage()),
+    //   (route) => false,
+    // );
+    Navigator.pop(context);
   }
 
   // ─────────────────────────────────────────

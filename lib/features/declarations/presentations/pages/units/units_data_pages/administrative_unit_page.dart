@@ -209,7 +209,20 @@ class _AdministrativeUnitView extends StatelessWidget {
             ),
             16.hs,
 
-            UnitButtons(cubit: cubit, onSubmit: () {}),
+            UnitButtons(
+              cubit: cubit,
+              onSaveData: () {
+                if (cubit.validate()) {
+                  cubit.onSaveDataTapped(context, UnitType.administrative);
+                }
+              },
+              onCancel: () => cubit.onCancelButtonTapped(context),
+              onSaveAndAddOther: () {
+                if (cubit.validate()) {
+                  cubit.onSaveAndAddOther(context, UnitType.administrative);
+                }
+              },
+            ),
             26.hs,
           ],
         ),

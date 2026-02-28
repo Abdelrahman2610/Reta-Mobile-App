@@ -10,10 +10,18 @@ import '../../../../components/submit_declaration_button.dart';
 import '../../../../cubit/units/unit_data/unit_data_cubit.dart';
 
 class UnitButtons extends StatelessWidget {
-  const UnitButtons({super.key, required this.cubit, required this.onSubmit});
+  const UnitButtons({
+    super.key,
+    required this.cubit,
+    required this.onSaveData,
+    required this.onCancel,
+    required this.onSaveAndAddOther,
+  });
 
   final UnitDataCubit cubit;
-  final VoidCallback onSubmit;
+  final VoidCallback onSaveData;
+  final VoidCallback onCancel;
+  final VoidCallback onSaveAndAddOther;
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +32,7 @@ class UnitButtons extends StatelessWidget {
           AddNewPropertyButton(
             label: 'حفظ وإضافة وحدة أخرى في ذات العقار',
             padding: EdgeInsets.zero,
-            onAdd: () {
-              if (cubit.validate()) {
-                // TODO: حفظ وإضافة وحدة جديدة
-              }
-            },
+            onAdd: onSaveAndAddOther,
           ),
           16.hs,
           Row(
@@ -40,7 +44,7 @@ class UnitButtons extends StatelessWidget {
                   label: 'حفظ البيانات',
                   borderColor: AppColors.successDark,
                   withIcon: false,
-                  onSubmit: onSubmit,
+                  onSubmit: onSaveData,
                 ),
               ),
               SizedBox(width: 10.w),
@@ -48,7 +52,7 @@ class UnitButtons extends StatelessWidget {
                 flex: 3,
                 child: CancelDeclarationButton(
                   label: 'إلغاء',
-                  onCancel: () => Navigator.pop(context),
+                  onCancel: onCancel,
                 ),
               ),
             ],
