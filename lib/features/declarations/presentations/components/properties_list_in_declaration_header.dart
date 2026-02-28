@@ -6,7 +6,14 @@ import '../../../components/app_text.dart';
 import '../../../components/inkwell_transparent.dart';
 
 class PropertiesListInDeclarationHeader extends StatelessWidget {
-  const PropertiesListInDeclarationHeader({super.key});
+  final String title;
+  final bool canEdit;
+
+  const PropertiesListInDeclarationHeader(
+    this.title,
+    this.canEdit, {
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,33 +34,34 @@ class PropertiesListInDeclarationHeader extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              InkwellTransparent(
-                onTap: () {},
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 24.w,
-                    vertical: 16.5.h,
-                  ),
-                  child: AppText(
-                    text: "تعديل",
-                    color: Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w400,
+          if (canEdit)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                InkwellTransparent(
+                  onTap: () {},
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 24.w,
+                      vertical: 16.5.h,
+                    ),
+                    child: AppText(
+                      text: "تعديل",
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 17.h),
                 child: AppText(
-                  text: "إقرار المالك",
+                  text: "إقرار $title",
                   color: Colors.white,
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,

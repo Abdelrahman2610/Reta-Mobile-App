@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import '/core/network/api_constants.dart';
 import '/core/network/api_result.dart';
 import '/core/network/dio_client.dart';
@@ -6,32 +7,15 @@ import '/core/network/dio_client.dart';
 class DeclarationsRepository {
   final Dio _dio = DioClient.instance.dio;
 
-  Future<ApiResult<Map<String, dynamic>>> getDeclarations({
-    int? status,
-    String? declarationNumber,
-    int? declarationTypeId,
-    String? fromDate,
-    String? toDate,
-  }) async {
+  Future<ApiResult<Map<String, dynamic>>> getDeclarations() async {
     return safeApiCall(() async {
-      final response = await _dio.get(
-        ApiConstants.declarations,
-        queryParameters: {
-          if (status != null) 'status': status,
-          if (declarationNumber != null)
-            'declaration_number': declarationNumber,
-          if (declarationTypeId != null)
-            'declaration_type_id': declarationTypeId,
-          if (fromDate != null) 'from_date': fromDate,
-          if (toDate != null) 'to_date': toDate,
-        },
-      );
+      final response = await _dio.get(ApiConstants.declarations);
       return response.data as Map<String, dynamic>;
     });
   }
 
   Future<ApiResult<Map<String, dynamic>>> getDeclarationById(
-    int id, {
+    String id, {
     bool forEdit = false,
     int residentialPage = 1,
   }) async {
@@ -57,7 +41,7 @@ class DeclarationsRepository {
   }
 
   Future<ApiResult<Map<String, dynamic>>> updateDeclaration(
-    int declarationId,
+    String declarationId,
     Map<String, dynamic> body,
   ) async {
     return safeApiCall(() async {

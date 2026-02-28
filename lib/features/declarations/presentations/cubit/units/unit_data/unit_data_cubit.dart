@@ -1,19 +1,38 @@
+import 'dart:developer';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reta/core/network/api_constants.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../../../core/helpers/app_enum.dart';
 import '../../../../../../core/helpers/extensions/unit_type.dart';
+import '../../../../../../core/network/api_result.dart';
+import '../../../../../../core/services/declaration_service.dart';
+import '../../../../../../core/services/upload_service.dart';
 import '../../../../data/models/additional_document.dart';
 import '../../../../data/models/building_info.dart';
+import '../../../../data/models/declarations_lookups.dart';
+import '../../../pages/select_types_of_properties_page.dart';
+import '../../applicant_cubit.dart';
+import '../../declaration_lookups_cubit.dart';
+import '../location/unit_location_cubit.dart';
 import 'unit_data_state.dart';
 
 const String kYes = 'نعم';
 const String kNo = 'لا';
 
 class UnitDataCubit extends Cubit<UnitDataState> {
-  UnitDataCubit() : super(const UnitDataState());
+  UnitDataCubit({
+    required this.lookups,
+    required this.declarationId,
+    required this.applicantType,
+  }) : super(const UnitDataState());
+
+  final DeclarationLookupsModel lookups;
+  final int declarationId;
+  final ApplicantType applicantType;
 
   final formKey = GlobalKey<FormState>();
   final _uuid = const Uuid();
@@ -88,44 +107,24 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   final List<BuildingInfo> buildings = [];
 
   // ─────────────────────────────────────────
-  // Mock Data
+  // Real and Mock Data
   // ─────────────────────────────────────────
-  final List<String> residentialUnitTypes = [
-    'شقة',
-    'فيلا',
-    'دوبلكس',
-    'بنتهاوس',
-    'استوديو',
-    'شاليه',
-    'تاون هاوس',
-    'توين هاوس',
-    'سكن إداري',
+  List<String> get residentialUnitTypes =>
+      lookups.residentialUnitTypes.map((e) => e.name).toList();
+
+  List<String> get amenities =>
+      lookups.unitAttachments.map((e) => e.name).toList();
+
+  List<String> get floorNumbers => [
+    ...lookups.realEstateFloors.map((e) => e.name),
     'أخرى',
   ];
 
-  final List<String> amenities = [
-    'جراج',
-    'حديقة',
-    'روف',
-    'حمام سباحة',
-    'بدروم',
-    'غرفة سائق',
-    'غرفة حارس',
-    'غرفة سطح',
-  ];
-  final List<String> floorNumbers = [
-    '1',
-    '2',
-    '3',
-    '4',
-    '5',
-    '6',
-    '7',
-    '8',
-    '9',
-    '10',
-    'أخرى',
-  ];
+  List<String> get exemptionReasons =>
+      lookups.exemptionReasons.map((e) => e.name).toList();
+
+  List<String> get installationTypes =>
+      lookups.installationTypes.map((e) => e.name).toList();
   final List<String> unitNumbers = [
     '1',
     '2',
@@ -138,22 +137,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     'أخرى',
   ];
   final List<String> yesNoOptions = [kYes, kNo];
-
-  final List<String> exemptionReasons = [
-    'الأبنية المملوكة للجمعيات المسجلة وفقاً للقانون',
-    'المنظمات العمالية المخصصة لمكاتب إدارتها',
-    'المؤسسات التعليمية التي لا تهدف إلى الربح',
-    'المستشفيات التي لا تهدف إلى الربح',
-    'المستوصفات والملاجئ التي لا تهدف إلى الربح',
-    'المقار المملوكة للأحزاب السياسية',
-    'المقار المملوكة للنقابات المهنية',
-    'أبنية مراكز الشباب والرياضة',
-    'العقارات المملوكة للجهات الحكومية الأجنبية',
-    'الدور المخصصة لاستخدامها في مناسبات اجتماعية',
-    'إعفاء بقانون خاص',
-  ];
-
-  final List<String> installationTypes = ['شبكات محمول', 'إعلانات', 'أخرى'];
 
   final List<String> exploitationTypes = [
     'تشوينات',
@@ -259,7 +242,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   // Actions - تركيبات ثابتة
   // ─────────────────────────────────────────
 
-  void setIsTaxpayerOwner(bool? value) {
+  void setIsTaxpayerOwner(bool? value, BuildContext context) {
+    if (value ?? false) {
+      // final user = context.read<LoginCubit>().state.user;
+      installationOwnerController.text = 'عادل عبد المقصود ابراهيم';
+    }
     emit(state.copyWith(isTaxpayerOwner: value));
   }
 
@@ -310,14 +297,16 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   // ─────────────────────────────────────────
 
   void addAdditionalDocument() {
-    additionalDocuments.add(AdditionalDocument(id: _uuid.v4()));
-    emit(
-      state.copyWith(
-        hasAdditionalDocuments: state.hasAdditionalDocuments,
-        additionalDocuments: additionalDocuments,
-        additionalUpdateCount: (state.additionalUpdateCount + 1),
-      ),
-    );
+    if (additionalDocuments.length < 5) {
+      additionalDocuments.add(AdditionalDocument(id: _uuid.v4()));
+      emit(
+        state.copyWith(
+          hasAdditionalDocuments: state.hasAdditionalDocuments,
+          additionalDocuments: additionalDocuments,
+          additionalUpdateCount: (state.additionalUpdateCount + 1),
+        ),
+      );
+    }
   }
 
   void removeAdditionalDocument(String id) {
@@ -333,15 +322,28 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     );
   }
 
-  void setAdditionalDocumentFile(String id, String path) {
-    final index = additionalDocuments.indexWhere((doc) => doc.id == id);
-    additionalDocuments[index].filePath = path;
-    emit(
-      state.copyWith(
-        hasAdditionalDocuments: state.hasAdditionalDocuments,
-        additionalDocuments: additionalDocuments,
-        additionalUpdateCount: (state.additionalUpdateCount + 1),
-      ),
+  Future<void> setAdditionalDocumentFile(String id, String filePath) async {
+    emit(state.copyWith(isLoading: true));
+
+    final result = await UploadService.instance.uploadFile(
+      filePath: filePath,
+      label: 'supporting_documents',
+    );
+
+    _handleUploadResult(
+      result,
+      onSuccess: (data) {
+        final index = additionalDocuments.indexWhere((doc) => doc.id == id);
+        additionalDocuments[index].filePath = data.path;
+        additionalDocuments[index].originalFileName = data.originalFileName;
+        additionalDocuments[index].fullUrl = data.fullUrl;
+        emit(
+          state.copyWith(
+            isLoading: false,
+            additionalUpdateCount: state.additionalUpdateCount + 1,
+          ),
+        );
+      },
     );
   }
 
@@ -362,134 +364,635 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   void changePrivateResidence() =>
       emit(state.copyWith(isExempt: !state.isExempt));
-  void setOwnershipDeedFile(String? path) =>
-      emit(state.copyWith(ownershipDeedFilePath: path));
-  void setLeaseContractFile(String? path) =>
-      emit(state.copyWith(leaseContractFilePath: path));
-  void setPermitPhotoFile(String? path) =>
-      emit(state.copyWith(permitPhotoFilePath: path));
-  void setConstructionLicenseFile(String? path) =>
-      emit(state.copyWith(constructionLicenseFilePath: path));
-  void setOperatingLicenseFile(String? path) =>
-      emit(state.copyWith(operatingLicenseFilePath: path));
-  void setStarCertificateFile(String? path) =>
-      emit(state.copyWith(starCertificateFilePath: path));
-  void setConstructionPermitFile(String? path) =>
-      emit(state.copyWith(constructionPermitFilePath: path));
-  void setAllAssetsBalanceSheetFile(String? path) =>
-      emit(state.copyWith(allAssetsBalanceSheetFilePath: path));
+
+  Future<void> setOwnershipDeedFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: ApiConstants.ownershipDeedLabel,
+    );
+    _handleUploadResult(
+      result,
+      onSuccess: (data) => emit(
+        state.copyWith(
+          isLoading: false,
+          ownershipDeedFilePath: data.path,
+          ownershipDeedOriginalName: data.originalFileName,
+        ),
+      ),
+    );
+  }
+
+  Future<void> setLeaseContractFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: ApiConstants.leaseContractLabel,
+    );
+    _handleUploadResult(
+      result,
+      onSuccess: (data) => emit(
+        state.copyWith(
+          isLoading: false,
+          leaseContractFilePath: data.path,
+          leaseContractOriginalName: data.originalFileName,
+        ),
+      ),
+    );
+  }
+
+  Future<void> setPermitPhotoFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: ApiConstants.permitPhotoLabel,
+    );
+    _handleUploadResult(
+      result,
+      onSuccess: (data) => emit(
+        state.copyWith(
+          isLoading: false,
+          permitPhotoFilePath: data.path,
+          permitPhotoOriginalName: data.originalFileName,
+        ),
+      ),
+    );
+  }
+
+  Future<void> setConstructionLicenseFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: ApiConstants.constructionLicenseLabel,
+    );
+    _handleUploadResult(
+      result,
+      onSuccess: (data) => emit(
+        state.copyWith(
+          isLoading: false,
+          constructionLicenseFilePath: data.path,
+          constructionLicenseOriginalName: data.originalFileName,
+        ),
+      ),
+    );
+  }
+
+  Future<void> setOperatingLicenseFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: ApiConstants.operatingLicenseLabel,
+    );
+    _handleUploadResult(
+      result,
+      onSuccess: (data) => emit(
+        state.copyWith(
+          isLoading: false,
+          operatingLicenseFilePath: data.path,
+          operatingLicenseOriginalName: data.originalFileName,
+        ),
+      ),
+    );
+  }
+
+  Future<void> setStarCertificateFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: ApiConstants.starCertificateLabel,
+    );
+    _handleUploadResult(
+      result,
+      onSuccess: (data) => emit(
+        state.copyWith(
+          isLoading: false,
+          starCertificateFilePath: data.path,
+          starCertificateOriginalName: data.originalFileName,
+        ),
+      ),
+    );
+  }
+
+  Future<void> setConstructionPermitFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: 'construction_permit',
+    );
+    _handleUploadResult(
+      result,
+      onSuccess: (data) => emit(
+        state.copyWith(
+          isLoading: false,
+          constructionPermitFilePath: data.path,
+          constructionPermitOriginalName: data.originalFileName,
+        ),
+      ),
+    );
+  }
+
+  Future<void> setAllAssetsBalanceSheetFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: 'balance_sheet',
+    );
+    _handleUploadResult(
+      result,
+      onSuccess: (data) => emit(
+        state.copyWith(
+          isLoading: false,
+          allAssetsBalanceSheetFilePath: data.path,
+          allAssetsBalanceSheetOriginalName: data.originalFileName,
+        ),
+      ),
+    );
+  }
+
+  void removeOwnershipDeedFile() =>
+      emit(state.copyWith(ownershipDeedFilePath: null));
+  void removeLeaseContractFile() =>
+      emit(state.copyWith(leaseContractFilePath: null));
+  void removePermitPhotoFile() =>
+      emit(state.copyWith(ownershipDeedFilePath: null));
+  void removeConstructionLicenseFile() =>
+      emit(state.copyWith(leaseContractFilePath: null));
+  void removeOperatingLicenseFile() =>
+      emit(state.copyWith(ownershipDeedFilePath: null));
+  void removeStarCertificateFile() =>
+      emit(state.copyWith(leaseContractFilePath: null));
+  void removeConstructionPermitFile() =>
+      emit(state.copyWith(ownershipDeedFilePath: null));
+  void removeAllAssetsBalanceSheetFile() =>
+      emit(state.copyWith(leaseContractFilePath: null));
+
+  // ── Helper مشترك ─────────────────────────────────
+  void _handleUploadResult(
+    ApiResult<UploadedFileModel> result, {
+    required void Function(UploadedFileModel data) onSuccess,
+  }) {
+    if (result is ApiSuccess<UploadedFileModel>) {
+      onSuccess(result.data);
+    } else if (result is ApiError<UploadedFileModel>) {
+      emit(state.copyWith(isLoading: false, errorMessage: result.message));
+    }
+  }
 
   // ─────────────────────────────────────────
   // Validation & Submit
   // ─────────────────────────────────────────
 
-  bool validate() => formKey.currentState?.validate() ?? false;
+  bool validate() {
+    final isFormValid = formKey.currentState?.validate() ?? false;
+    if (!isFormValid) return false;
 
-  Map<String, dynamic> buildPayload(UnitType unitType) {
-    final base = {
-      'unitType': unitType.label,
-      'privateResidence': state.isExempt,
-      'floorNumber': state.isFloorNumberOther
-          ? floorNumberOtherController.text.trim()
-          : state.selectedFloorNumber,
-      'floorNumberText': floorNumberController.text.trim(),
-      'unitNumber': state.isUnitNumberOther
-          ? unitNumberOtherController.text.trim()
-          : state.selectedUnitNumber,
-      'unitNumberText': unitNumberController.text.trim(),
-      'contactedTaxAuthority': state.contactedTaxAuthority,
-      'unitCode': unitCodeController.text.trim(),
-      'marketValue': marketValueController.text.trim(),
-      'isExempt': state.isExempt,
-      'exemptionReason': state.selectedExemptionReason,
-      'lawNumber': lawNumberController.text.trim(),
-      'lawYear': lawYearController.text.trim(),
-      'ownershipDeedFile': state.ownershipDeedFilePath,
-      'leaseContractFile': state.leaseContractFilePath,
-      'additionalDocuments': additionalDocuments
-          .map(
-            (d) => {'name': d.nameController.text.trim(), 'file': d.filePath},
-          )
-          .toList(),
+    // ── كود حساب الوحدة (14 رقم لو موجود) ──────────
+    final unitCode = unitCodeController.text.trim();
+    if (unitCode.isNotEmpty && unitCode.length != 14) {
+      emit(
+        state.copyWith(errorMessage: 'كود حساب الوحدة يجب أن يكون 14 رقماً'),
+      );
+      return false;
+    }
+
+    // ── سند تمليك الوحدة (required) ──────────────────
+    if (state.ownershipDeedFilePath == null) {
+      emit(state.copyWith(errorMessage: 'يرجى رفع سند تمليك الوحدة'));
+      return false;
+    }
+
+    // ── المستندات الداعمة لو اختار نعم ───────────────
+    if (state.hasAdditionalDocuments) {
+      if (additionalDocuments.isEmpty) {
+        emit(
+          state.copyWith(errorMessage: 'يرجى إضافة مستند داعم واحد على الأقل'),
+        );
+        return false;
+      }
+      for (final doc in additionalDocuments) {
+        if (doc.nameController.text.trim().isEmpty) {
+          emit(state.copyWith(errorMessage: 'يرجى إدخال اسم المستند الداعم'));
+          return false;
+        }
+        if (doc.filePath == null) {
+          emit(state.copyWith(errorMessage: 'يرجى رفع ملف المستند الداعم'));
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  Future<void> onSaveDataTapped(BuildContext context, UnitType unitType) async {
+    await submit(context, unitType);
+    if (context.mounted && state.successMessage != null) {
+      //TODO: Navigate to the next page
+    }
+  }
+
+  Future<void> onSaveAndAddOther(
+    BuildContext context,
+    UnitType unitType,
+  ) async {
+    await submit(context, unitType);
+    if (context.mounted && state.successMessage != null) {
+      //TODO: Navigate to the next page
+      final locationCubit = context.read<UnitLocationCubit>();
+      Map<String, dynamic> locationData = {
+        'governorate': locationCubit.state.selectedGovernorate,
+        'district': locationCubit.state.selectedDistrict,
+        'neighborhood': locationCubit.state.selectedNeighborhood,
+        'street': locationCubit.state.selectedStreet,
+        'buildingNumber': locationCubit.state.selectedBuildingNumber,
+      };
+      locationData['village_other'] = locationCubit
+          .neighborhoodOtherController
+          .text
+          .trim();
+      locationData['is_other_village'] =
+          locationCubit.state.isNeighborhoodOther;
+      locationData['region_other'] = locationCubit.streetOtherController.text
+          .trim();
+      locationData['is_other_region'] = locationCubit.state.isStreetOther;
+      locationData['real_estate_other'] = locationCubit
+          .buildingNumberOtherController
+          .text
+          .trim();
+      locationData['is_other_real_state'] =
+          locationCubit.state.isBuildingNumberOther;
+      Navigator.pop(context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: context.read<ApplicantCubit>()),
+              BlocProvider.value(
+                value: context.read<DeclarationLookupsCubit>(),
+              ),
+            ],
+            child: SelectTypesOfPropertiesPage(
+              applicantType: applicantType,
+              declarationId: declarationId,
+              locationData: locationData,
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> submit(BuildContext context, UnitType unitType) async {
+    final applicantCubit = context.read<ApplicantCubit>();
+    final locationCubit = context.read<UnitLocationCubit>();
+    final lookups = context.read<DeclarationLookupsCubit>().lookups!;
+
+    emit(state.copyWith(isLoading: true));
+    // نوع العقار من الـ lookups
+    final propertyTypeId = lookups.propertyTypes
+        .firstWhere(
+          (p) => p.name == unitType.label,
+          orElse: () => DeclarationLookup(id: 1, name: ''),
+        )
+        .id;
+
+    final payload = {
+      ...applicantCubit.buildPayload(),
+      'unit': {
+        'property_type_id': propertyTypeId,
+        ...locationCubit.buildLocationPayload(),
+        ..._buildUnitPayload(unitType, lookups),
+      },
     };
 
+    log('Final Payload: $payload');
+    final result = await DeclarationService.instance.createDeclaration(
+      payload,
+      declarationId: declarationId,
+    );
+
+    switch (result) {
+      case ApiSuccess(:final data):
+        log('Declaration created: $data');
+        emit(
+          state.copyWith(
+            isLoading: false,
+            successMessage: 'تم حفظ الإقرار بنجاح',
+          ),
+        );
+      case ApiError(:final message):
+        log('Failed to create declaration: $message');
+        emit(state.copyWith(isLoading: false, errorMessage: message));
+    }
+  }
+
+  Map<String, dynamic> _buildUnitPayload(
+    UnitType unitType,
+    DeclarationLookupsModel lookups,
+  ) {
     switch (unitType) {
+      case UnitType.residential:
+        return buildResidentialPayload(lookups);
+      case UnitType.commercial:
+        activityTypeController.text = 'تجاري';
+        return buildCommercialPayload(lookups, 'تجاري');
+      case UnitType.administrative:
+        activityTypeController.text = 'إداري';
+        return buildCommercialPayload(lookups, 'إداري');
+      case UnitType.serviceUnit:
+        activityTypeController.text = 'خدمي';
+        return buildCommercialPayload(lookups, 'خدمي');
       case UnitType.fixedInstallations:
-        return {
-          ...base,
-          'installationType': state.selectedInstallationType,
-          'isTaxpayerOwner': state.isTaxpayerOwner,
-          'installationOwner': installationOwnerController.text.trim(),
-          'contractStartDate': contractStartDateController.text.trim(),
-          'contractEndDate': contractEndDateController.text.trim(),
-          'annualRentalValue': annualRentalValueController.text.trim(),
-        };
+        return buildFixedInstallationsPayload();
       case UnitType.vacantLand:
-        return {
-          ...base,
-          'totalLandArea': totalLandAreaController.text.trim(),
-          'exploitedArea': exploitedAreaController.text.trim(),
-          'exploitationType': state.selectedExploitationType,
-        };
-      case UnitType.hotelFacility:
-        return {
-          ...base,
-          'facilityName': facilityNameController.text.trim(),
-          'hotelView': state.selectedHotelView,
-          'starRating': state.selectedStarRating,
-          'buildingsCount': buildings.length,
-          'buildings': buildings
-              .map(
-                (b) => {
-                  'floors': b.floorsCount,
-                  'area': b.areaController.text.trim(),
-                  'marketValue': b.marketValueController.text.trim(),
-                },
-              )
-              .toList(),
-          'constructionLicenseFile': state.constructionLicenseFilePath,
-          'operatingLicenseFile': state.operatingLicenseFilePath,
-          'starCertificateFile': state.starCertificateFilePath,
-          'hasSubUnits': state.hasSubUnits,
-        };
+        return buildVacantLandPayload();
+      case UnitType.serviceFacility:
       case UnitType.industrialFacility:
       case UnitType.productionFacility:
-        return {
-          ...base,
-          'facilityName': facilityNameController.text.trim(),
-          'activityType': activityTypeController.text.trim(),
-          'totalLandArea': totalLandAreaFacilityController.text.trim(),
-          'exploitedLandArea': exploitedLandAreaController.text.trim(),
-          'buildingsCount': buildings.length,
-          'buildings': buildings
-              .map(
-                (b) => {
-                  'floors': b.floorsCount,
-                  'area': b.areaController.text.trim(),
-                },
-              )
-              .toList(),
-          'constructionLicenseFile': state.constructionLicenseFilePath,
-          'operatingLicenseFile': state.operatingLicenseFilePath,
-          'constructionPermitFile': state.constructionPermitFilePath,
-        };
+        return buildFacilityPayload(lookups);
+      case UnitType.hotelFacility:
+        return buildHotelPayload(lookups);
       case UnitType.petroleumFacility:
-        return {
-          ...base,
-          'facilityName': facilityNameController.text.trim(),
-          'usageType': usageTypeController.text.trim(),
-          'totalLandArea': totalLandAreaFacilityController.text.trim(),
-          'bookValue': bookValueController.text.trim(),
-          'buildingsCount': buildings.length,
-          'allAssetsBalanceSheetFile': state.allAssetsBalanceSheetFilePath,
-        };
+        return buildPetroleumPayload();
+      case UnitType.minesAndQuarries:
+        return buildMinesPayload();
       default:
-        return {
-          ...base,
-          'area': areaController.text.trim(),
-          'permitPhotoFile': state.permitPhotoFilePath,
-        };
+        return buildResidentialPayload(lookups);
     }
+  }
+
+  Map<String, dynamic> buildResidentialPayload(
+    DeclarationLookupsModel lookups,
+  ) {
+    // الملحقات
+    final attachmentIds = (state.selectedAmenities ?? [])
+        .map((amenityName) {
+          return lookups.unitAttachments
+              .firstWhere(
+                (a) => a.name == amenityName,
+                orElse: () => DeclarationLookup(id: 0, name: ''),
+              )
+              .id;
+        })
+        .where((id) => id != 0)
+        .toList();
+
+    return {
+      ..._buildBaseUnitPayload(),
+      'usage_type': 'سكني',
+      'area': double.tryParse(areaController.text.trim()) ?? 0,
+      'attachments': attachmentIds,
+      'exempted_as_private_residence': state.isExempt,
+      'exempted_as_residence': state.isExempt,
+      if (state.ownershipDeedFilePath != null)
+        'ownership_deed': {
+          'path': state.ownershipDeedFilePath,
+          'original_file_name': state.ownershipDeedOriginalName,
+        },
+      if (state.leaseContractFilePath != null)
+        'lease_contract': {
+          'path': state.leaseContractFilePath,
+          'original_file_name': state.leaseContractOriginalName,
+        },
+      ..._buildSupportingDocsPayload(),
+    };
+  }
+
+  // وحدة تجارية / إدارية / خدمية
+  Map<String, dynamic> buildCommercialPayload(
+    DeclarationLookupsModel lookups,
+    String unitType,
+  ) {
+    log('buildCommercialPayload...');
+    final unitTypeId = lookups.commercialUnitTypes
+        .firstWhere(
+          (t) => t.name == unitType,
+          orElse: () => DeclarationLookup(id: -1, name: ''),
+        )
+        .id;
+
+    return {
+      ..._buildBaseUnitPayload(),
+      'usage_type': 'غير سكني',
+      'unit_type_id': unitTypeId,
+      'area': double.tryParse(areaController.text.trim()) ?? 0,
+      'activity_type': activityTypeController.text.trim(),
+      if (state.ownershipDeedFilePath != null)
+        'ownership_deed': {
+          'path': state.ownershipDeedFilePath,
+          'original_file_name': state.ownershipDeedOriginalName,
+        },
+      if (state.leaseContractFilePath != null)
+        'lease_contract': {
+          'path': state.leaseContractFilePath,
+          'original_file_name': state.leaseContractOriginalName,
+        },
+      if (state.permitPhotoFilePath != null)
+        'license_photo': {
+          'path': state.permitPhotoFilePath,
+          'original_file_name': state.permitPhotoOriginalName,
+        },
+
+      ..._buildSupportingDocsPayload(),
+    };
+  }
+
+  // تركيبات ثابتة
+  Map<String, dynamic> buildFixedInstallationsPayload() {
+    final installationTypeId = lookups.installationTypes
+        .firstWhere(
+          (t) => t.name == state.selectedInstallationType,
+          orElse: () => DeclarationLookup(id: -1, name: ''),
+        )
+        .id;
+
+    return {
+      ..._buildBaseUnitPayload(),
+      'installation_type_id': installationTypeId,
+      'installation_type_other': (installationTypeId == -1)
+          ? otherInstallationTypeController.text.trim()
+          : null,
+      'is_taxpayer_owner_of_installation': state.isTaxpayerOwner,
+      'installation_owner_name': installationOwnerController.text.trim(),
+      'installation_owner': installationOwnerController.text.trim(),
+      'contract_start': contractStartDateController.text.trim(),
+      'contract_end': contractEndDateController.text.trim(),
+      'annual_rental_value': annualRentalValueController.text.trim(),
+      if (state.ownershipDeedFilePath != null)
+        'ownership_deed': {
+          'path': state.ownershipDeedFilePath,
+          'original_file_name': state.ownershipDeedOriginalName,
+        },
+      ..._buildSupportingDocsPayload(),
+    };
+  }
+
+  // أراضي فضاء مستغلة
+  Map<String, dynamic> buildVacantLandPayload() {
+    return {
+      ..._buildBaseUnitPayload(),
+      'total_land_area':
+          double.tryParse(totalLandAreaController.text.trim()) ?? 0,
+      'exploited_area':
+          double.tryParse(exploitedAreaController.text.trim()) ?? 0,
+      'exploitation_type': state.selectedExploitationType,
+      if (state.ownershipDeedFilePath != null)
+        'ownership_deed': {
+          'path': state.ownershipDeedFilePath,
+          'original_file_name': state.ownershipDeedOriginalName,
+        },
+      ..._buildSupportingDocsPayload(),
+    };
+  }
+
+  // منشآت فندقية
+  Map<String, dynamic> buildHotelPayload(DeclarationLookupsModel lookups) {
+    return {
+      ..._buildBaseUnitPayload(),
+      'facility_name': facilityNameController.text.trim(),
+      'hotel_view': state.selectedHotelView,
+      'star_rating': state.selectedStarRating,
+      'buildings_count': buildings.length,
+      'buildings': buildings
+          .map(
+            (b) => {
+              'floors': b.floorsCount,
+              'area': b.areaController.text.trim(),
+              'market_value': b.marketValueController.text.trim(),
+            },
+          )
+          .toList(),
+      if (state.constructionLicenseFilePath != null)
+        'construction_license': {
+          'path': state.constructionLicenseFilePath,
+          'original_file_name': state.constructionLicenseOriginalName,
+        },
+      if (state.operatingLicenseFilePath != null)
+        'operating_license': {
+          'path': state.operatingLicenseFilePath,
+          'original_file_name': state.operatingLicenseOriginalName,
+        },
+      if (state.starCertificateFilePath != null)
+        'star_certificate': {
+          'path': state.starCertificateFilePath,
+          'original_file_name': state.starCertificateOriginalName,
+        },
+      'has_sub_units': state.hasSubUnits,
+      ..._buildSupportingDocsPayload(),
+    };
+  }
+
+  // منشآت صناعية / إنتاجية
+  Map<String, dynamic> buildFacilityPayload(DeclarationLookupsModel lookups) {
+    return {
+      ..._buildBaseUnitPayload(),
+      'facility_name': facilityNameController.text.trim(),
+      'activity_type': activityTypeController.text.trim(),
+      'total_land_area': totalLandAreaFacilityController.text.trim(),
+      'exploited_land_area': exploitedLandAreaController.text.trim(),
+      'buildings_count': buildings.length,
+      'buildings': buildings
+          .map(
+            (b) => {
+              'floors': b.floorsCount,
+              'area': b.areaController.text.trim(),
+            },
+          )
+          .toList(),
+      if (state.constructionLicenseFilePath != null)
+        'construction_license': {
+          'path': state.constructionLicenseFilePath,
+          'original_file_name': state.constructionLicenseOriginalName,
+        },
+      if (state.operatingLicenseFilePath != null)
+        'operating_license': {
+          'path': state.operatingLicenseFilePath,
+          'original_file_name': state.operatingLicenseOriginalName,
+        },
+      ..._buildSupportingDocsPayload(),
+    };
+  }
+
+  // منشآت بترولية
+  Map<String, dynamic> buildPetroleumPayload() {
+    return {
+      ..._buildBaseUnitPayload(),
+      'facility_name': facilityNameController.text.trim(),
+      'usage_type': usageTypeController.text.trim(),
+      'total_land_area': totalLandAreaFacilityController.text.trim(),
+      'book_value': bookValueController.text.trim(),
+      'buildings_count': buildings.length,
+      if (state.allAssetsBalanceSheetFilePath != null)
+        'all_assets_balance_sheet': {
+          'path': state.allAssetsBalanceSheetFilePath,
+          'original_file_name': 'ميزانية',
+        },
+      ..._buildSupportingDocsPayload(),
+    };
+  }
+
+  // مناجم ومحاجر
+  Map<String, dynamic> buildMinesPayload() {
+    return {..._buildBaseUnitPayload(), ..._buildSupportingDocsPayload()};
+  }
+
+  // ── Helpers مشتركة ───────────────────────────────────
+  Map<String, dynamic> _buildBaseUnitPayload() {
+    final floorId = state.isFloorNumberOther ? -1 : _getFloorId();
+    log("Floor id: $floorId - ${_getFloorId()}");
+    return {
+      'real_estate_floor_id': floorId,
+      if (state.isFloorNumberOther)
+        'real_estate_floor_other': floorNumberOtherController.text.trim(),
+      'unit_id': state.isUnitNumberOther
+          ? -1
+          : int.tryParse(state.selectedUnitNumber ?? '') ?? -1,
+      if (state.isUnitNumberOther)
+        'unit_other': unitNumberOtherController.text.trim(),
+      'reta_contact_about_unit': state.contactedTaxAuthority == true ? 1 : 2,
+      'account_code': unitCodeController.text.trim().isEmpty
+          ? null
+          : unitCodeController.text.trim(),
+      'market_value': double.tryParse(marketValueController.text.trim()),
+      'submit_other_supporting_documents': state.hasAdditionalDocuments ? 1 : 2,
+    };
+  }
+
+  Map<String, dynamic> _buildSupportingDocsPayload() {
+    if (additionalDocuments.isEmpty) return {};
+    final docs = additionalDocuments
+        .where((d) => d.nameController.text.isNotEmpty && d.filePath != null)
+        .map(
+          (d) => {
+            'name': d.nameController.text.trim(),
+            'path': d.filePath,
+            'original_file_name':
+                d.originalFileName ?? d.nameController.text.trim(),
+            'full_url': d.fullUrl,
+          },
+        )
+        .toList();
+    if (docs.isEmpty) return {};
+    return {'supporting_documents': docs};
+  }
+
+  int _getFloorId() {
+    int floorId = lookups.realEstateFloors
+        .firstWhere(
+          (a) => a.name == state.selectedFloorNumber,
+          orElse: () => DeclarationLookup(id: 0, name: ''),
+        )
+        .id;
+    return floorId;
+  }
+
+  void onCancelButtonTapped(BuildContext context) {
+    // Navigator.of(context).pushAndRemoveUntil(
+    //   MaterialPageRoute(builder: (_) => const MainPage()),
+    //   (route) => false,
+    // );
+    Navigator.pop(context);
   }
 
   // ─────────────────────────────────────────
@@ -529,4 +1032,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     for (final building in buildings) building.dispose();
     return super.close();
   }
+
+  void clearError() => emit(state.copyWith(errorMessage: null));
 }

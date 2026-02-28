@@ -9,9 +9,11 @@ class SelectApplicantTypeItem extends StatefulWidget {
   final String title;
   final String subTitle;
   final bool isOther;
+  final Function onPress;
 
   const SelectApplicantTypeItem({
     super.key,
+    required this.onPress,
     required this.title,
     required this.subTitle,
     this.isOther = false,
@@ -27,74 +29,74 @@ class _SelectApplicantTypeItemState extends State<SelectApplicantTypeItem> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: AppColors.neutralLightLight,
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      AppText(
-                        text: widget.title,
-                        color: AppColors.mainBlueIndigoDye,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      if (widget.isOther)
-                        Row(
-                          children: [
-                            if (!isOtherEditable)
-                              Icon(
-                                Icons.arrow_forward_ios_sharp,
-                                color: AppColors.neutralDarkLightest,
-                                size: 15,
-                              ),
-                            SizedBox(width: 10.w),
-                            InkwellTransparent(
-                              onTap: () {
-                                isOtherEditable = !isOtherEditable;
-                                setState(() {});
-                              },
-                              child: AppText(
-                                text: isOtherEditable ? "يلغي" : "تعديل",
-                                color: AppColors.highlightDarkest,
-                                fontWeight: FontWeight.w400,
-                                fontSize: 14.sp,
-                                textDecoration: TextDecoration.underline,
-                                decorationColor: AppColors.highlightDarkest,
-                              ),
-                            ),
-                          ],
+    return InkwellTransparent(
+      onTap: () {
+        if (!widget.isOther) {
+          widget.onPress();
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: AppColors.neutralLightLight,
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        AppText(
+                          text: widget.title,
+                          color: AppColors.mainBlueIndigoDye,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
                         ),
-                    ],
-                  ),
-                  SizedBox(height: 4.h),
-                  AppText(
-                    text: widget.subTitle,
-                    maxLines: 4,
-                    color: AppColors.neutralDarkLight,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ],
+                        if (widget.isOther)
+                          Row(
+                            children: [
+                              InkwellTransparent(
+                                onTap: () {
+                                  isOtherEditable = !isOtherEditable;
+                                  setState(() {});
+                                },
+                                child: AppText(
+                                  text: isOtherEditable ? "يلغي" : "تعديل",
+                                  color: AppColors.highlightDarkest,
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 14.sp,
+                                  textDecoration: TextDecoration.underline,
+                                  decorationColor: AppColors.highlightDarkest,
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
+                    ),
+                    SizedBox(height: 4.h),
+                    AppText(
+                      text: widget.subTitle,
+                      maxLines: 4,
+                      color: AppColors.neutralDarkLight,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ],
+                ),
               ),
-            ),
-            SizedBox(width: 5.w),
-            if (!widget.isOther)
-              Icon(
-                Icons.arrow_forward_ios_sharp,
-                color: AppColors.neutralDarkLightest,
-                size: 15,
-              ),
-          ],
+              SizedBox(width: 5.w),
+              if (!widget.isOther)
+                Icon(
+                  Icons.arrow_forward_ios_sharp,
+                  color: AppColors.neutralDarkLightest,
+                  size: 15,
+                ),
+            ],
+          ),
         ),
       ),
     );

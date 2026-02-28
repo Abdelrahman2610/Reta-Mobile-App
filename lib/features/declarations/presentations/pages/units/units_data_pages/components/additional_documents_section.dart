@@ -30,7 +30,6 @@ class AdditionalDocumentsSection extends StatelessWidget {
               labelText: 'هل تريد تقديم مستندات أخرى داعمة للطلب؟',
               labelRequired: true,
               hintText: 'اختر',
-              labelFontSize: 16.sp,
               value: state.hasAdditionalDocuments ? kYes : kNo,
               items: cubit.yesNoOptions
                   .map((o) => appDropDownOption(label: o))
@@ -59,7 +58,6 @@ class AdditionalDocumentsSection extends StatelessWidget {
                       labelRequired: true,
                       filePath: doc.filePath,
                       text: 'حمل ملف',
-                      labelFontSize: 16.sp,
                       backgroundColor: AppColors.highlightDarkest,
                       textColor: AppColors.white,
                       onFilePicked: () async {
@@ -76,27 +74,28 @@ class AdditionalDocumentsSection extends StatelessWidget {
                 ),
               ),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  OutlinedButton.icon(
-                    onPressed: cubit.addAdditionalDocument,
-                    icon: const Icon(Icons.add),
-                    label: AppText(
-                      text: 'إضافة مستند آخر',
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.highlightDarkest,
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: AppColors.highlightDarkest),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
+              if (cubit.additionalDocuments.length < 5)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: cubit.addAdditionalDocument,
+                      icon: const Icon(Icons.add),
+                      label: AppText(
+                        text: 'إضافة مستند آخر',
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.highlightDarkest,
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: AppColors.highlightDarkest),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
             ],
           ],
         );

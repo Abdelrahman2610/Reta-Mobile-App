@@ -1,11 +1,11 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:reta/core/helpers/extensions/taxpayer_types.dart';
 import 'package:reta/features/declarations/presentations/components/shared_conventional_form.dart';
 import 'package:reta/features/declarations/presentations/components/shared_natural_form.dart';
 
-import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../core/helpers/fixed_assets.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -15,6 +15,7 @@ import '../../../components/app_text_form_field.dart';
 import '../../../components/image_svg_custom_widget.dart';
 import '../cubit/applicant_cubit.dart';
 import '../cubit/applicant_states.dart';
+import '../cubit/declaration_lookups_cubit.dart';
 import 'app_attachment_item.dart';
 import 'app_drop_down.dart';
 import 'app_drop_down_option.dart';
@@ -32,6 +33,8 @@ class SharedForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<ApplicantCubit>();
+    final lookups = context.read<DeclarationLookupsCubit>().lookups;
+    log("Lookups: ${lookups?.taxpayerTypes}");
     return AppContainer(
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
       child: Column(
@@ -58,25 +61,24 @@ class SharedForm extends StatelessWidget {
                     labelText: 'نوع المكلف بأداء الضريبة',
                     labelRequired: true,
                     hintText: 'اختر نوع المكلف',
-                    value: cubit.taxpayerTypes.displayText,
-                    items: List.generate(
-                      TaxpayerTypes.values.length,
-                      (index) => appDropDownOption(
-                        label: TaxpayerTypes.values[index].displayText,
-                      ),
-                    ),
+                    value: cubit.taxpayerTypes,
+                    items:
+                        lookups?.taxpayerTypes
+                            .map((t) => appDropDownOption(label: t.name))
+                            .toList() ??
+                        [],
                     onChanged: cubit.changeTaxpayerType,
                     validator: (value) =>
                         value == null ? 'هذا الحقل مطلوب' : null,
                   ),
                   16.hs,
-                  if (cubit.taxpayerTypes == TaxpayerTypes.natural)
+                  if (cubit.taxpayerTypes == 'طبيعي')
                     SharedNaturalForm(
                       nationality: cubit.taxpayerNationality,
                       onNationalityChanged: cubit.changeNationality,
                       cubit: cubit,
                     ),
-                  if (cubit.taxpayerTypes == TaxpayerTypes.conventional)
+                  if (cubit.taxpayerTypes == 'اعتباري')
                     SharedConventionalForm(cubit: cubit),
                 ],
               );

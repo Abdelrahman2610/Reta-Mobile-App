@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/theme/app_colors.dart';
 
 import '../../../../../../../core/helpers/extensions/dimensions.dart';
@@ -27,7 +26,6 @@ class FloorUnitSection extends StatelessWidget {
           children: [
             AppDropdownField<String>(
               labelText: 'رقم الدور',
-              labelFontSize: 16.sp,
               labelRequired: true,
               labelColor: AppColors.neutralDarkDark,
               hintText: 'اختر رقم الدور',
@@ -42,7 +40,6 @@ class FloorUnitSection extends StatelessWidget {
               16.hs,
               AppTextFormField(
                 labelText: 'رقم الدور',
-                labelFontSize: 16.sp,
                 labelRequired: true,
                 labelColor: AppColors.neutralDarkDark,
                 controller: cubit.floorNumberOtherController,
@@ -63,14 +60,12 @@ class FloorUnitSection extends StatelessWidget {
                   .map((u) => appDropDownOption(label: u))
                   .toList(),
               onChanged: cubit.selectUnitNumber,
-              labelFontSize: 16.sp,
               validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
             ),
             if (state.isUnitNumberOther) ...[
               16.hs,
               AppTextFormField(
                 labelText: 'رقم الوحدة',
-                labelFontSize: 16.sp,
                 labelRequired: true,
                 labelColor: AppColors.neutralDarkDark,
                 controller: cubit.unitNumberOtherController,
