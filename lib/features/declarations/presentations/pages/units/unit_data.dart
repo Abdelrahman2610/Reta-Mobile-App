@@ -37,7 +37,11 @@ class UnitData extends StatelessWidget {
           if (state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: AppText(text: state.errorMessage!),
+                content: AppText(
+                  text: state.errorMessage!,
+                  maxLines: 3,
+                  color: AppColors.white,
+                ),
                 backgroundColor: AppColors.errorDark,
               ),
             );
