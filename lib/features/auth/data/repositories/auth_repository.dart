@@ -1,113 +1,186 @@
 import 'dart:io';
+import 'dart:developer';
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '/core/network/api_constants.dart';
-import '/core/network/api_result.dart';
-import '/core/network/dio_client.dart';
-import '../models/login_response.dart';
-import '../models/register_request.dart';
+import 'package:reta/core/network/api_constants.dart';
+import 'package:reta/core/network/api_result.dart';
+import 'package:reta/core/network/dio_client.dart';
+import 'package:reta/features/auth/data/models/login_response.dart';
+import 'package:reta/features/auth/data/models/otp_response.dart';
+import 'package:reta/features/auth/data/models/register_request.dart';
+import 'package:reta/features/auth/data/models/user_models.dart';
 
 class AuthRepository {
   final Dio _dio = DioClient.instance.dio;
 
-  Future<ApiResult<LoginResponse>> login({
-    required String loginValue,
+  Future<ApiResult<LoginResponse>> loginWithMobile({
+    required String mobile,
     required String password,
-    String loginType = 'national_id',
+  }) async {
+    return _login(
+      body: {'login_type': 'mobile', 'mobile': mobile, 'password': password},
+    );
+  }
+
+  Future<ApiResult<LoginResponse>> loginWithNationalId({
+    required String nationalId,
+    required String password,
+  }) async {
+    Map data = {
+      'login_type': 'national_id',
+      'mobile': '',
+      'name': nationalId,
+      'password': password,
+    };
+    log(data.toString());
+    return _login(
+      body: {
+        'login_type': 'national_id',
+        'mobile': '',
+        'name': nationalId,
+        'password': password,
+      },
+    );
+  }
+
+  Future<ApiResult<LoginResponse>> _login({
+    required Map<String, dynamic> body,
   }) async {
     return safeApiCall(() async {
-      final response = await _dio.post(
-        ApiConstants.login,
-        data: {
-          'login_value': loginValue,
-          'password': password,
-          'login_type': loginType,
-        },
+      final response = await _dio.post(ApiConstants.login, data: body);
+      final loginResponse = LoginResponse.fromJson(
+        response.data as Map<String, dynamic>,
       );
 
-      final loginResponse = LoginResponse.fromJson(response.data);
-
       if (loginResponse.accessToken != null) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('access_token', loginResponse.accessToken!);
+        await DioClient.saveToken(loginResponse.accessToken!);
       }
 
       return loginResponse;
     });
   }
 
-  Future<ApiResult<Map<String, dynamic>>> sendRegisterOtp({
+  Future<ApiResult<RegisterOtpResponse>> sendRegisterOtp({
     required RegisterRequest request,
     File? nationalIdFile,
   }) async {
     return safeApiCall(() async {
-      final formData = FormData.fromMap({
-        'first_name': request.firstName,
-        'last_name': request.lastName,
-        'email': request.email,
-        'mobile': request.mobile,
-        'password': request.password,
-        'password_confirm': request.passwordConfirm,
-        'national_id': request.nationalId,
-        'nationality_code': request.nationalityCode,
-        'gender': request.gender,
-        'birth_place': request.birthPlace,
-        'birth_date': request.birthDate,
-        if (nationalIdFile != null)
-          'national_id_file': await MultipartFile.fromFile(
-            nationalIdFile.path,
-            filename: 'national_id.jpg',
-          ),
-      });
+      final fields = request.toFormFields();
+
+      final formMap = <String, dynamic>{...fields};
+
+      if (nationalIdFile != null) {
+        formMap['national_id_file'] = await MultipartFile.fromFile(
+          nationalIdFile.path,
+          filename: nationalIdFile.path.split('/').last,
+        );
+      }
 
       final response = await _dio.post(
         ApiConstants.registerSendOtp,
-        data: formData,
-        options: Options(contentType: 'multipart/form-data'),
+        data: FormData.fromMap(formMap),
       );
 
+      return RegisterOtpResponse.fromJson(
+        response.data as Map<String, dynamic>,
+      );
+    });
+  }
+
+  Future<ApiResult<ConfirmOtpResponse>> confirmRegisterOtp({
+    required ConfirmOtpRequest request,
+  }) async {
+    return safeApiCall(() async {
+      final response = await _dio.post(
+        ApiConstants.registerConfirmOtp,
+        data: request.toJson(),
+      );
+
+      return ConfirmOtpResponse.fromJson(response.data as Map<String, dynamic>);
+    });
+  }
+
+  Future<ApiResult<Map<String, dynamic>>> forgotPasswordByPhone({
+    required String mobile,
+  }) async {
+    return safeApiCall(() async {
+      final response = await _dio.post(
+        ApiConstants.forgotPasswordPhone,
+        data: {'mobile': mobile},
+      );
       return response.data as Map<String, dynamic>;
     });
   }
 
-  Future<ApiResult<Map<String, dynamic>>> confirmOtp({
+  Future<ApiResult<Map<String, dynamic>>> confirmForgotPasswordOtp({
+    required String userId,
+    required String mobile,
     required String token,
     required String otp,
   }) async {
     return safeApiCall(() async {
-      final formData = FormData.fromMap({'token': token, 'otp': otp});
-
       final response = await _dio.post(
-        ApiConstants.registerConfirmOtp,
-        data: formData,
-        options: Options(contentType: 'multipart/form-data'),
+        ApiConstants.resetPasswordOtp,
+        data: {'user_id': userId, 'mobile': mobile, 'token': token, 'otp': otp},
       );
+      return response.data as Map<String, dynamic>;
+    });
+  }
 
+  Future<ApiResult<Map<String, dynamic>>> generateResetToken({
+    required String userId,
+    required String token,
+  }) async {
+    return safeApiCall(() async {
+      final response = await _dio.post(
+        ApiConstants.generateTokenForOtp,
+        data: {'user_id': userId, 'token': token},
+      );
+      return response.data as Map<String, dynamic>;
+    });
+  }
+
+  Future<ApiResult<Map<String, dynamic>>> resetPassword({
+    required String token,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    return safeApiCall(() async {
+      final response = await _dio.post(
+        ApiConstants.resetPassword,
+        data: {
+          'token': token,
+          'password': password,
+          'password_confirmation': passwordConfirmation,
+        },
+      );
+      return response.data as Map<String, dynamic>;
+    });
+  }
+
+  Future<ApiResult<Map<String, dynamic>>> forgotPasswordByEmail({
+    required String email,
+  }) async {
+    return safeApiCall(() async {
+      final response = await _dio.post(
+        ApiConstants.forgotPasswordEmail,
+        data: {'email': email},
+      );
       return response.data as Map<String, dynamic>;
     });
   }
 
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('access_token');
+    await DioClient.clearToken();
   }
 
-  Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
-    return token != null && token.isNotEmpty;
-  }
+  Future<bool> isLoggedIn() => DioClient.isLoggedIn();
 
-  Future<ApiResult<LoginResponse>> loginWithNationalId({
-    required String nationalId,
-    required String passportNumber,
-    required String password,
-  }) async {
-    return await login(
-      loginValue: nationalId,
-
-      password: password,
-      loginType: 'national_id',
-    );
+  Future<ApiResult<UserModel>> getUserProfile() async {
+    return safeApiCall(() async {
+      final response = await _dio.get(ApiConstants.userProfile);
+      return UserModel.fromProfileResponse(
+        response.data as Map<String, dynamic>,
+      );
+    });
   }
 }

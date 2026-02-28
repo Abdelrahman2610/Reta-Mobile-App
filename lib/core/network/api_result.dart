@@ -12,7 +12,16 @@ final class ApiSuccess<T> extends ApiResult<T> {
 final class ApiError<T> extends ApiResult<T> {
   final String message;
   final int? statusCode;
-  const ApiError(this.message, {this.statusCode});
+
+  final Map<String, List<String>>? validationErrors;
+
+  const ApiError(this.message, {this.statusCode, this.validationErrors});
+
+  bool get isValidationError => statusCode == 422;
+
+  bool get isUnauthorized => statusCode == 401;
+
+  String? fieldError(String field) => validationErrors?[field]?.firstOrNull;
 }
 
 Future<ApiResult<T>> safeApiCall<T>(Future<T> Function() call) async {
@@ -20,7 +29,11 @@ Future<ApiResult<T>> safeApiCall<T>(Future<T> Function() call) async {
     final result = await call();
     return ApiSuccess(result);
   } on DioException catch (e) {
-    return ApiError(_extractMessage(e), statusCode: e.response?.statusCode);
+    return ApiError(
+      _extractMessage(e),
+      statusCode: e.response?.statusCode,
+      validationErrors: _extractValidationErrors(e),
+    );
   } catch (e) {
     return ApiError(e.toString());
   }
@@ -30,21 +43,42 @@ String _extractMessage(DioException e) {
   try {
     final data = e.response?.data;
     if (data is Map) {
-      return data['message']?.toString() ??
-          data['error']?.toString() ??
-          e.message ??
-          'حدث خطأ غير متوقع';
+      final msg = data['message']?.toString();
+      if (msg != null && msg.isNotEmpty) return msg;
+
+      final error = data['error']?.toString();
+      if (error != null && error.isNotEmpty) return error;
+      final errors = data['errors'];
+      if (errors is Map) {
+        final firstField = errors.values.firstOrNull;
+        if (firstField is List && firstField.isNotEmpty) {
+          return firstField.first.toString();
+        }
+      }
     }
   } catch (_) {}
 
-  switch (e.type) {
-    case DioExceptionType.connectionTimeout:
-    case DioExceptionType.receiveTimeout:
-    case DioExceptionType.sendTimeout:
-      return 'انتهت مهلة الاتصال، تحقق من الشبكة';
-    case DioExceptionType.connectionError:
-      return 'تعذر الاتصال بالخادم';
-    default:
-      return e.message ?? 'حدث خطأ غير متوقع';
-  }
+  return switch (e.type) {
+    DioExceptionType.connectionTimeout ||
+    DioExceptionType.receiveTimeout ||
+    DioExceptionType.sendTimeout => 'انتهت مهلة الاتصال، تحقق من الشبكة',
+    DioExceptionType.connectionError => 'تعذر الاتصال بالخادم',
+    _ => e.message ?? 'حدث خطأ غير متوقع',
+  };
+}
+
+Map<String, List<String>>? _extractValidationErrors(DioException e) {
+  try {
+    final data = e.response?.data;
+    if (data is Map && data['errors'] is Map) {
+      final raw = data['errors'] as Map;
+      return raw.map(
+        (key, value) => MapEntry(
+          key.toString(),
+          (value is List) ? value.map((v) => v.toString()).toList() : [],
+        ),
+      );
+    }
+  } catch (_) {}
+  return null;
 }

@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:reta/features/auth/presentation/pages/main_page.dart';
+import '../../../../core/helpers/app_enum.dart';
+import '../../../../core/network/dio_client.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../auth/data/models/user_models.dart';
+import '../../../auth/presentation/pages/guest_page.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -45,9 +50,28 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     Future.delayed(const Duration(seconds: 5), _navigate);
   }
 
-  void _navigate() {
+  Future<void> _navigate() async {
     if (!mounted) return;
-    Navigator.of(context).pushReplacementNamed('/home');
+    final isLoggedIn = await DioClient.isLoggedIn();
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => isLoggedIn
+            ? MainPage(
+                user: UserModel(
+                  id: null,
+                  name: null,
+                  email: null,
+                  phone: null,
+                  nationalId: null,
+                  dateOfBirth: null,
+                  gender: null,
+                  userType: UserType.authenticated,
+                ),
+              )
+            : const GuestPage(),
+      ),
+    );
   }
 
   @override

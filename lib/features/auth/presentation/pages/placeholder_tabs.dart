@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../auth/data/models/user_models.dart';
+import '../../../auth/presentation/pages/settings_page.dart';
 
 class DebtsTab extends StatelessWidget {
   const DebtsTab({super.key});
@@ -20,10 +22,21 @@ class PaymentsTab extends StatelessWidget {
   Widget build(BuildContext context) => _PlaceholderTab(label: 'مدفوعاتي');
 }
 
+/// Authenticated settings tab — uses a nested Navigator so that pages pushed
+/// within the settings flow (e.g. UserProfilePage, HelpSupportPage) keep the
+/// bottom navbar visible.
 class SettingsTab extends StatelessWidget {
-  const SettingsTab({super.key});
+  final UserModel user;
+
+  const SettingsTab({super.key, required this.user});
+
   @override
-  Widget build(BuildContext context) => _PlaceholderTab(label: 'الإعدادات');
+  Widget build(BuildContext context) {
+    return Navigator(
+      onGenerateRoute: (settings) =>
+          MaterialPageRoute(builder: (_) => SettingsPage(currentUser: user)),
+    );
+  }
 }
 
 class _PlaceholderTab extends StatelessWidget {

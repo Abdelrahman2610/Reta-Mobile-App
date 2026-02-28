@@ -4,6 +4,7 @@ import '../../data/repositories/auth_repository.dart';
 import '/features/declarations/data/repositories/lookups_repository.dart';
 import '../../data/models/register_request.dart';
 import '../../../../core/network/api_result.dart';
+import 'package:reta/features/auth/data/models/otp_response.dart';
 
 class DropdownItem {
   final String id;
@@ -306,6 +307,9 @@ class SignupState {
 class SignupCubit extends Cubit<SignupState> {
   final AuthRepository _authRepository;
   final LookupsRepository _lookupsRepository;
+  String? _pendingOtpToken;
+  String? _pendingUserId;
+  String? _pendingMobile;
 
   SignupCubit({
     AuthRepository? authRepository,
@@ -316,8 +320,6 @@ class SignupCubit extends Cubit<SignupState> {
     _loadNationalities();
     _loadResidences();
   }
-
-  String? _pendingOtpToken;
 
   Future<void> _loadNationalities() async {
     emit(state.copyWith(isNationalityLoading: true));
@@ -672,7 +674,7 @@ class SignupCubit extends Cubit<SignupState> {
       password: state.password,
       passwordConfirm: state.confirmPassword,
       nationalId: state.nationalId.trim(),
-      nationalityCode: state.selectedNationality?.id ?? '1',
+      nationalityCode: state.selectedNationality?.id ?? 'EG',
       gender: gender,
       birthPlace: birthPlace,
       birthDate: birthDateStr,
@@ -685,28 +687,31 @@ class SignupCubit extends Cubit<SignupState> {
 
     switch (result) {
       case ApiSuccess(:final data):
-        _pendingOtpToken = data['token']?.toString();
-        emit(
-          state.copyWith(
-            isLoading: false,
-            isSubmitSuccess: false,
-            submitError: () => null,
-          ),
-        );
+        _pendingOtpToken = data.token;
+        _pendingUserId = data.userId;
+        _pendingMobile = state.phone.trim();
+
+        emit(state.copyWith(isLoading: false, submitError: () => null));
         emit(state.copyWith(isSubmitSuccess: true));
+
       case ApiError(:final message):
         emit(state.copyWith(isLoading: false, submitError: () => message));
     }
   }
 
   Future<bool> confirmOtp(String otp) async {
-    if (_pendingOtpToken == null) return false;
+    if (_pendingOtpToken == null || _pendingUserId == null) return false;
 
     emit(state.copyWith(isLoading: true, submitError: () => null));
 
-    final result = await _authRepository.confirmOtp(
-      token: _pendingOtpToken!,
-      otp: otp,
+    final result = await _authRepository.confirmRegisterOtp(
+      request: ConfirmOtpRequest(
+        userId: _pendingUserId!,
+        mobile: _pendingMobile ?? state.phone.trim(),
+        token: _pendingOtpToken!,
+        otp: otp,
+        context: 'register',
+      ),
     );
 
     switch (result) {
@@ -720,29 +725,34 @@ class SignupCubit extends Cubit<SignupState> {
   }
 
   Future<void> resendOtp() async {
-    if (_pendingOtpToken == null) return;
     emit(state.copyWith(isLoading: true, submitError: () => null));
+
+    final request = RegisterRequest(
+      firstName: state.firstName.trim(),
+      lastName: state.restOfName.trim().split(' ').last,
+      email: state.email.trim(),
+      mobile: state.phone.trim(),
+      password: state.password,
+      passwordConfirm: state.confirmPassword,
+      nationalId: state.nationalId.trim(),
+      nationalityCode: state.selectedNationality?.id ?? 'EG',
+      gender: state.selectedGender == GenderType.male ? '1' : '2',
+      birthPlace: state.showManualBirthPlace
+          ? state.manualBirthPlace.trim()
+          : (state.selectedBirthPlace?.id ?? ''),
+      birthDate: _formatDate(state.birthDate!),
+    );
+
     final result = await _authRepository.sendRegisterOtp(
-      request: RegisterRequest(
-        firstName: state.firstName.trim(),
-        lastName: state.restOfName.trim().split(' ').last,
-        email: state.email.trim(),
-        mobile: state.phone.trim(),
-        password: state.password,
-        passwordConfirm: state.confirmPassword,
-        nationalId: state.nationalId.trim(),
-        nationalityCode: state.selectedNationality?.id ?? '1',
-        gender: state.selectedGender == GenderType.male ? '1' : '2',
-        birthPlace: state.showManualBirthPlace
-            ? state.manualBirthPlace.trim()
-            : (state.selectedBirthPlace?.id ?? ''),
-        birthDate: _formatDate(state.birthDate!),
-      ),
+      request: request,
       nationalIdFile: state.nationalIdFile,
     );
+
     switch (result) {
       case ApiSuccess(:final data):
-        _pendingOtpToken = data['token']?.toString();
+        _pendingOtpToken = data.token;
+        _pendingUserId = data.userId;
+        _pendingMobile = state.phone.trim();
         emit(state.copyWith(isLoading: false));
       case ApiError(:final message):
         emit(state.copyWith(isLoading: false, submitError: () => message));
