@@ -9,7 +9,32 @@ import '../../../components/image_svg_custom_widget.dart';
 import '../../../components/title_with_value_text.dart';
 
 class PropertyItemInDeclaration extends StatelessWidget {
-  const PropertyItemInDeclaration({super.key});
+  final String propertyTypeText;
+  final String governorateText;
+  final String districtText;
+  final String regionText;
+  final String realEstateFloorText;
+  final String realEstateCode;
+  final String unitUnitNum;
+  final String unitTypeText;
+  final bool canEditOrRemove;
+  final Function() onDelete;
+  final Function() onEdit;
+
+  const PropertyItemInDeclaration({
+    super.key,
+    required this.propertyTypeText,
+    required this.governorateText,
+    required this.districtText,
+    required this.regionText,
+    required this.realEstateFloorText,
+    required this.realEstateCode,
+    required this.unitUnitNum,
+    required this.unitTypeText,
+    required this.canEditOrRemove,
+    required this.onDelete,
+    required this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +51,7 @@ class PropertyItemInDeclaration extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 AppText(
-                  text: "وحدة سكنية",
+                  text: propertyTypeText,
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w700,
                   color: AppColors.mainBlueIndigoDye,
@@ -42,7 +67,7 @@ class PropertyItemInDeclaration extends StatelessWidget {
                       vertical: 6.h,
                     ),
                     child: AppText(
-                      text: "شقة",
+                      text: unitTypeText,
                       fontSize: 10.sp,
                       fontWeight: FontWeight.w600,
                       color: AppColors.mainBlueIndigoDye,
@@ -54,55 +79,60 @@ class PropertyItemInDeclaration extends StatelessWidget {
             SizedBox(height: 10.h),
             Row(
               children: [
-                Expanded(child: TitleWithValueText("المحافظة", "القاهرة")),
+                Expanded(
+                  child: TitleWithValueText("المحافظة", governorateText),
+                ),
                 SizedBox(width: 10.w),
                 Expanded(
-                  child: TitleWithValueText("المنطقة / الحي", "حدائق القبة"),
+                  child: TitleWithValueText("المنطقة / الحي", districtText),
                 ),
               ],
             ),
             SizedBox(height: 10.h),
             Row(
               children: [
-                Expanded(
-                  child: TitleWithValueText("الشارع", "شارع مصر والسودان"),
-                ),
+                Expanded(child: TitleWithValueText("الشارع", regionText)),
               ],
             ),
             SizedBox(height: 10.h),
             Row(
               children: [
-                Expanded(child: TitleWithValueText("رقم العقار", "147")),
+                Expanded(
+                  child: TitleWithValueText("رقم العقار", realEstateCode),
+                ),
                 SizedBox(width: 10.w),
-                Expanded(child: TitleWithValueText("رقم الدور", "5")),
+                Expanded(
+                  child: TitleWithValueText("رقم الدور", realEstateFloorText),
+                ),
                 SizedBox(width: 10.w),
-                Expanded(child: TitleWithValueText("رقم الوحدة", "5")),
+                Expanded(child: TitleWithValueText("رقم الوحدة", unitUnitNum)),
               ],
             ),
-            SizedBox(height: 12.h),
-            Row(
-              children: [
-                Expanded(
-                  child: AppButton(
-                    onTap: () {},
-                    label: "تعديل",
-                    width: double.maxFinite,
-                    height: 44.h,
-                    borderColor: Colors.transparent,
-                    backgroundColor: AppColors.highlightDarkest,
-                    textColor: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+            if (canEditOrRemove) SizedBox(height: 12.h),
+            if (canEditOrRemove)
+              Row(
+                children: [
+                  Expanded(
+                    child: AppButton(
+                      onTap: () {},
+                      label: "تعديل",
+                      width: double.maxFinite,
+                      height: 44.h,
+                      borderColor: Colors.transparent,
+                      backgroundColor: AppColors.highlightDarkest,
+                      textColor: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                SizedBox(width: 15.w),
-                ImageSvgCustomWidget(
-                  imgPath: FixedAssets.instance.deleteIcon,
-                  height: 44.h,
-                  width: 44.w,
-                ),
-              ],
-            ),
+                  SizedBox(width: 15.w),
+                  ImageSvgCustomWidget(
+                    imgPath: FixedAssets.instance.deleteIcon,
+                    height: 44.h,
+                    width: 44.w,
+                  ),
+                ],
+              ),
           ],
         ),
       ),

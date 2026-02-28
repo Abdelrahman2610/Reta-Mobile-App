@@ -9,7 +9,16 @@ class DeclarationDetailsLoading extends DeclarationDetailsStates {}
 class DeclarationDetailsLoaded extends DeclarationDetailsStates {
   final DeclarationDetailsModel? detailsModel;
 
-  DeclarationDetailsLoaded(this.detailsModel);
+  final int selectedCategoryIndex;
+  final List<CategoryConfig> activeCategories;
+  final units;
+
+  DeclarationDetailsLoaded(
+    this.detailsModel,
+    this.selectedCategoryIndex,
+    this.activeCategories,
+    this.units,
+  );
 }
 
 class DeclarationDetailsError extends DeclarationDetailsStates {

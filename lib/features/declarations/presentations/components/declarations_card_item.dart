@@ -100,7 +100,7 @@ class DeclarationsCardItem extends StatelessWidget {
                     Expanded(
                       child: TitleWithValueText(
                         "عدد الوحدات",
-                        "-",
+                        item.unitsCount?.total.toString() ?? "-",
                         valueColor: AppColors.neutralDarkMedium,
                       ),
                     ),
@@ -108,7 +108,7 @@ class DeclarationsCardItem extends StatelessWidget {
                     Expanded(
                       child: TitleWithValueText(
                         "آخر تحديث",
-                        "-",
+                        item.updateDate ?? "-",
                         valueColor: AppColors.neutralDarkMedium,
                       ),
                     ),

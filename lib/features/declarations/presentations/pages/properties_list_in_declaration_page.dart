@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,12 +8,15 @@ import 'package:reta/features/declarations/presentations/cubit/declaration/decla
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_bar.dart';
 import '../../../components/circular_progress_indicator_platform_widget.dart';
+import '../../data/models/declaration_details_model.dart';
 import '../../data/models/declaration_model.dart';
 import '../components/add_new_property_button.dart';
 import '../components/cancel_declaration_button.dart';
+import '../components/empty_data_widget.dart';
 import '../components/properties_list_in_declaration_header.dart';
 import '../components/property_item_in_declaration.dart';
 import '../components/submit_declaration_button.dart';
+import '../components/unit_type_category_tab_widget.dart';
 import '../cubit/declaration/declaration_details_cubit.dart';
 
 class PropertiesListInDeclarationPage extends StatelessWidget {
@@ -59,8 +64,10 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
               if (state is DeclarationDetailsLoaded) {
                 return Column(
                   children: [
-                    if (declarationModel.statusId != "3")
-                      PropertiesListInDeclarationHeader(),
+                    PropertiesListInDeclarationHeader(
+                      declarationModel.declarationTypeText ?? "",
+                      declarationModel.statusId != "3",
+                    ),
                     if (declarationModel.statusId != "3")
                       SizedBox(height: 30.h),
                     if (declarationModel.statusId != "3")
@@ -84,23 +91,59 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                       ),
                     ),
 
+                    SizedBox(height: 24.h),
+                    UnitTypeCategoryTabWidget(state.selectedCategoryIndex, (
+                      int index,
+                    ) {
+                      context
+                          .read<DeclarationDetailsCubit>()
+                          .updatedSelectedCategoryIndex(index);
+                    }, state.activeCategories),
+                    SizedBox(height: 4.h),
                     Expanded(
-                      child: ListView.builder(
-                        itemCount: state.detailsModel?.unitsCount.total,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20.w,
-                          vertical: 20.h,
-                        ),
-                        itemBuilder: (_, index) {
-                          return Padding(
-                            padding: EdgeInsets.only(bottom: 15.h),
-                            child: PropertyItemInDeclaration(),
-                          );
-                        },
-                      ),
+                      child: state.detailsModel?.unitsCount.total == 0
+                          ? EmptyDataWidget(title: "لم يتم إضافة أي عقار بعد")
+                          : ListView.builder(
+                              itemCount: state.units == null
+                                  ? 0
+                                  : state.units.length,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 20.w,
+                                vertical: 20.h,
+                              ),
+                              itemBuilder: (_, index) {
+                                final summary = getUnitSummary(
+                                  state.units[index],
+                                  state.activeCategories[state
+                                      .selectedCategoryIndex],
+                                );
+                                log("summary: $summary");
 
-                      ///if list empty
-                      // EmptyDataWidget(title: "لم يتم إضافة أي عقار بعد"),
+                                return Padding(
+                                  padding: EdgeInsets.only(bottom: 15.h),
+                                  child: PropertyItemInDeclaration(
+                                    onDelete: () {},
+                                    onEdit: () {},
+                                    propertyTypeText: getPropertyTypeText(
+                                      summary,
+                                    ),
+                                    governorateText: getGovernorateText(
+                                      summary,
+                                    ),
+                                    districtText: getDistrictText(summary),
+                                    regionText: getRegionText(summary),
+                                    realEstateFloorText: getRealEstateFloorText(
+                                      summary,
+                                    ),
+                                    realEstateCode: getRealEstateCode(summary),
+                                    unitUnitNum: getUnitUnitNum(summary),
+                                    unitTypeText: getUnitTypeText(summary),
+                                    canEditOrRemove:
+                                        state.detailsModel?.statusId != "3",
+                                  ),
+                                );
+                              },
+                            ),
                     ),
                   ],
                 );
@@ -113,5 +156,46 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String getPropertyTypeText(Map<String, dynamic> data) {
+    return data['usage_type'] ?? "-";
+  }
+
+  String getGovernorateText(Map<String, dynamic> data) {
+    return data['governorate_text'] ?? "-";
+  }
+
+  String getDistrictText(Map<String, dynamic> data) {
+    return data['district_text'] ?? "-";
+  }
+
+  String getRegionText(Map<String, dynamic> data) {
+    return data['region_other'] ?? data['region_text'] ?? "-";
+  }
+
+  String getRealEstateCode(Map<String, dynamic> data) {
+    return data['real_estate_code'] ?? "-";
+  }
+
+  String getUnitTypeText(Map<String, dynamic> data) {
+    return data['unit_type_text'] ?? "-";
+  }
+
+  String getUnitUnitNum(Map<String, dynamic> data) {
+    return data['unit_unit_num'] ?? "-";
+  }
+
+  String getRealEstateFloorText(Map<String, dynamic> data) {
+    return data['real_estate_floor_other_text'] ??
+        data['real_estate_floor_text'] ??
+        "-";
+  }
+
+  Map<String, dynamic> getUnitSummary(
+    Map<String, dynamic> unit,
+    CategoryConfig category,
+  ) {
+    return {for (final field in category.summaryFields) field: unit[field]};
   }
 }

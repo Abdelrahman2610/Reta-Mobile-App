@@ -25,6 +25,7 @@ class DeclarationDetailsModel {
   final String? updateDate;
   final String createdAt;
   final String updatedAt;
+  final Map<String, dynamic>? data;
 
   DeclarationDetailsModel({
     required this.id,
@@ -49,6 +50,7 @@ class DeclarationDetailsModel {
     this.updateDate,
     required this.createdAt,
     required this.updatedAt,
+    required this.data,
   });
 
   factory DeclarationDetailsModel.fromJson(Map<String, dynamic> json) {
@@ -81,6 +83,7 @@ class DeclarationDetailsModel {
       updateDate: json['update_date'],
       createdAt: json['created_at'] ?? '',
       updatedAt: json['updated_at'] ?? '',
+      data: json,
     );
   }
 }
@@ -230,4 +233,16 @@ class UnitsCountModel {
       total: json['total'] ?? 0,
     );
   }
+}
+
+class CategoryConfig {
+  final String key;
+  final String label;
+  final List<String> summaryFields; // fields to show in card
+
+  const CategoryConfig({
+    required this.key,
+    required this.label,
+    required this.summaryFields,
+  });
 }
