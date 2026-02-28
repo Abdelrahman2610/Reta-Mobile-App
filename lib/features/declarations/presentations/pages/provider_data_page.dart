@@ -7,7 +7,6 @@ import 'package:reta/features/components/app_bar.dart';
 import 'package:reta/features/components/app_button.dart';
 import 'package:reta/features/components/app_container.dart';
 
-import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/helpers/extensions/dimensions.dart';
 import '../components/declaration_tabs.dart';
 import '../components/user_information.dart';
@@ -28,15 +27,6 @@ class ProviderDataPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // final user = context.read<LoginCubit>().state.user;
-    // Map<String, dynamic> user = {
-    //   "firstName": "Khaled",
-    //   "lastName": "Abdelrazeq",
-    //   "phone": "01024783981",
-    //   "email": "khaled.abdelrazeq971@gmail.com",
-    //   "nationality": "egyptian",
-    //   "nationalId": "12345678912345",
-    //   "nationalIdFileURL": "https:www.google.com",
-    // };
 
     Map<String, dynamic> user = {
       "id": 1,

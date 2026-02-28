@@ -44,7 +44,11 @@ class NationalIDForm extends StatelessWidget {
           labelText: 'الرقم القومي',
           labelRequired: labelRequired,
           labelColor: textColor ?? AppColors.neutralDarkDark,
-          validator: (value) => value == null ? 'هذا الحقل مطلوب' : null,
+          validator: (v) {
+            if (v == null || v.isEmpty) return 'هذا الحقل مطلوب';
+            if (v.length != 14) return 'الرقم القومي يجب أن يكون 14 رقماً';
+            return null;
+          },
           labelFontSize: fontSize ?? 14.sp,
           enabled: enabled,
           filledColor: filledColor,

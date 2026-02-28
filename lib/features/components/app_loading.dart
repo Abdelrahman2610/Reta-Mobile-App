@@ -19,7 +19,9 @@ class AppLoadingOverlay extends StatelessWidget {
           Container(
             color: Colors.black.withOpacity(0.4),
             child: const Center(
-              child: CircularProgressIndicator(color: Colors.white),
+              child: CircularProgressIndicator.adaptive(
+                backgroundColor: Colors.white,
+              ),
             ),
           ),
       ],

@@ -23,6 +23,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
     required this.unitType,
     required this.applicantType,
     required this.declarationId,
+    this.locationData,
   }) : super(const UnitLocationState()) {
     fetchGovernorates();
   }
@@ -30,6 +31,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   final UnitType unitType;
   final ApplicantType applicantType;
   final int declarationId;
+  final Map<String, dynamic>? locationData;
 
   final formKey = GlobalKey<FormState>();
 
@@ -41,6 +43,52 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   final neighborhoodNameController = TextEditingController();
 
   /// ----------------------- Fetch Data -----------------------------
+  Future<void> _restoreLocationData(
+    List<DeclarationLookup> governorates,
+  ) async {
+    final governorate = governorates.firstWhere(
+      (g) => g.name == locationData!['governorate'],
+      orElse: () => DeclarationLookup(id: 0, name: ''),
+    );
+
+    if (governorate.id == 0) return;
+
+    await fetchDistricts(governorate.id);
+
+    final district = state.districtsList?.firstWhere(
+      (d) => d.name == locationData!['district'],
+      orElse: () => DeclarationLookup(id: 0, name: ''),
+    );
+
+    if (district != null && district.id != 0) {
+      await fetchVillagesAndStreets(district.id);
+    }
+
+    selectNeighborhood(locationData!['neighborhood']);
+    selectStreet(locationData!['street']);
+
+    emit(
+      state.copyWith(
+        selectedGovernorate: locationData!['governorate'],
+        selectedGovernorateId: governorate.id,
+        selectedDistrict: locationData!['district'],
+        selectedDistrictId: district?.id,
+        selectedNeighborhood: locationData!['neighborhood'],
+        isNeighborhoodOther: locationData!['is_other_village'] ?? false,
+        selectedStreet: locationData!['street'],
+        isStreetOther: locationData!['is_other_region'] ?? false,
+        selectedBuildingNumber: locationData!['buildingNumber'],
+        isBuildingNumberOther: locationData!['is_other_real_state'] ?? false,
+      ),
+    );
+
+    // controllers
+    neighborhoodOtherController.text = locationData!['village_other'] ?? '';
+    streetOtherController.text = locationData!['region_other'] ?? '';
+    buildingNumberOtherController.text =
+        locationData!['real_estate_other'] ?? '';
+  }
+
   Future<void> fetchGovernorates() async {
     log('FetchGovernorates...');
     emit(state.copyWith(isLoadingGovernorates: true));
@@ -58,6 +106,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
         emit(
           state.copyWith(governoratesList: data, isLoadingGovernorates: false),
         );
+        if (locationData != null) await _restoreLocationData(data);
       case ApiError(:final message):
         List<DeclarationLookup> governorates = [];
         governorates.add(DeclarationLookup(id: 1, name: 'القاهرة'));
@@ -309,6 +358,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
     final unitDataCubit = UnitDataCubit(
       lookups: lookupsCubit.lookups!,
       declarationId: declarationId,
+      applicantType: applicantType,
     );
     Navigator.push(
       context,

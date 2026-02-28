@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/app_enum.dart';
+import 'package:reta/features/components/app_text.dart';
 import 'package:reta/features/declarations/presentations/cubit/units/unit_data/unit_data_cubit.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/administrative_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/commercial_unit_page.dart';
@@ -36,7 +37,7 @@ class UnitData extends StatelessWidget {
           if (state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.errorMessage!),
+                content: AppText(text: state.errorMessage!),
                 backgroundColor: AppColors.errorDark,
               ),
             );

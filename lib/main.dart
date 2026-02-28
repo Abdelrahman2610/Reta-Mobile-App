@@ -30,7 +30,6 @@ class MainApp extends StatelessWidget {
         supportedLocales: const [Locale('ar'), Locale('en')],
         builder: (context, Widget? child) => child!,
         home: SplashPage(),
-        // home: MainPage(),
         routes: {'/home': (context) => GuestPage()},
       ),
     );

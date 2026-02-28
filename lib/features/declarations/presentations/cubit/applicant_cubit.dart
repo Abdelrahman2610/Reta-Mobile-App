@@ -6,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/network/api_constants.dart';
 import 'package:reta/core/network/api_result.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration_lookups_cubit.dart';
-import 'package:reta/features/declarations/presentations/pages/units/unit_location_data_page.dart';
+import 'package:reta/features/declarations/presentations/pages/select_types_of_properties_page.dart';
 
 import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/helpers/extensions/applicant_type.dart';
@@ -82,6 +82,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   Nationality taxpayerNationality = Nationality.egyptian;
   final taxpayerNationalIdController = TextEditingController();
   String? taxpayerNationalIdFilePath;
+  String? taxpayerNationalIdOriginalName;
   final taxpayerPassportNumberController = TextEditingController();
   String? taxpayerPassportFilePath;
   String? ownershipProofDocumentPath;
@@ -126,8 +127,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     );
     switch (result) {
       case ApiSuccess<UploadedFileModel>(:final data):
-        applicantNationalIdFilePath = data.path;
-        applicantNationalIdOriginalName = data.originalFileName;
+        taxpayerNationalIdFilePath = data.path;
+        taxpayerNationalIdOriginalName = data.originalFileName;
         emit(state.copyWith(isLoading: false));
       case ApiError<UploadedFileModel>(:final message):
         emit(state.copyWith(isLoading: false, errorMessage: message));
@@ -367,9 +368,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
               BlocProvider.value(value: this),
               BlocProvider.value(value: lookupsCubit),
             ],
-            child: UnitLocationDataPage(
+            child: SelectTypesOfPropertiesPage(
               applicantType: applicantType,
-              unitType: unitType,
               declarationId: declarationId,
             ),
           ),
@@ -403,9 +403,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
             BlocProvider.value(value: this),
             BlocProvider.value(value: lookupsCubit),
           ],
-          child: UnitLocationDataPage(
+          child: SelectTypesOfPropertiesPage(
             applicantType: applicantType,
-            unitType: unitType,
             declarationId: declarationId,
           ),
         ),
@@ -515,7 +514,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         if (taxpayerNationalIdFilePath != null) {
           taxpayer['national_id_attachment'] = {
             'path': taxpayerNationalIdFilePath,
-            'original_file_name': applicantPassportNumberController,
+            'original_file_name': taxpayerNationalIdOriginalName,
           };
         }
       } else {
@@ -583,4 +582,6 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     taxpayerOtherAttachmentNameController.dispose();
     return super.close();
   }
+
+  void clearError() => emit(state.copyWith(errorMessage: null));
 }
