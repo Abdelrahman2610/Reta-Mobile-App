@@ -1,51 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart' as intl;
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../data/models/user_models.dart';
 import '../cubit/home_cubit.dart';
+import '../cubit/notifications_cubit.dart';
 import 'declaration_summary.dart';
+import 'notifications_page.dart';
+import 'guest_declarations_page.dart';
 
 class HomeTab extends StatelessWidget {
-  const HomeTab({super.key});
+  final UserModel user;
+  const HomeTab({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _HomeHero(),
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            _HomeHero(user: user),
+            Positioned(bottom: -66, left: 16, right: 16, child: _HeroCard()),
+          ],
+        ),
         Expanded(
           child: RefreshIndicator(
             onRefresh: () => context.read<HomeCubit>().refreshDeclarations(),
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+              padding: const EdgeInsets.fromLTRB(16, 80, 16, 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _DeclarationsSection(),
                   const SizedBox(height: 16),
                   _QuickActionCard(
-                    icon: Icons.receipt_long_outlined,
+                    imagePath: 'assets/images/icon(1).svg',
                     title: 'طلبات السداد',
                     subtitle:
-                        'جميع طلبات السداد التي تم إصدارها عند تقديم الإقرار ويمكن سدادها فقط عبر الدفع الإلكتروني أو الإيداع البنكي.',
+                        'جميع طلبات السداد التي تم إصدارها عند تقديم الإقرار، ويمكن سدادها لاحقًا عبر الدفع الإلكتروني أو الإيداع البنكي.',
                     badgeCount: 1,
-                    onTap: () {
-                      /* TODO: navigate to payment requests */
-                    },
+                    onTap: () {},
                   ),
                   const SizedBox(height: 16),
                   _QuickActionCard(
                     icon: Icons.account_balance_wallet_outlined,
                     title: 'سداد المديونيات',
                     subtitle:
-                        'سداد المبالغ المستحقة عن الإقرارات الضريبية المقدمة سابقاً (مديونيات بعلم المكلف).',
+                        'سداد المبالغ المستحقة عن الإقرارات الضريبية المقدمة سابقًا (مديونيات بعلم المكلف).',
                     badgeCount: 2,
-                    onTap: () {
-                      /* TODO: navigate to debt payment */
-                    },
+                    onTap: () {},
                   ),
                 ],
               ),
@@ -58,88 +64,176 @@ class HomeTab extends StatelessWidget {
 }
 
 class _HomeHero extends StatelessWidget {
+  final UserModel user;
+  const _HomeHero({required this.user});
+
+  String get _greeting {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'صباح الخير';
+    if (hour < 17) return 'مساء الخير';
+    return 'مساء النور';
+  }
+
+  // Returns full name
+  String get _displayName => user.name ?? '';
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<NotificationsCubit, NotificationsState>(
+      builder: (context, notifState) {
+        final unreadCount = notifState.unreadCount;
+
+        return Container(
+          width: double.infinity,
+          height: 260,
+          child: Stack(
+            children: [
+              Positioned.fill(child: Container(color: AppColors.mainDarkBlue)),
+              Positioned.fill(
+                child: Image.asset(
+                  'assets/images/home_bg.jpg',
+                  fit: BoxFit.cover,
+                ),
+              ),
+              Positioned.fill(
+                child: Container(
+                  color: AppColors.mainBlueSecondary.withOpacity(0.52),
+                ),
+              ),
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.mainBlueIndigoDye.withOpacity(0.47),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 50),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      textDirection: TextDirection.rtl,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _greeting,
+                              textDirection: TextDirection.rtl,
+                              style: AppTextStyles.bodyL.copyWith(
+                                color: AppColors.highlightLightest,
+                              ),
+                            ),
+                            Text(
+                              _displayName,
+                              textDirection: TextDirection.rtl,
+                              style: AppTextStyles.h4.copyWith(
+                                color: AppColors.highlightLightest,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                        _BadgeIconButton(
+                          icon: Icons.notifications_outlined,
+                          count: unreadCount,
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => BlocProvider.value(
+                                value: context.read<NotificationsCubit>(),
+                                child: const NotificationsPage(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.mainBlueIndigoDye, AppColors.mainBlueSecondary],
-        ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.25), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.mainDarkBlue.withOpacity(0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
-      child: SafeArea(
-        bottom: false,
-        child: Column(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                textDirection: TextDirection.rtl,
-                children: [
-                  _NotificationAvatar(count: 2),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'مساء الخير',
-                        textDirection: TextDirection.rtl,
-                        style: AppTextStyles.bodyS.copyWith(
-                          color: AppColors.highlightLightest.withOpacity(0.80),
-                        ),
-                      ),
-                      Text(
-                        'أحمد الدسوقي', // TODO: wire from auth state
-                        textDirection: TextDirection.rtl,
-                        style: AppTextStyles.h4.copyWith(
-                          color: AppColors.highlightLightest,
-                        ),
-                      ),
+            Positioned.fill(child: Container(color: AppColors.mainDarkBlue)),
+            Positioned.fill(
+              child: Image.asset('assets/images/hero.jpg', fit: BoxFit.cover),
+            ),
+            Positioned.fill(
+              child: Container(
+                color: AppColors.mainBlueSecondary.withOpacity(0.9),
+              ),
+            ),
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.mainBlueIndigoDye.withOpacity(0.7),
+                      Colors.transparent,
                     ],
                   ),
-                  const Spacer(),
-                  _BadgeIconButton(
-                    icon: Icons.notifications_outlined,
-                    count: 0,
-                    onTap: () {
-                      // TODO: notifications page
-                    },
-                  ),
-                ],
+                ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withOpacity(0.18)),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                child: Row(
-                  textDirection: TextDirection.rtl,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/images/logo.svg',
-                      width: 44,
-                      height: 44,
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                textDirection: TextDirection.rtl,
+                children: [
+                  Text(
+                    'مصلحة الضرائب العقارية',
+                    textDirection: TextDirection.rtl,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.actionXXL.copyWith(
+                      color: AppColors.highlightLightest,
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'مصلحة الضرائب العقارية',
-                      textDirection: TextDirection.rtl,
-                      style: AppTextStyles.h5.copyWith(
-                        color: AppColors.highlightLightest,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 16),
+                  Image.asset(
+                    'assets/images/logo.png',
+                    width: 100,
+                    height: 100,
+                  ),
+                ],
               ),
             ),
           ],
@@ -154,6 +248,16 @@ class _DeclarationsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
+        if (!state.isLoadingDeclarations &&
+            state.errorMessage == null &&
+            state.declarations.isEmpty) {
+          return _NewUserCTA(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const GuestDeclarationsPage()),
+            ),
+          );
+        }
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -164,17 +268,24 @@ class _DeclarationsSection extends StatelessWidget {
                 Text(
                   'إقراراتي',
                   textDirection: TextDirection.rtl,
-                  style: AppTextStyles.h5.copyWith(
-                    color: AppColors.mainBlueIndigoDye,
+                  style: AppTextStyles.h4.copyWith(
+                    color: const Color(0xFF005FAD),
                   ),
                 ),
                 TextButton(
                   onPressed: () => context.read<HomeCubit>().selectTab(2),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                   child: Text(
                     'عرض الكل',
-                    style: AppTextStyles.bodyS.copyWith(
-                      color: AppColors.mainBlueSecondary,
-                      fontWeight: FontWeight.w600,
+                    style: AppTextStyles.bodyM.copyWith(
+                      color: AppColors.highlightDarkest,
+                      fontWeight: FontWeight.w400,
+                      decoration: TextDecoration.underline,
+                      decorationColor: AppColors.highlightDarkest,
                     ),
                   ),
                 ),
@@ -188,8 +299,6 @@ class _DeclarationsSection extends StatelessWidget {
                 message: state.errorMessage!,
                 onRetry: () => context.read<HomeCubit>().refreshDeclarations(),
               )
-            else if (state.declarations.isEmpty)
-              _DeclarationsEmpty()
             else
               SizedBox(
                 height: 160,
@@ -213,41 +322,132 @@ class _DeclarationsSection extends StatelessWidget {
   }
 }
 
+class _NewUserCTA extends StatelessWidget {
+  final VoidCallback onTap;
+  const _NewUserCTA({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.warningDark,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          child: Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(40),
+                  color: const Color(0xFFF8F9FE),
+                ),
+                child: const Icon(
+                  Icons.article_outlined,
+                  color: AppColors.warningDark,
+                  size: 26,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'تقديم الإقرار الضريبي',
+                      textDirection: TextDirection.rtl,
+                      style: AppTextStyles.h5.copyWith(
+                        color: AppColors.neutralLightLightest,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'قدّم إقرارًا موحّدًا لجميع ممتلكاتك العقارية، مع إمكانية إضافة أكثر من عقار قبل الإرسال.',
+                      textDirection: TextDirection.rtl,
+                      style: AppTextStyles.bodyS.copyWith(
+                        color: AppColors.neutralLightLightest.withOpacity(0.90),
+                        height: 1.6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.arrow_back_ios_rounded,
+                color: AppColors.neutralLightLightest,
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _DeclarationCard extends StatelessWidget {
   final DeclarationSummary declaration;
   const _DeclarationCard({required this.declaration});
 
+  String get _formattedDate {
+    final d = declaration.submittedAt;
+    const months = [
+      'يناير',
+      'فبراير',
+      'مارس',
+      'أبريل',
+      'مايو',
+      'يونيو',
+      'يوليو',
+      'أغسطس',
+      'سبتمبر',
+      'أكتوبر',
+      'نوفمبر',
+      'ديسمبر',
+    ];
+    return '${d.day} ${months[d.month - 1]} ${d.year}';
+  }
+
+  Color get _badgeColor {
+    switch (declaration.status) {
+      case DeclarationStatus.draft:
+        return const Color(0xFF8F9098);
+      case DeclarationStatus.submitted:
+        return AppColors.errorMedium;
+      case DeclarationStatus.approved:
+        return AppColors.successMedium;
+      case DeclarationStatus.rejected:
+        return AppColors.errorMedium;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final color = _statusColor(declaration.status);
-    final date = intl.DateFormat(
-      'd MMMM yyyy',
-      'ar',
-    ).format(declaration.submittedAt);
-
     return Container(
-      width: 210,
+      width: 250,
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.neutralLightDark),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFD4D6DD), width: 0.5),
+        gradient: const LinearGradient(
+          transform: GradientRotation(140 * 3.1415926535 / 180),
+          stops: [0.4663, 1.0],
+          colors: [Color(0x33FFFFFF), Color(0x336FBAFF)],
+        ),
       ),
-      padding: const EdgeInsets.all(14),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             textDirection: TextDirection.rtl,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _StatusBadge(label: declaration.status.label, color: color),
               Text(
                 'إقرار عام',
                 textDirection: TextDirection.rtl,
@@ -256,18 +456,43 @@ class _DeclarationCard extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
+              _StatusBadge(label: declaration.status.label, color: _badgeColor),
             ],
           ),
           const SizedBox(height: 10),
-          _InfoRow(label: 'صاحب الطلب', value: declaration.ownerName),
+          Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              Expanded(
+                child: _InfoBox(
+                  label: 'صفة مقدم الطلب',
+                  value: declaration.ownerName,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _InfoBox(
+                  label: 'رقم الإقرار',
+                  value: declaration.declarationNumber,
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 6),
-          _InfoRow(label: 'رقم الإقرار', value: declaration.declarationNumber),
-          const SizedBox(height: 6),
-          _InfoRow(label: 'أُمر تسديدت', value: date),
-          const SizedBox(height: 6),
-          _InfoRow(
-            label: 'عدد الوحدات',
-            value: declaration.unitCount.toString(),
+          Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              Expanded(
+                child: _InfoBox(label: 'آخر تحديث', value: _formattedDate),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _InfoBox(
+                  label: 'عدد الوحدات',
+                  value: declaration.unitCount.toString(),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -277,13 +502,13 @@ class _DeclarationCard extends StatelessWidget {
   Color _statusColor(DeclarationStatus s) {
     switch (s) {
       case DeclarationStatus.draft:
-        return AppColors.warningDark;
+        return const Color(0xFF8F9098);
       case DeclarationStatus.submitted:
-        return AppColors.mainBlueSecondary;
+        return AppColors.successMedium;
       case DeclarationStatus.approved:
-        return const Color(0xFF27AE60);
+        return AppColors.errorMedium;
       case DeclarationStatus.rejected:
-        return const Color(0xFFE74C3C);
+        return AppColors.errorDark;
     }
   }
 }
@@ -298,15 +523,14 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: color.withOpacity(0.4)),
       ),
       child: Text(
         label,
-        style: AppTextStyles.captionM.copyWith(
-          color: color,
-          fontWeight: FontWeight.w700,
+        style: AppTextStyles.actionS.copyWith(
+          color: AppColors.neutralLightLightest,
         ),
       ),
     );
@@ -325,19 +549,63 @@ class _InfoRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
+          label,
+          style: AppTextStyles.captionM.copyWith(
+            color: AppColors.neutralDarkLight,
+          ),
+        ),
+        Text(
           value,
           style: AppTextStyles.captionM.copyWith(
             color: AppColors.neutralDarkDark,
             fontWeight: FontWeight.w600,
           ),
         ),
-        Text(
-          label,
-          style: AppTextStyles.captionM.copyWith(
-            color: AppColors.neutralDarkLight,
-          ),
-        ),
       ],
+    );
+  }
+}
+
+class _InfoBox extends StatelessWidget {
+  final String label;
+  final String value;
+  const _InfoBox({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xB3FFFFFF),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: const Color(0xFFD4D6DD), width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            textDirection: TextDirection.rtl,
+            style: AppTextStyles.captionM.copyWith(
+              color: AppColors.neutralDarkLight,
+              fontSize: 10,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            textDirection: TextDirection.rtl,
+            style: AppTextStyles.captionM.copyWith(
+              color: AppColors.neutralDarkDark,
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -396,55 +664,35 @@ class _DeclarationsError extends StatelessWidget {
   }
 }
 
-class _DeclarationsEmpty extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.neutralLightDark),
-      ),
-      child: Text(
-        'لا توجد إقرارات حتى الآن',
-        textAlign: TextAlign.center,
-        textDirection: TextDirection.rtl,
-        style: AppTextStyles.bodyS.copyWith(color: AppColors.neutralDarkLight),
-      ),
-    );
-  }
-}
-
 class _QuickActionCard extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? imagePath;
   final String title;
   final String subtitle;
   final int badgeCount;
   final VoidCallback onTap;
 
   const _QuickActionCard({
-    required this.icon,
+    this.icon,
+    this.imagePath,
     required this.title,
     required this.subtitle,
     required this.badgeCount,
     required this.onTap,
-  });
+  }) : assert(
+         icon != null || imagePath != null,
+         'Provide either icon or imagePath',
+       );
 
   @override
   Widget build(BuildContext context) {
+    final bool hasItems = badgeCount > 0;
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.neutralLightDark),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: AppColors.warningDark),
       ),
       child: Material(
         color: Colors.transparent,
@@ -456,50 +704,20 @@ class _QuickActionCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
               textDirection: TextDirection.rtl,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: AppColors.neutralLightLight,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        icon,
-                        color: AppColors.mainBlueIndigoDye,
-                        size: 24,
-                      ),
-                    ),
-                    if (badgeCount > 0)
-                      Positioned(
-                        right: -6,
-                        top: -6,
-                        child: Container(
-                          width: 18,
-                          height: 18,
-                          decoration: const BoxDecoration(
-                            color: AppColors.mainOrange,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              badgeCount.toString(),
-                              style: AppTextStyles.captionSB.copyWith(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
+                // Icon on the right
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: AppColors.neutralLightLight,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: _buildIconWidget(),
                 ),
                 const SizedBox(width: 14),
+                // Title + subtitle in the middle
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -508,8 +726,7 @@ class _QuickActionCard extends StatelessWidget {
                         title,
                         textDirection: TextDirection.rtl,
                         style: AppTextStyles.h5.copyWith(
-                          color: AppColors.mainBlueIndigoDye,
-                          fontSize: 15,
+                          color: AppColors.neutralDarkDarkest,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -518,18 +735,32 @@ class _QuickActionCard extends StatelessWidget {
                         textDirection: TextDirection.rtl,
                         style: AppTextStyles.bodyS.copyWith(
                           color: AppColors.neutralDarkLight,
-                          height: 1.6,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                const Icon(
-                  Icons.arrow_back_ios_rounded,
-                  color: AppColors.neutralDarkLight,
-                  size: 14,
-                ),
+                // Badge or arrow on the left — only if hasItems
+                if (hasItems) ...[
+                  const SizedBox(width: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.errorDark,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      badgeCount.toString(),
+                      style: AppTextStyles.captionM.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -537,51 +768,20 @@ class _QuickActionCard extends StatelessWidget {
       ),
     );
   }
-}
 
-class _NotificationAvatar extends StatelessWidget {
-  final int count;
-  const _NotificationAvatar({required this.count});
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        CircleAvatar(
-          radius: 20,
-          backgroundColor: AppColors.highlightLightest.withOpacity(0.2),
-          child: const Icon(
-            Icons.person_outline,
-            color: AppColors.highlightLightest,
-            size: 22,
-          ),
+  Widget _buildIconWidget() {
+    if (imagePath != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: SvgPicture.asset(
+          imagePath!,
+          width: 24,
+          height: 24,
+          fit: BoxFit.contain,
         ),
-        if (count > 0)
-          Positioned(
-            right: -2,
-            top: -2,
-            child: Container(
-              width: 16,
-              height: 16,
-              decoration: const BoxDecoration(
-                color: AppColors.mainOrange,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  count.toString(),
-                  style: AppTextStyles.captionSB.copyWith(
-                    color: Colors.white,
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
+      );
+    }
+    return Icon(icon, color: AppColors.warningDark, size: 24);
   }
 }
 
@@ -600,17 +800,26 @@ class _BadgeIconButton extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        IconButton(
-          icon: Icon(icon, color: AppColors.highlightLightest, size: 26),
-          onPressed: onTap,
+        Container(
+          height: 35,
+          width: 35,
+          decoration: const BoxDecoration(
+            color: AppColors.neutralLightMedium,
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            padding: EdgeInsets.zero,
+            icon: Icon(icon, color: AppColors.highlightDarkest, size: 30),
+            onPressed: onTap,
+          ),
         ),
-        if (count >= 0)
+        if (count > 0)
           Positioned(
-            right: 8,
-            top: 8,
+            bottom: -8,
+            right: -12,
             child: Container(
-              width: 14,
-              height: 14,
+              width: 25,
+              height: 25,
               decoration: const BoxDecoration(
                 color: AppColors.errorDark,
                 shape: BoxShape.circle,
@@ -618,11 +827,7 @@ class _BadgeIconButton extends StatelessWidget {
               child: Center(
                 child: Text(
                   count.toString(),
-                  style: AppTextStyles.captionSB.copyWith(
-                    color: Colors.white,
-                    fontSize: 8,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppTextStyles.actionM.copyWith(color: Colors.white),
                 ),
               ),
             ),

@@ -12,6 +12,7 @@ import 'auth_gate_dialog.dart';
 import 'login_page.dart';
 import 'settings_page.dart';
 import 'signup_page.dart';
+import '../../data/models/user_models.dart';
 
 class GuestPage extends StatelessWidget {
   const GuestPage({super.key});
@@ -35,33 +36,37 @@ class _GuestView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<GuestCubit, GuestState>(
       builder: (context, state) {
-        return Scaffold(
-          backgroundColor: AppColors.neutralLightLight,
-          body: IndexedStack(
-            index: state.selectedIndex,
-            children: [
-              _HomeTab(),
-              const _ProtectedTab(label: 'مديونياتي'),
-              const DeclarationsPage(),
-              const _ProtectedTab(label: 'مدفوعاتي'),
-              const SettingsPage(),
-            ],
-          ),
-          bottomNavigationBar: AppBottomNav(
-            selectedIndex: state.selectedIndex,
-            items: AppNavItems.guest,
-            onItemSelected: (index) {
-              if (index == 1 || index == 3) {
-                showAuthGateDialog(
-                  context,
-                  title: 'الدخول إلى الحساب',
-                  message:
-                      'يرجى تسجيل الدخول أو إنشاء حساب جديد للاستمرار والاستفادة من خدمات مصلحة الضرائب العقارية.',
-                );
-              } else {
-                context.read<GuestCubit>().selectTab(index);
-              }
-            },
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: Scaffold(
+            backgroundColor: AppColors.neutralLightLight,
+            resizeToAvoidBottomInset: true,
+            body: IndexedStack(
+              index: state.selectedIndex,
+              children: [
+                _HomeTab(),
+                const _ProtectedTab(label: 'مديونياتي'),
+                const GuestDeclarationsPage(),
+                const _ProtectedTab(label: 'مدفوعاتي'),
+                SettingsPage(currentUser: UserModel.guest()),
+              ],
+            ),
+            bottomNavigationBar: AppBottomNav(
+              selectedIndex: state.selectedIndex,
+              items: AppNavItems.guest,
+              onItemSelected: (index) {
+                if (index == 1 || index == 3) {
+                  showAuthGateDialog(
+                    context,
+                    title: 'الدخول إلى الحساب',
+                    message:
+                        'يرجى تسجيل الدخول أو إنشاء حساب جديد للاستمرار والاستفادة من خدمات مصلحة الضرائب العقارية.',
+                  );
+                } else {
+                  context.read<GuestCubit>().selectTab(index);
+                }
+              },
+            ),
           ),
         );
       },
@@ -198,7 +203,6 @@ class _HomeTab extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          // ✅ FIXED: switch to tab 2 instead of Navigator.push
           onTap: () => context.read<GuestCubit>().selectTab(2),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
