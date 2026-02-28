@@ -57,6 +57,15 @@ class TaxpayerDataPage extends StatelessWidget {
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
                         ),
+                        onCancel: cubit.isEditMode
+                            ? () {
+                                Navigator.pop(context);
+                                Navigator.pop(context);
+                              }
+                            : null,
+                        onSave: cubit.isEditMode
+                            ? () => cubit.saveTaxpayerEdit(context)
+                            : null,
                       ),
                       15.hs,
                       Padding(
@@ -89,24 +98,25 @@ class TaxpayerDataPage extends StatelessWidget {
                               ),
                             },
                             10.hs,
-                            AppContainer(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 24.w,
-                                vertical: 24.h,
+                            if (!cubit.isEditMode)
+                              AppContainer(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 24.w,
+                                  vertical: 24.h,
+                                ),
+                                child: AppButton(
+                                  label: 'التالي',
+                                  backgroundColor: AppColors.highlightDarkest,
+                                  textColor: AppColors.white,
+                                  fontSize: 12.sp,
+                                  alignment: Alignment.center,
+                                  onTap: () {
+                                    if (cubit.validate()) {
+                                      cubit.onTaxpayerNextTapped(context);
+                                    }
+                                  },
+                                ),
                               ),
-                              child: AppButton(
-                                label: 'التالي',
-                                backgroundColor: AppColors.highlightDarkest,
-                                textColor: AppColors.white,
-                                fontSize: 12.sp,
-                                alignment: Alignment.center,
-                                onTap: () {
-                                  if (cubit.validate()) {
-                                    cubit.onTaxpayerNextTapped(context);
-                                  }
-                                },
-                              ),
-                            ),
                             26.hs,
                           ],
                         ),

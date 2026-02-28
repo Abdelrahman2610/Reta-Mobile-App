@@ -194,21 +194,143 @@ class FileModel {
   }
 }
 
-class TaxpayerModel {
+class TaxpayerAttachmentModel {
+  final int id;
+  final String fieldName;
   final String? name;
-  final String? nationalId;
+  final String url;
+  final String? originalFileName;
+  final String fullUrl;
+
+  const TaxpayerAttachmentModel({
+    required this.id,
+    required this.fieldName,
+    this.name,
+    required this.url,
+    this.originalFileName,
+    required this.fullUrl,
+  });
+
+  factory TaxpayerAttachmentModel.fromJson(Map<String, dynamic> json) {
+    return TaxpayerAttachmentModel(
+      id: json['id'] as int,
+      fieldName: json['field_name'] as String,
+      name: json['name'] as String?,
+      url: json['url'] as String,
+      originalFileName: json['original_file_name'] as String?,
+      fullUrl: json['full_url'] as String,
+    );
+  }
+}
+
+class TaxpayerModel {
+  final int id;
+  final int typeId;
+  final String typeText;
+
+  final String? firstName;
+  final String? lastName;
   final String? phone;
   final String? email;
+  final String? nationalId;
+  final String? passportNumber;
 
-  TaxpayerModel({this.name, this.nationalId, this.phone, this.email});
+  final String? name;
+  final String? taxCardNumber;
+  final String? commercialRegister;
+
+  final int nationalityId;
+  final String? nationalityText;
+
+  final TaxpayerAttachmentModel? nationalIdAttachment;
+  final TaxpayerAttachmentModel? passportAttachment;
+  final TaxpayerAttachmentModel? taxCardAttachment;
+  final TaxpayerAttachmentModel? commercialRegisterAttachment;
+  final TaxpayerAttachmentModel? otherAttachment;
+  final String? otherAttachmentName;
+
+  const TaxpayerModel({
+    required this.id,
+    required this.typeId,
+    required this.typeText,
+    this.firstName,
+    this.lastName,
+    this.phone,
+    this.email,
+    this.nationalId,
+    this.passportNumber,
+    this.name,
+    this.taxCardNumber,
+    this.commercialRegister,
+    required this.nationalityId,
+    this.nationalityText,
+    this.nationalIdAttachment,
+    this.passportAttachment,
+    this.taxCardAttachment,
+    this.commercialRegisterAttachment,
+    this.otherAttachment,
+    this.otherAttachmentName,
+  });
+
+  bool get isNatural => typeId == 1;
+  bool get isCompany => typeId == 2;
+  String get displayName =>
+      isNatural ? '${firstName ?? ''} ${lastName ?? ''}'.trim() : name ?? '';
 
   factory TaxpayerModel.fromJson(Map<String, dynamic> json) {
+    TaxpayerAttachmentModel? parseAttachment(String key) {
+      final data = json[key];
+      if (data == null) return null;
+      return TaxpayerAttachmentModel.fromJson(data as Map<String, dynamic>);
+    }
+
     return TaxpayerModel(
-      name: json['name'],
-      nationalId: json['national_id'],
-      phone: json['phone'],
-      email: json['email'],
+      id: int.parse(json['id'].toString()),
+      typeId: int.parse(json['type_id'].toString()),
+      typeText: json['type_text'] as String,
+      firstName: json['first_name'] as String?,
+      lastName: json['last_name'] as String?,
+      phone: json['phone'] as String?,
+      email: json['email'] as String?,
+      nationalId: json['national_id'] as String?,
+      passportNumber: json['passport_number'] as String?,
+      name: json['name'] as String?,
+      taxCardNumber: json['tax_card_number'] as String?,
+      commercialRegister: json['commercial_register'] as String?,
+      nationalityId: int.parse(json['nationality_id'].toString()),
+      nationalityText: json['nationality_text'] as String?,
+      nationalIdAttachment: parseAttachment('national_id_attachment'),
+      passportAttachment: parseAttachment('passport_attachment'),
+      taxCardAttachment: parseAttachment('tax_card_attachment'),
+      commercialRegisterAttachment: parseAttachment(
+        'commercial_register_attachment',
+      ),
+      otherAttachment: parseAttachment('other_attachment'),
+      otherAttachmentName: json['other_attachment_name'] as String?,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type_id': typeId,
+      'type_text': typeText,
+      if (isNatural) ...{
+        'first_name': firstName,
+        'last_name': lastName,
+        'phone': phone,
+        'email': email,
+        'national_id': nationalId,
+        'passport_number': passportNumber,
+      },
+      if (isCompany) ...{
+        'name': name,
+        'tax_card_number': taxCardNumber,
+        'commercial_register': commercialRegister,
+      },
+      'nationality_id': nationalityId,
+      'nationality_text': nationalityText,
+    };
   }
 }
 

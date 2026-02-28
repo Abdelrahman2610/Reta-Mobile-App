@@ -90,7 +90,6 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   }
 
   Future<void> fetchGovernorates() async {
-    log('FetchGovernorates...');
     emit(state.copyWith(isLoadingGovernorates: true));
 
     final result = await safeApiCall(() async {
