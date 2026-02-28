@@ -78,7 +78,7 @@ class ApiConstants {
   static const String nationalIdLabel = 'national_id_attachment';
   static const String passportLabel = 'passport_attachment';
   static const String ownershipProofDocumentLabel =
-      'joint_ownership_document'; //سند الملكية
+      'joint_ownership_document'; //سندالملكية
   static const String taxpayerAuthorizationLabel =
       'power_of_attorney'; //سند التوكيل
   static const String taxpayerTaxCardLabel =
