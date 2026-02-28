@@ -584,113 +584,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     return true;
   }
 
-  Map<String, dynamic> buildPayload(UnitType unitType) {
-    final base = {
-      'unitType': unitType.label,
-      'privateResidence': state.isExempt,
-      'floorNumber': state.isFloorNumberOther
-          ? floorNumberOtherController.text.trim()
-          : state.selectedFloorNumber,
-      'floorNumberText': floorNumberController.text.trim(),
-      'unitNumber': state.isUnitNumberOther
-          ? unitNumberOtherController.text.trim()
-          : state.selectedUnitNumber,
-      'unitNumberText': unitNumberController.text.trim(),
-      'contactedTaxAuthority': state.contactedTaxAuthority,
-      'unitCode': unitCodeController.text.trim(),
-      'marketValue': marketValueController.text.trim(),
-      'isExempt': state.isExempt,
-      'exemptionReason': state.selectedExemptionReason,
-      'lawNumber': lawNumberController.text.trim(),
-      'lawYear': lawYearController.text.trim(),
-      'ownershipDeedFile': state.ownershipDeedFilePath,
-      'leaseContractFile': state.leaseContractFilePath,
-      'additionalDocuments': additionalDocuments
-          .map(
-            (d) => {'name': d.nameController.text.trim(), 'file': d.filePath},
-          )
-          .toList(),
-    };
-
-    switch (unitType) {
-      case UnitType.fixedInstallations:
-        return {
-          ...base,
-          'installationType': state.selectedInstallationType,
-          'isTaxpayerOwner': state.isTaxpayerOwner,
-          'installationOwner': installationOwnerController.text.trim(),
-          'contractStartDate': contractStartDateController.text.trim(),
-          'contractEndDate': contractEndDateController.text.trim(),
-          'annualRentalValue': annualRentalValueController.text.trim(),
-        };
-      case UnitType.vacantLand:
-        return {
-          ...base,
-          'totalLandArea': totalLandAreaController.text.trim(),
-          'exploitedArea': exploitedAreaController.text.trim(),
-          'exploitationType': state.selectedExploitationType,
-        };
-      case UnitType.hotelFacility:
-        return {
-          ...base,
-          'facilityName': facilityNameController.text.trim(),
-          'hotelView': state.selectedHotelView,
-          'starRating': state.selectedStarRating,
-          'buildingsCount': buildings.length,
-          'buildings': buildings
-              .map(
-                (b) => {
-                  'floors': b.floorsCount,
-                  'area': b.areaController.text.trim(),
-                  'marketValue': b.marketValueController.text.trim(),
-                },
-              )
-              .toList(),
-          'constructionLicenseFile': state.constructionLicenseFilePath,
-          'operatingLicenseFile': state.operatingLicenseFilePath,
-          'starCertificateFile': state.starCertificateFilePath,
-          'hasSubUnits': state.hasSubUnits,
-        };
-      case UnitType.industrialFacility:
-      case UnitType.productionFacility:
-        return {
-          ...base,
-          'facilityName': facilityNameController.text.trim(),
-          'activityType': activityTypeController.text.trim(),
-          'totalLandArea': totalLandAreaFacilityController.text.trim(),
-          'exploitedLandArea': exploitedLandAreaController.text.trim(),
-          'buildingsCount': buildings.length,
-          'buildings': buildings
-              .map(
-                (b) => {
-                  'floors': b.floorsCount,
-                  'area': b.areaController.text.trim(),
-                },
-              )
-              .toList(),
-          'constructionLicenseFile': state.constructionLicenseFilePath,
-          'operatingLicenseFile': state.operatingLicenseFilePath,
-          'constructionPermitFile': state.constructionPermitFilePath,
-        };
-      case UnitType.petroleumFacility:
-        return {
-          ...base,
-          'facilityName': facilityNameController.text.trim(),
-          'usageType': usageTypeController.text.trim(),
-          'totalLandArea': totalLandAreaFacilityController.text.trim(),
-          'bookValue': bookValueController.text.trim(),
-          'buildingsCount': buildings.length,
-          'allAssetsBalanceSheetFile': state.allAssetsBalanceSheetFilePath,
-        };
-      default:
-        return {
-          ...base,
-          'area': areaController.text.trim(),
-          'permitPhotoFile': state.permitPhotoFilePath,
-        };
-    }
-  }
-
   Future<void> onSaveDataTapped(BuildContext context, UnitType unitType) async {
     await submit(context, unitType);
     if (context.mounted && state.successMessage != null) {
@@ -764,7 +657,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         )
         .id;
 
-    log("LocationPayload: ${locationCubit.buildLocationPayload()}");
     final payload = {
       ...applicantCubit.buildPayload(),
       'unit': {
@@ -799,7 +691,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     UnitType unitType,
     DeclarationLookupsModel lookups,
   ) {
-    log('CommercialPayload: unitType: ${unitType}');
     switch (unitType) {
       case UnitType.residential:
         return buildResidentialPayload(lookups);
@@ -902,6 +793,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           'path': state.permitPhotoFilePath,
           'original_file_name': state.permitPhotoOriginalName,
         },
+
       ..._buildSupportingDocsPayload(),
     };
   }

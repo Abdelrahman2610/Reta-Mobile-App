@@ -85,8 +85,11 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   String? taxpayerNationalIdOriginalName;
   final taxpayerPassportNumberController = TextEditingController();
   String? taxpayerPassportFilePath;
+  String? taxpayerPassportOriginalName;
+  String? taxpayerPassportUrl;
   String? ownershipProofDocumentPath;
   String? ownershipProofDocumentOriginName;
+  String? ownershipProofDocumentUrl;
   String? ownershipDeedFilePath;
 
   final taxpayerFirstNameController = TextEditingController();
@@ -106,6 +109,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   String? taxpayerOtherAttachmentOriginalName;
   String? taxpayerAuthorizationFilePath;
   String? taxpayerAuthorizationOriginName;
+  String? taxpayerAuthorizationUrl;
 
   /// ------------------ End of taxpayer information ------------------------
 
@@ -175,6 +179,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       case ApiSuccess<UploadedFileModel>(:final data):
         ownershipProofDocumentPath = data.path;
         ownershipProofDocumentOriginName = data.originalFileName;
+        ownershipProofDocumentUrl = data.fullUrl;
         emit(state.copyWith(isLoading: false));
       case ApiError<UploadedFileModel>(:final message):
         emit(state.copyWith(isLoading: false, errorMessage: message));
@@ -199,6 +204,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       case ApiSuccess<UploadedFileModel>(:final data):
         taxpayerAuthorizationFilePath = data.path;
         taxpayerAuthorizationOriginName = data.originalFileName;
+        taxpayerAuthorizationUrl = data.fullUrl;
         emit(state.copyWith(isLoading: false));
       case ApiError<UploadedFileModel>(:final message):
         emit(state.copyWith(isLoading: false, errorMessage: message));
@@ -438,6 +444,10 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       'applicant_role_id': applicantRoleId,
     };
 
+    if (applicantType == ApplicantType.other) {
+      payload["applicant_role_other"] = null;
+    }
+
     // ── سند التوكيل ──────────────────────────────────
     if (applicantType == ApplicantType.agent ||
         applicantType == ApplicantType.legalRepresentative ||
@@ -446,6 +456,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         payload['power_of_attorney'] = {
           'path': taxpayerAuthorizationFilePath,
           'original_file_name': taxpayerAuthorizationOriginName,
+          'full_url': taxpayerAuthorizationUrl,
         };
       }
     }
@@ -456,6 +467,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         payload['joint_ownership_document'] = {
           'path': ownershipProofDocumentPath,
           'original_file_name': ownershipProofDocumentOriginName,
+          'full_url': ownershipProofDocumentUrl,
         };
       }
     }
@@ -467,17 +479,16 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
   Map<String, dynamic> _buildTaxpayerPayload() {
     // للمالك والمنتفع — المكلف هو نفس المقدم
+    final Map<String, dynamic> taxpayer = {
+      'type_id': 1,
+      'first_name': taxpayerNameController.text.trim(), // اسم المكلف
+      'last_name': '',
+      'nationality_id': taxpayerNationality.id,
+      'phone': taxpayerPhoneController.text.trim(),
+      'email': taxpayerEmailController.text.trim(),
+    };
     if (applicantType == ApplicantType.owner ||
         applicantType == ApplicantType.beneficiary) {
-      final Map<String, dynamic> taxpayer = {
-        'type_id': 1,
-        'first_name': applicantFirstNameController.text.trim(),
-        'last_name': applicantLastNameController.text.trim(),
-        'nationality_id': applicantNationality.id,
-        'phone': applicantPhoneController.text.trim(),
-        'email': applicantEmailController.text.trim(),
-      };
-
       if (applicantNationality == Nationality.egyptian) {
         taxpayer['national_id'] = applicantNationalIdController.text.trim();
         if (applicantNationalIdFilePath != null) {
@@ -493,6 +504,30 @@ class ApplicantCubit extends Cubit<ApplicantState> {
           taxpayer['passport_attachment'] = {
             'path': applicantPassportFilePath,
             'original_file_name': applicantPassportOriginalName,
+          };
+        }
+      }
+      return taxpayer;
+    }
+
+    // أضف case للـ sharedOwnership
+    if (applicantType == ApplicantType.sharedOwnership) {
+      if (taxpayerNationality == Nationality.egyptian) {
+        taxpayer['national_id'] = taxpayerNationalIdController.text.trim();
+        if (taxpayerNationalIdFilePath != null) {
+          taxpayer['national_id_attachment'] = {
+            'path': taxpayerNationalIdFilePath,
+            'original_file_name': taxpayerNationalIdOriginalName,
+          };
+        }
+      } else {
+        taxpayer['passport_number'] = taxpayerPassportNumberController.text
+            .trim();
+        if (taxpayerPassportFilePath != null) {
+          taxpayer['passport_attachment'] = {
+            'path': taxpayerPassportFilePath,
+            'original_file_name': taxpayerPassportOriginalName,
+            'full_url': taxpayerPassportUrl,
           };
         }
       }
@@ -524,6 +559,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
           taxpayer['passport_attachment'] = {
             'path': taxpayerPassportFilePath,
             'original_file_name': applicantPassportOriginalName,
+            'full_url': taxpayerPassportUrl,
           };
         }
       }
