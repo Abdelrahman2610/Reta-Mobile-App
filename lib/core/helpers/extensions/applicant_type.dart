@@ -32,8 +32,27 @@ extension ApplicantTypeLabel on ApplicantType {
         return 6;
       case ApplicantType.other:
         return 7;
+    }
+  }
+}
+
+extension ApplicantFromInt on String {
+  ApplicantType get displayApplicant {
+    switch (this) {
+      case '1':
+        return ApplicantType.owner;
+      case '2':
+        return ApplicantType.sharedOwnership;
+      case '3':
+        return ApplicantType.beneficiary;
+      case '5':
+        return ApplicantType.agent;
+      case '6':
+        return ApplicantType.legalRepresentative;
+      case '7':
+        return ApplicantType.other;
       default:
-        return 1;
+        return ApplicantType.owner;
     }
   }
 }

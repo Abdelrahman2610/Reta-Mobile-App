@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/network/api_constants.dart';
@@ -91,6 +93,7 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
 
   Future<void> fetchDeclarationModel() async {
     emit(DeclarationDetailsLoading());
+    log("Fetching Declaration details...");
 
     final result = await safeApiCall(() async {
       final response = await DioClient.instance.dio.get(
@@ -105,6 +108,7 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
       case ApiSuccess(:final data):
         _detailsModel = data;
         updateUnit();
+        log("detailsModel: ${_detailsModel?.declarationTypeId}");
         emit(
           DeclarationDetailsLoaded(
             data,

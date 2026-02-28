@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_details_states.dart';
+import 'package:reta/features/declarations/presentations/pages/provider_data_page.dart';
 import 'package:reta/features/declarations/presentations/pages/select_applicant_type_page.dart';
 
+import '../../../../core/helpers/extensions/applicant_type.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_bar.dart';
 import '../../../components/circular_progress_indicator_platform_widget.dart';
@@ -69,6 +72,24 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                     PropertiesListInDeclarationHeader(
                       declarationModel.declarationTypeText ?? "",
                       declarationModel.statusId != "3",
+                      onTap: () {
+                        PersistentNavBarNavigator.pushNewScreen(
+                          context,
+                          screen: ProviderDataPage(
+                            declarationId: declarationModel.id ?? -1,
+                            applicantType:
+                                state
+                                    .detailsModel
+                                    ?.declarationTypeId
+                                    .displayApplicant ??
+                                ApplicantType.owner,
+                            existingDeclaration: state.detailsModel,
+                          ),
+                          withNavBar: true,
+                          pageTransitionAnimation:
+                              PageTransitionAnimation.slideUp,
+                        );
+                      },
                     ),
                     if (declarationModel.statusId != "3")
                       SizedBox(height: 30.h),
