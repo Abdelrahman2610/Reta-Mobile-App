@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/auth_repository.dart';
+import '../../data/models/login_response.dart';
 import '../../../../core/network/api_result.dart';
 
 enum LoginTab { mobile, nationalId }
@@ -9,7 +10,7 @@ class LoginState {
 
   final String phone;
 
-  final String nationalId;
+  final String name;
   final String passportNumber;
 
   final String password;
@@ -17,6 +18,9 @@ class LoginState {
   final bool isPasswordVisible;
   final bool isLoading;
   final bool isSuccess;
+
+  /// Populated on successful login — used by the UI to build UserModel
+  final LoginResponse? loginResponse;
 
   final String? phoneError;
   final String? passwordError;
@@ -31,11 +35,12 @@ class LoginState {
     this.selectedTab = LoginTab.mobile,
     this.phone = '',
     this.password = '',
-    this.nationalId = '',
+    this.name = '',
     this.passportNumber = '',
     this.isPasswordVisible = false,
     this.isLoading = false,
     this.isSuccess = false,
+    this.loginResponse,
     this.phoneError,
     this.passwordError,
     this.nationalIdError,
@@ -56,7 +61,7 @@ class LoginState {
           noPhoneErr &&
           noPasswordErr;
     } else {
-      return nationalId.isNotEmpty &&
+      return name.isNotEmpty &&
           passportNumber.isNotEmpty &&
           password.isNotEmpty &&
           noNationalIdErr &&
@@ -74,6 +79,7 @@ class LoginState {
     bool? isPasswordVisible,
     bool? isLoading,
     bool? isSuccess,
+    LoginResponse? loginResponse,
     String? Function()? phoneError,
     String? Function()? passwordError,
     String? Function()? nationalIdError,
@@ -85,11 +91,12 @@ class LoginState {
       selectedTab: selectedTab ?? this.selectedTab,
       phone: phone ?? this.phone,
       password: password ?? this.password,
-      nationalId: nationalId ?? this.nationalId,
+      name: nationalId ?? this.name,
       passportNumber: passportNumber ?? this.passportNumber,
       isPasswordVisible: isPasswordVisible ?? this.isPasswordVisible,
       isLoading: isLoading ?? this.isLoading,
       isSuccess: isSuccess ?? this.isSuccess,
+      loginResponse: loginResponse ?? this.loginResponse,
       phoneError: phoneError != null ? phoneError() : this.phoneError,
       passwordError: passwordError != null
           ? passwordError()
@@ -187,22 +194,26 @@ class LoginCubit extends Cubit<LoginState> {
     ApiResult result;
 
     if (state.selectedTab == LoginTab.mobile) {
-      result = await _authRepository.login(
-        loginValue: state.phone,
+      result = await _authRepository.loginWithMobile(
+        mobile: state.phone,
         password: state.password,
-        loginType: 'mobile',
       );
     } else {
       result = await _authRepository.loginWithNationalId(
-        nationalId: state.nationalId,
-        passportNumber: state.passportNumber,
+        nationalId: state.name,
         password: state.password,
       );
     }
 
     switch (result) {
-      case ApiSuccess():
-        emit(state.copyWith(isLoading: false, isSuccess: true));
+      case ApiSuccess(:final data):
+        emit(
+          state.copyWith(
+            isLoading: false,
+            isSuccess: true,
+            loginResponse: data,
+          ),
+        );
 
       case ApiError(:final message, :final statusCode):
         _handleApiError(statusCode: statusCode, message: message);
@@ -283,7 +294,7 @@ class LoginCubit extends Cubit<LoginState> {
     String? passportError;
     String? passwordError;
 
-    final nationalId = state.nationalId.trim();
+    final nationalId = state.name.trim();
     final passport = state.passportNumber.trim();
 
     if (nationalId.isEmpty) {
