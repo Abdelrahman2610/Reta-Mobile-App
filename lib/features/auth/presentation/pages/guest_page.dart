@@ -13,7 +13,6 @@ import 'guest_declarations_page.dart';
 import 'login_page.dart';
 import 'settings_page.dart';
 import 'signup_page.dart';
-import '../../data/models/user_models.dart';
 
 class GuestPage extends StatelessWidget {
   const GuestPage({super.key});

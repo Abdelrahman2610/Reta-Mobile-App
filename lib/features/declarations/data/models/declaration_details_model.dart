@@ -13,8 +13,8 @@ class DeclarationDetailsModel {
   final String applicantRoleId;
   final String applicantRoleText;
 
-  final FileModel? powerOfAttorney;
-  final FileModel? jointOwnershipDocument;
+  final TaxpayerAttachmentModel? powerOfAttorney;
+  final TaxpayerAttachmentModel? jointOwnershipDocument;
 
   final TaxpayerModel taxpayer;
   final UnitsCountModel unitsCount;
@@ -69,10 +69,10 @@ class DeclarationDetailsModel {
       applicantRoleId: json['applicant_role_id'] ?? '',
       applicantRoleText: json['applicant_role_text'] ?? '',
       powerOfAttorney: json['power_of_attorney'] != null
-          ? FileModel.fromJson(json['power_of_attorney'])
+          ? TaxpayerAttachmentModel.fromJson(json['power_of_attorney'])
           : null,
       jointOwnershipDocument: json['joint_ownership_document'] != null
-          ? FileModel.fromJson(json['joint_ownership_document'])
+          ? TaxpayerAttachmentModel.fromJson(json['joint_ownership_document'])
           : null,
       taxpayer: TaxpayerModel.fromJson(json['taxpayer'] ?? {}),
       unitsCount: UnitsCountModel.fromJson(json['units_count'] ?? {}),
@@ -85,6 +85,25 @@ class DeclarationDetailsModel {
       updatedAt: json['updated_at'] ?? '',
       data: json,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    final map = <String, dynamic>{
+      'declaration_type_id':
+          int.tryParse(declarationTypeId) ?? declarationTypeId,
+      'applicant_role_id': int.tryParse(applicantRoleId) ?? applicantRoleId,
+    };
+
+    map['applicant_role_other'] = applicantRoleOther;
+
+    map['power_of_attorney'] = powerOfAttorney?.toJson();
+
+    map['joint_ownership_document'] = jointOwnershipDocument?.toJson();
+
+    // Taxpayer
+    map['taxpayer'] = taxpayer.toJson();
+
+    return map;
   }
 }
 
@@ -113,9 +132,9 @@ class ResidentialUnitModel {
   final List<int> attachments;
   final List<String> attachmentsText;
 
-  final FileModel? ownershipDeed;
-  final FileModel? leaseContract;
-  final List<FileModel> supportingDocuments;
+  final TaxpayerAttachmentModel? ownershipDeed;
+  final TaxpayerAttachmentModel? leaseContract;
+  final List<TaxpayerAttachmentModel> supportingDocuments;
 
   final String createdAt;
   final String updatedAt;
@@ -151,45 +170,16 @@ class ResidentialUnitModel {
           .map((e) => e.toString())
           .toList(),
       ownershipDeed: json['ownership_deed'] != null
-          ? FileModel.fromJson(json['ownership_deed'])
+          ? TaxpayerAttachmentModel.fromJson(json['ownership_deed'])
           : null,
       leaseContract: json['lease_contract'] != null
-          ? FileModel.fromJson(json['lease_contract'])
+          ? TaxpayerAttachmentModel.fromJson(json['lease_contract'])
           : null,
       supportingDocuments: (json['supporting_documents'] as List? ?? [])
-          .map((e) => FileModel.fromJson(e))
+          .map((e) => TaxpayerAttachmentModel.fromJson(e))
           .toList(),
       createdAt: json['created_at'] ?? '',
       updatedAt: json['updated_at'] ?? '',
-    );
-  }
-}
-
-class FileModel {
-  final int id;
-  final String fieldName;
-  final String name;
-  final String url;
-  final String originalFileName;
-  final String fullUrl;
-
-  FileModel({
-    required this.id,
-    required this.fieldName,
-    required this.name,
-    required this.url,
-    required this.originalFileName,
-    required this.fullUrl,
-  });
-
-  factory FileModel.fromJson(Map<String, dynamic> json) {
-    return FileModel(
-      id: json['id'],
-      fieldName: json['field_name'] ?? '',
-      name: json['name'] ?? '',
-      url: json['url'] ?? '',
-      originalFileName: json['original_file_name'] ?? '',
-      fullUrl: json['full_url'] ?? '',
     );
   }
 }
@@ -198,6 +188,7 @@ class TaxpayerAttachmentModel {
   final int id;
   final String fieldName;
   final String? name;
+  final String? path;
   final String url;
   final String? originalFileName;
   final String fullUrl;
@@ -209,6 +200,7 @@ class TaxpayerAttachmentModel {
     required this.url,
     this.originalFileName,
     required this.fullUrl,
+    this.path,
   });
 
   factory TaxpayerAttachmentModel.fromJson(Map<String, dynamic> json) {
@@ -216,17 +208,30 @@ class TaxpayerAttachmentModel {
       id: json['id'] as int,
       fieldName: json['field_name'] as String,
       name: json['name'] as String?,
+      path: json['path'] as String?,
       url: json['url'] as String,
       originalFileName: json['original_file_name'] as String?,
       fullUrl: json['full_url'] as String,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'field_name': fieldName,
+      'path': path,
+      if (name != null) 'name': name,
+      'url': url,
+      'full_url': fullUrl,
+      'original_file_name': originalFileName,
+    };
+  }
 }
 
 class TaxpayerModel {
-  final int id;
-  final int typeId;
-  final String typeText;
+  final int? id;
+  final int? typeId;
+  final String? typeText;
 
   final String? firstName;
   final String? lastName;
@@ -239,7 +244,7 @@ class TaxpayerModel {
   final String? taxCardNumber;
   final String? commercialRegister;
 
-  final int nationalityId;
+  final int? nationalityId;
   final String? nationalityText;
 
   final TaxpayerAttachmentModel? nationalIdAttachment;
@@ -285,20 +290,20 @@ class TaxpayerModel {
     }
 
     return TaxpayerModel(
-      id: int.parse(json['id'].toString()),
-      typeId: int.parse(json['type_id'].toString()),
-      typeText: json['type_text'] as String,
-      firstName: json['first_name'] as String?,
-      lastName: json['last_name'] as String?,
-      phone: json['phone'] as String?,
-      email: json['email'] as String?,
-      nationalId: json['national_id'] as String?,
-      passportNumber: json['passport_number'] as String?,
-      name: json['name'] as String?,
-      taxCardNumber: json['tax_card_number'] as String?,
-      commercialRegister: json['commercial_register'] as String?,
-      nationalityId: int.parse(json['nationality_id'].toString()),
-      nationalityText: json['nationality_text'] as String?,
+      id: int.tryParse(json['id'].toString()),
+      typeId: int.tryParse(json['type_id'].toString()),
+      typeText: json['type_text'],
+      firstName: json['first_name'],
+      lastName: json['last_name'],
+      phone: json['phone'],
+      email: json['email'],
+      nationalId: json['national_id'],
+      passportNumber: json['passport_number'],
+      name: json['name'],
+      taxCardNumber: json['tax_card_number'],
+      commercialRegister: json['commercial_register'],
+      nationalityId: int.tryParse(json['nationality_id'].toString()),
+      nationalityText: json['nationality_text'],
       nationalIdAttachment: parseAttachment('national_id_attachment'),
       passportAttachment: parseAttachment('passport_attachment'),
       taxCardAttachment: parseAttachment('tax_card_attachment'),
@@ -360,11 +365,16 @@ class UnitsCountModel {
 class CategoryConfig {
   final String key;
   final String label;
+  final String deleteLabel;
+  final String deleteID;
+
   final List<String> summaryFields; // fields to show in card
 
   const CategoryConfig({
     required this.key,
     required this.label,
     required this.summaryFields,
+    required this.deleteLabel,
+    required this.deleteID,
   });
 }

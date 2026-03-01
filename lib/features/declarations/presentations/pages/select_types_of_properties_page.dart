@@ -10,6 +10,7 @@ import '../../../components/app_bar.dart';
 import '../../../components/app_text.dart';
 import '../components/select_types_of_properties_item.dart';
 import '../cubit/applicant_cubit.dart';
+import '../cubit/declaration/declaration_cubit.dart';
 import '../cubit/declaration_lookups_cubit.dart';
 
 class SelectTypesOfPropertiesPage extends StatelessWidget {
@@ -219,6 +220,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
 
   void onUniTapped(UnitType unitType, BuildContext context) {
     final applicantCubit = context.read<ApplicantCubit>();
+    final declarationCubit = context.read<DeclarationCubit>();
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
     Navigator.push(
       context,
@@ -227,6 +229,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
           providers: [
             BlocProvider.value(value: applicantCubit),
             BlocProvider.value(value: lookupsCubit),
+            BlocProvider.value(value: declarationCubit),
           ],
           child: UnitLocationDataPage(
             unitType: unitType,

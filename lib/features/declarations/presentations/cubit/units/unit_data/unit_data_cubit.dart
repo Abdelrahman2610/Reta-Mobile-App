@@ -16,6 +16,7 @@ import '../../../../data/models/building_info.dart';
 import '../../../../data/models/declarations_lookups.dart';
 import '../../../pages/select_types_of_properties_page.dart';
 import '../../applicant_cubit.dart';
+import '../../declaration/declaration_cubit.dart';
 import '../../declaration_lookups_cubit.dart';
 import '../location/unit_location_cubit.dart';
 import 'unit_data_state.dart';
@@ -585,8 +586,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   Future<void> onSaveDataTapped(BuildContext context, UnitType unitType) async {
+    log("OnSaveTapped");
+    final declarationCubit = context.read<DeclarationCubit>();
     await submit(context, unitType);
     if (context.mounted && state.successMessage != null) {
+      declarationCubit.fetchList();
       Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }

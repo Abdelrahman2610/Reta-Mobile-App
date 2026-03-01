@@ -1,9 +1,9 @@
 class ApiConstants {
   // ─── Base URL ───────────────────────────────────────────────────────────────
-  // static const String baseUrl =
-  //     'http://dev-rta-services.etax.com.eg/reta-services/public';
+  static const String baseUrl =
+      'http://dev-rta-services.etax.com.eg/reta-services/public/api';
 
-  static const String baseUrl = 'http://10.0.2.2:3000/api';
+  // static const String baseUrl = 'http://10.0.2.2:3000/api';
   // ─── Auth ───────────────────────────────────────────────────────────────────
   static const String login = '/login';
   static const String registerSendOtp = '/register/sendOTP';
@@ -38,11 +38,20 @@ class ApiConstants {
   // ─── Declarations ────────────────────────────────────────────────────────────
   static const String declarations = '/declaration-system/declarations';
 
-  static String declarationById(int id) =>
+  static String declarationById(String id) =>
       '/declaration-system/declarations/$id';
-  static String submitDeclaration(int id) =>
-      '/api/declaration-system/declarations/$id/submit';
-  static String deleteUnit(int declarationId, String unitType, int unitId) =>
+
+  static String cancelDeclarationById(String id) =>
+      '/declaration-system/declarations/$id/cancel';
+
+  static String submitDeclaration(String id) =>
+      '/declaration-system/declarations/$id/submit';
+
+  static String deleteUnit(
+    String declarationId,
+    String unitType,
+    String unitId,
+  ) =>
       '/declaration-system/declarations/$declarationId/units/$unitType/$unitId';
 
   // ─── Lookups ─────────────────────────────────────────────────────────────────
@@ -68,12 +77,16 @@ class ApiConstants {
 
   static String districtsByGovernorate(int governorateId) =>
       '$lookupBase/governorates/$governorateId/districts';
+
   static String villagesByDistrict(int districtId) =>
       '$lookupBase/districts/$districtId/villages';
+
   static String regionsByVillage(int villageId) =>
       '$lookupBase/villages/$villageId/regions';
+
   static String realEstatesByRegion(int regionId) =>
       '$lookupBase/regions/$regionId/real-estates';
+
   static String unitsByRealEstate(int realEstateId) =>
       '$lookupBase/real-estates/$realEstateId/units';
 
@@ -91,11 +104,11 @@ class ApiConstants {
 
   // ─── Wallet / Payment ────────────────────────────────────────────────────────
   static String walletDetails(int declarationId) =>
-      '/api/declaration-system/declarations/wallet/$declarationId';
+      '/declaration-system/declarations/wallet/$declarationId';
   static String initialPayment(int claimId) =>
-      '/api/declaration-system/initial-payment/$claimId';
+      '/declaration-system/initial-payment/$claimId';
   static String underDeclarationProperties(int declarationId) =>
-      '/api/declaration-system/UnderDeclarationProperties/list/$declarationId';
+      '/declaration-system/UnderDeclarationProperties/list/$declarationId';
   static const String settlementOfDebts =
       '/declaration-system/declarations/settlement-of-debts-with-the-taxpayers-knowledge';
 
@@ -103,7 +116,7 @@ class ApiConstants {
   static const String nationalIdLabel = 'national_id_attachment';
   static const String passportLabel = 'passport_attachment';
   static const String ownershipProofDocumentLabel =
-      'joint_ownership_document'; //سندالملكية
+      'joint_ownership_document'; //سند الملكية
   static const String taxpayerAuthorizationLabel =
       'power_of_attorney'; //سند التوكيل
   static const String taxpayerTaxCardLabel =

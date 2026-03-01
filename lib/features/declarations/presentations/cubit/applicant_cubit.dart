@@ -25,6 +25,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     required this.applicantType,
     required this.declarationId,
     required this.isEditMode,
+    this.afterUpdating,
   }) : super(const ApplicantState());
 
   final formKey = GlobalKey<FormState>();
@@ -33,6 +34,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   UnitType unitType = UnitType.residential;
   final int declarationId;
   final bool isEditMode;
+  final VoidCallback? afterUpdating;
 
   /// --------------------------- Applicant -----------------------------
   final applicantFirstNameController = TextEditingController();
@@ -832,7 +834,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
     final result = await safeApiCall(() async {
       final response = await DioClient.instance.dio.put(
-        ApiConstants.declarationById(declarationId),
+        ApiConstants.declarationById(declarationId.toString()),
         data: payload,
       );
       return response.data as Map<String, dynamic>;
@@ -846,6 +848,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
             successMessage: 'تم تحديث البيانات بنجاح',
           ),
         );
+        if (afterUpdating != null) afterUpdating!();
         if (context.mounted) Navigator.pop(context);
         if (context.mounted) Navigator.pop(context);
       case ApiError(:final message):

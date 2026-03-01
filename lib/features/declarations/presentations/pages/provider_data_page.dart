@@ -21,11 +21,13 @@ class ProviderDataPage extends StatelessWidget {
     required this.applicantType,
     required this.declarationId,
     this.existingDeclaration,
+    this.afterUpdating,
   });
 
   final ApplicantType applicantType;
   final int declarationId;
   final DeclarationDetailsModel? existingDeclaration;
+  final VoidCallback? afterUpdating;
 
   @override
   Widget build(BuildContext context) {
@@ -107,6 +109,7 @@ class ProviderDataPage extends StatelessWidget {
               applicantType: applicantType,
               declarationId: declarationId,
               isEditMode: existingDeclaration != null,
+              afterUpdating: afterUpdating,
             )..initFromUser(user);
 
             if (existingDeclaration != null) {

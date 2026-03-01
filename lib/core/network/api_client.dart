@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -7,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 //  Base URL — change this if the server changes
 // ════════════════════════════════════════════════════════════════════════════
 // const String kBaseUrl = 'http://dev-rta-services.etax.com.eg/reta-services/public/api';
-const String kBaseUrl = 'http://10.0.2.2:3000';
+const String kBaseUrl = 'http://10.0.2.2:3000/api';
 
 // ════════════════════════════════════════════════════════════════════════════
 //  Token storage helpers

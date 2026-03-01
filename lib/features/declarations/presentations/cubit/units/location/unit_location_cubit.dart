@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/core/network/api_constants.dart';
+import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_cubit.dart';
 import 'package:reta/features/declarations/presentations/cubit/units/location/unit_location_states.dart';
 import 'package:reta/features/declarations/presentations/pages/units/unit_data.dart';
 
@@ -353,6 +354,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   void onNextButtonTapped(BuildContext context, ApplicantType applicantType) {
     log("Payload: ${buildPayload()}");
     final applicantCubit = context.read<ApplicantCubit>();
+    final declarationCubit = context.read<DeclarationCubit>();
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
     final unitDataCubit = UnitDataCubit(
       lookups: lookupsCubit.lookups!,
@@ -367,6 +369,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
             BlocProvider.value(value: this),
             BlocProvider.value(value: unitDataCubit),
             BlocProvider.value(value: applicantCubit),
+            BlocProvider.value(value: declarationCubit),
             BlocProvider.value(value: lookupsCubit),
           ],
           child: UnitData(applicantType: applicantType, unitType: unitType),
