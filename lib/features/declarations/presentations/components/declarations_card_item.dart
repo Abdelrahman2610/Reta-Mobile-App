@@ -20,12 +20,12 @@ class DeclarationsCardItem extends StatelessWidget {
       padding: EdgeInsets.only(bottom: 15.h),
       child: InkwellTransparent(
         onTap: () {
-          // PersistentNavBarNavigator.pushNewScreen(
-          //   context,
-          //   screen: PropertiesListInDeclarationPage(item),
-          //   withNavBar: true,
-          //   pageTransitionAnimation: PageTransitionAnimation.slideUp,
-          // );
+          PersistentNavBarNavigator.pushNewScreen(
+            context,
+            screen: PropertiesListInDeclarationPage(item),
+            withNavBar: true,
+            pageTransitionAnimation: PageTransitionAnimation.slideUp,
+          );
         },
         child: Container(
           decoration: BoxDecoration(
