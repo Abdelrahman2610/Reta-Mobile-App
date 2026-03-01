@@ -15,7 +15,7 @@ class DeclarationsRepository {
   }
 
   Future<ApiResult<Map<String, dynamic>>> getDeclarationById(
-    int id, {
+    String id, {
     bool forEdit = false,
     int residentialPage = 1,
   }) async {
@@ -41,7 +41,7 @@ class DeclarationsRepository {
   }
 
   Future<ApiResult<Map<String, dynamic>>> updateDeclaration(
-    int declarationId,
+    String declarationId,
     Map<String, dynamic> body,
   ) async {
     return safeApiCall(() async {
@@ -54,7 +54,7 @@ class DeclarationsRepository {
   }
 
   Future<ApiResult<Map<String, dynamic>>> submitDeclaration(
-    int declarationId,
+    String declarationId,
   ) async {
     return safeApiCall(() async {
       final response = await _dio.post(
@@ -65,7 +65,7 @@ class DeclarationsRepository {
   }
 
   Future<ApiResult<Map<String, dynamic>>> deleteUnit({
-    required int declarationId,
+    required String declarationId,
     required String unitType,
     required int unitId,
   }) async {
@@ -78,7 +78,7 @@ class DeclarationsRepository {
   }
 
   Future<ApiResult<Map<String, dynamic>>> getWalletDetails(
-    int declarationId,
+    String declarationId,
   ) async {
     return safeApiCall(() async {
       final response = await _dio.get(
@@ -89,7 +89,7 @@ class DeclarationsRepository {
   }
 
   Future<ApiResult<Map<String, dynamic>>> getUnderDeclarationProperties(
-    int declarationId,
+    String declarationId,
   ) async {
     return safeApiCall(() async {
       final response = await _dio.get(
