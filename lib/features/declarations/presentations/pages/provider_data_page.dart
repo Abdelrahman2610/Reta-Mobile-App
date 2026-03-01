@@ -35,8 +35,8 @@ class ProviderDataPage extends StatelessWidget {
     // final user = context.read<LoginCubit>().state.user;
     final UserModel userModel = UserModel(
       id: '1',
-      firstName: 'احمد',
-      lastName: 'احمد محمد محمد علي',
+      firstname: 'احمد',
+      lastname: 'احمد محمد محمد علي',
       nationality: '1',
       nationalId: '28612250100491',
       email: '',

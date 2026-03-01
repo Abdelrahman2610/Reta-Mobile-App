@@ -52,8 +52,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
   void initFromUser(UserModel user) {
     // if (user == null) return;
-    applicantFirstNameController.text = user.firstName ?? '';
-    applicantLastNameController.text = user.lastName ?? ''.trim();
+    applicantFirstNameController.text = user.firstname ?? '';
+    applicantLastNameController.text = user.firstname ?? ''.trim();
     applicantPhoneController.text = user.phone ?? '';
     applicantEmailController.text = user.email ?? '';
 
