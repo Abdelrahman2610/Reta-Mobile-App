@@ -1,13 +1,15 @@
 import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/repositories/auth_repository.dart';
-import '../../data/models/register_request.dart';
-import '../../../../core/network/api_result.dart';
-import '../../../../core/network/api_constants.dart';
+import 'package:reta/core/network/dio_client.dart';
 import 'package:reta/features/auth/data/models/otp_response.dart';
 import 'package:dio/dio.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
-import 'package:reta/core/network/dio_client.dart';
+
+import '../../../../core/network/api_result.dart';
+import '../../data/models/register_request.dart';
+import '../../data/repositories/auth_repository.dart';
 
 class DropdownItem {
   final String id;

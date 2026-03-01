@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../data/models/user_models.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/notifications_cubit.dart';
 import 'declaration_summary.dart';
-import 'notifications_page.dart';
 import 'guest_declarations_page.dart';
+import 'notifications_page.dart';
 
 class HomeTab extends StatelessWidget {
   final UserModel user;

@@ -1,7 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reta/core/network/api_result.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
 import 'package:reta/features/auth/data/repositories/auth_repository.dart';
-import 'package:reta/core/network/api_result.dart';
+
 import 'user_profile_state.dart';
 
 class UserProfileCubit extends Cubit<UserProfileState> {

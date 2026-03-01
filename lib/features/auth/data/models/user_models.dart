@@ -17,6 +17,11 @@ class UserModel {
   final String? nationality;
   final String? placeOfBirth;
 
+  //TODO: Add from json to these vars
+  final String? passportNumber;
+  final List<Map<String, dynamic>>? nationalIdFiles;
+  final List<Map<String, dynamic>>? passportFiles;
+
   const UserModel({
     this.id,
     this.firstname,
@@ -32,6 +37,9 @@ class UserModel {
     this.nationalIdVerified,
     this.nationality,
     this.placeOfBirth,
+    this.passportNumber,
+    this.nationalIdFiles,
+    this.passportFiles,
   });
 
   factory UserModel.guest() {
@@ -86,7 +94,8 @@ class UserModel {
 
   UserModel copyWith({
     String? id,
-    String? name,
+    String? firstName,
+    String? lastName,
     String? email,
     String? phone,
     String? nationalId,
