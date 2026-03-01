@@ -832,7 +832,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
     final result = await safeApiCall(() async {
       final response = await DioClient.instance.dio.put(
-        ApiConstants.declarationById(declarationId.toString()),
+        ApiConstants.declarationById(declarationId),
         data: payload,
       );
       return response.data as Map<String, dynamic>;

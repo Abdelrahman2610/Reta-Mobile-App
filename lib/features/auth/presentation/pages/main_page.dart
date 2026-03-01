@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reta/features/components/app_text.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_nav.dart';
 import '../../../declarations/presentations/pages/declarations_page.dart';
+import '../../data/models/user_models.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/notifications_cubit.dart';
-import 'home_tab.dart';
 import 'guest_page.dart';
+import 'home_tab.dart';
 import 'placeholder_tabs.dart';
-import 'settings_page.dart';
-import '../../data/models/user_models.dart';
 
 class MainPage extends StatelessWidget {
   final UserModel? user;
@@ -56,7 +54,8 @@ class _AuthenticatedView extends StatelessWidget {
             children: [
               HomeTab(user: user),
               const DebtsTab(),
-              const DeclarationsTab(),
+              // const DeclarationsTab(),
+              DeclarationsPage(),
               const PaymentsTab(),
               SettingsTab(user: user),
             ],

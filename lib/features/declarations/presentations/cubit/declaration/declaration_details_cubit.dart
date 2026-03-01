@@ -97,7 +97,7 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
 
     final result = await safeApiCall(() async {
       final response = await DioClient.instance.dio.get(
-        ApiConstants.declarationById(declarationId),
+        ApiConstants.declarationById(int.parse(declarationId)),
       );
 
       activeCategories = getNonEmptyCategories(response.data['data']);

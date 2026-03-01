@@ -39,15 +39,14 @@ class ApiConstants {
   static const String declarations = '/declaration-system/declarations';
 
   static String declarationById(int id) =>
-      '/api/declaration-system/declarations/$id';
+      '/declaration-system/declarations/$id';
   static String submitDeclaration(int id) =>
       '/api/declaration-system/declarations/$id/submit';
   static String deleteUnit(int declarationId, String unitType, int unitId) =>
-      '/api/declaration-system/declarations/$declarationId/units/$unitType/$unitId';
+      '/declaration-system/declarations/$declarationId/units/$unitType/$unitId';
 
   // ─── Lookups ─────────────────────────────────────────────────────────────────
-  static const String lookupBase =
-      '/api/declaration-system/declaration-lookups';
+  static const String lookupBase = '/declaration-system/declaration-lookups';
 
   static const String allLookups = '$lookupBase/declaration-all-lookups';
   static const String listFilterLookups = '$lookupBase/list-filter-all-lookups';
@@ -80,15 +79,15 @@ class ApiConstants {
 
   // ─── Claims ──────────────────────────────────────────────────────────────────
   static const String storeClaim =
-      '/api/declaration-system/declarations/user/claim';
+      '/declaration-system/declarations/user/claim';
   static String claimsList(int declarationId) =>
-      '/api/declaration-system/declarations/user/declaration/claims-list/$declarationId';
+      '/declaration-system/declarations/user/declaration/claims-list/$declarationId';
   static String claimDetail(int claimId) =>
-      '/api/declaration-system/declarations/user/claims/$claimId';
+      '/declaration-system/declarations/user/claims/$claimId';
   static String cancelClaim(int claimId) =>
-      '/api/declaration-system/declarations/user/claim/$claimId';
+      '/declaration-system/declarations/user/claim/$claimId';
   static String claimTransactionDetails(int claimId) =>
-      '/api/declaration-system/declarations/user/claims-payment-transaction-details/$claimId';
+      '/declaration-system/declarations/user/claims-payment-transaction-details/$claimId';
 
   // ─── Wallet / Payment ────────────────────────────────────────────────────────
   static String walletDetails(int declarationId) =>
@@ -98,5 +97,26 @@ class ApiConstants {
   static String underDeclarationProperties(int declarationId) =>
       '/api/declaration-system/UnderDeclarationProperties/list/$declarationId';
   static const String settlementOfDebts =
-      '/api/declaration-system/declarations/settlement-of-debts-with-the-taxpayers-knowledge';
+      '/declaration-system/declarations/settlement-of-debts-with-the-taxpayers-knowledge';
+
+  /// ------------------------------ Files label ---------------------------------
+  static const String nationalIdLabel = 'national_id_attachment';
+  static const String passportLabel = 'passport_attachment';
+  static const String ownershipProofDocumentLabel =
+      'joint_ownership_document'; //سندالملكية
+  static const String taxpayerAuthorizationLabel =
+      'power_of_attorney'; //سند التوكيل
+  static const String taxpayerTaxCardLabel =
+      'tax_card_attachment'; //سند الضريبة
+  static const String taxpayerCommercialRegisterLabel =
+      'commercial_register_attachment'; //سجل تجاري
+  static const String taxpayerOtherAttachmentLabel =
+      'other_attachment'; //مستند آخر
+  static const String ownershipDeedLabel = 'ownership_deed'; //سند تمليك
+  static const String leaseContractLabel = 'lease_contract'; //عقد ايجار
+  static const String permitPhotoLabel = 'license_photo'; //صورة رخصة
+  static const String constructionLicenseLabel =
+      'construction_license'; //رخصة بناء
+  static const String operatingLicenseLabel = 'operating_license'; //ترخيص تشغيل
+  static const String starCertificateLabel = 'star_certificate'; //شهادة_نجومية
 }
