@@ -2,7 +2,8 @@ import 'package:reta/core/helpers/app_enum.dart';
 
 class UserModel {
   final String? id;
-  final String? name;
+  final String? firstName;
+  final String? lastName;
   final String? email;
   final String? phone;
   final String? nationalId;
@@ -16,9 +17,15 @@ class UserModel {
   final String? nationality;
   final String? placeOfBirth;
 
+  //TODO: Add from json to these vars
+  final String? passportNumber;
+  final List<Map<String, dynamic>>? nationalIdFiles;
+  final List<Map<String, dynamic>>? passportFiles;
+
   const UserModel({
     this.id,
-    this.name,
+    this.firstName,
+    this.lastName,
     this.email,
     this.phone,
     this.nationalId,
@@ -30,6 +37,9 @@ class UserModel {
     this.nationalIdVerified,
     this.nationality,
     this.placeOfBirth,
+    this.passportNumber,
+    this.nationalIdFiles,
+    this.passportFiles,
   });
 
   factory UserModel.guest() {
@@ -39,9 +49,11 @@ class UserModel {
   factory UserModel.fromLoginResponse(Map<String, dynamic> json) {
     return UserModel(
       id: json['id']?.toString(),
-      name: [
-        json['first_name'],
-        json['last_name'],
+      firstName: json['first_name'],
+      lastName: [
+        json['second_name'],
+        json['third_name'],
+        json['fourth_name'],
       ].where((s) => s != null && s.toString().isNotEmpty).join(' '),
       email: json['email']?.toString(),
       phone: json['mobile']?.toString(),
@@ -64,7 +76,8 @@ class UserModel {
 
     return UserModel(
       id: data['id']?.toString(),
-      name: profile['full_name']?.toString(),
+      firstName: json['first_name'],
+      lastName: json['last_name'],
       email: data['email']?.toString(),
       phone: profile['mobile']?.toString(),
       nationalId: profile['national_id']?.toString(),
@@ -85,7 +98,8 @@ class UserModel {
 
   UserModel copyWith({
     String? id,
-    String? name,
+    String? firstName,
+    String? lastName,
     String? email,
     String? phone,
     String? nationalId,
@@ -100,7 +114,8 @@ class UserModel {
   }) {
     return UserModel(
       id: id ?? this.id,
-      name: name ?? this.name,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
       email: email ?? this.email,
       phone: phone ?? this.phone,
       nationalId: nationalId ?? this.nationalId,

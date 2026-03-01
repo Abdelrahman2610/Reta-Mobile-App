@@ -9,16 +9,17 @@
 //   3. "أخرى" option is identified by id == -1 (was hardcoded as '10')
 
 import 'dart:io';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/repositories/auth_repository.dart';
-import '../../data/models/register_request.dart';
-import '../../../../core/network/api_result.dart';
-import '../../../../core/network/api_constants.dart';
-import 'package:reta/features/auth/data/models/otp_response.dart';
+
 import 'package:dio/dio.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reta/core/network/dio_client.dart';
+import 'package:reta/features/auth/data/models/otp_response.dart';
 // Add import at top
 import 'package:reta/features/auth/data/models/user_models.dart';
-import 'package:reta/core/network/dio_client.dart';
+
+import '../../../../core/network/api_result.dart';
+import '../../data/models/register_request.dart';
+import '../../data/repositories/auth_repository.dart';
 
 class DropdownItem {
   final String id;
@@ -754,7 +755,8 @@ class SignupCubit extends Cubit<SignupState> {
         final user = (data.userData != null)
             ? UserModel.fromLoginResponse(data.userData!)
             : UserModel(
-                name: '${state.firstName.trim()} ${state.restOfName.trim()}',
+                firstName: state.firstName.trim(),
+                lastName: state.restOfName.trim(),
                 email: state.email.trim(),
                 phone: state.phone.trim(),
                 nationalId: state.nationalId.trim(),
