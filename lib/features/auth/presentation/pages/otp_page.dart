@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/features/auth/presentation/pages/main_page.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -89,8 +90,6 @@ class _OtpPageState extends State<OtpPage> {
     _startTimer();
   }
 
-  // adjust path
-
   Future<void> _confirmOtp(BuildContext context) async {
     if (_otpValue.length < 6) return;
 
@@ -102,10 +101,9 @@ class _OtpPageState extends State<OtpPage> {
       await Future.delayed(const Duration(seconds: 2));
       if (!mounted) return;
 
-      // ✅ Replace entire nav stack — user can't go back to signup
-      Navigator.of(context).pushAndRemoveUntil(
+      Navigator.of(RuntimeData.getCurrentContext()!).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => MainPage()),
-        (route) => false, // clears everything
+        (route) => false,
       );
     } else {
       setState(() {

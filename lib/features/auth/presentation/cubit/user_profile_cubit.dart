@@ -12,8 +12,6 @@ class UserProfileCubit extends Cubit<UserProfileState> {
     : _repository = repository ?? AuthRepository(),
       super(const UserProfileInitial());
 
-  /// Immediately renders the already-cached [user] data, then refreshes
-  /// from the API in the background so the user always sees fresh data.
   Future<void> loadFromUser(UserModel user) async {
     _emitFromModel(user);
 
@@ -30,7 +28,7 @@ class UserProfileCubit extends Cubit<UserProfileState> {
   void _emitFromModel(UserModel user) {
     emit(
       UserProfileLoaded(
-        fullName: '${user.firstName} ${user.lastName}',
+        fullName: '${user.firstname ?? ''} ${user.lastname ?? ''}'.trim(),
         email: user.email ?? '',
         emailVerified: user.emailVerified ?? false,
         phone: user.phone ?? '',

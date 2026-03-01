@@ -182,7 +182,8 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.user.firstName ?? '',
+                      '${widget.user.firstname ?? ''} ${widget.user.lastname ?? ''}'
+                          .trim(),
                       textDirection: TextDirection.rtl,
                       style: AppTextStyles.h3.copyWith(
                         color: AppColors.neutralDarkDarkest,

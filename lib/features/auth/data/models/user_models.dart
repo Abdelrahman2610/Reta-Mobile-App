@@ -2,8 +2,8 @@ import 'package:reta/core/helpers/app_enum.dart';
 
 class UserModel {
   final String? id;
-  final String? firstName;
-  final String? lastName;
+  final String? firstname;
+  final String? lastname;
   final String? email;
   final String? phone;
   final String? nationalId;
@@ -24,8 +24,8 @@ class UserModel {
 
   const UserModel({
     this.id,
-    this.firstName,
-    this.lastName,
+    this.firstname,
+    this.lastname,
     this.email,
     this.phone,
     this.nationalId,
@@ -49,12 +49,8 @@ class UserModel {
   factory UserModel.fromLoginResponse(Map<String, dynamic> json) {
     return UserModel(
       id: json['id']?.toString(),
-      firstName: json['first_name'],
-      lastName: [
-        json['second_name'],
-        json['third_name'],
-        json['fourth_name'],
-      ].where((s) => s != null && s.toString().isNotEmpty).join(' '),
+      firstname: json['first_name'],
+      lastname: json['last_name'],
       email: json['email']?.toString(),
       phone: json['mobile']?.toString(),
       nationalId: json['national_id']?.toString(),
@@ -76,8 +72,8 @@ class UserModel {
 
     return UserModel(
       id: data['id']?.toString(),
-      firstName: json['first_name'],
-      lastName: json['last_name'],
+      firstname: profile['first_name']?.toString(),
+      lastname: profile['last_name']?.toString(),
       email: data['email']?.toString(),
       phone: profile['mobile']?.toString(),
       nationalId: profile['national_id']?.toString(),
@@ -114,8 +110,8 @@ class UserModel {
   }) {
     return UserModel(
       id: id ?? this.id,
-      firstName: firstName ?? this.firstName,
-      lastName: lastName ?? this.lastName,
+      firstname: firstname ?? this.firstname,
+      lastname: lastname ?? this.lastname,
       email: email ?? this.email,
       phone: phone ?? this.phone,
       nationalId: nationalId ?? this.nationalId,

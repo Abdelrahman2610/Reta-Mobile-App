@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:reta/core/helpers/app_enum.dart';
+import 'package:reta/features/auth/presentation/pages/settings_page.dart';
 import 'package:reta/features/components/app_text.dart';
 
 import '../../../../core/helpers/fixed_assets.dart';
@@ -24,7 +26,10 @@ import 'login_page.dart';
 import 'signup_page.dart';
 
 class MainPage extends StatelessWidget {
-  const MainPage({super.key});
+  final bool isLoggedIn;
+  final UserModel? user;
+
+  const MainPage({super.key, this.isLoggedIn = false, this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -35,12 +40,25 @@ class MainPage extends StatelessWidget {
       ),
     );
 
-    return BlocProvider(create: (_) => HomeCubit(), child: const _MainView());
+    if (!isLoggedIn) {
+      return const GuestPage();
+    }
+
+    return MultiBlocProvider(
+      //
+      providers: [
+        BlocProvider(create: (_) => HomeCubit()),
+        BlocProvider(create: (_) => NotificationsCubit()),
+      ],
+      child: _MainView(user: user ?? UserModel.guest()),
+    );
   }
 }
 
 class _MainView extends StatefulWidget {
-  const _MainView();
+  final UserModel user;
+
+  const _MainView({required this.user});
 
   @override
   State<_MainView> createState() => _MainViewState();
@@ -80,26 +98,27 @@ class _MainViewState extends State<_MainView> {
           controller: mainScreenTabController,
           screens: [
             // index 0 — الرئيسية
-            Column(
-              children: [
-                _buildHero(),
-                Expanded(
-                  child: Container(
-                    color: AppColors.neutralLightLight,
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-                      child: Column(
-                        children: [
-                          _buildDeclarationCard(context),
-                          const SizedBox(height: 16),
-                          _buildAuthCard(context),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            HomeTab(user: widget.user),
+            // Column(
+            //   children: [
+            //     _buildHero(),
+            //     Expanded(
+            //       child: Container(
+            //         color: AppColors.neutralLightLight,
+            //         child: SingleChildScrollView(
+            //           padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+            //           child: Column(
+            //             children: [
+            //               _buildDeclarationCard(context),
+            //               const SizedBox(height: 16),
+            //               _buildAuthCard(context),
+            //             ],
+            //           ),
+            //         ),
+            //       ),
+            //     ),
+            //   ],
+            // ),
             // index 1 — مديونياتي
             const Center(child: Text('مديونياتي')),
 
@@ -112,7 +131,8 @@ class _MainViewState extends State<_MainView> {
             // index 3 — مدفوعاتي
             const Center(child: Text('مدفوعاتي')),
             // index 4 — الإعدادات
-            const SizedBox(),
+            // const SizedBox(),
+            SettingsPage(currentUser: widget.user),
           ],
           items: navBarItems(selectedNavBarIndex()),
           backgroundColor: Colors.white,
@@ -350,7 +370,7 @@ class _MainViewState extends State<_MainView> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'تقديم الإقرار الضريبي',
@@ -376,7 +396,7 @@ class _MainViewState extends State<_MainView> {
                 ),
                 const SizedBox(width: 8),
                 const Icon(
-                  Icons.arrow_back_ios_rounded,
+                  Icons.arrow_forward_ios_rounded,
                   color: AppColors.neutralLightLightest,
                   size: 16,
                 ),
@@ -415,7 +435,7 @@ class _MainViewState extends State<_MainView> {
           const SizedBox(width: 5),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'للاستفادة من خدمات التطبيق',

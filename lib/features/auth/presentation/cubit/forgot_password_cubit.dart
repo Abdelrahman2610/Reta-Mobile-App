@@ -7,14 +7,7 @@ import '../../../../core/network/api_result.dart';
 
 enum ForgotTab { mobile, email }
 
-enum ForgotStep {
-  input,
-  otp,
-  otpSuccess,
-  newPassword,
-  done,
-  emailSent,
-} // ✅ add emailSent
+enum ForgotStep { input, otp, otpSuccess, newPassword, done, emailSent }
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
@@ -183,8 +176,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
             otpValue: '',
             otpError: () => null,
             userId: () => data['user_id']?.toString(),
-            otpToken: () =>
-                data['request_code']?.toString(), // ✅ was data['token']
+            otpToken: () => data['request_code']?.toString(),
           ),
         );
         _startResendCooldown();
@@ -201,12 +193,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
     switch (result) {
       case ApiSuccess(:final data):
-        emit(
-          state.copyWith(
-            isLoading: false,
-            step: ForgotStep.emailSent, // ✅ don't go to OTP step
-          ),
-        );
+        emit(state.copyWith(isLoading: false, step: ForgotStep.emailSent));
 
       case ApiError(:final message):
         emit(state.copyWith(isLoading: false, requestError: () => message));
@@ -257,8 +244,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
           state.copyWith(
             isLoading: false,
             step: ForgotStep.otpSuccess,
-            resetToken: () => data['reset_token']
-                ?.toString(), // ✅ root-level key, no fallback needed
+            resetToken: () => data['reset_token']?.toString(),
           ),
         );
 

@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:reta/features/auth/presentation/cubit/notifications_cubit.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_cubit.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration_lookups_cubit.dart';
 import 'package:reta/features/splash/presentation/pages/splash.dart';
@@ -25,20 +28,24 @@ class MainApp extends StatelessWidget {
         providers: [
           BlocProvider(create: (_) => DeclarationLookupsCubit()),
           BlocProvider(create: (_) => DeclarationCubit()),
+          BlocProvider(create: (_) => NotificationsCubit()),
         ],
-        child: MaterialApp(
-          navigatorKey: RuntimeData.mainAppKey,
-          theme: AppTheme.lightTheme,
-          // For RTL/LTR support:
-          // localizationsDelegates: const [
-          //   GlobalMaterialLocalizations.delegate,
-          //   GlobalWidgetsLocalizations.delegate,
-          //   GlobalCupertinoLocalizations.delegate,
-          // ],
-          debugShowCheckedModeBanner: false,
-          supportedLocales: const [Locale('ar'), Locale('en')],
-          builder: (context, Widget? child) => child!,
-          home: SplashPage(),
+        child: Directionality(
+          textDirection: TextDirection.rtl,
+          child: MaterialApp(
+            navigatorKey: RuntimeData.mainAppKey,
+            theme: AppTheme.lightTheme,
+            // For RTL/LTR support:
+            // localizationsDelegates: const [
+            //   GlobalMaterialLocalizations.delegate,
+            //   GlobalWidgetsLocalizations.delegate,
+            //   GlobalCupertinoLocalizations.delegate,
+            // ],
+            debugShowCheckedModeBanner: false,
+            supportedLocales: const [Locale('ar'), Locale('en')],
+            builder: (context, Widget? child) => child!,
+            home: SplashPage(),
+          ),
         ),
       ),
     );

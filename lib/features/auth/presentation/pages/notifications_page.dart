@@ -10,7 +10,7 @@ class NotificationItem {
   final String title;
   final String body;
   final String dateTime;
-  final bool isRead; // ← now final
+  final bool isRead;
 
   const NotificationItem({
     required this.id,

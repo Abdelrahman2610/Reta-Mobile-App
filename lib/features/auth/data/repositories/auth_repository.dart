@@ -108,7 +108,7 @@ class AuthRepository {
         data: {'mobile': mobile},
       );
       final body = response.data as Map<String, dynamic>;
-      return body['data'] as Map<String, dynamic>; // ✅ unwrap nested data
+      return body['data'] as Map<String, dynamic>;
     });
   }
 
@@ -124,7 +124,7 @@ class AuthRepository {
         data: {
           'user_id': userId,
           'mobile': mobile,
-          'request_code': token, // ✅ correct field name
+          'request_code': token,
           'otp': otp,
         },
       );
@@ -139,10 +139,7 @@ class AuthRepository {
     return safeApiCall(() async {
       final response = await _dio.post(
         ApiConstants.generateTokenForOtp,
-        data: {
-          'user_id': userId,
-          'request_code': token, // ✅ correct field name
-        },
+        data: {'user_id': userId, 'request_code': token},
       );
       return response.data as Map<String, dynamic>;
     });
@@ -157,8 +154,7 @@ class AuthRepository {
       final response = await _dio.post(
         ApiConstants.resetPassword,
         data: {
-          'token':
-              token, // ✅ this one stays as 'token' — it's the reset_token JWT
+          'token': token,
           'password': password,
           'password_confirmation': passwordConfirmation,
         },

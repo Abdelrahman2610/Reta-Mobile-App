@@ -87,7 +87,7 @@ class ApiClient {
   static Future<ApiResult<Map<String, dynamic>>> postMultipart({
     required String path,
     required Map<String, String> fields,
-    Map<String, File>? files, // key = field name, value = file
+    Map<String, File>? files,
     bool requiresAuth = false,
   }) async {
     try {
@@ -165,7 +165,6 @@ class ApiClient {
         return ApiSuccess(decoded as Map<String, dynamic>);
       }
 
-      // Try to extract a readable error message from the response body
       String message = 'حدث خطأ غير متوقع (${response.statusCode})';
       if (decoded is Map) {
         message =

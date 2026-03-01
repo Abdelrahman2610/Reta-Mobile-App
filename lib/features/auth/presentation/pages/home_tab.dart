@@ -76,8 +76,8 @@ class _HomeHero extends StatelessWidget {
   }
 
   // Returns full name
-  String get _displayName => user.firstName ?? '';
-
+  String get _displayName =>
+      '${user.firstname ?? ''} ${user.lastname ?? ''}'.trim();
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<NotificationsCubit, NotificationsState>(

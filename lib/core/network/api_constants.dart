@@ -1,21 +1,17 @@
-// lib/core/network/api_constants.dart
-
 class ApiConstants {
   // ─── Base URL ───────────────────────────────────────────────────────────────
-  static const String baseUrl =
-      'http://dev-rta-services.etax.com.eg/reta-services/public/api';
+  // static const String baseUrl =
+  // 'http://dev-rta-services.etax.com.eg/reta-services/public/api';
 
-  // static const String baseUrl = 'http://10.0.2.2:3000/api';
+  static const String baseUrl = 'http://10.0.2.2:3000/api';
   // ─── Auth ───────────────────────────────────────────────────────────────────
   static const String login = '/login';
   static const String registerSendOtp = '/register/sendOTP';
 
-  // ✅ FIXED: was '/register/confirmOTP' — actual endpoint is /validatePhone/confirmOtp
   static const String registerConfirmOtp = '/validatePhone/confirmOtp';
 
   // ─── Forgot Password (Phone flow) ───────────────────────────────────────────
   static const String forgotPasswordPhone = '/forgot-password-phone';
-  // static const String forgotPasswordPhone = '/reset-password-otp';
   static const String resetPasswordOtp = '/reset-password-otp';
   static const String generateTokenForOtp = '/generate-token-for-otp';
   static const String resetPassword = '/reset-password';
@@ -65,11 +61,8 @@ class ApiConstants {
   static const String allLookups = '$lookupBase/declaration-all-lookups';
   static const String listFilterLookups = '$lookupBase/list-filter-all-lookups';
 
-  // ✅ ADDED: public governorates endpoint used on signup page (no auth required)
-  // Shape: { "data": [ { "name": "القاهرة", "id": 1, "code": "01" }, ... ] }
   static const String governoratesPublic = '/category/governorates/out';
 
-  // Internal (authenticated) governorates used elsewhere in the app
   static const String governorates = '$lookupBase/governorates';
 
   static const String declarationTypes = '$lookupBase/declaration-types';

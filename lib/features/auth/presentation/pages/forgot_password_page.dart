@@ -959,8 +959,6 @@ class _StepNewPasswordState extends State<_StepNewPassword> {
             hintStyle: AppTextStyles.bodyM.copyWith(
               color: AppColors.neutralDarkLightest,
             ),
-            // Visibility toggle is always the suffixIcon (LEFT in RTL).
-            // Error icon replaces it only when there is a validation error.
             prefixIcon: hasError
                 ? const Icon(
                     Icons.error_outline,

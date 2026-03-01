@@ -25,19 +25,6 @@ class PaymentsTab extends StatelessWidget {
   Widget build(BuildContext context) => _PlaceholderTab(label: 'مدفوعاتي');
 }
 
-/// Authenticated settings tab — uses a nested Navigator so that pages pushed
-/// within the settings flow keep the bottom navbar visible.
-///
-/// THE BUG: The nested Navigator creates a brand-new route scope that lives
-/// OUTSIDE the MultiBlocProvider in MainPage. Any widget inside it that calls
-/// context.read<NotificationsCubit>() (or any other cubit) gets a
-/// ProviderNotFoundException because it can't look up the tree past the
-/// Navigator boundary.
-///
-/// THE FIX: Capture the existing cubit instances from the parent context
-/// BEFORE entering the nested Navigator, then re-inject them with
-/// BlocProvider.value() inside. Using .value() is critical — it shares the
-/// SAME instance (same state) rather than creating new ones.
 class SettingsTab extends StatelessWidget {
   final UserModel user;
 
@@ -45,14 +32,12 @@ class SettingsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Read cubits here — this context IS inside MultiBlocProvider
     final notificationsCubit = context.read<NotificationsCubit>();
     final homeCubit = context.read<HomeCubit>();
 
     return Navigator(
       onGenerateRoute: (_) => MaterialPageRoute(
         builder: (_) => MultiBlocProvider(
-          // .value() = same instance, shared state, no double-initialization
           providers: [
             BlocProvider.value(value: notificationsCubit),
             BlocProvider.value(value: homeCubit),
