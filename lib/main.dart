@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:reta/features/splash/presentation/pages/splash.dart';
+import 'package:reta/features/auth/presentation/pages/main_page.dart';
 
+import 'core/helpers/runtime_data.dart';
 import 'core/theme/app_theme.dart';
 
 void main() {
@@ -18,6 +19,7 @@ class MainApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       child: MaterialApp(
+        navigatorKey: RuntimeData.mainAppKey,
         theme: AppTheme.lightTheme,
         // For RTL/LTR support:
         // localizationsDelegates: const [
@@ -28,7 +30,7 @@ class MainApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         supportedLocales: const [Locale('ar'), Locale('en')],
         builder: (context, Widget? child) => child!,
-        home: const SplashPage(),
+        home: const MainPage(),
       ),
     );
   }

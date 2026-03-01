@@ -115,6 +115,11 @@ class _DeclarationsView extends StatelessWidget {
                               itemBuilder: (_, index) {
                                 return DeclarationsCardItem(
                                   item: state.declarationList![index],
+                                  updateDeclarationList: () {
+                                    context
+                                        .read<DeclarationCubit>()
+                                        .fetchList();
+                                  },
                                 );
                               },
                             ),

@@ -38,12 +38,21 @@ class ApiConstants {
   // ─── Declarations ────────────────────────────────────────────────────────────
   static const String declarations = '/declaration-system/declarations';
 
-  static String declarationById(int id) =>
-      '/api/declaration-system/declarations/$id';
-  static String submitDeclaration(int id) =>
-      '/api/declaration-system/declarations/$id/submit';
-  static String deleteUnit(int declarationId, String unitType, int unitId) =>
-      '/api/declaration-system/declarations/$declarationId/units/$unitType/$unitId';
+  static String declarationById(String id) =>
+      '/declaration-system/declarations/$id';
+
+  static String cancelDeclarationById(String id) =>
+      '/declaration-system/declarations/$id/cancel';
+
+  static String submitDeclaration(String id) =>
+      '/declaration-system/declarations/$id/submit';
+
+  static String deleteUnit(
+    String declarationId,
+    String unitType,
+    String unitId,
+  ) =>
+      '/declaration-system/declarations/$declarationId/units/$unitType/$unitId';
 
   // ─── Lookups ─────────────────────────────────────────────────────────────────
   static const String lookupBase =
@@ -69,12 +78,16 @@ class ApiConstants {
 
   static String districtsByGovernorate(int governorateId) =>
       '$lookupBase/governorates/$governorateId/districts';
+
   static String villagesByDistrict(int districtId) =>
       '$lookupBase/districts/$districtId/villages';
+
   static String regionsByVillage(int villageId) =>
       '$lookupBase/villages/$villageId/regions';
+
   static String realEstatesByRegion(int regionId) =>
       '$lookupBase/regions/$regionId/real-estates';
+
   static String unitsByRealEstate(int realEstateId) =>
       '$lookupBase/real-estates/$realEstateId/units';
 
@@ -99,4 +112,25 @@ class ApiConstants {
       '/api/declaration-system/UnderDeclarationProperties/list/$declarationId';
   static const String settlementOfDebts =
       '/api/declaration-system/declarations/settlement-of-debts-with-the-taxpayers-knowledge';
+
+  /// ------------------------------ Files label ---------------------------------
+  static const String nationalIdLabel = 'national_id_attachment';
+  static const String passportLabel = 'passport_attachment';
+  static const String ownershipProofDocumentLabel =
+      'joint_ownership_document'; //سند الملكية
+  static const String taxpayerAuthorizationLabel =
+      'power_of_attorney'; //سند التوكيل
+  static const String taxpayerTaxCardLabel =
+      'tax_card_attachment'; //سند الضريبة
+  static const String taxpayerCommercialRegisterLabel =
+      'commercial_register_attachment'; //سجل تجاري
+  static const String taxpayerOtherAttachmentLabel =
+      'other_attachment'; //مستند آخر
+  static const String ownershipDeedLabel = 'ownership_deed'; //سند تمليك
+  static const String leaseContractLabel = 'lease_contract'; //عقد ايجار
+  static const String permitPhotoLabel = 'license_photo'; //صورة رخصة
+  static const String constructionLicenseLabel =
+      'construction_license'; //رخصة بناء
+  static const String operatingLicenseLabel = 'operating_license'; //ترخيص تشغيل
+  static const String starCertificateLabel = 'star_certificate'; //شهادة_نجومية
 }

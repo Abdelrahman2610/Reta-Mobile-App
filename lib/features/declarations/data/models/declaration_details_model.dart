@@ -86,6 +86,25 @@ class DeclarationDetailsModel {
       data: json,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    final map = <String, dynamic>{
+      'declaration_type_id':
+          int.tryParse(declarationTypeId) ?? declarationTypeId,
+      'applicant_role_id': int.tryParse(applicantRoleId) ?? applicantRoleId,
+    };
+
+    map['applicant_role_other'] = applicantRoleOther;
+
+    map['power_of_attorney'] = powerOfAttorney?.toJson();
+
+    map['joint_ownership_document'] = jointOwnershipDocument?.toJson();
+
+    // Taxpayer
+    map['taxpayer'] = taxpayer.toJson();
+
+    return map;
+  }
 }
 
 class ResidentialUnitsModel {
@@ -166,49 +185,133 @@ class ResidentialUnitModel {
 }
 
 class FileModel {
-  final int id;
-  final String fieldName;
-  final String name;
-  final String url;
-  final String originalFileName;
-  final String fullUrl;
+  final int? id;
+  final String? fieldName;
+  final String? name;
+  final String? url;
+  final String? path;
+  final String? originalFileName;
+  final String? fullUrl;
 
   FileModel({
-    required this.id,
-    required this.fieldName,
-    required this.name,
-    required this.url,
-    required this.originalFileName,
-    required this.fullUrl,
+    this.id,
+    this.fieldName,
+    this.name,
+    this.url,
+    this.path,
+    this.originalFileName,
+    this.fullUrl,
   });
 
   factory FileModel.fromJson(Map<String, dynamic> json) {
     return FileModel(
       id: json['id'],
-      fieldName: json['field_name'] ?? '',
-      name: json['name'] ?? '',
-      url: json['url'] ?? '',
-      originalFileName: json['original_file_name'] ?? '',
-      fullUrl: json['full_url'] ?? '',
+      path: json['path'],
+      fieldName: json['field_name'],
+      name: json['name'],
+      url: json['url'],
+      originalFileName: json['original_file_name'],
+      fullUrl: json['full_url'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (id != null) 'id': id,
+      if (fieldName != null) 'field_name': fieldName,
+      if (path != null) 'path': path,
+      if (name != null) 'name': name,
+      if (url != null) 'url': url,
+      if (fullUrl != null) 'full_url': fullUrl,
+      if (originalFileName != null) 'original_file_name': originalFileName,
+    };
   }
 }
 
 class TaxpayerModel {
   final String? name;
+  final String? firstName;
+  final String? lastName;
+  final int? nationalityId;
   final String? nationalId;
   final String? phone;
   final String? email;
+  final String? taxCardNumber;
+  final String? otherAttachmentName;
+  final int? typeId;
+  final FileModel? otherAttachment;
+  final FileModel? nationalIdAttachment;
+  final FileModel? taxCardAttachment;
 
-  TaxpayerModel({this.name, this.nationalId, this.phone, this.email});
+  TaxpayerModel({
+    this.name,
+    this.firstName,
+    this.lastName,
+    this.nationalId,
+    this.nationalityId,
+    this.taxCardNumber,
+    this.otherAttachmentName,
+    this.phone,
+    this.email,
+    this.typeId,
+    this.otherAttachment,
+    this.nationalIdAttachment,
+    this.taxCardAttachment,
+  });
 
   factory TaxpayerModel.fromJson(Map<String, dynamic> json) {
     return TaxpayerModel(
       name: json['name'],
+      firstName: json['first_name'],
+      lastName: json['last_name'],
       nationalId: json['national_id'],
+      taxCardNumber: json['tax_card_number'],
+      otherAttachmentName: json['other_attachment_name'],
+      nationalityId: json['nationality_id'],
       phone: json['phone'],
       email: json['email'],
+      typeId: json['type_id'],
+      otherAttachment: json['other_attachment'] != null
+          ? FileModel.fromJson(json['other_attachment'])
+          : null,
+      nationalIdAttachment: json['national_id_attachment'] != null
+          ? FileModel.fromJson(json['national_id_attachment'])
+          : null,
+      taxCardAttachment: json['tax_card_attachment'] != null
+          ? FileModel.fromJson(json['tax_card_attachment'])
+          : null,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    final map = <String, dynamic>{
+      'type_id': typeId,
+      'nationality_id': nationalityId,
+    };
+
+    map['first_name'] = firstName;
+    map['last_name'] = lastName;
+    map['phone'] = phone;
+    map['email'] = email;
+
+    map['name'] = name;
+    map['tax_card_number'] = taxCardNumber;
+
+    // Egyptian → national_id, otherwise → passport
+    if (nationalityId == 1) {
+      map['national_id'] = nationalId;
+    } else {
+      map['passport_number'] = nationalId; // or add a passportNumber field
+    }
+
+    map['national_id_attachment'] = nationalIdAttachment?.toJson();
+
+    map['tax_card_attachment'] = taxCardAttachment?.toJson();
+
+    map['other_attachment'] = otherAttachment?.toJson();
+    map['other_attachment_name'] = otherAttachmentName;
+
+    return map;
   }
 }
 
@@ -238,11 +341,16 @@ class UnitsCountModel {
 class CategoryConfig {
   final String key;
   final String label;
+  final String deleteLabel;
+  final String deleteID;
+
   final List<String> summaryFields; // fields to show in card
 
   const CategoryConfig({
     required this.key,
     required this.label,
     required this.summaryFields,
+    required this.deleteLabel,
+    required this.deleteID,
   });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:reta/features/components/inkwell_transparent.dart';
 
 import '../../../../core/helpers/fixed_assets.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -126,10 +127,15 @@ class PropertyItemInDeclaration extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 15.w),
-                  ImageSvgCustomWidget(
-                    imgPath: FixedAssets.instance.deleteIcon,
-                    height: 44.h,
-                    width: 44.w,
+                  InkwellTransparent(
+                    onTap: () {
+                      onDelete();
+                    },
+                    child: ImageSvgCustomWidget(
+                      imgPath: FixedAssets.instance.deleteIcon,
+                      height: 44.h,
+                      width: 44.w,
+                    ),
                   ),
                 ],
               ),
