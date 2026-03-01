@@ -21,7 +21,7 @@ class DeclarationsRepository {
   }) async {
     return safeApiCall(() async {
       final response = await _dio.get(
-        ApiConstants.declarationById(id),
+        ApiConstants.declarationById(int.parse(id)),
         queryParameters: {
           if (forEdit) 'for_edit': 'true',
           'residential_page': residentialPage,
@@ -46,7 +46,7 @@ class DeclarationsRepository {
   ) async {
     return safeApiCall(() async {
       final response = await _dio.put(
-        ApiConstants.declarationById(declarationId),
+        ApiConstants.declarationById(int.parse(declarationId)),
         data: body,
       );
       return response.data as Map<String, dynamic>;
