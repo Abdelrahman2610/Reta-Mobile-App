@@ -1,10 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/network/api_result.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../data/models/user_models.dart';
 import '../../data/repositories/auth_repository.dart';
 import 'settings_state.dart';
-import '../../data/models/user_models.dart';
 
 class SettingsCubit extends Cubit<SettingsState> {
   final UserModel _initialUser;
@@ -73,7 +74,8 @@ extension SettingsCubitX on SettingsCubit {
   void mockUserType(UserType type) {
     final mockUser = UserModel(
       id: 'mock-id',
-      name: 'أحمد الدسوقي',
+      firstName: 'أحمد',
+      lastName: 'الدسوقي',
       email: 'name@email.com',
       phone: '+20 100 077 1670',
       nationalId: '12345678901234',

@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -181,7 +182,7 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.user.name ?? '',
+                      widget.user.firstName ?? '',
                       textDirection: TextDirection.rtl,
                       style: AppTextStyles.h3.copyWith(
                         color: AppColors.neutralDarkDarkest,

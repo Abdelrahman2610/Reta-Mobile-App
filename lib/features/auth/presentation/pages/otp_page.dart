@@ -1,9 +1,11 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reta/features/auth/presentation/pages/main_page.dart';
+
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
-import 'package:reta/features/auth/presentation/pages/main_page.dart';
 import '../cubit/signup_cubit.dart';
 
 class OtpPage extends StatefulWidget {
@@ -102,7 +104,7 @@ class _OtpPageState extends State<OtpPage> {
 
       // ✅ Replace entire nav stack — user can't go back to signup
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => MainPage(user: user)),
+        MaterialPageRoute(builder: (_) => MainPage()),
         (route) => false, // clears everything
       );
     } else {

@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:reta/core/network/api_constants.dart';
 import 'package:reta/core/network/api_result.dart';
+import 'package:reta/features/auth/data/models/user_models.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration_lookups_cubit.dart';
 import 'package:reta/features/declarations/presentations/pages/select_types_of_properties_page.dart';
 
@@ -49,18 +50,14 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   String? applicantPassportFilePath;
   String? applicantPassportOriginalName;
 
-  void initFromUser(Map<String, dynamic>? user) {
-    if (user == null) return;
-    String secondName = user['second_name'];
-    String thirdName = user['third_name'];
-    String fourthName = user['fourth_name'];
-    applicantFirstNameController.text = user['first_name'] ?? '';
-    applicantLastNameController.text = '$secondName $thirdName $fourthName'
-        .trim();
-    applicantPhoneController.text = user['mobile'] ?? '';
-    applicantEmailController.text = user['email'] ?? '';
+  void initFromUser(UserModel user) {
+    // if (user == null) return;
+    applicantFirstNameController.text = user.firstName ?? '';
+    applicantLastNameController.text = user.lastName ?? ''.trim();
+    applicantPhoneController.text = user.phone ?? '';
+    applicantEmailController.text = user.email ?? '';
 
-    final nationalityName = user['nationality']?['name'] ?? '';
+    final nationalityName = user.nationality ?? '';
     if (nationalityName == 'مصر') {
       applicantNationality = Nationality.egyptian;
     } else {
@@ -68,17 +65,17 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     }
 
     if (applicantNationality == Nationality.egyptian) {
-      applicantNationalIdController.text = user['national_id'] ?? '';
+      applicantNationalIdController.text = user.nationalId ?? '';
     } else {
-      applicantPassportNumberController.text = user['passport_num'] ?? '';
+      applicantPassportNumberController.text = user.passportNumber ?? '';
     }
 
-    final nationalIdFiles = user['national_id_file'] as List?;
+    final nationalIdFiles = user.nationalIdFiles as List?;
     if (nationalIdFiles != null && nationalIdFiles.isNotEmpty) {
       applicantNationalIdFilePath = nationalIdFiles.first['full_url'];
     }
 
-    final passportFiles = user['passport_num_file'] as List?;
+    final passportFiles = user.passportFiles as List?;
     if (passportFiles != null && passportFiles.isNotEmpty) {
       applicantPassportFilePath = passportFiles.first['full_url'];
     }
