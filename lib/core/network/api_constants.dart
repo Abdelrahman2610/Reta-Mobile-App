@@ -1,8 +1,10 @@
 class ApiConstants {
-  // static const String baseUrl = 'http://reta-services.local/api';
-  static const String baseUrl =
-      'http://dev-rta-services.etax.com.eg/reta-services/public/api';
+  // ─── Base URL ───────────────────────────────────────────────────────────────
+  // static const String baseUrl =
+  //     'http://dev-rta-services.etax.com.eg/reta-services/public';
 
+  static const String baseUrl = 'http://10.0.2.2:3000/api';
+  // ─── Auth ───────────────────────────────────────────────────────────────────
   static const String login = '/login';
   static const String registerSendOtp = '/register/sendOTP';
   static const String registerConfirmOtp = '/validatePhone/confirmOtp';
@@ -39,7 +41,7 @@ class ApiConstants {
   static String declarationById(int id) =>
       '/declaration-system/declarations/$id';
   static String submitDeclaration(int id) =>
-      '/declaration-system/declarations/$id/submit';
+      '/api/declaration-system/declarations/$id/submit';
   static String deleteUnit(int declarationId, String unitType, int unitId) =>
       '/declaration-system/declarations/$declarationId/units/$unitType/$unitId';
 
@@ -89,11 +91,11 @@ class ApiConstants {
 
   // ─── Wallet / Payment ────────────────────────────────────────────────────────
   static String walletDetails(int declarationId) =>
-      '/declaration-system/declarations/wallet/$declarationId';
+      '/api/declaration-system/declarations/wallet/$declarationId';
   static String initialPayment(int claimId) =>
-      '/declaration-system/initial-payment/$claimId';
+      '/api/declaration-system/initial-payment/$claimId';
   static String underDeclarationProperties(int declarationId) =>
-      '/declaration-system/UnderDeclarationProperties/list/$declarationId';
+      '/api/declaration-system/UnderDeclarationProperties/list/$declarationId';
   static const String settlementOfDebts =
       '/declaration-system/declarations/settlement-of-debts-with-the-taxpayers-knowledge';
 
