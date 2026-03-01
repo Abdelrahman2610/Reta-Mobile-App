@@ -55,20 +55,8 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => isLoggedIn
-            ? MainPage(
-                // user: UserModel(
-                //   id: null,
-                //   name: null,
-                //   email: null,
-                //   phone: null,
-                //   nationalId: null,
-                //   dateOfBirth: null,
-                //   gender: null,
-                //   userType: UserType.authenticated,
-                // ),
-              )
-            : const GuestPage(),
+        builder: (_) =>
+            isLoggedIn ? const MainPage(isLoggedIn: true) : const GuestPage(),
       ),
     );
   }

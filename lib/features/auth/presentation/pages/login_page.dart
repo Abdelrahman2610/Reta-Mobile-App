@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
 import 'package:reta/features/auth/presentation/pages/main_page.dart';
 
@@ -75,11 +76,23 @@ class _LoginPageState extends State<LoginPage> {
       child: BlocListener<LoginCubit, LoginState>(
         listener: (context, state) {
           if (state.isSuccess && state.loginResponse != null) {
-            final user = UserModel.fromLoginResponse(
-              state.loginResponse!.toJson(),
+            // ✅ build user directly from LoginResponse fields — skip toJson() roundtrip
+            final response = state.loginResponse!;
+            final user = UserModel(
+              firstname: response.firstName,
+              lastname: response.lastName,
+              email: response.email,
+              phone: response.mobile,
+              emailVerified: response.emailVerified,
+              phoneVerified: response.phoneVerified,
+              nationalIdVerified: response.ocrVerified,
+              userType: UserType.authenticated,
             );
+
             Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => MainPage()),
+              MaterialPageRoute(
+                builder: (_) => MainPage(isLoggedIn: true, user: user),
+              ),
               (route) => false,
             );
           }

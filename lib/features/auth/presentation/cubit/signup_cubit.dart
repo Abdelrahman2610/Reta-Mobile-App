@@ -1,13 +1,3 @@
-// lib/features/auth/presentation/cubit/signup_cubit.dart
-//
-// KEY CHANGES vs original:
-//   1. _loadResidences() and _loadPassportIssuePlaces() now call the public
-//      /category/governorates/out endpoint (no auth) and parse { "data": [...] }
-//   2. _pendingOtpToken is populated from data.request_code (via the fixed
-//      RegisterOtpResponse.token field — no change needed here since the model
-//      now handles remapping)
-//   3. "أخرى" option is identified by id == -1 (was hardcoded as '10')
-
 import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/auth_repository.dart';
@@ -16,7 +6,6 @@ import '../../../../core/network/api_result.dart';
 import '../../../../core/network/api_constants.dart';
 import 'package:reta/features/auth/data/models/otp_response.dart';
 import 'package:dio/dio.dart';
-// Add import at top
 import 'package:reta/features/auth/data/models/user_models.dart';
 import 'package:reta/core/network/dio_client.dart';
 
@@ -324,10 +313,9 @@ class SignupState {
 
 class SignupCubit extends Cubit<SignupState> {
   final AuthRepository _authRepository;
-  // ✅ Direct Dio access for the public governorates endpoint (no auth needed)
   final Dio _dio = DioClient.instance.dio;
 
-  String? _pendingOtpToken; // holds request_code from sendOTP response
+  String? _pendingOtpToken;
   String? _pendingUserId;
   String? _pendingMobile;
 
@@ -351,15 +339,11 @@ class SignupCubit extends Cubit<SignupState> {
     );
   }
 
-  // ✅ FIXED: calls /category/governorates/out and parses { "data": [...] }
   Future<void> _loadResidences() async {
     emit(state.copyWith(isResidenceLoading: true));
     try {
-      // FIX 4: create a fresh Dio (no auth interceptor) for this public endpoint
       final publicDio = Dio(
         BaseOptions(
-          // Root URL (no /api suffix) so the full path becomes:
-          // http://10.0.2.2:3000 + /api/category/governorates/out
           baseUrl: 'http://10.0.2.2:3000',
           headers: {'Accept': 'application/json'},
         ),
@@ -372,7 +356,7 @@ class SignupCubit extends Cubit<SignupState> {
       final options = list
           .map(
             (e) => DropdownItem(
-              id: e['id'].toString(), // -1 for "أخرى"
+              id: e['id'].toString(),
               label: e['name']?.toString() ?? '',
             ),
           )
@@ -382,7 +366,6 @@ class SignupCubit extends Cubit<SignupState> {
         state.copyWith(isResidenceLoading: false, residenceOptions: options),
       );
     } catch (_) {
-      // Fallback so the UI is never stuck
       emit(
         state.copyWith(
           isResidenceLoading: false,
@@ -397,14 +380,11 @@ class SignupCubit extends Cubit<SignupState> {
     }
   }
 
-  // ✅ FIXED: same endpoint for passport issue places
   Future<void> _loadPassportIssuePlaces() async {
     emit(state.copyWith(isPassportIssuePlaceLoading: true));
     try {
       final publicDio = Dio(
         BaseOptions(
-          // Root URL (no /api suffix) so the full path becomes:
-          // http://10.0.2.2:3000 + /api/category/governorates/out
           baseUrl: 'http://10.0.2.2:3000',
           headers: {'Accept': 'application/json'},
         ),
@@ -561,7 +541,6 @@ class SignupCubit extends Cubit<SignupState> {
   void toggleBirthPlaceExpand() =>
       emit(state.copyWith(isBirthPlaceExpanded: !state.isBirthPlaceExpanded));
 
-  // ✅ FIXED: "أخرى" is id == '-1' (from the real API), not hardcoded '10'
   void onBirthPlaceSelected(DropdownItem item) {
     final isOther = item.id == '-1';
     emit(
@@ -696,7 +675,6 @@ class SignupCubit extends Cubit<SignupState> {
       password: state.password,
       passwordConfirm: state.confirmPassword,
       nationalId: state.nationalId.trim(),
-      // FIX 2: map internal id → ISO code the server expects
       nationalityCode: (state.selectedNationality?.id == '1')
           ? 'EG'
           : 'FOREIGN',
@@ -712,15 +690,12 @@ class SignupCubit extends Cubit<SignupState> {
 
     switch (result) {
       case ApiSuccess(:final data):
-        // ✅ data.token now correctly holds request_code from the fixed model
         _pendingOtpToken = data.token;
         _pendingUserId = data.userId;
         _pendingMobile = state.phone.trim();
 
         emit(state.copyWith(isLoading: false, submitError: () => null));
         emit(state.copyWith(isSubmitSuccess: true));
-        // ✅ FIX 1: immediately reset so back-navigation + re-submit doesn't
-        //    fire the BlocListener again with stale isSubmitSuccess == true
         emit(state.copyWith(isSubmitSuccess: false));
 
       case ApiError(:final message):
@@ -730,7 +705,6 @@ class SignupCubit extends Cubit<SignupState> {
 
   // ── Confirm OTP ─────────────────────────────────────────────────────────────
 
-  // Change return type
   Future<UserModel?> confirmOtp(String otp) async {
     if (_pendingOtpToken == null || _pendingUserId == null) return null;
 
@@ -749,12 +723,11 @@ class SignupCubit extends Cubit<SignupState> {
     switch (result) {
       case ApiSuccess(:final data):
         emit(state.copyWith(isLoading: false));
-        // Build a minimal UserModel from what we already have in state
-        // (or from data.userData if your API returns it)
         final user = (data.userData != null)
             ? UserModel.fromLoginResponse(data.userData!)
             : UserModel(
-                name: '${state.firstName.trim()} ${state.restOfName.trim()}',
+                firstname: state.firstName.trim(),
+                lastname: state.restOfName.trim(),
                 email: state.email.trim(),
                 phone: state.phone.trim(),
                 nationalId: state.nationalId.trim(),
@@ -779,7 +752,6 @@ class SignupCubit extends Cubit<SignupState> {
       password: state.password,
       passwordConfirm: state.confirmPassword,
       nationalId: state.nationalId.trim(),
-      // FIX 2: map internal id → ISO code the server expects
       nationalityCode: (state.selectedNationality?.id == '1')
           ? 'EG'
           : 'FOREIGN',
@@ -797,7 +769,6 @@ class SignupCubit extends Cubit<SignupState> {
 
     switch (result) {
       case ApiSuccess(:final data):
-        // ✅ update the token so the next confirmOtp uses the fresh request_code
         _pendingOtpToken = data.token;
         _pendingUserId = data.userId;
         _pendingMobile = state.phone.trim();
@@ -827,7 +798,6 @@ class SignupCubit extends Cubit<SignupState> {
     final birthDateError = state.birthDate == null
         ? 'تاريخ الميلاد مطلوب'
         : null;
-    // FIX 3: full password strength check at submit time (not just empty check)
     String? passwordError;
     final pw = state.password;
     if (pw.isEmpty) {

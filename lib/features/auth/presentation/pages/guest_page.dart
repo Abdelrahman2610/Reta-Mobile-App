@@ -227,7 +227,7 @@ class _HomeTab extends StatelessWidget {
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'تقديم الإقرار الضريبي',
@@ -253,7 +253,7 @@ class _HomeTab extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 const Icon(
-                  Icons.arrow_back_ios_rounded,
+                  Icons.arrow_forward_ios_rounded,
                   color: AppColors.neutralLightLightest,
                   size: 16,
                 ),
@@ -292,7 +292,7 @@ class _HomeTab extends StatelessWidget {
           const SizedBox(width: 5),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'للاستفادة من خدمات التطبيق',

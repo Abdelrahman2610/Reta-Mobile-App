@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
 import 'package:reta/features/auth/presentation/cubit/settings_cubit.dart';
 import 'package:reta/features/auth/presentation/cubit/notifications_cubit.dart';
@@ -34,12 +35,6 @@ class _AuthenticatedSettingsContentState
     extends State<AuthenticatedSettingsContent> {
   bool _notificationsEnabled = true;
 
-  // Helper: push a new route while keeping cubits available in it.
-  //
-  // Every MaterialPageRoute built with `builder: (_)` receives a fresh context
-  // that cannot see providers from parent routes. We fix this by capturing the
-  // cubit instances here (where context CAN see them) and re-injecting them
-  // with BlocProvider.value() inside every pushed route.
   void _pushWithCubits(BuildContext context, Widget page) {
     final notificationsCubit = context.read<NotificationsCubit>();
     final homeCubit = context.read<HomeCubit>();
@@ -68,9 +63,6 @@ class _AuthenticatedSettingsContentState
       children: [
         const SizedBox(height: 16),
 
-        // UserProfileHeader uses BlocBuilder<NotificationsCubit> internally —
-        // it works here because this widget is already under MultiBlocProvider
-        // (re-provided by SettingsTab's nested Navigator wrapper).
         UserProfileHeader(user: widget.user),
 
         const SizedBox(height: 16),
@@ -78,8 +70,10 @@ class _AuthenticatedSettingsContentState
         SettingsTile(
           icon: Icons.person_outline,
           label: 'بيانات المستخدم',
-          onTap: () =>
-              _pushWithCubits(context, UserProfilePage(user: widget.user)),
+          onTap: () => _pushWithCubits(
+            RuntimeData.getCurrentContext()!,
+            UserProfilePage(user: widget.user),
+          ),
         ),
 
         _SectionLabel('الإعدادات العامة'),
@@ -98,12 +92,18 @@ class _AuthenticatedSettingsContentState
         SettingsTile(
           icon: Icons.help_outline,
           label: 'المساعدة والدعم',
-          onTap: () => _pushWithCubits(context, const HelpSupportPage()),
+          onTap: () => _pushWithCubits(
+            RuntimeData.getCurrentContext()!,
+            const HelpSupportPage(),
+          ),
         ),
         SettingsTile(
           icon: Icons.privacy_tip_outlined,
           label: 'الشروط والخصوصية',
-          onTap: () => _pushWithCubits(context, const TermsPrivacyPage()),
+          onTap: () => _pushWithCubits(
+            RuntimeData.getCurrentContext()!,
+            const TermsPrivacyPage(),
+          ),
         ),
 
         const SizedBox(height: 16),
@@ -114,7 +114,7 @@ class _AuthenticatedSettingsContentState
           icon: Icons.logout_outlined,
           label: 'تسجيل الخروج',
           isDestructive: false,
-          onTap: () => _handleLogout(context, cubit),
+          onTap: () => _handleLogout(RuntimeData.getCurrentContext()!, cubit),
         ),
         SettingsTile(
           icon: Icons.delete_outline,

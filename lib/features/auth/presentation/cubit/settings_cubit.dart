@@ -16,10 +16,10 @@ class SettingsCubit extends Cubit<SettingsState> {
       super(const SettingsLoading());
 
   Future<void> loadSettings() async {
-    // 1. Show cached data instantly
     emit(SettingsLoaded(user: _initialUser));
 
-    // 2. Refresh from API in the background
+    if (_initialUser.isGuest) return;
+
     final result = await _repository.getUserProfile();
 
     switch (result) {
@@ -29,9 +29,6 @@ class SettingsCubit extends Cubit<SettingsState> {
           emit(current.copyWith(user: data));
         }
       case ApiError(:final message):
-        // Keep cached data visible, silently ignore refresh error
-        // Uncomment below to surface the error if needed:
-        // emit(SettingsError(message));
         break;
     }
   }
@@ -69,18 +66,18 @@ class SettingsCubit extends Cubit<SettingsState> {
   bool get isAuthenticated => currentUser?.isAuthenticated ?? false;
 }
 
-extension SettingsCubitX on SettingsCubit {
-  void mockUserType(UserType type) {
-    final mockUser = UserModel(
-      id: 'mock-id',
-      name: 'أحمد الدسوقي',
-      email: 'name@email.com',
-      phone: '+20 100 077 1670',
-      nationalId: '12345678901234',
-      dateOfBirth: '1973/11/02',
-      gender: 'ذكر',
-      userType: type,
-    );
-    emit(SettingsLoaded(user: mockUser));
-  }
-}
+// extension SettingsCubitX on SettingsCubit {
+//   void mockUserType(UserType type) {
+//     final mockUser = UserModel(
+//       id: 'mock-id',
+//       name: 'أحمد الدسوقي',
+//       email: 'name@email.com',
+//       phone: '+20 100 077 1670',
+//       nationalId: '12345678901234',
+//       dateOfBirth: '1973/11/02',
+//       gender: 'ذكر',
+//       userType: type,
+//     );
+//     emit(SettingsLoaded(user: mockUser));
+//   }
+// }

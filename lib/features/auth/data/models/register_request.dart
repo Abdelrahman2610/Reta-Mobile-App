@@ -7,7 +7,6 @@ class RegisterRequest {
   final String passwordConfirm;
   final String nationalId;
 
-  /// ISO country code, e.g. "EG" for Egypt
   final String nationalityCode;
 
   /// "1" = male, "2" = female
@@ -16,7 +15,7 @@ class RegisterRequest {
   /// Governorate ID (numeric string) or free-text if "other"
   final String birthPlace;
 
-  /// Format: "YYYY-MM-DD"
+  /// Format: "MM-DD-YYYY"
   final String birthDate;
 
   const RegisterRequest({

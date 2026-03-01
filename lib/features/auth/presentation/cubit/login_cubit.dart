@@ -18,7 +18,6 @@ class LoginState {
   final bool isLoading;
   final bool isSuccess;
 
-  /// Populated on successful login — used by the UI to build UserModel
   final LoginResponse? loginResponse;
 
   final String? phoneError;

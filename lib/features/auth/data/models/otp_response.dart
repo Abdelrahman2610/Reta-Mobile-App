@@ -1,8 +1,6 @@
-// lib/features/auth/data/models/otp_response.dart
-
 class RegisterOtpResponse {
   final String? userId;
-  final String? token; // maps to data.request_code
+  final String? token;
   final String? message;
   final String? mobile;
   final int? waitSeconds;
@@ -18,7 +16,6 @@ class RegisterOtpResponse {
   });
 
   factory RegisterOtpResponse.fromJson(Map<String, dynamic> json) {
-    // Server wraps everything inside "data": { ... }
     final data = json['data'] as Map<String, dynamic>? ?? {};
 
     return RegisterOtpResponse(
@@ -38,13 +35,13 @@ class ConfirmOtpResponse {
   final bool success;
   final String? message;
   final bool? phoneVerified;
-  final Map<String, dynamic>? userData; // ← ADD THIS
+  final Map<String, dynamic>? userData;
 
   const ConfirmOtpResponse({
     required this.success,
     this.message,
     this.phoneVerified,
-    this.userData, // ← ADD THIS
+    this.userData,
   });
 
   factory ConfirmOtpResponse.fromJson(Map<String, dynamic> json) {
@@ -53,12 +50,7 @@ class ConfirmOtpResponse {
       success: json['ok'] == true,
       message: json['message']?.toString(),
       phoneVerified: data['phone_verified'] as bool?,
-      userData:
-          data['user']
-              as Map<
-                String,
-                dynamic
-              >?, // ← ADD THIS (adjust key to match your API)
+      userData: data['user'] as Map<String, dynamic>?,
     );
   }
 }
@@ -66,7 +58,7 @@ class ConfirmOtpResponse {
 class ConfirmOtpRequest {
   final String userId;
   final String mobile;
-  final String token; // the request_code from sendOTP
+  final String token;
   final String otp;
   final String context;
 

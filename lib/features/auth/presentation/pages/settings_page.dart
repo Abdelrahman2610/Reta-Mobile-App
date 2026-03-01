@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reta/core/helpers/runtime_data.dart';
+import 'package:reta/features/auth/presentation/pages/main_page.dart';
 
 import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -48,14 +50,7 @@ class _SettingsView extends StatelessWidget {
           backgroundColor: AppColors.mainBlueIndigoDye,
           elevation: 0,
           centerTitle: true,
-          leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back_ios_new,
-              color: AppColors.neutralLightLightest,
-              size: 18,
-            ),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
+          automaticallyImplyLeading: false,
           title: Text(
             'الإعدادات',
             style: AppTextStyles.actionXL.copyWith(
@@ -85,7 +80,7 @@ class _SettingsView extends StatelessWidget {
   Widget _buildBody(BuildContext context, SettingsLoaded state) {
     switch (state.user.userType) {
       case UserType.guest:
-        return _GuestSettingsContent(context: context);
+        return const _GuestSettingsContent();
 
       case UserType.authenticated:
         return AuthenticatedSettingsContent(
@@ -97,8 +92,8 @@ class _SettingsView extends StatelessWidget {
 
   void _handleStateChanges(BuildContext context, SettingsState state) {
     if (state is SettingsLoggedOut || state is SettingsAccountDeleted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const GuestPage()),
+      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const MainPage(isLoggedIn: false)),
         (route) => false,
       );
     }
@@ -114,12 +109,10 @@ class _SettingsView extends StatelessWidget {
 }
 
 class _GuestSettingsContent extends StatelessWidget {
-  final BuildContext context;
-
-  const _GuestSettingsContent({required this.context});
+  const _GuestSettingsContent();
 
   @override
-  Widget build(BuildContext ctx) {
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -129,12 +122,12 @@ class _GuestSettingsContent extends StatelessWidget {
 
           _buildSectionLabel('الدعم والمعلومات'),
           const SizedBox(height: 8),
-          _buildSettingsCard([
+          _buildSettingsCard(context, [
             _SettingItem(
               icon: Icons.help_outline,
               label: 'المساعدة والدعم',
               onTap: () {
-                Navigator.of(context).push(
+                Navigator.of(RuntimeData.getCurrentContext()!).push(
                   MaterialPageRoute(builder: (_) => const HelpSupportPage()),
                 );
               },
@@ -143,7 +136,7 @@ class _GuestSettingsContent extends StatelessWidget {
               icon: Icons.privacy_tip_outlined,
               label: 'الشروط والخصوصية',
               onTap: () {
-                Navigator.of(context).push(
+                Navigator.of(RuntimeData.getCurrentContext()!).push(
                   MaterialPageRoute(builder: (_) => const TermsPrivacyPage()),
                 );
               },
@@ -153,13 +146,13 @@ class _GuestSettingsContent extends StatelessWidget {
           const SizedBox(height: 24),
           _buildSectionLabel('إجراءات الحساب'),
           const SizedBox(height: 8),
-          _buildSettingsCard([
+          _buildSettingsCard(context, [
             _SettingItem(
               icon: Icons.login_outlined,
               label: 'تسجيل الدخول',
               onTap: () {
                 Navigator.of(
-                  ctx,
+                  context,
                 ).push(MaterialPageRoute(builder: (_) => const LoginPage()));
               },
             ),
@@ -182,7 +175,7 @@ class _GuestSettingsContent extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsCard(List<_SettingItem> items) {
+  Widget _buildSettingsCard(BuildContext context, List<_SettingItem> items) {
     return Column(
       children: items.map((item) {
         return Padding(
