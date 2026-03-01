@@ -27,3 +27,5 @@ enum UnitType {
   petroleumFacility,
   minesAndQuarries,
 }
+
+enum UserType { guest, authenticated }

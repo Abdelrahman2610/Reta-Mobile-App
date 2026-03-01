@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:reta/features/auth/data/models/user_models.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import 'auth_gate_dialog.dart';
 
 class DeclarationGuidePage extends StatefulWidget {
-  const DeclarationGuidePage({super.key});
+  final UserModel? user;
+
+  const DeclarationGuidePage({super.key, this.user});
 
   @override
   State<DeclarationGuidePage> createState() => _DeclarationGuidePageState();
@@ -12,6 +15,22 @@ class DeclarationGuidePage extends StatefulWidget {
 
 class _DeclarationGuidePageState extends State<DeclarationGuidePage> {
   bool _hasReadInstructions = false;
+
+  void _onContinue() {
+    if (widget.user != null) {
+      // TODO: navigate to applicant role selection page (صفة مقدم الطلب)
+      // Navigator.of(context).push(
+      //   MaterialPageRoute(builder: (_) => const ApplicantRolePage()),
+      // );
+    } else {
+      showAuthGateDialog(
+        context,
+        title: 'يتطلب تسجيل الدخول',
+        message:
+            'يرجى تسجيل الدخول أو إنشاء حساب جديد لتتمكن من تقديم الإقرار الضريبي والاستفادة من خدمات مصلحة الضرائب العقارية.',
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -205,16 +224,7 @@ class _DeclarationGuidePageState extends State<DeclarationGuidePage> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: _hasReadInstructions
-                      ? () {
-                          showAuthGateDialog(
-                            context,
-                            title: 'يتطلب تسجيل الدخول',
-                            message:
-                                'يرجى تسجيل الدخول أو إنشاء حساب جديد لتتمكن من تقديم الإقرار الضريبي والاستفادة من خدمات مصلحة الضرائب العقارية.',
-                          );
-                        }
-                      : null,
+                  onPressed: _hasReadInstructions ? _onContinue : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.highlightDarkest,
                     disabledBackgroundColor: AppColors.neutralLightDark,

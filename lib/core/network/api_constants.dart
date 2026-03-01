@@ -5,18 +5,45 @@ class ApiConstants {
 
   static const String login = '/login';
   static const String registerSendOtp = '/register/sendOTP';
-  static const String registerConfirmOtp = '/register/confirmOTP';
+  static const String registerConfirmOtp = '/validatePhone/confirmOtp';
+
+  // ─── Forgot Password (Phone flow) ───────────────────────────────────────────
+  static const String forgotPasswordPhone = '/forgot-password-phone';
+  static const String resetPasswordOtp = '/reset-password-otp';
+  static const String generateTokenForOtp = '/generate-token-for-otp';
+  static const String resetPassword = '/reset-password';
+
+  // ─── Forgot Password (Email flow) ───────────────────────────────────────────
+  static const String forgotPasswordEmail = '/forgot-password-mail';
+
+  // ─── Profile Verifications ──────────────────────────────────────────────────
+  static const String userProfile = '/user-profile';
+  static const String validatePhoneSendOtp = '/validatePhone/sendOtp';
+  static const String validatePhoneConfirmOtp = '/validatePhone/confirmOtp';
+  static const String validateEmail = '/validateEmail';
+  static const String validateIdentity = '/validateIdentity';
+  static const String userVerifications = '/user/verifications';
+  static const String checkEmailVerified = '/check-email-verified';
+
+  // ─── Profile Edit ────────────────────────────────────────────────────────────
+  static const String editProfile = '/edit-profile';
+  static const String editPassword = '/edit-password';
+
+  // ─── File Upload ─────────────────────────────────────────────────────────────
   static const String uploadAttachment =
       '/declaration-system/declarations/upload-attachments';
+
+  // ─── Declarations ────────────────────────────────────────────────────────────
   static const String declarations = '/declaration-system/declarations';
 
-  static String declarationById(String id) =>
+  static String declarationById(int id) =>
       '/declaration-system/declarations/$id';
-
   static String submitDeclaration(int id) =>
       '/declaration-system/declarations/$id/submit';
   static String deleteUnit(int declarationId, String unitType, int unitId) =>
       '/declaration-system/declarations/$declarationId/units/$unitType/$unitId';
+
+  // ─── Lookups ─────────────────────────────────────────────────────────────────
   static const String lookupBase = '/declaration-system/declaration-lookups';
 
   static const String allLookups = '$lookupBase/declaration-all-lookups';
@@ -39,32 +66,28 @@ class ApiConstants {
 
   static String districtsByGovernorate(int governorateId) =>
       '$lookupBase/governorates/$governorateId/districts';
-
   static String villagesByDistrict(int districtId) =>
       '$lookupBase/districts/$districtId/villages';
-
   static String regionsByVillage(int villageId) =>
       '$lookupBase/villages/$villageId/regions';
-
   static String realEstatesByRegion(int regionId) =>
       '$lookupBase/regions/$regionId/real-estates';
-
   static String unitsByRealEstate(int realEstateId) =>
       '$lookupBase/real-estates/$realEstateId/units';
+
+  // ─── Claims ──────────────────────────────────────────────────────────────────
   static const String storeClaim =
       '/declaration-system/declarations/user/claim';
-
   static String claimsList(int declarationId) =>
       '/declaration-system/declarations/user/declaration/claims-list/$declarationId';
-
   static String claimDetail(int claimId) =>
       '/declaration-system/declarations/user/claims/$claimId';
-
   static String cancelClaim(int claimId) =>
       '/declaration-system/declarations/user/claim/$claimId';
-
   static String claimTransactionDetails(int claimId) =>
       '/declaration-system/declarations/user/claims-payment-transaction-details/$claimId';
+
+  // ─── Wallet / Payment ────────────────────────────────────────────────────────
   static String walletDetails(int declarationId) =>
       '/declaration-system/declarations/wallet/$declarationId';
   static String initialPayment(int claimId) =>

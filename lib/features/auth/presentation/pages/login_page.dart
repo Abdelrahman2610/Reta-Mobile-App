@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reta/features/auth/data/models/user_models.dart';
+import 'package:reta/features/auth/presentation/pages/main_page.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../cubit/login_cubit.dart';
@@ -71,9 +73,12 @@ class _LoginPageState extends State<LoginPage> {
       create: (_) => LoginCubit(),
       child: BlocListener<LoginCubit, LoginState>(
         listener: (context, state) {
-          if (state.isSuccess) {
+          if (state.isSuccess && state.loginResponse != null) {
+            final user = UserModel.fromLoginResponse(
+              state.loginResponse!.toJson(),
+            );
             Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => const GuestPage()),
+              MaterialPageRoute(builder: (_) => MainPage(user: user)),
               (route) => false,
             );
           }

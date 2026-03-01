@@ -53,6 +53,7 @@ class HomeCubit extends Cubit<HomeState> {
     try {
       // TODO: Replace with real repository call
       await Future.delayed(const Duration(milliseconds: 600));
+      // final results = <DeclarationSummary>[];
       final results = [
         DeclarationSummary(
           id: '1',

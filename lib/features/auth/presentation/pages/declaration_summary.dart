@@ -8,9 +8,9 @@ extension DeclarationStatusLabel on DeclarationStatus {
       case DeclarationStatus.draft:
         return 'مسودة';
       case DeclarationStatus.submitted:
-        return 'مقدم';
+        return 'تم التقديم';
       case DeclarationStatus.approved:
-        return 'معتمد';
+        return 'قيد المراجعة';
       case DeclarationStatus.rejected:
         return 'مرفوض';
     }
@@ -35,6 +35,12 @@ class DeclarationSummary extends Equatable {
   });
 
   @override
-  List<Object?> get props =>
-      [id, declarationNumber, ownerName, submittedAt, unitCount, status];
+  List<Object?> get props => [
+    id,
+    declarationNumber,
+    ownerName,
+    submittedAt,
+    unitCount,
+    status,
+  ];
 }
