@@ -1,16 +1,22 @@
+// lib/core/network/api_constants.dart
+
 class ApiConstants {
   // ─── Base URL ───────────────────────────────────────────────────────────────
   // static const String baseUrl =
-  //     'http://dev-rta-services.etax.com.eg/reta-services/public';
+  //     'http://dev-rta-services.etax.com.eg/reta-services/public/api';
 
   static const String baseUrl = 'http://10.0.2.2:3000/api';
+
   // ─── Auth ───────────────────────────────────────────────────────────────────
   static const String login = '/login';
   static const String registerSendOtp = '/register/sendOTP';
+
+  // ✅ FIXED: was '/register/confirmOTP' — actual endpoint is /validatePhone/confirmOtp
   static const String registerConfirmOtp = '/validatePhone/confirmOtp';
 
   // ─── Forgot Password (Phone flow) ───────────────────────────────────────────
   static const String forgotPasswordPhone = '/forgot-password-phone';
+  // static const String forgotPasswordPhone = '/reset-password-otp';
   static const String resetPasswordOtp = '/reset-password-otp';
   static const String generateTokenForOtp = '/generate-token-for-otp';
   static const String resetPassword = '/reset-password';
@@ -39,19 +45,25 @@ class ApiConstants {
   static const String declarations = '/declaration-system/declarations';
 
   static String declarationById(int id) =>
-      '/api/declaration-system/declarations/$id';
+      '/declaration-system/declarations/$id';
   static String submitDeclaration(int id) =>
-      '/api/declaration-system/declarations/$id/submit';
+      '/declaration-system/declarations/$id/submit';
   static String deleteUnit(int declarationId, String unitType, int unitId) =>
-      '/api/declaration-system/declarations/$declarationId/units/$unitType/$unitId';
+      '/declaration-system/declarations/$declarationId/units/$unitType/$unitId';
 
   // ─── Lookups ─────────────────────────────────────────────────────────────────
-  static const String lookupBase =
-      '/api/declaration-system/declaration-lookups';
+  static const String lookupBase = '/declaration-system/declaration-lookups';
 
   static const String allLookups = '$lookupBase/declaration-all-lookups';
   static const String listFilterLookups = '$lookupBase/list-filter-all-lookups';
+
+  // ✅ ADDED: public governorates endpoint used on signup page (no auth required)
+  // Shape: { "data": [ { "name": "القاهرة", "id": 1, "code": "01" }, ... ] }
+  static const String governoratesPublic = '/category/governorates/out';
+
+  // Internal (authenticated) governorates used elsewhere in the app
   static const String governorates = '$lookupBase/governorates';
+
   static const String declarationTypes = '$lookupBase/declaration-types';
   static const String propertyTypes = '$lookupBase/property-types';
   static const String taxpayerTypes = '$lookupBase/taxpayer-types';
@@ -80,23 +92,39 @@ class ApiConstants {
 
   // ─── Claims ──────────────────────────────────────────────────────────────────
   static const String storeClaim =
-      '/api/declaration-system/declarations/user/claim';
+      '/declaration-system/declarations/user/claim';
   static String claimsList(int declarationId) =>
-      '/api/declaration-system/declarations/user/declaration/claims-list/$declarationId';
+      '/declaration-system/declarations/user/declaration/claims-list/$declarationId';
   static String claimDetail(int claimId) =>
-      '/api/declaration-system/declarations/user/claims/$claimId';
+      '/declaration-system/declarations/user/claims/$claimId';
   static String cancelClaim(int claimId) =>
-      '/api/declaration-system/declarations/user/claim/$claimId';
+      '/declaration-system/declarations/user/claim/$claimId';
   static String claimTransactionDetails(int claimId) =>
-      '/api/declaration-system/declarations/user/claims-payment-transaction-details/$claimId';
+      '/declaration-system/declarations/user/claims-payment-transaction-details/$claimId';
 
   // ─── Wallet / Payment ────────────────────────────────────────────────────────
   static String walletDetails(int declarationId) =>
-      '/api/declaration-system/declarations/wallet/$declarationId';
+      '/declaration-system/declarations/wallet/$declarationId';
   static String initialPayment(int claimId) =>
-      '/api/declaration-system/initial-payment/$claimId';
+      '/declaration-system/initial-payment/$claimId';
   static String underDeclarationProperties(int declarationId) =>
-      '/api/declaration-system/UnderDeclarationProperties/list/$declarationId';
+      '/declaration-system/UnderDeclarationProperties/list/$declarationId';
   static const String settlementOfDebts =
-      '/api/declaration-system/declarations/settlement-of-debts-with-the-taxpayers-knowledge';
+      '/declaration-system/declarations/settlement-of-debts-with-the-taxpayers-knowledge';
+
+  // ─── File labels ─────────────────────────────────────────────────────────────
+  static const String nationalIdLabel = 'national_id_attachment';
+  static const String passportLabel = 'passport_attachment';
+  static const String ownershipProofDocumentLabel = 'joint_ownership_document';
+  static const String taxpayerAuthorizationLabel = 'power_of_attorney';
+  static const String taxpayerTaxCardLabel = 'tax_card_attachment';
+  static const String taxpayerCommercialRegisterLabel =
+      'commercial_register_attachment';
+  static const String taxpayerOtherAttachmentLabel = 'other_attachment';
+  static const String ownershipDeedLabel = 'ownership_deed';
+  static const String leaseContractLabel = 'lease_contract';
+  static const String permitPhotoLabel = 'license_photo';
+  static const String constructionLicenseLabel = 'construction_license';
+  static const String operatingLicenseLabel = 'operating_license';
+  static const String starCertificateLabel = 'star_certificate';
 }

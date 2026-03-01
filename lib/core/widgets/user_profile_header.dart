@@ -214,56 +214,56 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
               const SizedBox(width: 16),
 
               // ── Avatar with edit button ──────────────────────────────
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  GestureDetector(
-                    onTap: _pickImage,
-                    child: Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        color: AppColors.highlightLightest,
-                        shape: BoxShape.circle,
-                        image: _pickedImage != null
-                            ? DecorationImage(
-                                image: FileImage(_pickedImage!),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
-                      ),
-                      child: _pickedImage == null
-                          ? const Icon(
-                              Icons.person_rounded,
-                              size: 40,
-                              color: AppColors.highlightLight,
-                            )
-                          : null,
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: GestureDetector(
-                      onTap: _pickImage,
-                      child: Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: AppColors.highlightDarkest,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                        child: const Icon(
-                          Icons.edit,
-                          size: 12,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              // Stack(
+              //   clipBehavior: Clip.none,
+              //   children: [
+              //     GestureDetector(
+              //       onTap: _pickImage,
+              //       child: Container(
+              //         width: 72,
+              //         height: 72,
+              //         decoration: BoxDecoration(
+              //           color: AppColors.highlightLightest,
+              //           shape: BoxShape.circle,
+              //           image: _pickedImage != null
+              //               ? DecorationImage(
+              //                   image: FileImage(_pickedImage!),
+              //                   fit: BoxFit.cover,
+              //                 )
+              //               : null,
+              //         ),
+              //         child: _pickedImage == null
+              //             ? const Icon(
+              //                 Icons.person_rounded,
+              //                 size: 40,
+              //                 color: AppColors.highlightLight,
+              //               )
+              //             : null,
+              //       ),
+              //     ),
+              //     Positioned(
+              //       bottom: 0,
+              //       right: 0,
+              //       child: GestureDetector(
+              //         onTap: _pickImage,
+              //         child: Container(
+              //           width: 24,
+              //           height: 24,
+              //           decoration: BoxDecoration(
+              //             color: AppColors.highlightDarkest,
+              //             shape: BoxShape.circle,
+              //             border: Border.all(color: Colors.white, width: 2),
+              //           ),
+              //           child: const Icon(
+              //             Icons.edit,
+              //             size: 12,
+              //             color: Colors.white,
+              //           ),
+              //         ),
+              //       ),
+              //     ),
+              //   ],
+              // ),
             ],
           ),
         );

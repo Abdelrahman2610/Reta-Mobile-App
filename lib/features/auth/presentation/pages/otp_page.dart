@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import 'package:reta/features/auth/presentation/pages/main_page.dart';
 import '../cubit/signup_cubit.dart';
 
 class OtpPage extends StatefulWidget {
@@ -86,15 +87,24 @@ class _OtpPageState extends State<OtpPage> {
     _startTimer();
   }
 
+  // adjust path
+
   Future<void> _confirmOtp(BuildContext context) async {
     if (_otpValue.length < 6) return;
-    final success = await context.read<SignupCubit>().confirmOtp(_otpValue);
+
+    final user = await context.read<SignupCubit>().confirmOtp(_otpValue);
     if (!mounted) return;
 
-    if (success) {
+    if (user != null) {
       setState(() => _step = _OtpStep.success);
       await Future.delayed(const Duration(seconds: 2));
-      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+      if (!mounted) return;
+
+      // ✅ Replace entire nav stack — user can't go back to signup
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => MainPage(user: user)),
+        (route) => false, // clears everything
+      );
     } else {
       setState(() {
         remainingAttempts = (remainingAttempts - 1).clamp(0, 2);

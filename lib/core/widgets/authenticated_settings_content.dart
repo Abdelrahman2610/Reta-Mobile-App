@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
 import 'package:reta/features/auth/presentation/cubit/settings_cubit.dart';
-import 'package:reta/features/auth/presentation/cubit/settings_state.dart';
+import 'package:reta/features/auth/presentation/cubit/notifications_cubit.dart';
+import 'package:reta/features/auth/presentation/cubit/home_cubit.dart';
 import 'package:reta/features/auth/presentation/pages/user_profile_page.dart';
 import 'package:reta/features/auth/presentation/pages/help_support_page.dart';
 import 'package:reta/features/auth/presentation/pages/terms_privacy_page.dart';
@@ -12,7 +13,6 @@ import 'package:reta/core/theme/app_text_styles.dart';
 import 'user_profile_header.dart';
 import 'settings_tile.dart';
 import 'settings_toggle_tile.dart';
-import 'language_picker_sheet.dart';
 import 'confirmation_dialog.dart';
 
 class AuthenticatedSettingsContent extends StatefulWidget {
@@ -34,6 +34,31 @@ class _AuthenticatedSettingsContentState
     extends State<AuthenticatedSettingsContent> {
   bool _notificationsEnabled = true;
 
+  // Helper: push a new route while keeping cubits available in it.
+  //
+  // Every MaterialPageRoute built with `builder: (_)` receives a fresh context
+  // that cannot see providers from parent routes. We fix this by capturing the
+  // cubit instances here (where context CAN see them) and re-injecting them
+  // with BlocProvider.value() inside every pushed route.
+  void _pushWithCubits(BuildContext context, Widget page) {
+    final notificationsCubit = context.read<NotificationsCubit>();
+    final homeCubit = context.read<HomeCubit>();
+    final settingsCubit = context.read<SettingsCubit>();
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: notificationsCubit),
+            BlocProvider.value(value: homeCubit),
+            BlocProvider.value(value: settingsCubit),
+          ],
+          child: page,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<SettingsCubit>();
@@ -43,6 +68,9 @@ class _AuthenticatedSettingsContentState
       children: [
         const SizedBox(height: 16),
 
+        // UserProfileHeader uses BlocBuilder<NotificationsCubit> internally —
+        // it works here because this widget is already under MultiBlocProvider
+        // (re-provided by SettingsTab's nested Navigator wrapper).
         UserProfileHeader(user: widget.user),
 
         const SizedBox(height: 16),
@@ -50,13 +78,8 @@ class _AuthenticatedSettingsContentState
         SettingsTile(
           icon: Icons.person_outline,
           label: 'بيانات المستخدم',
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => UserProfilePage(user: widget.user),
-              ),
-            );
-          },
+          onTap: () =>
+              _pushWithCubits(context, UserProfilePage(user: widget.user)),
         ),
 
         _SectionLabel('الإعدادات العامة'),
@@ -75,44 +98,16 @@ class _AuthenticatedSettingsContentState
         SettingsTile(
           icon: Icons.help_outline,
           label: 'المساعدة والدعم',
-          onTap: () {
-            Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const HelpSupportPage()));
-          },
+          onTap: () => _pushWithCubits(context, const HelpSupportPage()),
         ),
         SettingsTile(
           icon: Icons.privacy_tip_outlined,
           label: 'الشروط والخصوصية',
-          onTap: () {
-            Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const TermsPrivacyPage()));
-          },
+          onTap: () => _pushWithCubits(context, const TermsPrivacyPage()),
         ),
 
         const SizedBox(height: 16),
 
-        // _SectionLabel('التفضيلات'),
-        // const SizedBox(height: 8),
-        // SettingsTile(
-        //   icon: Icons.language_outlined,
-        //   label: widget.currentLanguage == 'ar' ? 'اللغة: عربي' : 'Language: English',
-        //   onTap: () async {
-        //     final selected = await showLanguagePickerSheet(
-        //       context,
-        //       currentLanguage: widget.currentLanguage,
-        //     );
-        //     if (selected != null) {
-        //       cubit.changeLanguage(selected);
-        //     }
-        //   },
-        //   trailing: Text(
-        //     widget.currentLanguage == 'ar' ? 'عربي' : 'English',
-        //     style: const TextStyle(fontSize: 13, color: Color(0xFF9E9E9E)),
-        //   ),
-        // ),
-        // const SizedBox(height: 24),
         _SectionLabel('إجراءات الحساب'),
         const SizedBox(height: 8),
         SettingsTile(
@@ -167,7 +162,6 @@ class _AuthenticatedSettingsContentState
 
 class _SectionLabel extends StatelessWidget {
   final String text;
-
   const _SectionLabel(this.text);
 
   @override

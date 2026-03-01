@@ -15,7 +15,7 @@ class DeclarationsRepository {
   }
 
   Future<ApiResult<Map<String, dynamic>>> getDeclarationById(
-    String id, {
+    int id, {
     bool forEdit = false,
     int residentialPage = 1,
   }) async {
@@ -41,7 +41,7 @@ class DeclarationsRepository {
   }
 
   Future<ApiResult<Map<String, dynamic>>> updateDeclaration(
-    String declarationId,
+    int declarationId,
     Map<String, dynamic> body,
   ) async {
     return safeApiCall(() async {

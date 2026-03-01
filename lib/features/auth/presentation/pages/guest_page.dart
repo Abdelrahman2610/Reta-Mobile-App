@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_bottom_nav.dart';
 import '../../../declarations/presentations/pages/declarations_page.dart';
+import 'package:reta/features/auth/presentation/pages/guest_declarations_page.dart';
 import '../cubit/guest_cubit.dart';
 import 'auth_gate_dialog.dart';
 import 'login_page.dart';

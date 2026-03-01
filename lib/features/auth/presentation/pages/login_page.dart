@@ -207,18 +207,6 @@ class _LoginPageState extends State<LoginPage> {
         const SizedBox(height: 16),
         _buildTextField(
           context: context,
-          controller: _passportController,
-          focusNode: _passportFocus,
-          nextFocus: _idPasswordFocus,
-          hint: 'رقم جواز السفر',
-          keyboardType: TextInputType.text,
-          textInputAction: TextInputAction.next,
-          errorText: state.passportError,
-          onChanged: cubit.onPassportChanged,
-        ),
-        const SizedBox(height: 16),
-        _buildTextField(
-          context: context,
           controller: _idPasswordController,
           focusNode: _idPasswordFocus,
           hint: 'كلمة المرور',

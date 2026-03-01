@@ -21,24 +21,24 @@ import '../components/submit_declaration_button.dart';
 import '../components/unit_type_category_tab_widget.dart';
 import '../cubit/declaration/declaration_details_cubit.dart';
 
-class PropertiesListInDeclarationPage extends StatelessWidget {
-  final DeclarationModel declarationModel;
+// class PropertiesListInDeclarationPage extends StatelessWidget {
+//   final DeclarationModel declarationModel;
 
-  const PropertiesListInDeclarationPage(this.declarationModel, {super.key});
+//   const PropertiesListInDeclarationPage(this.declarationModel, {super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      lazy: false,
-      create: (_) =>
-          DeclarationDetailsCubit(declarationModel.id.toString())
-            ..fetchDeclarationModel(),
-      child: _PropertiesListInDeclarationView(
-        declarationModel: declarationModel,
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return BlocProvider(
+//       lazy: false,
+//       create: (_) =>
+//           DeclarationDetailsCubit(declarationModel.id.toString())
+//             ..fetchDeclarationModel(),
+//       child: _PropertiesListInDeclarationView(
+//         declarationModel: declarationModel,
+//       ),
+//     );
+//   }
+// }
 
 class _PropertiesListInDeclarationView extends StatelessWidget {
   final DeclarationModel declarationModel;

@@ -7,7 +7,7 @@ import '../../../data/models/declaration_details_model.dart';
 import 'declaration_details_states.dart';
 
 class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
-  final String declarationId;
+  final int declarationId;
   int selectedCategoryIndex = 0;
   List<CategoryConfig> activeCategories = [];
   var units;

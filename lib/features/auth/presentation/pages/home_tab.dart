@@ -36,23 +36,23 @@ class HomeTab extends StatelessWidget {
                 children: [
                   _DeclarationsSection(),
                   const SizedBox(height: 16),
-                  _QuickActionCard(
-                    imagePath: 'assets/images/icon(1).svg',
-                    title: 'طلبات السداد',
-                    subtitle:
-                        'جميع طلبات السداد التي تم إصدارها عند تقديم الإقرار، ويمكن سدادها لاحقًا عبر الدفع الإلكتروني أو الإيداع البنكي.',
-                    badgeCount: 1,
-                    onTap: () {},
-                  ),
-                  const SizedBox(height: 16),
-                  _QuickActionCard(
-                    icon: Icons.account_balance_wallet_outlined,
-                    title: 'سداد المديونيات',
-                    subtitle:
-                        'سداد المبالغ المستحقة عن الإقرارات الضريبية المقدمة سابقًا (مديونيات بعلم المكلف).',
-                    badgeCount: 2,
-                    onTap: () {},
-                  ),
+                  // _QuickActionCard(
+                  //   imagePath: 'assets/images/icon(1).svg',
+                  //   title: 'طلبات السداد',
+                  //   subtitle:
+                  //       'جميع طلبات السداد التي تم إصدارها عند تقديم الإقرار، ويمكن سدادها لاحقًا عبر الدفع الإلكتروني أو الإيداع البنكي.',
+                  //   badgeCount: 1,
+                  //   onTap: () {},
+                  // ),
+                  // const SizedBox(height: 16),
+                  // _QuickActionCard(
+                  //   icon: Icons.account_balance_wallet_outlined,
+                  //   title: 'سداد المديونيات',
+                  //   subtitle:
+                  //       'سداد المبالغ المستحقة عن الإقرارات الضريبية المقدمة سابقًا (مديونيات بعلم المكلف).',
+                  //   badgeCount: 2,
+                  //   onTap: () {},
+                  // ),
                 ],
               ),
             ),
@@ -83,7 +83,7 @@ class _HomeHero extends StatelessWidget {
       builder: (context, notifState) {
         final unreadCount = notifState.unreadCount;
 
-        return Container(
+        return SizedBox(
           width: double.infinity,
           height: 260,
           child: Stack(
