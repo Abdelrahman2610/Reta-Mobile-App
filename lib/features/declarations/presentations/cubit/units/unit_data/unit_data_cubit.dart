@@ -16,6 +16,7 @@ import '../../../../data/models/building_info.dart';
 import '../../../../data/models/declarations_lookups.dart';
 import '../../../pages/select_types_of_properties_page.dart';
 import '../../applicant_cubit.dart';
+import '../../declaration/declaration_cubit.dart';
 import '../../declaration_lookups_cubit.dart';
 import '../location/unit_location_cubit.dart';
 import 'unit_data_state.dart';
@@ -585,9 +586,12 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   Future<void> onSaveDataTapped(BuildContext context, UnitType unitType) async {
+    log("OnSaveTapped");
+    final declarationCubit = context.read<DeclarationCubit>();
     await submit(context, unitType);
     if (context.mounted && state.successMessage != null) {
-      //TODO: Navigate to the next page
+      declarationCubit.fetchList();
+      Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }
 
@@ -597,7 +601,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   ) async {
     await submit(context, unitType);
     if (context.mounted && state.successMessage != null) {
-      //TODO: Navigate to the next page
       final locationCubit = context.read<UnitLocationCubit>();
       Map<String, dynamic> locationData = {
         'governorate': locationCubit.state.selectedGovernorate,
@@ -657,8 +660,10 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         )
         .id;
 
+    log("Applicant payload: ${applicantCubit.buildPayload(context)}");
+
     final payload = {
-      ...applicantCubit.buildPayload(),
+      ...applicantCubit.buildPayload(context),
       'unit': {
         'property_type_id': propertyTypeId,
         ...locationCubit.buildLocationPayload(),
@@ -666,7 +671,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       },
     };
 
-    log('Final Payload: $payload');
     final result = await DeclarationService.instance.createDeclaration(
       payload,
       declarationId: declarationId,
@@ -674,7 +678,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
     switch (result) {
       case ApiSuccess(:final data):
-        log('Declaration created: $data');
         emit(
           state.copyWith(
             isLoading: false,
@@ -682,7 +685,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           ),
         );
       case ApiError(:final message):
-        log('Failed to create declaration: $message');
         emit(state.copyWith(isLoading: false, errorMessage: message));
     }
   }
@@ -717,8 +719,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         return buildPetroleumPayload();
       case UnitType.minesAndQuarries:
         return buildMinesPayload();
-      default:
-        return buildResidentialPayload(lookups);
     }
   }
 
@@ -738,9 +738,17 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         .where((id) => id != 0)
         .toList();
 
+    int unitTypeId = lookups.residentialUnitTypes
+        .firstWhere(
+          (type) => type.name == state.selectedUnitSubType,
+          orElse: () => DeclarationLookup(id: 0, name: ''),
+        )
+        .id;
+
     return {
       ..._buildBaseUnitPayload(),
       'usage_type': 'سكني',
+      'unit_type_id': unitTypeId,
       'area': double.tryParse(areaController.text.trim()) ?? 0,
       'attachments': attachmentIds,
       'exempted_as_private_residence': state.isExempt,
@@ -764,7 +772,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     DeclarationLookupsModel lookups,
     String unitType,
   ) {
-    log('buildCommercialPayload...');
     final unitTypeId = lookups.commercialUnitTypes
         .firstWhere(
           (t) => t.name == unitType,
@@ -988,11 +995,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   void onCancelButtonTapped(BuildContext context) {
-    // Navigator.of(context).pushAndRemoveUntil(
-    //   MaterialPageRoute(builder: (_) => const MainPage()),
-    //   (route) => false,
-    // );
-    Navigator.pop(context);
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   // ─────────────────────────────────────────

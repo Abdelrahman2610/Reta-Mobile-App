@@ -13,8 +13,8 @@ class DeclarationDetailsModel {
   final String applicantRoleId;
   final String applicantRoleText;
 
-  final FileModel? powerOfAttorney;
-  final FileModel? jointOwnershipDocument;
+  final TaxpayerAttachmentModel? powerOfAttorney;
+  final TaxpayerAttachmentModel? jointOwnershipDocument;
 
   final TaxpayerModel taxpayer;
   final UnitsCountModel unitsCount;
@@ -69,10 +69,10 @@ class DeclarationDetailsModel {
       applicantRoleId: json['applicant_role_id'] ?? '',
       applicantRoleText: json['applicant_role_text'] ?? '',
       powerOfAttorney: json['power_of_attorney'] != null
-          ? FileModel.fromJson(json['power_of_attorney'])
+          ? TaxpayerAttachmentModel.fromJson(json['power_of_attorney'])
           : null,
       jointOwnershipDocument: json['joint_ownership_document'] != null
-          ? FileModel.fromJson(json['joint_ownership_document'])
+          ? TaxpayerAttachmentModel.fromJson(json['joint_ownership_document'])
           : null,
       taxpayer: TaxpayerModel.fromJson(json['taxpayer'] ?? {}),
       unitsCount: UnitsCountModel.fromJson(json['units_count'] ?? {}),
@@ -132,9 +132,9 @@ class ResidentialUnitModel {
   final List<int> attachments;
   final List<String> attachmentsText;
 
-  final FileModel? ownershipDeed;
-  final FileModel? leaseContract;
-  final List<FileModel> supportingDocuments;
+  final TaxpayerAttachmentModel? ownershipDeed;
+  final TaxpayerAttachmentModel? leaseContract;
+  final List<TaxpayerAttachmentModel> supportingDocuments;
 
   final String createdAt;
   final String updatedAt;
@@ -170,13 +170,13 @@ class ResidentialUnitModel {
           .map((e) => e.toString())
           .toList(),
       ownershipDeed: json['ownership_deed'] != null
-          ? FileModel.fromJson(json['ownership_deed'])
+          ? TaxpayerAttachmentModel.fromJson(json['ownership_deed'])
           : null,
       leaseContract: json['lease_contract'] != null
-          ? FileModel.fromJson(json['lease_contract'])
+          ? TaxpayerAttachmentModel.fromJson(json['lease_contract'])
           : null,
       supportingDocuments: (json['supporting_documents'] as List? ?? [])
-          .map((e) => FileModel.fromJson(e))
+          .map((e) => TaxpayerAttachmentModel.fromJson(e))
           .toList(),
       createdAt: json['created_at'] ?? '',
       updatedAt: json['updated_at'] ?? '',
@@ -184,134 +184,158 @@ class ResidentialUnitModel {
   }
 }
 
-class FileModel {
-  final int? id;
-  final String? fieldName;
+class TaxpayerAttachmentModel {
+  final int id;
+  final String fieldName;
   final String? name;
-  final String? url;
   final String? path;
+  final String url;
   final String? originalFileName;
-  final String? fullUrl;
+  final String fullUrl;
 
-  FileModel({
-    this.id,
-    this.fieldName,
+  const TaxpayerAttachmentModel({
+    required this.id,
+    required this.fieldName,
     this.name,
-    this.url,
-    this.path,
+    required this.url,
     this.originalFileName,
-    this.fullUrl,
+    required this.fullUrl,
+    this.path,
   });
 
-  factory FileModel.fromJson(Map<String, dynamic> json) {
-    return FileModel(
-      id: json['id'],
-      path: json['path'],
-      fieldName: json['field_name'],
-      name: json['name'],
-      url: json['url'],
-      originalFileName: json['original_file_name'],
-      fullUrl: json['full_url'],
+  factory TaxpayerAttachmentModel.fromJson(Map<String, dynamic> json) {
+    return TaxpayerAttachmentModel(
+      id: json['id'] as int,
+      fieldName: json['field_name'] as String,
+      name: json['name'] as String?,
+      path: json['path'] as String?,
+      url: json['url'] as String,
+      originalFileName: json['original_file_name'] as String?,
+      fullUrl: json['full_url'] as String,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      if (id != null) 'id': id,
-      if (fieldName != null) 'field_name': fieldName,
-      if (path != null) 'path': path,
+      'id': id,
+      'field_name': fieldName,
+      'path': path,
       if (name != null) 'name': name,
-      if (url != null) 'url': url,
-      if (fullUrl != null) 'full_url': fullUrl,
-      if (originalFileName != null) 'original_file_name': originalFileName,
+      'url': url,
+      'full_url': fullUrl,
+      'original_file_name': originalFileName,
     };
   }
 }
 
 class TaxpayerModel {
-  final String? name;
+  final int? id;
+  final int? typeId;
+  final String? typeText;
+
   final String? firstName;
   final String? lastName;
-  final int? nationalityId;
-  final String? nationalId;
   final String? phone;
   final String? email;
-  final String? taxCardNumber;
-  final String? otherAttachmentName;
-  final int? typeId;
-  final FileModel? otherAttachment;
-  final FileModel? nationalIdAttachment;
-  final FileModel? taxCardAttachment;
+  final String? nationalId;
+  final String? passportNumber;
 
-  TaxpayerModel({
-    this.name,
+  final String? name;
+  final String? taxCardNumber;
+  final String? commercialRegister;
+
+  final int? nationalityId;
+  final String? nationalityText;
+
+  final TaxpayerAttachmentModel? nationalIdAttachment;
+  final TaxpayerAttachmentModel? passportAttachment;
+  final TaxpayerAttachmentModel? taxCardAttachment;
+  final TaxpayerAttachmentModel? commercialRegisterAttachment;
+  final TaxpayerAttachmentModel? otherAttachment;
+  final String? otherAttachmentName;
+
+  const TaxpayerModel({
+    required this.id,
+    required this.typeId,
+    required this.typeText,
     this.firstName,
     this.lastName,
-    this.nationalId,
-    this.nationalityId,
-    this.taxCardNumber,
-    this.otherAttachmentName,
     this.phone,
     this.email,
-    this.typeId,
-    this.otherAttachment,
+    this.nationalId,
+    this.passportNumber,
+    this.name,
+    this.taxCardNumber,
+    this.commercialRegister,
+    required this.nationalityId,
+    this.nationalityText,
     this.nationalIdAttachment,
+    this.passportAttachment,
     this.taxCardAttachment,
+    this.commercialRegisterAttachment,
+    this.otherAttachment,
+    this.otherAttachmentName,
   });
 
+  bool get isNatural => typeId == 1;
+  bool get isCompany => typeId == 2;
+  String get displayName =>
+      isNatural ? '${firstName ?? ''} ${lastName ?? ''}'.trim() : name ?? '';
+
   factory TaxpayerModel.fromJson(Map<String, dynamic> json) {
+    TaxpayerAttachmentModel? parseAttachment(String key) {
+      final data = json[key];
+      if (data == null) return null;
+      return TaxpayerAttachmentModel.fromJson(data as Map<String, dynamic>);
+    }
+
     return TaxpayerModel(
-      name: json['name'],
+      id: int.tryParse(json['id'].toString()),
+      typeId: int.tryParse(json['type_id'].toString()),
+      typeText: json['type_text'],
       firstName: json['first_name'],
       lastName: json['last_name'],
-      nationalId: json['national_id'],
-      taxCardNumber: json['tax_card_number'],
-      otherAttachmentName: json['other_attachment_name'],
-      nationalityId: json['nationality_id'],
       phone: json['phone'],
       email: json['email'],
-      typeId: json['type_id'],
-      otherAttachment: json['other_attachment'] != null
-          ? FileModel.fromJson(json['other_attachment'])
-          : null,
-      nationalIdAttachment: json['national_id_attachment'] != null
-          ? FileModel.fromJson(json['national_id_attachment'])
-          : null,
-      taxCardAttachment: json['tax_card_attachment'] != null
-          ? FileModel.fromJson(json['tax_card_attachment'])
-          : null,
+      nationalId: json['national_id'],
+      passportNumber: json['passport_number'],
+      name: json['name'],
+      taxCardNumber: json['tax_card_number'],
+      commercialRegister: json['commercial_register'],
+      nationalityId: int.tryParse(json['nationality_id'].toString()),
+      nationalityText: json['nationality_text'],
+      nationalIdAttachment: parseAttachment('national_id_attachment'),
+      passportAttachment: parseAttachment('passport_attachment'),
+      taxCardAttachment: parseAttachment('tax_card_attachment'),
+      commercialRegisterAttachment: parseAttachment(
+        'commercial_register_attachment',
+      ),
+      otherAttachment: parseAttachment('other_attachment'),
+      otherAttachmentName: json['other_attachment_name'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{
+    return {
+      'id': id,
       'type_id': typeId,
+      'type_text': typeText,
+      if (isNatural) ...{
+        'first_name': firstName,
+        'last_name': lastName,
+        'phone': phone,
+        'email': email,
+        'national_id': nationalId,
+        'passport_number': passportNumber,
+      },
+      if (isCompany) ...{
+        'name': name,
+        'tax_card_number': taxCardNumber,
+        'commercial_register': commercialRegister,
+      },
       'nationality_id': nationalityId,
+      'nationality_text': nationalityText,
     };
-
-    map['first_name'] = firstName;
-    map['last_name'] = lastName;
-    map['phone'] = phone;
-    map['email'] = email;
-
-    map['name'] = name;
-    map['tax_card_number'] = taxCardNumber;
-
-    // Egyptian → national_id, otherwise → passport
-    if (nationalityId == 1) {
-      map['national_id'] = nationalId;
-    } else {
-      map['passport_number'] = nationalId; // or add a passportNumber field
-    }
-
-    map['national_id_attachment'] = nationalIdAttachment?.toJson();
-
-    map['tax_card_attachment'] = taxCardAttachment?.toJson();
-
-    map['other_attachment'] = otherAttachment?.toJson();
-    map['other_attachment_name'] = otherAttachmentName;
-
-    return map;
   }
 }
 

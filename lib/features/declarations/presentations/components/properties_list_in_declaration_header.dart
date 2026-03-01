@@ -8,11 +8,13 @@ import '../../../components/inkwell_transparent.dart';
 class PropertiesListInDeclarationHeader extends StatelessWidget {
   final String title;
   final bool canEdit;
+  final VoidCallback onTap;
 
   const PropertiesListInDeclarationHeader(
     this.title,
     this.canEdit, {
     super.key,
+    required this.onTap,
   });
 
   @override
@@ -39,7 +41,7 @@ class PropertiesListInDeclarationHeader extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 InkwellTransparent(
-                  onTap: () {},
+                  onTap: onTap,
                   child: Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: 24.w,

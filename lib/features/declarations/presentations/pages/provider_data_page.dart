@@ -8,6 +8,7 @@ import 'package:reta/features/components/app_button.dart';
 import 'package:reta/features/components/app_container.dart';
 
 import '../../../../core/helpers/extensions/dimensions.dart';
+import '../../data/models/declaration_details_model.dart';
 import '../components/declaration_tabs.dart';
 import '../components/user_information.dart';
 import '../cubit/applicant_cubit.dart';
@@ -19,10 +20,14 @@ class ProviderDataPage extends StatelessWidget {
     super.key,
     required this.applicantType,
     required this.declarationId,
+    this.existingDeclaration,
+    this.afterUpdating,
   });
 
   final ApplicantType applicantType;
   final int declarationId;
+  final DeclarationDetailsModel? existingDeclaration;
+  final VoidCallback? afterUpdating;
 
   @override
   Widget build(BuildContext context) {
@@ -96,14 +101,22 @@ class ProviderDataPage extends StatelessWidget {
       ],
       "passport_num_file": [],
     };
-    //TODO: Remove this MultiBlocProvider and uncomment BlocProvider
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => ApplicantCubit(
-            applicantType: applicantType,
-            declarationId: declarationId,
-          )..initFromUser(user),
+          create: (_) {
+            final cubit = ApplicantCubit(
+              applicantType: applicantType,
+              declarationId: declarationId,
+              isEditMode: existingDeclaration != null,
+              afterUpdating: afterUpdating,
+            )..initFromUser(user);
+
+            if (existingDeclaration != null) {
+              cubit.initFromDeclaration(existingDeclaration!);
+            }
+            return cubit;
+          },
           lazy: false,
         ),
         BlocProvider(
@@ -111,15 +124,8 @@ class ProviderDataPage extends StatelessWidget {
           lazy: false,
         ),
       ],
-      child: const _ProviderDataView(),
+      child: _ProviderDataView(),
     );
-
-    //   return BlocProvider(
-    //   create: (_) =>
-    //       ApplicantCubit(applicantType: applicantType)..initFromUser(user),
-    //   lazy: false,
-    //   child: const _ProviderDataView(),
-    // );
   }
 }
 
@@ -164,6 +170,15 @@ class _ProviderDataView extends StatelessWidget {
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                   ),
+                  onCancel: cubit.isEditMode
+                      ? () => Navigator.pop(context)
+                      : null,
+                  onSave:
+                      cubit.isEditMode &&
+                          cubit.applicantType != ApplicantType.owner &&
+                          cubit.applicantType != ApplicantType.beneficiary
+                      ? () => cubit.saveEdit(context)
+                      : null,
                 ),
                 15.hs,
                 Padding(
@@ -174,20 +189,21 @@ class _ProviderDataView extends StatelessWidget {
                       10.hs,
                       UserInformation(cubit: cubit),
                       10.hs,
-                      AppContainer(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 24.w,
-                          vertical: 24.h,
+                      if (!cubit.isEditMode)
+                        AppContainer(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24.w,
+                            vertical: 24.h,
+                          ),
+                          child: AppButton(
+                            label: 'التالي',
+                            backgroundColor: AppColors.highlightDarkest,
+                            textColor: AppColors.white,
+                            fontSize: 12.sp,
+                            alignment: Alignment.center,
+                            onTap: () => cubit.onNextTapped(context),
+                          ),
                         ),
-                        child: AppButton(
-                          label: 'التالي',
-                          backgroundColor: AppColors.highlightDarkest,
-                          textColor: AppColors.white,
-                          fontSize: 12.sp,
-                          alignment: Alignment.center,
-                          onTap: () => cubit.onNextTapped(context),
-                        ),
-                      ),
                       26.hs,
                     ],
                   ),

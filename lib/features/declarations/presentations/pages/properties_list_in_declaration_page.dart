@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_details_states.dart';
+import 'package:reta/features/declarations/presentations/pages/provider_data_page.dart';
 import 'package:reta/features/declarations/presentations/pages/select_applicant_type_page.dart';
 
+import '../../../../core/helpers/extensions/applicant_type.dart';
 import '../../../../core/helpers/loading_popup.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_bar.dart';
@@ -40,7 +43,9 @@ class PropertiesListInDeclarationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       lazy: false,
-      create: (_) => DeclarationDetailsCubit("4")..fetchDeclarationModel(),
+      create: (_) =>
+          DeclarationDetailsCubit(declarationModel.id.toString())
+            ..fetchDeclarationModel(),
       child: _PropertiesListInDeclarationView(
         declarationModel: declarationModel,
         updateDeclarationList: updateDeclarationList,
@@ -91,6 +96,27 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                       PropertiesListInDeclarationHeader(
                         declarationModel.declarationTypeText ?? "",
                         declarationModel.statusId != "3",
+                        onTap: () {
+                          PersistentNavBarNavigator.pushNewScreen(
+                            context,
+                            screen: ProviderDataPage(
+                              declarationId: declarationModel.id ?? -1,
+                              applicantType:
+                                  state
+                                      .detailsModel
+                                      ?.declarationTypeId
+                                      .displayApplicant ??
+                                  ApplicantType.owner,
+                              existingDeclaration: state.detailsModel,
+                              afterUpdating: () => context
+                                  .read<DeclarationDetailsCubit>()
+                                  .fetchDeclarationModel(),
+                            ),
+                            withNavBar: true,
+                            pageTransitionAnimation:
+                                PageTransitionAnimation.slideUp,
+                          );
+                        },
                       ),
                       if (declarationModel.statusId != "3")
                         SizedBox(height: 30.h),
@@ -150,17 +176,27 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                       ),
 
                       SizedBox(height: 24.h),
-                      UnitTypeCategoryTabWidget(state.selectedCategoryIndex, (
-                        int index,
-                      ) {
-                        context
-                            .read<DeclarationDetailsCubit>()
-                            .updatedSelectedCategoryIndex(index);
-                      }, state.activeCategories),
+                      if (state.detailsModel?.unitsCount.total != 0)
+                        UnitTypeCategoryTabWidget(state.selectedCategoryIndex, (
+                          int index,
+                        ) {
+                          context
+                              .read<DeclarationDetailsCubit>()
+                              .updatedSelectedCategoryIndex(index);
+                        }, state.activeCategories),
                       SizedBox(height: 4.h),
                       Expanded(
                         child: state.detailsModel?.unitsCount.total == 0
-                            ? EmptyDataWidget(title: "لم يتم إضافة أي عقار بعد")
+                            ? Padding(
+                                padding: EdgeInsets.only(
+                                  left: 20.w,
+                                  right: 20.w,
+                                  bottom: 20.h,
+                                ),
+                                child: EmptyDataWidget(
+                                  title: "لم يتم إضافة أي عقار بعد",
+                                ),
+                              )
                             : ListView.builder(
                                 itemCount: state.units == null
                                     ? 0
@@ -301,7 +337,6 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
       context.read<DeclarationDetailsCubit>().fetchDeclarationModel();
       updateDeclarationList();
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
-      Navigator.of(context).pop();
     } else if (state is DeclarationDeleteError) {
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
       ScaffoldMessenger.of(

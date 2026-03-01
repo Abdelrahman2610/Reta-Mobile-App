@@ -142,7 +142,7 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
     emit(DeclarationDeleteLoading());
 
     final result = await safeApiCall(() async {
-      final response = await DioClient.instance.dio.delete(
+      final response = await DioClient.instance.dio.post(
         ApiConstants.cancelDeclarationById(declarationId),
       );
       return true;
@@ -179,7 +179,7 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
 
     final result = await safeApiCall(() async {
       final response = await DioClient.instance.dio.post(
-        ApiConstants.submitDeclaration(declarationId),
+        '${ApiConstants.submitDeclaration(declarationId)}?data_accuracy_declaration=true',
         data: detailsModel!.toJson(),
       );
       return true;
@@ -215,10 +215,11 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
     }).toList();
   }
 
-  updateUnit() {
-    final selected = activeCategories[selectedCategoryIndex];
-
-    units = (detailsModel?.data?[selected.key]['data'] as List)
-        .cast<Map<String, dynamic>>();
+  void updateUnit() {
+    if (activeCategories.isNotEmpty) {
+      final selected = activeCategories[selectedCategoryIndex];
+      units = (detailsModel?.data?[selected.key]['data'] as List)
+          .cast<Map<String, dynamic>>();
+    }
   }
 }

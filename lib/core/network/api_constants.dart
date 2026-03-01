@@ -1,9 +1,9 @@
 class ApiConstants {
   // ─── Base URL ───────────────────────────────────────────────────────────────
-  // static const String baseUrl =
-  //     'http://dev-rta-services.etax.com.eg/reta-services/public';
+  static const String baseUrl =
+      'http://dev-rta-services.etax.com.eg/reta-services/public/api';
 
-  static const String baseUrl = 'http://10.0.2.2:3000/api';
+  // static const String baseUrl = 'http://10.0.2.2:3000/api';
   // ─── Auth ───────────────────────────────────────────────────────────────────
   static const String login = '/login';
   static const String registerSendOtp = '/register/sendOTP';
@@ -55,8 +55,7 @@ class ApiConstants {
       '/declaration-system/declarations/$declarationId/units/$unitType/$unitId';
 
   // ─── Lookups ─────────────────────────────────────────────────────────────────
-  static const String lookupBase =
-      '/api/declaration-system/declaration-lookups';
+  static const String lookupBase = '/declaration-system/declaration-lookups';
 
   static const String allLookups = '$lookupBase/declaration-all-lookups';
   static const String listFilterLookups = '$lookupBase/list-filter-all-lookups';
@@ -93,25 +92,25 @@ class ApiConstants {
 
   // ─── Claims ──────────────────────────────────────────────────────────────────
   static const String storeClaim =
-      '/api/declaration-system/declarations/user/claim';
+      '/declaration-system/declarations/user/claim';
   static String claimsList(int declarationId) =>
-      '/api/declaration-system/declarations/user/declaration/claims-list/$declarationId';
+      '/declaration-system/declarations/user/declaration/claims-list/$declarationId';
   static String claimDetail(int claimId) =>
-      '/api/declaration-system/declarations/user/claims/$claimId';
+      '/declaration-system/declarations/user/claims/$claimId';
   static String cancelClaim(int claimId) =>
-      '/api/declaration-system/declarations/user/claim/$claimId';
+      '/declaration-system/declarations/user/claim/$claimId';
   static String claimTransactionDetails(int claimId) =>
-      '/api/declaration-system/declarations/user/claims-payment-transaction-details/$claimId';
+      '/declaration-system/declarations/user/claims-payment-transaction-details/$claimId';
 
   // ─── Wallet / Payment ────────────────────────────────────────────────────────
   static String walletDetails(int declarationId) =>
-      '/api/declaration-system/declarations/wallet/$declarationId';
+      '/declaration-system/declarations/wallet/$declarationId';
   static String initialPayment(int claimId) =>
-      '/api/declaration-system/initial-payment/$claimId';
+      '/declaration-system/initial-payment/$claimId';
   static String underDeclarationProperties(int declarationId) =>
-      '/api/declaration-system/UnderDeclarationProperties/list/$declarationId';
+      '/declaration-system/UnderDeclarationProperties/list/$declarationId';
   static const String settlementOfDebts =
-      '/api/declaration-system/declarations/settlement-of-debts-with-the-taxpayers-knowledge';
+      '/declaration-system/declarations/settlement-of-debts-with-the-taxpayers-knowledge';
 
   /// ------------------------------ Files label ---------------------------------
   static const String nationalIdLabel = 'national_id_attachment';
