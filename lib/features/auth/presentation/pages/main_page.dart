@@ -9,6 +9,13 @@ import 'package:reta/features/components/app_text.dart';
 
 import '../../../../core/helpers/fixed_assets.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_bottom_nav.dart';
+import '../cubit/home_cubit.dart';
+import '../cubit/notifications_cubit.dart';
+import 'home_tab.dart';
+import 'guest_page.dart';
+import 'placeholder_tabs.dart';
+import '../../data/models/user_models.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../components/image_svg_custom_widget.dart';
 import '../../../declarations/presentations/pages/declarations_page.dart';

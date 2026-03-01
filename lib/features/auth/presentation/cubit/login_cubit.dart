@@ -11,7 +11,6 @@ class LoginState {
   final String phone;
 
   final String name;
-  final String passportNumber;
 
   final String password;
 
@@ -36,7 +35,6 @@ class LoginState {
     this.phone = '',
     this.password = '',
     this.name = '',
-    this.passportNumber = '',
     this.isPasswordVisible = false,
     this.isLoading = false,
     this.isSuccess = false,
@@ -62,7 +60,6 @@ class LoginState {
           noPasswordErr;
     } else {
       return name.isNotEmpty &&
-          passportNumber.isNotEmpty &&
           password.isNotEmpty &&
           noNationalIdErr &&
           noPassportErr &&
@@ -92,7 +89,6 @@ class LoginState {
       phone: phone ?? this.phone,
       password: password ?? this.password,
       name: nationalId ?? this.name,
-      passportNumber: passportNumber ?? this.passportNumber,
       isPasswordVisible: isPasswordVisible ?? this.isPasswordVisible,
       isLoading: isLoading ?? this.isLoading,
       isSuccess: isSuccess ?? this.isSuccess,
@@ -295,19 +291,11 @@ class LoginCubit extends Cubit<LoginState> {
     String? passwordError;
 
     final nationalId = state.name.trim();
-    final passport = state.passportNumber.trim();
 
     if (nationalId.isEmpty) {
       nationalIdError = 'هذا الحقل مطلوب';
     } else if (!RegExp(r'^\d{14}$').hasMatch(nationalId)) {
       nationalIdError = 'الرقم القومي يجب أن يكون 14 رقماً';
-    }
-
-    if (passport.isEmpty) {
-      passportError = 'هذا الحقل مطلوب';
-    } else if (passport.length < 6 ||
-        !RegExp(r'^[A-Za-z0-9]+$').hasMatch(passport)) {
-      passportError = 'رقم جواز السفر غير صحيح';
     }
 
     if (state.password.isEmpty) {
@@ -316,12 +304,9 @@ class LoginCubit extends Cubit<LoginState> {
       passwordError = 'كلمة المرور قصيرة جداً';
     }
 
-    if (nationalIdError != null ||
-        passportError != null ||
-        passwordError != null) {
+    if (nationalIdError != null || passwordError != null) {
       final bannerMsg = [
         if (nationalIdError != null) nationalIdError,
-        if (passportError != null) passportError,
         if (passwordError != null) passwordError,
       ].join(' • ');
 

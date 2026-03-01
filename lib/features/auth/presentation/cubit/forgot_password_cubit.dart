@@ -2,13 +2,19 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../../../core/network/api_result.dart';
-import 'package:reta/features/auth/data/models/otp_response.dart';
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
 enum ForgotTab { mobile, email }
 
-enum ForgotStep { input, otp, otpSuccess, newPassword, done }
+enum ForgotStep {
+  input,
+  otp,
+  otpSuccess,
+  newPassword,
+  done,
+  emailSent,
+} // ✅ add emailSent
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
@@ -177,7 +183,8 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
             otpValue: '',
             otpError: () => null,
             userId: () => data['user_id']?.toString(),
-            otpToken: () => data['token']?.toString(),
+            otpToken: () =>
+                data['request_code']?.toString(), // ✅ was data['token']
           ),
         );
         _startResendCooldown();
@@ -193,13 +200,11 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
     );
 
     switch (result) {
-      case ApiSuccess():
+      case ApiSuccess(:final data):
         emit(
           state.copyWith(
             isLoading: false,
-            step: ForgotStep.otp,
-            otpValue: '',
-            otpError: () => null,
+            step: ForgotStep.emailSent, // ✅ don't go to OTP step
           ),
         );
 
@@ -247,12 +252,13 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
     switch (result) {
       case ApiSuccess(:final data):
+      case ApiSuccess(:final data):
         emit(
           state.copyWith(
             isLoading: false,
             step: ForgotStep.otpSuccess,
-            resetToken: () =>
-                data['token']?.toString() ?? data['reset_token']?.toString(),
+            resetToken: () => data['reset_token']
+                ?.toString(), // ✅ root-level key, no fallback needed
           ),
         );
 

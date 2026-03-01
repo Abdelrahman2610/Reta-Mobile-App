@@ -110,9 +110,96 @@ class _ForgotPasswordShell extends StatelessWidget {
         return const _StepOtpSuccess(key: ValueKey('otpSuccess'));
       case ForgotStep.newPassword:
         return const _StepNewPassword(key: ValueKey('newPassword'));
+      case ForgotStep.emailSent: // ✅ add this
+        return const _StepEmailSent(key: ValueKey('emailSent'));
       case ForgotStep.done:
         return const _StepDone(key: ValueKey('done'));
     }
+  }
+}
+
+class _StepEmailSent extends StatelessWidget {
+  const _StepEmailSent({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final email = context.read<ForgotPasswordCubit>().state.email;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: const BoxDecoration(
+                color: AppColors.successLight,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.mark_email_read_rounded,
+                size: 52,
+                color: AppColors.successDark,
+              ),
+            ),
+            const SizedBox(height: 28),
+            Text(
+              'تحقق من بريدك الإلكتروني',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.h3.copyWith(
+                color: AppColors.neutralDarkDarkest,
+              ),
+            ),
+            const SizedBox(height: 10),
+            RichText(
+              textAlign: TextAlign.center,
+              textDirection: TextDirection.rtl,
+              text: TextSpan(
+                style: AppTextStyles.bodyM.copyWith(
+                  color: AppColors.neutralDarkLightest,
+                ),
+                children: [
+                  const TextSpan(
+                    text: 'تم إرسال تفاصيل استعادة كلمة المرور إلى ',
+                  ),
+                  TextSpan(
+                    text: email,
+                    style: AppTextStyles.bodyM.copyWith(
+                      color: AppColors.neutralDarkDarkest,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                  (route) => false,
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.highlightDarkest,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  'العودة لتسجيل الدخول',
+                  style: AppTextStyles.actionL.copyWith(color: AppColors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

@@ -1,10 +1,24 @@
+// lib/features/auth/presentation/cubit/signup_cubit.dart
+//
+// KEY CHANGES vs original:
+//   1. _loadResidences() and _loadPassportIssuePlaces() now call the public
+//      /category/governorates/out endpoint (no auth) and parse { "data": [...] }
+//   2. _pendingOtpToken is populated from data.request_code (via the fixed
+//      RegisterOtpResponse.token field — no change needed here since the model
+//      now handles remapping)
+//   3. "أخرى" option is identified by id == -1 (was hardcoded as '10')
+
 import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/auth_repository.dart';
-import '/features/declarations/data/repositories/lookups_repository.dart';
 import '../../data/models/register_request.dart';
 import '../../../../core/network/api_result.dart';
+import '../../../../core/network/api_constants.dart';
 import 'package:reta/features/auth/data/models/otp_response.dart';
+import 'package:dio/dio.dart';
+// Add import at top
+import 'package:reta/features/auth/data/models/user_models.dart';
+import 'package:reta/core/network/dio_client.dart';
 
 class DropdownItem {
   final String id;
@@ -304,125 +318,133 @@ class SignupState {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Cubit
+// ─────────────────────────────────────────────────────────────────────────────
+
 class SignupCubit extends Cubit<SignupState> {
   final AuthRepository _authRepository;
-  final LookupsRepository _lookupsRepository;
-  String? _pendingOtpToken;
+  // ✅ Direct Dio access for the public governorates endpoint (no auth needed)
+  final Dio _dio = DioClient.instance.dio;
+
+  String? _pendingOtpToken; // holds request_code from sendOTP response
   String? _pendingUserId;
   String? _pendingMobile;
 
-  SignupCubit({
-    AuthRepository? authRepository,
-    LookupsRepository? lookupsRepository,
-  }) : _authRepository = authRepository ?? AuthRepository(),
-       _lookupsRepository = lookupsRepository ?? LookupsRepository(),
-       super(const SignupState()) {
+  SignupCubit({AuthRepository? authRepository})
+    : _authRepository = authRepository ?? AuthRepository(),
+      super(const SignupState()) {
     _loadNationalities();
     _loadResidences();
   }
 
+  // ── Nationality (hardcoded — no dedicated API) ──────────────────────────────
   Future<void> _loadNationalities() async {
-    emit(state.copyWith(isNationalityLoading: true));
-    final result = await _lookupsRepository.getTaxpayerTypes();
-    switch (result) {
-      case ApiSuccess(:final data):
-        final options = (data as Iterable<dynamic>)
-            .map(
-              (e) => DropdownItem(
-                id: e['id'].toString(),
-                label: e['name']?.toString() ?? '',
-              ),
-            )
-            .toList();
-        emit(
-          state.copyWith(
-            isNationalityLoading: false,
-            nationalityOptions: options,
-          ),
-        );
-      case ApiError():
-        emit(
-          state.copyWith(
-            isNationalityLoading: false,
-            nationalityOptions: const [
-              DropdownItem(id: '1', label: 'مصري'),
-              DropdownItem(id: '2', label: 'أجنبي'),
-            ],
-          ),
-        );
-    }
+    emit(
+      state.copyWith(
+        isNationalityLoading: false,
+        nationalityOptions: const [
+          DropdownItem(id: '1', label: 'مصري'),
+          DropdownItem(id: '2', label: 'أجنبي'),
+        ],
+      ),
+    );
   }
 
+  // ✅ FIXED: calls /category/governorates/out and parses { "data": [...] }
   Future<void> _loadResidences() async {
     emit(state.copyWith(isResidenceLoading: true));
-    final result = await _lookupsRepository.getGovernorates();
-    switch (result) {
-      case ApiSuccess(:final data):
-        final options = (data as Iterable<dynamic>)
-            .map(
-              (e) => DropdownItem(
-                id: e['id'].toString(),
-                label: e['name']?.toString() ?? '',
-              ),
-            )
-            .toList();
-        emit(
-          state.copyWith(isResidenceLoading: false, residenceOptions: options),
-        );
-      case ApiError():
-        emit(
-          state.copyWith(
-            isResidenceLoading: false,
-            residenceOptions: const [
-              DropdownItem(id: '1', label: 'القاهرة'),
-              DropdownItem(id: '2', label: 'الإسكندرية'),
-              DropdownItem(id: '3', label: 'الجيزة'),
-              DropdownItem(id: '4', label: 'الشرقية'),
-              DropdownItem(id: '5', label: 'الدقهلية'),
-              DropdownItem(id: '6', label: 'البحيرة'),
-              DropdownItem(id: '7', label: 'المنيا'),
-              DropdownItem(id: '8', label: 'أسيوط'),
-              DropdownItem(id: '9', label: 'سوهاج'),
-              DropdownItem(id: '10', label: 'أخرى'),
-            ],
-          ),
-        );
+    try {
+      // FIX 4: create a fresh Dio (no auth interceptor) for this public endpoint
+      final publicDio = Dio(
+        BaseOptions(
+          // Root URL (no /api suffix) so the full path becomes:
+          // http://10.0.2.2:3000 + /api/category/governorates/out
+          baseUrl: 'http://10.0.2.2:3000',
+          headers: {'Accept': 'application/json'},
+        ),
+      );
+      final response = await publicDio.get('/api/category/governorates/out');
+
+      final raw = response.data as Map<String, dynamic>;
+      final list = raw['data'] as List<dynamic>;
+
+      final options = list
+          .map(
+            (e) => DropdownItem(
+              id: e['id'].toString(), // -1 for "أخرى"
+              label: e['name']?.toString() ?? '',
+            ),
+          )
+          .toList();
+
+      emit(
+        state.copyWith(isResidenceLoading: false, residenceOptions: options),
+      );
+    } catch (_) {
+      // Fallback so the UI is never stuck
+      emit(
+        state.copyWith(
+          isResidenceLoading: false,
+          residenceOptions: const [
+            DropdownItem(id: '1', label: 'القاهرة'),
+            DropdownItem(id: '2', label: 'الإسكندرية'),
+            DropdownItem(id: '14', label: 'الجيزة'),
+            DropdownItem(id: '-1', label: 'أخرى'),
+          ],
+        ),
+      );
     }
   }
 
+  // ✅ FIXED: same endpoint for passport issue places
   Future<void> _loadPassportIssuePlaces() async {
     emit(state.copyWith(isPassportIssuePlaceLoading: true));
-    final result = await _lookupsRepository.getGovernorates();
-    switch (result) {
-      case ApiSuccess(:final data):
-        final options = (data as Iterable<dynamic>)
-            .map(
-              (e) => DropdownItem(
-                id: e['id'].toString(),
-                label: e['name']?.toString() ?? '',
-              ),
-            )
-            .toList();
-        emit(
-          state.copyWith(
-            isPassportIssuePlaceLoading: false,
-            passportIssuePlaceOptions: options,
-          ),
-        );
-      case ApiError():
-        emit(
-          state.copyWith(
-            isPassportIssuePlaceLoading: false,
-            passportIssuePlaceOptions: const [
-              DropdownItem(id: '1', label: 'القاهرة'),
-              DropdownItem(id: '2', label: 'الإسكندرية'),
-              DropdownItem(id: '3', label: 'الجيزة'),
-              DropdownItem(id: '4', label: 'أخرى'),
-            ],
-          ),
-        );
+    try {
+      final publicDio = Dio(
+        BaseOptions(
+          // Root URL (no /api suffix) so the full path becomes:
+          // http://10.0.2.2:3000 + /api/category/governorates/out
+          baseUrl: 'http://10.0.2.2:3000',
+          headers: {'Accept': 'application/json'},
+        ),
+      );
+      final response = await publicDio.get('/api/category/governorates/out');
+
+      final raw = response.data as Map<String, dynamic>;
+      final list = raw['data'] as List<dynamic>;
+
+      final options = list
+          .map(
+            (e) => DropdownItem(
+              id: e['id'].toString(),
+              label: e['name']?.toString() ?? '',
+            ),
+          )
+          .toList();
+
+      emit(
+        state.copyWith(
+          isPassportIssuePlaceLoading: false,
+          passportIssuePlaceOptions: options,
+        ),
+      );
+    } catch (_) {
+      emit(
+        state.copyWith(
+          isPassportIssuePlaceLoading: false,
+          passportIssuePlaceOptions: const [
+            DropdownItem(id: '1', label: 'القاهرة'),
+            DropdownItem(id: '2', label: 'الإسكندرية'),
+            DropdownItem(id: '14', label: 'الجيزة'),
+            DropdownItem(id: '-1', label: 'أخرى'),
+          ],
+        ),
+      );
     }
   }
+
+  // ── Field handlers (unchanged from original) ────────────────────────────────
 
   void onFirstNameChanged(String v) => emit(
     state.copyWith(
@@ -527,8 +549,7 @@ class SignupCubit extends Cubit<SignupState> {
   );
 
   void onBirthDateSelected(DateTime date) {
-    final now = DateTime.now();
-    final isValid = date.isBefore(now);
+    final isValid = date.isBefore(DateTime.now());
     emit(
       state.copyWith(
         birthDate: () => date,
@@ -540,8 +561,9 @@ class SignupCubit extends Cubit<SignupState> {
   void toggleBirthPlaceExpand() =>
       emit(state.copyWith(isBirthPlaceExpanded: !state.isBirthPlaceExpanded));
 
+  // ✅ FIXED: "أخرى" is id == '-1' (from the real API), not hardcoded '10'
   void onBirthPlaceSelected(DropdownItem item) {
-    final isOther = item.id == '10';
+    final isOther = item.id == '-1';
     emit(
       state.copyWith(
         selectedBirthPlace: () => item,
@@ -585,8 +607,7 @@ class SignupCubit extends Cubit<SignupState> {
   );
 
   void onPassportExpirySelected(DateTime date) {
-    final now = DateTime.now();
-    final isValid = date.isAfter(now);
+    final isValid = date.isAfter(DateTime.now());
     emit(
       state.copyWith(
         passportExpiry: () => date,
@@ -617,9 +638,8 @@ class SignupCubit extends Cubit<SignupState> {
         if (v.length < 8) return 'يجب أن تكون 8 أحرف على الأقل';
         if (!v.contains(RegExp(r'[A-Z]'))) return 'يجب أن تحتوي على حرف كبير';
         if (!v.contains(RegExp(r'[0-9]'))) return 'يجب أن تحتوي على رقم';
-        if (!v.contains(RegExp(r'[!@#\$%^&*]'))) {
+        if (!v.contains(RegExp(r'[!@#\$%^&*]')))
           return 'يجب أن تحتوي على رمز خاص';
-        }
         return null;
       },
       confirmPasswordError: () {
@@ -649,6 +669,8 @@ class SignupCubit extends Cubit<SignupState> {
   void toggleTerms(bool? v) =>
       emit(state.copyWith(agreedToTerms: v ?? false, termsError: () => null));
 
+  // ── Submit ──────────────────────────────────────────────────────────────────
+
   Future<void> submit() async {
     if (!_validateAll()) return;
 
@@ -674,7 +696,10 @@ class SignupCubit extends Cubit<SignupState> {
       password: state.password,
       passwordConfirm: state.confirmPassword,
       nationalId: state.nationalId.trim(),
-      nationalityCode: state.selectedNationality?.id ?? 'EG',
+      // FIX 2: map internal id → ISO code the server expects
+      nationalityCode: (state.selectedNationality?.id == '1')
+          ? 'EG'
+          : 'FOREIGN',
       gender: gender,
       birthPlace: birthPlace,
       birthDate: birthDateStr,
@@ -687,20 +712,27 @@ class SignupCubit extends Cubit<SignupState> {
 
     switch (result) {
       case ApiSuccess(:final data):
+        // ✅ data.token now correctly holds request_code from the fixed model
         _pendingOtpToken = data.token;
         _pendingUserId = data.userId;
         _pendingMobile = state.phone.trim();
 
         emit(state.copyWith(isLoading: false, submitError: () => null));
         emit(state.copyWith(isSubmitSuccess: true));
+        // ✅ FIX 1: immediately reset so back-navigation + re-submit doesn't
+        //    fire the BlocListener again with stale isSubmitSuccess == true
+        emit(state.copyWith(isSubmitSuccess: false));
 
       case ApiError(:final message):
         emit(state.copyWith(isLoading: false, submitError: () => message));
     }
   }
 
-  Future<bool> confirmOtp(String otp) async {
-    if (_pendingOtpToken == null || _pendingUserId == null) return false;
+  // ── Confirm OTP ─────────────────────────────────────────────────────────────
+
+  // Change return type
+  Future<UserModel?> confirmOtp(String otp) async {
+    if (_pendingOtpToken == null || _pendingUserId == null) return null;
 
     emit(state.copyWith(isLoading: true, submitError: () => null));
 
@@ -715,14 +747,26 @@ class SignupCubit extends Cubit<SignupState> {
     );
 
     switch (result) {
-      case ApiSuccess():
+      case ApiSuccess(:final data):
         emit(state.copyWith(isLoading: false));
-        return true;
+        // Build a minimal UserModel from what we already have in state
+        // (or from data.userData if your API returns it)
+        final user = (data.userData != null)
+            ? UserModel.fromLoginResponse(data.userData!)
+            : UserModel(
+                name: '${state.firstName.trim()} ${state.restOfName.trim()}',
+                email: state.email.trim(),
+                phone: state.phone.trim(),
+                nationalId: state.nationalId.trim(),
+              );
+        return user;
+
       case ApiError(:final message):
         emit(state.copyWith(isLoading: false, submitError: () => message));
-        return false;
+        return null;
     }
   }
+  // ── Resend OTP ──────────────────────────────────────────────────────────────
 
   Future<void> resendOtp() async {
     emit(state.copyWith(isLoading: true, submitError: () => null));
@@ -735,7 +779,10 @@ class SignupCubit extends Cubit<SignupState> {
       password: state.password,
       passwordConfirm: state.confirmPassword,
       nationalId: state.nationalId.trim(),
-      nationalityCode: state.selectedNationality?.id ?? 'EG',
+      // FIX 2: map internal id → ISO code the server expects
+      nationalityCode: (state.selectedNationality?.id == '1')
+          ? 'EG'
+          : 'FOREIGN',
       gender: state.selectedGender == GenderType.male ? '1' : '2',
       birthPlace: state.showManualBirthPlace
           ? state.manualBirthPlace.trim()
@@ -750,6 +797,7 @@ class SignupCubit extends Cubit<SignupState> {
 
     switch (result) {
       case ApiSuccess(:final data):
+        // ✅ update the token so the next confirmOtp uses the fresh request_code
         _pendingOtpToken = data.token;
         _pendingUserId = data.userId;
         _pendingMobile = state.phone.trim();
@@ -761,6 +809,8 @@ class SignupCubit extends Cubit<SignupState> {
 
   String _formatDate(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  // ── Validation ──────────────────────────────────────────────────────────────
 
   bool _validateAll() {
     final firstNameError = state.firstName.trim().isEmpty
@@ -777,7 +827,20 @@ class SignupCubit extends Cubit<SignupState> {
     final birthDateError = state.birthDate == null
         ? 'تاريخ الميلاد مطلوب'
         : null;
-    final passwordError = state.password.isEmpty ? 'كلمة السر مطلوبة' : null;
+    // FIX 3: full password strength check at submit time (not just empty check)
+    String? passwordError;
+    final pw = state.password;
+    if (pw.isEmpty) {
+      passwordError = 'كلمة السر مطلوبة';
+    } else if (pw.length < 8) {
+      passwordError = 'يجب أن تكون 8 أحرف على الأقل';
+    } else if (!pw.contains(RegExp(r'[A-Z]'))) {
+      passwordError = 'يجب أن تحتوي على حرف كبير';
+    } else if (!pw.contains(RegExp(r'[0-9]'))) {
+      passwordError = 'يجب أن تحتوي على رقم';
+    } else if (!pw.contains(RegExp(r'[!@#\$%^&*]'))) {
+      passwordError = 'يجب أن تحتوي على رمز خاص';
+    }
     final confirmPasswordError = state.confirmPassword != state.password
         ? 'كلمتا السر غير متطابقتين'
         : null;

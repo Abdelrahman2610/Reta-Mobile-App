@@ -107,7 +107,8 @@ class AuthRepository {
         ApiConstants.forgotPasswordPhone,
         data: {'mobile': mobile},
       );
-      return response.data as Map<String, dynamic>;
+      final body = response.data as Map<String, dynamic>;
+      return body['data'] as Map<String, dynamic>; // ✅ unwrap nested data
     });
   }
 
@@ -120,7 +121,12 @@ class AuthRepository {
     return safeApiCall(() async {
       final response = await _dio.post(
         ApiConstants.resetPasswordOtp,
-        data: {'user_id': userId, 'mobile': mobile, 'token': token, 'otp': otp},
+        data: {
+          'user_id': userId,
+          'mobile': mobile,
+          'request_code': token, // ✅ correct field name
+          'otp': otp,
+        },
       );
       return response.data as Map<String, dynamic>;
     });
@@ -133,7 +139,10 @@ class AuthRepository {
     return safeApiCall(() async {
       final response = await _dio.post(
         ApiConstants.generateTokenForOtp,
-        data: {'user_id': userId, 'token': token},
+        data: {
+          'user_id': userId,
+          'request_code': token, // ✅ correct field name
+        },
       );
       return response.data as Map<String, dynamic>;
     });
@@ -148,7 +157,8 @@ class AuthRepository {
       final response = await _dio.post(
         ApiConstants.resetPassword,
         data: {
-          'token': token,
+          'token':
+              token, // ✅ this one stays as 'token' — it's the reset_token JWT
           'password': password,
           'password_confirmation': passwordConfirmation,
         },
