@@ -2,11 +2,10 @@
 
 class ApiConstants {
   // ─── Base URL ───────────────────────────────────────────────────────────────
-  // static const String baseUrl =
-  //     'http://dev-rta-services.etax.com.eg/reta-services/public/api';
+  static const String baseUrl =
+      'http://dev-rta-services.etax.com.eg/reta-services/public/api';
 
-  static const String baseUrl = 'http://10.0.2.2:3000/api';
-
+  // static const String baseUrl = 'http://10.0.2.2:3000/api';
   // ─── Auth ───────────────────────────────────────────────────────────────────
   static const String login = '/login';
   static const String registerSendOtp = '/register/sendOTP';
@@ -44,11 +43,20 @@ class ApiConstants {
   // ─── Declarations ────────────────────────────────────────────────────────────
   static const String declarations = '/declaration-system/declarations';
 
-  static String declarationById(int id) =>
+  static String declarationById(String id) =>
       '/declaration-system/declarations/$id';
-  static String submitDeclaration(int id) =>
+
+  static String cancelDeclarationById(String id) =>
+      '/declaration-system/declarations/$id/cancel';
+
+  static String submitDeclaration(String id) =>
       '/declaration-system/declarations/$id/submit';
-  static String deleteUnit(int declarationId, String unitType, int unitId) =>
+
+  static String deleteUnit(
+    String declarationId,
+    String unitType,
+    String unitId,
+  ) =>
       '/declaration-system/declarations/$declarationId/units/$unitType/$unitId';
 
   // ─── Lookups ─────────────────────────────────────────────────────────────────
@@ -81,12 +89,16 @@ class ApiConstants {
 
   static String districtsByGovernorate(int governorateId) =>
       '$lookupBase/governorates/$governorateId/districts';
+
   static String villagesByDistrict(int districtId) =>
       '$lookupBase/districts/$districtId/villages';
+
   static String regionsByVillage(int villageId) =>
       '$lookupBase/villages/$villageId/regions';
+
   static String realEstatesByRegion(int regionId) =>
       '$lookupBase/regions/$regionId/real-estates';
+
   static String unitsByRealEstate(int realEstateId) =>
       '$lookupBase/real-estates/$realEstateId/units';
 
@@ -112,19 +124,24 @@ class ApiConstants {
   static const String settlementOfDebts =
       '/declaration-system/declarations/settlement-of-debts-with-the-taxpayers-knowledge';
 
-  // ─── File labels ─────────────────────────────────────────────────────────────
+  /// ------------------------------ Files label ---------------------------------
   static const String nationalIdLabel = 'national_id_attachment';
   static const String passportLabel = 'passport_attachment';
-  static const String ownershipProofDocumentLabel = 'joint_ownership_document';
-  static const String taxpayerAuthorizationLabel = 'power_of_attorney';
-  static const String taxpayerTaxCardLabel = 'tax_card_attachment';
+  static const String ownershipProofDocumentLabel =
+      'joint_ownership_document'; //سند الملكية
+  static const String taxpayerAuthorizationLabel =
+      'power_of_attorney'; //سند التوكيل
+  static const String taxpayerTaxCardLabel =
+      'tax_card_attachment'; //سند الضريبة
   static const String taxpayerCommercialRegisterLabel =
-      'commercial_register_attachment';
-  static const String taxpayerOtherAttachmentLabel = 'other_attachment';
-  static const String ownershipDeedLabel = 'ownership_deed';
-  static const String leaseContractLabel = 'lease_contract';
-  static const String permitPhotoLabel = 'license_photo';
-  static const String constructionLicenseLabel = 'construction_license';
-  static const String operatingLicenseLabel = 'operating_license';
-  static const String starCertificateLabel = 'star_certificate';
+      'commercial_register_attachment'; //سجل تجاري
+  static const String taxpayerOtherAttachmentLabel =
+      'other_attachment'; //مستند آخر
+  static const String ownershipDeedLabel = 'ownership_deed'; //سند تمليك
+  static const String leaseContractLabel = 'lease_contract'; //عقد ايجار
+  static const String permitPhotoLabel = 'license_photo'; //صورة رخصة
+  static const String constructionLicenseLabel =
+      'construction_license'; //رخصة بناء
+  static const String operatingLicenseLabel = 'operating_license'; //ترخيص تشغيل
+  static const String starCertificateLabel = 'star_certificate'; //شهادة_نجومية
 }

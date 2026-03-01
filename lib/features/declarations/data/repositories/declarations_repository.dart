@@ -58,16 +58,16 @@ class DeclarationsRepository {
   ) async {
     return safeApiCall(() async {
       final response = await _dio.post(
-        ApiConstants.submitDeclaration(declarationId),
+        ApiConstants.submitDeclaration(declarationId.toString()),
       );
       return response.data as Map<String, dynamic>;
     });
   }
 
   Future<ApiResult<Map<String, dynamic>>> deleteUnit({
-    required int declarationId,
+    required String declarationId,
     required String unitType,
-    required int unitId,
+    required String unitId,
   }) async {
     return safeApiCall(() async {
       final response = await _dio.delete(

@@ -11,8 +11,13 @@ import '../pages/properties_list_in_declaration_page.dart';
 
 class DeclarationsCardItem extends StatelessWidget {
   final DeclarationModel item;
+  final Function updateDeclarationList;
 
-  const DeclarationsCardItem({super.key, required this.item});
+  const DeclarationsCardItem({
+    super.key,
+    required this.item,
+    required this.updateDeclarationList,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +27,10 @@ class DeclarationsCardItem extends StatelessWidget {
         onTap: () {
           PersistentNavBarNavigator.pushNewScreen(
             context,
-            screen: PropertiesListInDeclarationPage(item),
+            screen: PropertiesListInDeclarationPage(
+              item,
+              updateDeclarationList,
+            ),
             withNavBar: true,
             pageTransitionAnimation: PageTransitionAnimation.slideUp,
           );

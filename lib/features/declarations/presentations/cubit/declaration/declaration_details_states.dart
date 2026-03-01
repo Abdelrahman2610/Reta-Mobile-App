@@ -26,3 +26,23 @@ class DeclarationDetailsError extends DeclarationDetailsStates {
 
   DeclarationDetailsError(this.message);
 }
+
+class DeclarationDeleteLoading extends DeclarationDetailsStates {}
+
+class DeclarationDeleteSuccess extends DeclarationDetailsStates {}
+
+class DeclarationDeleteError extends DeclarationDetailsStates {
+  final String message;
+  DeclarationDeleteError(this.message);
+}
+
+class DeclarationSubmitLoading extends DeclarationDetailsStates {}
+
+class DeclarationSubmitSuccess extends DeclarationDetailsStates {}
+
+class DeclarationDeleteUnitSuccess extends DeclarationDetailsStates {}
+
+class DeclarationSubmitError extends DeclarationDetailsStates {
+  final String message;
+  DeclarationSubmitError(this.message);
+}
