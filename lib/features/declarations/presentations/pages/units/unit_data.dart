@@ -2,19 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/app_enum.dart';
+import 'package:reta/core/helpers/extensions/unit_type.dart';
 import 'package:reta/features/components/app_text.dart';
 import 'package:reta/features/declarations/presentations/cubit/units/unit_data/unit_data_cubit.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/administrative_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/commercial_unit_page.dart';
+import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/components/unit_buttons.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/fixed_installation_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/residential_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/service_unit_page.dart';
 
 import '../../../../../core/helpers/extensions/applicant_type.dart';
+import '../../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../../core/helpers/loading_popup.dart';
 import '../../../../../core/helpers/runtime_data.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../components/app_bar.dart';
+import '../../../../components/app_container.dart';
+import '../../components/declaration_data_tab.dart';
+import '../../components/units/unit_title.dart';
 import '../../cubit/units/unit_data/unit_data_state.dart';
 
 class UnitData extends StatelessWidget {
@@ -71,34 +77,83 @@ class UnitData extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              body: switch (unitType) {
-                UnitType.residential => ResidentialUnitPage(
-                  unitCubit: cubit,
-                  applicantType: applicantType,
+              body: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    children: [
+                      31.hs,
+                      UnitTitle(title: unitType.unitLabel),
+                      10.hs,
+                      AppContainer(
+                        height: 93,
+                        child: Row(
+                          children: [
+                            DeclarationDataTab(
+                              declarationsType:
+                                  DeclarationsDataType.locationData,
+                              isSelected: false,
+                              isFinished: true,
+                            ),
+                            DeclarationDataTab(
+                              declarationsType: unitType.tabEnum,
+                              isSelected: true,
+                              isFinished: false,
+                            ),
+                          ],
+                        ),
+                      ),
+                      10.hs,
+                      switch (unitType) {
+                        UnitType.residential => ResidentialUnitPage(
+                          unitCubit: cubit,
+                          applicantType: applicantType,
+                        ),
+                        UnitType.commercial => CommercialUnitPage(
+                          unitCubit: cubit,
+                          applicantType: applicantType,
+                        ),
+                        UnitType.administrative => AdministrativeUnitPage(
+                          unitCubit: cubit,
+                        ),
+                        UnitType.serviceUnit => ServiceUnitPage(
+                          applicantType: applicantType,
+                          unitCubit: cubit,
+                        ),
+                        UnitType.fixedInstallations => FixedInstallationsPage(
+                          applicantType: applicantType,
+                          unitCubit: cubit,
+                        ),
+                        UnitType.vacantLand => SizedBox.shrink(),
+                        UnitType.serviceFacility => SizedBox.shrink(),
+                        UnitType.hotelFacility => SizedBox.shrink(),
+                        UnitType.industrialFacility => SizedBox.shrink(),
+                        UnitType.productionFacility => SizedBox.shrink(),
+                        UnitType.petroleumFacility => SizedBox.shrink(),
+                        UnitType.minesAndQuarries => SizedBox.shrink(),
+                      },
+                      16.hs,
+
+                      UnitButtons(
+                        cubit: cubit,
+                        onSaveData: () {
+                          if (cubit.validate()) {
+                            cubit.onSaveDataTapped(context, unitType);
+                          }
+                        },
+                        onCancel: () => cubit.onCancelButtonTapped(context),
+                        onSaveAndAddOther: () {
+                          if (cubit.validate()) {
+                            cubit.onSaveAndAddOther(context, unitType);
+                          }
+                        },
+                        unitType: unitType,
+                      ),
+                      26.hs,
+                    ],
+                  ),
                 ),
-                UnitType.commercial => CommercialUnitPage(
-                  unitCubit: cubit,
-                  applicantType: applicantType,
-                ),
-                UnitType.administrative => AdministrativeUnitPage(
-                  unitCubit: cubit,
-                ),
-                UnitType.serviceUnit => ServiceUnitPage(
-                  applicantType: applicantType,
-                  unitCubit: cubit,
-                ),
-                UnitType.fixedInstallations => FixedInstallationsPage(
-                  applicantType: applicantType,
-                  unitCubit: cubit,
-                ),
-                UnitType.vacantLand => SizedBox.shrink(),
-                UnitType.serviceFacility => SizedBox.shrink(),
-                UnitType.hotelFacility => SizedBox.shrink(),
-                UnitType.industrialFacility => SizedBox.shrink(),
-                UnitType.productionFacility => SizedBox.shrink(),
-                UnitType.petroleumFacility => SizedBox.shrink(),
-                UnitType.minesAndQuarries => SizedBox.shrink(),
-              },
+              ),
             ),
           );
         },

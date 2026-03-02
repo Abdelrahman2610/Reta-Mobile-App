@@ -7,18 +7,22 @@ import 'user_profile_state.dart';
 
 class UserProfileCubit extends Cubit<UserProfileState> {
   final AuthRepository _repository;
+  UserModel? userModel;
 
-  UserProfileCubit({AuthRepository? repository})
+  UserProfileCubit({AuthRepository? repository, this.userModel})
     : _repository = repository ?? AuthRepository(),
-      super(const UserProfileInitial());
+      super(UserProfileInitial());
 
-  Future<void> loadFromUser(UserModel user) async {
-    _emitFromModel(user);
+  Future<void> loadFromUser(UserModel? user) async {
+    if (user != null) {
+      _emitFromModel(user);
+    }
 
     final result = await _repository.getUserProfile();
 
     switch (result) {
       case ApiSuccess(:final data):
+        userModel = data;
         _emitFromModel(data);
       case ApiError(:final message):
         emit(UserProfileError(message));
@@ -26,20 +30,21 @@ class UserProfileCubit extends Cubit<UserProfileState> {
   }
 
   void _emitFromModel(UserModel user) {
-    emit(
-      UserProfileLoaded(
-        fullName: '${user.firstname ?? ''} ${user.lastname ?? ''}'.trim(),
-        email: user.email ?? '',
-        emailVerified: user.emailVerified ?? false,
-        phone: user.phone ?? '',
-        phoneVerified: user.phoneVerified ?? false,
-        nationality: user.nationality ?? 'مصري',
-        nationalId: user.nationalId ?? '',
-        nationalIdVerified: user.nationalIdVerified ?? false,
-        dateOfBirth: user.dateOfBirth ?? '',
-        placeOfBirth: user.placeOfBirth ?? '',
-        gender: user.gender ?? '',
-      ),
+    UserModel userModel = UserModel(
+      firstname: (user.firstname ?? '').trim(),
+      lastname: (user.lastname ?? '').trim(),
+      email: user.email ?? '',
+      emailVerified: user.emailVerified ?? false,
+      phone: user.phone ?? '',
+      phoneVerified: user.phoneVerified ?? false,
+      nationality: user.nationality ?? 'مصري',
+      nationalId: user.nationalId ?? '',
+      nationalIdVerified: user.nationalIdVerified ?? false,
+      dateOfBirth: user.dateOfBirth ?? '',
+      placeOfBirth: user.placeOfBirth ?? '',
+      gender: user.gender ?? '',
     );
+
+    emit(UserProfileLoaded(userModel: userModel));
   }
 }

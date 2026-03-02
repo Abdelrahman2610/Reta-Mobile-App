@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/features/auth/presentation/cubit/notifications_cubit.dart';
+import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_cubit.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration_lookups_cubit.dart';
 import 'package:reta/features/splash/presentation/pages/splash.dart';
@@ -29,6 +28,7 @@ class MainApp extends StatelessWidget {
           BlocProvider(create: (_) => DeclarationLookupsCubit()),
           BlocProvider(create: (_) => DeclarationCubit()),
           BlocProvider(create: (_) => NotificationsCubit()),
+          BlocProvider(lazy: true, create: (_) => UserProfileCubit()),
         ],
         child: Directionality(
           textDirection: TextDirection.rtl,

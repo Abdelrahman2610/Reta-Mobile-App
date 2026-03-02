@@ -11,6 +11,12 @@ extension ProviderDataType on DeclarationsDataType {
         return 'بيانات الموقع';
       case DeclarationsDataType.unitData:
         return 'بيانات الوحدة';
+      case DeclarationsDataType.compositionData:
+        return 'بيانات التركيبة';
+      case DeclarationsDataType.landData:
+        return 'بيانات الأرض';
+      case DeclarationsDataType.establishmentData:
+        return 'بيانات المنشأة';
     }
   }
 
@@ -23,6 +29,12 @@ extension ProviderDataType on DeclarationsDataType {
       case DeclarationsDataType.locationData:
         return '1';
       case DeclarationsDataType.unitData:
+        return '2';
+      case DeclarationsDataType.compositionData:
+        return '2';
+      case DeclarationsDataType.landData:
+        return '2';
+      case DeclarationsDataType.establishmentData:
         return '2';
     }
   }

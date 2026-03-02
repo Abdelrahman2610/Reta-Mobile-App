@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -34,7 +32,6 @@ class SharedForm extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<ApplicantCubit>();
     final lookups = context.read<DeclarationLookupsCubit>().lookups;
-    log("Lookups: ${lookups?.taxpayerTypes}");
     return AppContainer(
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
       child: Column(

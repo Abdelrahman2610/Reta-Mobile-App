@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/network/api_result.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../data/models/user_models.dart';
@@ -10,6 +9,8 @@ import 'settings_state.dart';
 class SettingsCubit extends Cubit<SettingsState> {
   final UserModel _initialUser;
   final AuthRepository _repository;
+
+  UserModel get userModel => _initialUser;
 
   SettingsCubit({required UserModel initialUser, AuthRepository? repository})
     : _initialUser = initialUser,

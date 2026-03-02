@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:reta/core/network/api_constants.dart';
 import 'package:reta/core/network/api_result.dart';
@@ -31,7 +31,6 @@ class AuthRepository {
       'name': nationalId,
       'password': password,
     };
-    log(data.toString());
     return _login(
       body: {
         'login_type': 'national_id',
