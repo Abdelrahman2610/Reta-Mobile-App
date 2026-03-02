@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:reta/features/auth/data/models/user_models.dart';
 import 'package:reta/features/declarations/presentations/pages/provider_data_page.dart';
 
 import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/cubit/user_profile_cubit.dart';
+import '../../../auth/presentation/cubit/user_profile_state.dart';
 import '../../../components/app_bar.dart';
 import '../../../components/app_text.dart';
 import '../components/select_applicant_type_item.dart';
@@ -42,125 +46,91 @@ class SelectApplicantTypePage extends StatelessWidget {
                       horizontal: 24.w,
                       vertical: 24.h,
                     ),
-                    child: Column(
-                      children: [
-                        AppText(
-                          text: 'إختار صفة مقدم الطلب',
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.mainBlueIndigoDye,
-                        ),
-                        SizedBox(height: 24.h),
-                        SelectApplicantTypeItem(
-                          title: "مالك",
-                          subTitle:
-                              "تقديم الإقرار عن جميع العقارات المملوكة لك بصفتك المالك القانوني.",
-                          onPress: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: ProviderDataPage(
+                    child: BlocBuilder<UserProfileCubit, UserProfileState>(
+                      builder: (context, state) {
+                        if (state is! UserProfileLoaded) {
+                          return const CircularProgressIndicator();
+                        }
+                        return Column(
+                          children: [
+                            AppText(
+                              text: 'إختار صفة مقدم الطلب',
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.mainBlueIndigoDye,
+                            ),
+                            SizedBox(height: 24.h),
+                            SelectApplicantTypeItem(
+                              title: "مالك",
+                              subTitle:
+                                  "تقديم الإقرار عن جميع العقارات المملوكة لك بصفتك المالك القانوني.",
+                              onPress: () => onApplicantTaped(
                                 applicantType: ApplicantType.owner,
-                                declarationId: declarationId,
+                                userModel: state.userModel,
+                                context: context,
                               ),
-                              withNavBar: true,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.slideUp,
-                            );
-                          },
-                        ),
-                        SizedBox(height: 16.h),
-                        SelectApplicantTypeItem(
-                          title: "مالك على الشيوع",
-                          subTitle:
-                              "تقديم الإقرار عن عقار مملوك بالاشتراك مع شركاء أو ورثة آخرين.",
-                          onPress: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: ProviderDataPage(
+                            ),
+                            SizedBox(height: 16.h),
+                            SelectApplicantTypeItem(
+                              title: "مالك على الشيوع",
+                              subTitle:
+                                  "تقديم الإقرار عن عقار مملوك بالاشتراك مع شركاء أو ورثة آخرين.",
+                              onPress: () => onApplicantTaped(
                                 applicantType: ApplicantType.sharedOwnership,
-                                declarationId: declarationId,
+                                userModel: state.userModel,
+                                context: context,
                               ),
-                              withNavBar: true,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.slideUp,
-                            );
-                          },
-                        ),
-                        SizedBox(height: 16.h),
-                        SelectApplicantTypeItem(
-                          title: "منتفع",
-                          subTitle:
-                              "تقديم الإقرار عن عقار لك حق الانتفاع به وفق سند أو حق قانوني.",
-                          onPress: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: ProviderDataPage(
+                            ),
+                            SizedBox(height: 16.h),
+                            SelectApplicantTypeItem(
+                              title: "منتفع",
+                              subTitle:
+                                  "تقديم الإقرار عن عقار لك حق الانتفاع به وفق سند أو حق قانوني.",
+                              onPress: () => onApplicantTaped(
                                 applicantType: ApplicantType.beneficiary,
-                                declarationId: declarationId,
+                                userModel: state.userModel,
+                                context: context,
                               ),
-                              withNavBar: true,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.slideUp,
-                            );
-                          },
-                        ),
-                        SizedBox(height: 16.h),
-                        SelectApplicantTypeItem(
-                          title: "وكيل",
-                          subTitle:
-                              "تقديم الإقرار نيابةً عن المكلف بموجب توكيل رسمي ساري.",
-                          onPress: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: ProviderDataPage(
+                            ),
+                            SizedBox(height: 16.h),
+                            SelectApplicantTypeItem(
+                              title: "وكيل",
+                              subTitle:
+                                  "تقديم الإقرار نيابةً عن المكلف بموجب توكيل رسمي ساري.",
+                              onPress: () => onApplicantTaped(
                                 applicantType: ApplicantType.agent,
-                                declarationId: declarationId,
+                                userModel: state.userModel,
+                                context: context,
                               ),
-                              withNavBar: true,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.slideUp,
-                            );
-                          },
-                        ),
-                        SizedBox(height: 16.h),
-                        SelectApplicantTypeItem(
-                          title: "ممثل قانوني",
-                          subTitle:
-                              "تقديم الإقرار بصفتك ممثلًا قانونيًا عن شخص أو جهة مكلفة.",
-                          onPress: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: ProviderDataPage(
+                            ),
+                            SizedBox(height: 16.h),
+                            SelectApplicantTypeItem(
+                              title: "ممثل قانوني",
+                              subTitle:
+                                  "تقديم الإقرار بصفتك ممثلًا قانونيًا عن شخص أو جهة مكلفة.",
+
+                              onPress: () => onApplicantTaped(
                                 applicantType:
                                     ApplicantType.legalRepresentative,
-                                declarationId: declarationId,
+                                userModel: state.userModel,
+                                context: context,
                               ),
-                              withNavBar: true,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.slideUp,
-                            );
-                          },
-                        ),
-                        SizedBox(height: 16.h),
-                        SelectApplicantTypeItem(
-                          title: "أخرى",
-                          subTitle:
-                              "تقديم الإقرار في حالات خاصة لا تندرج ضمن الصفات السابقة.",
-                          isOther: true,
-                          onPress: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: ProviderDataPage(
+                            ),
+                            SizedBox(height: 16.h),
+                            SelectApplicantTypeItem(
+                              title: "أخرى",
+                              subTitle:
+                                  "تقديم الإقرار في حالات خاصة لا تندرج ضمن الصفات السابقة.",
+                              isOther: true,
+                              onPress: () => onApplicantTaped(
                                 applicantType: ApplicantType.other,
-                                declarationId: declarationId,
+                                userModel: state.userModel,
+                                context: context,
                               ),
-                              withNavBar: true,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.slideUp,
-                            );
-                          },
-                        ),
-                      ],
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -170,6 +140,23 @@ class SelectApplicantTypePage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void onApplicantTaped({
+    required ApplicantType applicantType,
+    required BuildContext context,
+    required UserModel userModel,
+  }) {
+    PersistentNavBarNavigator.pushNewScreen(
+      context,
+      screen: ProviderDataPage(
+        applicantType: ApplicantType.other,
+        declarationId: declarationId,
+        userModel: userModel,
+      ),
+      withNavBar: true,
+      pageTransitionAnimation: PageTransitionAnimation.slideUp,
     );
   }
 }

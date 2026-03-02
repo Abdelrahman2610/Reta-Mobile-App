@@ -11,6 +11,8 @@ import 'package:reta/features/declarations/presentations/pages/select_applicant_
 import '../../../../core/helpers/extensions/applicant_type.dart';
 import '../../../../core/helpers/loading_popup.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/cubit/user_profile_cubit.dart';
+import '../../../auth/presentation/cubit/user_profile_state.dart';
 import '../../../components/app_bar.dart';
 import '../../../components/circular_progress_indicator_platform_widget.dart';
 import '../../../components/show_confirmation_dialog.dart';
@@ -91,28 +93,36 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                 if (state is DeclarationDetailsLoaded) {
                   return Column(
                     children: [
-                      PropertiesListInDeclarationHeader(
-                        declarationModel.declarationTypeText ?? "",
-                        declarationModel.statusId != "3",
-                        onTap: () {
-                          PersistentNavBarNavigator.pushNewScreen(
-                            context,
-                            screen: ProviderDataPage(
-                              declarationId: declarationModel.id ?? -1,
-                              applicantType:
-                                  state
-                                      .detailsModel
-                                      ?.declarationTypeId
-                                      .displayApplicant ??
-                                  ApplicantType.owner,
-                              existingDeclaration: state.detailsModel,
-                              afterUpdating: () => context
-                                  .read<DeclarationDetailsCubit>()
-                                  .fetchDeclarationModel(),
-                            ),
-                            withNavBar: true,
-                            pageTransitionAnimation:
-                                PageTransitionAnimation.slideUp,
+                      BlocBuilder<UserProfileCubit, UserProfileState>(
+                        builder: (context, userState) {
+                          if (userState is! UserProfileLoaded) {
+                            return const CircularProgressIndicator();
+                          }
+                          return PropertiesListInDeclarationHeader(
+                            declarationModel.declarationTypeText ?? "",
+                            declarationModel.statusId != "3",
+                            onTap: () {
+                              PersistentNavBarNavigator.pushNewScreen(
+                                context,
+                                screen: ProviderDataPage(
+                                  declarationId: declarationModel.id ?? -1,
+                                  applicantType:
+                                      state
+                                          .detailsModel
+                                          ?.declarationTypeId
+                                          .displayApplicant ??
+                                      ApplicantType.owner,
+                                  existingDeclaration: state.detailsModel,
+                                  afterUpdating: () => context
+                                      .read<DeclarationDetailsCubit>()
+                                      .fetchDeclarationModel(),
+                                  userModel: userState.userModel,
+                                ),
+                                withNavBar: true,
+                                pageTransitionAnimation:
+                                    PageTransitionAnimation.slideUp,
+                              );
+                            },
                           );
                         },
                       ),
