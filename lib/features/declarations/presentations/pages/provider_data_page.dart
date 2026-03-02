@@ -34,12 +34,6 @@ class ProviderDataPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<UserProfileCubit>().state;
-    UserModel? userModel;
-    if (state is UserProfileLoaded) {
-      userModel = state.userModel;
-    }
-
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -64,21 +58,14 @@ class ProviderDataPage extends StatelessWidget {
         ),
       ],
       child: BlocListener<UserProfileCubit, UserProfileState>(
-        listenWhen: (prev, curr) =>
-            curr is UserProfileLoaded /* أو UserProfileLoaded */,
+        listenWhen: (prev, curr) => curr is UserProfileLoaded,
         listener: (context, state) {
           final applicantCubit = context.read<ApplicantCubit>();
 
           UserModel? user;
           if (state is UserProfileLoaded) user = state.userModel;
-          // لو عندك UserProfileLoaded وفيه userModel:
-          // if (state is UserProfileLoaded) user = state.userModel;
-
           applicantCubit.initFromUser(user);
-
-          // لو محتاج تعمل initFromDeclaration مرة واحدة
-          if (existingDeclaration != null &&
-              !applicantCubit.isEditMode /* أو flag عندك */ ) {
+          if (existingDeclaration != null) {
             applicantCubit.initFromDeclaration(existingDeclaration!);
           }
         },

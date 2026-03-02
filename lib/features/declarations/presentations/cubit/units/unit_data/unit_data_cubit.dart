@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -690,6 +692,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     UnitType unitType,
     DeclarationLookupsModel lookups,
   ) {
+    log("BuildPayload: $unitType");
     switch (unitType) {
       case UnitType.residential:
         return buildResidentialPayload(lookups);
@@ -776,6 +779,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         )
         .id;
 
+    log("UnitTypeID: $unitTypeId - unitType: $unitType");
     return {
       ..._buildBaseUnitPayload(),
       'usage_type': 'غير سكني',

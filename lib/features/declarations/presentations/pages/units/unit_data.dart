@@ -138,19 +138,13 @@ class UnitData extends StatelessWidget {
                         cubit: cubit,
                         onSaveData: () {
                           if (cubit.validate()) {
-                            cubit.onSaveDataTapped(
-                              context,
-                              UnitType.residential,
-                            );
+                            cubit.onSaveDataTapped(context, unitType);
                           }
                         },
                         onCancel: () => cubit.onCancelButtonTapped(context),
                         onSaveAndAddOther: () {
                           if (cubit.validate()) {
-                            cubit.onSaveAndAddOther(
-                              context,
-                              UnitType.residential,
-                            );
+                            cubit.onSaveAndAddOther(context, unitType);
                           }
                         },
                         unitType: unitType,
