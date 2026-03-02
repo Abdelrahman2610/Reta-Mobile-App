@@ -4,7 +4,8 @@ class ApiConstants {
   // 'http://dev-rta-services.etax.com.eg/reta-services/public/api';
 
   static const String baseUrl =
-      'https://dev-rta-services.etax.com.eg/reta-services/public/api';
+      // 'http://dev-rta-services.etax.com.eg/reta-services/public/api';
+      'https://tst-rta-services.etax.com.eg/reta-services/public/api';
   // ─── Auth ───────────────────────────────────────────────────────────────────
   static const String login = '/login';
   static const String registerSendOtp = '/register/sendOTP';

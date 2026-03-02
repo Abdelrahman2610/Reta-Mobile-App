@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
+import 'package:reta/features/auth/presentation/cubit/user_profile_state.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../data/models/user_models.dart';
-import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
-import 'package:reta/features/auth/presentation/cubit/user_profile_state.dart';
 
 class UserProfilePage extends StatelessWidget {
   final UserModel user;
@@ -108,34 +108,40 @@ class _ProfileBody extends StatelessWidget {
         ),
         child: Column(
           children: [
-            _ProfileField(label: 'الاسم الكامل', value: state.fullName),
+            _ProfileField(
+              label: 'الاسم الكامل',
+              value: '${state.userModel.firstname} ${state.userModel.lastname}',
+            ),
             _Divider(),
             _ProfileField(
               label: 'البريد الإلكتروني',
-              value: state.email,
+              value: state.userModel.email ?? '',
               showEdit: true,
-              showVerifyButton: !state.emailVerified,
+              showVerifyButton: !(state.userModel.emailVerified ?? false),
               onEditTap: () => _onEditTapped(context, 'البريد الإلكتروني'),
               onVerifyTap: () => _onVerifyTapped(context, 'البريد الإلكتروني'),
             ),
             _Divider(),
             _ProfileField(
               label: 'رقم الهاتف المحمول',
-              value: state.phone,
+              value: state.userModel.phone ?? '',
               showEdit: true,
-              isVerified: state.phoneVerified,
-              showVerifyButton: !state.phoneVerified,
+              isVerified: state.userModel.phoneVerified ?? false,
+              showVerifyButton: !(state.userModel.phoneVerified ?? false),
               onEditTap: () => _onEditTapped(context, 'رقم الهاتف المحمول'),
               onVerifyTap: () => _onVerifyTapped(context, 'رقم الهاتف المحمول'),
             ),
             _Divider(),
-            _ProfileField(label: 'الجنسية', value: state.nationality),
+            _ProfileField(
+              label: 'الجنسية',
+              value: state.userModel.nationality ?? '',
+            ),
             _Divider(),
             _ProfileField(
               label: 'الرقم القومي/جواز السفر',
-              value: state.nationalId,
+              value: state.userModel.nationalId ?? '',
               showEdit: true,
-              showVerifyButton: !state.nationalIdVerified,
+              showVerifyButton: !(state.userModel.nationalIdVerified ?? false),
               onEditTap: () =>
                   _onEditTapped(context, 'الرقم القومي/جواز السفر'),
               onVerifyTap: () =>
@@ -150,11 +156,17 @@ class _ProfileBody extends StatelessWidget {
                   _onEditTapped(context, 'مرفق الرقم القومي/جواز السفر'),
             ),
             _Divider(),
-            _ProfileField(label: 'تاريخ الميلاد', value: state.dateOfBirth),
+            _ProfileField(
+              label: 'تاريخ الميلاد',
+              value: state.userModel.dateOfBirth ?? '',
+            ),
             _Divider(),
-            _ProfileField(label: 'محل الميلاد', value: state.placeOfBirth),
+            _ProfileField(
+              label: 'محل الميلاد',
+              value: state.userModel.placeOfBirth ?? '',
+            ),
             _Divider(),
-            _ProfileField(label: 'النوع', value: state.gender),
+            _ProfileField(label: 'النوع', value: state.userModel.gender ?? ''),
             _Divider(),
             _ProfileField(
               label: 'كلمة المرور',

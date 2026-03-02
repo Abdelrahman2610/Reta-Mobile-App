@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -50,8 +48,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   String? applicantPassportFilePath;
   String? applicantPassportOriginalName;
 
-  void initFromUser(UserModel user) {
-    // if (user == null) return;
+  void initFromUser(UserModel? user) {
+    if (user == null) return;
     applicantFirstNameController.text = user.firstname ?? '';
     applicantLastNameController.text = user.firstname ?? ''.trim();
     applicantPhoneController.text = user.phone ?? '';
@@ -398,22 +396,17 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     final isFormValid = formKey.currentState?.validate() ?? false;
     if (!isFormValid) return false;
 
-    if (applicantNationalIdFilePath == null) {
-      emit(state.copyWith(errorMessage: 'يرجى رفع صورة الرقم القومي'));
-      return false;
-    }
-
     switch (state.applicantType) {
       case ApplicantType.owner:
       case ApplicantType.beneficiary:
+        return true;
+      case ApplicantType.sharedOwnership:
       case ApplicantType.agent:
-        if (applicantPassportFilePath == null) {
-          emit(state.copyWith(errorMessage: 'يرجى رفع صورة جواز السفر'));
+        if (taxpayerNationalIdFilePath == null) {
+          emit(state.copyWith(errorMessage: 'يرجى رفع صورة الرقم القومي'));
           return false;
         }
-        break;
-      case ApplicantType.sharedOwnership:
-        if (applicantPassportFilePath == null) {
+        if (taxpayerPassportFilePath == null) {
           emit(state.copyWith(errorMessage: 'يرجى رفع صورة جواز السفر'));
           return false;
         }
@@ -448,7 +441,6 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
     if (applicantType == ApplicantType.owner ||
         applicantType == ApplicantType.beneficiary) {
-      log("ApiBody: ${buildPayload(context)}");
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -483,7 +475,6 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
   Future<void> onTaxpayerNextTapped(BuildContext context) async {
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
-    log("ApiBody: ${buildPayload(context)}");
     Navigator.push(
       context,
       MaterialPageRoute(

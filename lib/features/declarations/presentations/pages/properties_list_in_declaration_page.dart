@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -210,10 +208,6 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                                     state.units[index],
                                     state.activeCategories[state
                                         .selectedCategoryIndex],
-                                  );
-                                  log("summary: $summary");
-                                  log(
-                                    "id ${getId(state.activeCategories[state.selectedCategoryIndex].deleteID, index, state.detailsModel?.data ?? {})}",
                                   );
                                   return Padding(
                                     padding: EdgeInsets.only(bottom: 15.h),

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/helpers/app_enum.dart';
@@ -352,7 +350,6 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   bool validate() => formKey.currentState?.validate() ?? false;
 
   void onNextButtonTapped(BuildContext context, ApplicantType applicantType) {
-    log("Payload: ${buildPayload()}");
     final applicantCubit = context.read<ApplicantCubit>();
     final declarationCubit = context.read<DeclarationCubit>();
     final lookupsCubit = context.read<DeclarationLookupsCubit>();

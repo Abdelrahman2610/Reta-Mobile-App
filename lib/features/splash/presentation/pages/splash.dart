@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/features/auth/presentation/pages/main_page.dart';
 
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../auth/presentation/cubit/user_profile_cubit.dart';
 import '../../../auth/presentation/pages/guest_page.dart';
 
 class SplashPage extends StatefulWidget {
@@ -55,8 +57,13 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) =>
-            isLoggedIn ? const MainPage(isLoggedIn: true) : const GuestPage(),
+        builder: (_) => BlocProvider(
+          lazy: false,
+          create: (_) => UserProfileCubit()..loadFromUser(null),
+          child: isLoggedIn
+              ? const MainPage(isLoggedIn: true)
+              : const GuestPage(),
+        ),
       ),
     );
   }

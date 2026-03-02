@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -29,16 +27,11 @@ class TaxpayerDataPage extends StatelessWidget {
       backgroundColor: AppColors.neutralLightMedium,
       body: Form(
         key: cubit.formKey,
-        child: BlocConsumer<ApplicantCubit, ApplicantState>(
+        child: BlocListener<ApplicantCubit, ApplicantState>(
           listenWhen: (prev, curr) =>
-              curr.errorMessage != null || prev.isLoading != curr.isLoading,
+              curr.errorMessage != null &&
+              prev.errorMessage != curr.errorMessage,
           listener: (context, state) {
-            if (state.isLoading) {
-              log("LoadingState");
-              loadingPopup(RuntimeData.getCurrentContext()!);
-            } else if (!state.isLoading) {
-              Navigator.pop(RuntimeData.getCurrentContext()!);
-            }
             if (state.errorMessage != null) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -49,91 +42,110 @@ class TaxpayerDataPage extends StatelessWidget {
               cubit.clearError();
             }
           },
-          buildWhen: (prev, curr) => prev.isLoading != curr.isLoading,
-          builder: (context, state) {
-            return SingleChildScrollView(
-              child: Directionality(
-                textDirection: TextDirection.rtl,
-                child: Column(
-                  children: [
-                    MainAppBar(
-                      title: 'بيانات الإقرار',
-                      backgroundColor: AppColors.white,
-                      backButtonIconColor: AppColors.neutralDarkDark,
-                      titleTextStyle: TextStyle(
-                        color: AppColors.neutralDarkDark,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
+          child: BlocConsumer<ApplicantCubit, ApplicantState>(
+            listenWhen: (prev, curr) => prev.isLoading != curr.isLoading,
+            listener: (context, state) {
+              if (state.isLoading) {
+                loadingPopup(RuntimeData.getCurrentContext()!);
+              } else if (!state.isLoading) {
+                Navigator.pop(RuntimeData.getCurrentContext()!);
+              }
+              if (state.errorMessage != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: AppText(text: state.errorMessage!),
+                    backgroundColor: AppColors.errorDark,
+                  ),
+                );
+                cubit.clearError();
+              }
+            },
+            buildWhen: (prev, curr) => prev.isLoading != curr.isLoading,
+            builder: (context, state) {
+              return SingleChildScrollView(
+                child: Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: Column(
+                    children: [
+                      MainAppBar(
+                        title: 'بيانات الإقرار',
+                        backgroundColor: AppColors.white,
+                        backButtonIconColor: AppColors.neutralDarkDark,
+                        titleTextStyle: TextStyle(
+                          color: AppColors.neutralDarkDark,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        onCancel: cubit.isEditMode
+                            ? () {
+                                Navigator.pop(context);
+                                Navigator.pop(context);
+                              }
+                            : null,
+                        onSave: cubit.isEditMode
+                            ? () => cubit.saveTaxpayerEdit(context)
+                            : null,
                       ),
-                      onCancel: cubit.isEditMode
-                          ? () {
-                              Navigator.pop(context);
-                              Navigator.pop(context);
-                            }
-                          : null,
-                      onSave: cubit.isEditMode
-                          ? () => cubit.saveTaxpayerEdit(context)
-                          : null,
-                    ),
-                    15.hs,
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: Column(
-                        children: [
-                          DeclarationTabs(applicantType: cubit.applicantType),
-                          10.hs,
-                          switch (cubit.applicantType) {
-                            ApplicantType.owner => SizedBox.shrink(),
-                            ApplicantType.sharedOwnership =>
-                              SharedOwnershipForm(),
-                            ApplicantType.beneficiary => SizedBox.shrink(),
-                            ApplicantType.agent => SharedForm(
-                              uploadDocumentTitle:
-                                  'رفع سند إثبات صفة الوكيل (التوكيل الرسمي)',
-                              uploadDocumentDescription:
-                                  'يجب أن يكون التوكيل ساريًا ومخوّلًا بتقديم الإقرار الضريبي.',
-                            ),
-                            ApplicantType.legalRepresentative => SharedForm(
-                              uploadDocumentTitle: 'رفع سند التمثيل القانوني',
-                              uploadDocumentDescription:
-                                  '(قرار تعيين/تفويض رسمي/حكم قضائي/أي مستند رسمي يثبت صفة التمثيل القانوني)',
-                            ),
-                            ApplicantType.other => SharedForm(
-                              uploadDocumentTitle:
-                                  'رفع سند يوضح سبب التقديم بهذه الصفة',
-                              uploadDocumentDescription:
-                                  'تفويض/قرار إداري/خطاب رسمي/أي مستند رسمي يوضح العلاقة بين مقدم الطلب والمكلّف بأداء الضريبة',
-                            ),
-                          },
-                          10.hs,
-                          if (!cubit.isEditMode)
-                            AppContainer(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 24.w,
-                                vertical: 24.h,
+                      15.hs,
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: Column(
+                          children: [
+                            DeclarationTabs(applicantType: cubit.applicantType),
+                            10.hs,
+                            switch (cubit.applicantType) {
+                              ApplicantType.owner => SizedBox.shrink(),
+                              ApplicantType.sharedOwnership =>
+                                SharedOwnershipForm(),
+                              ApplicantType.beneficiary => SizedBox.shrink(),
+                              ApplicantType.agent => SharedForm(
+                                uploadDocumentTitle:
+                                    'رفع سند إثبات صفة الوكيل (التوكيل الرسمي)',
+                                uploadDocumentDescription:
+                                    'يجب أن يكون التوكيل ساريًا ومخوّلًا بتقديم الإقرار الضريبي.',
                               ),
-                              child: AppButton(
-                                label: 'التالي',
-                                backgroundColor: AppColors.highlightDarkest,
-                                textColor: AppColors.white,
-                                fontSize: 12.sp,
-                                alignment: Alignment.center,
-                                onTap: () {
-                                  if (cubit.validate()) {
-                                    cubit.onTaxpayerNextTapped(context);
-                                  }
-                                },
+                              ApplicantType.legalRepresentative => SharedForm(
+                                uploadDocumentTitle: 'رفع سند التمثيل القانوني',
+                                uploadDocumentDescription:
+                                    '(قرار تعيين/تفويض رسمي/حكم قضائي/أي مستند رسمي يثبت صفة التمثيل القانوني)',
                               ),
-                            ),
-                          26.hs,
-                        ],
+                              ApplicantType.other => SharedForm(
+                                uploadDocumentTitle:
+                                    'رفع سند يوضح سبب التقديم بهذه الصفة',
+                                uploadDocumentDescription:
+                                    'تفويض/قرار إداري/خطاب رسمي/أي مستند رسمي يوضح العلاقة بين مقدم الطلب والمكلّف بأداء الضريبة',
+                              ),
+                            },
+                            10.hs,
+                            if (!cubit.isEditMode)
+                              AppContainer(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 24.w,
+                                  vertical: 24.h,
+                                ),
+                                child: AppButton(
+                                  label: 'التالي',
+                                  backgroundColor: AppColors.highlightDarkest,
+                                  textColor: AppColors.white,
+                                  fontSize: 12.sp,
+                                  alignment: Alignment.center,
+                                  onTap: () {
+                                    if (cubit.validate()) {
+                                      cubit.onTaxpayerNextTapped(context);
+                                    }
+                                  },
+                                ),
+                              ),
+                            26.hs,
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

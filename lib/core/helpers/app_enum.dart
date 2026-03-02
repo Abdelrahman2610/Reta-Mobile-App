@@ -7,7 +7,15 @@ enum ApplicantType {
   other,
 }
 
-enum DeclarationsDataType { providerData, taxpayerData, locationData, unitData }
+enum DeclarationsDataType {
+  providerData,
+  taxpayerData,
+  locationData,
+  unitData,
+  compositionData,
+  landData,
+  establishmentData,
+}
 
 enum Nationality { egyptian, foreign }
 

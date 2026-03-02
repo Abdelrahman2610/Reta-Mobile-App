@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -586,7 +584,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   Future<void> onSaveDataTapped(BuildContext context, UnitType unitType) async {
-    log("OnSaveTapped");
     final declarationCubit = context.read<DeclarationCubit>();
     await submit(context, unitType);
     if (context.mounted && state.successMessage != null) {
@@ -599,7 +596,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     BuildContext context,
     UnitType unitType,
   ) async {
-    await submit(context, unitType);
+    int _declarationId = await submit(context, unitType);
     if (context.mounted && state.successMessage != null) {
       final locationCubit = context.read<UnitLocationCubit>();
       Map<String, dynamic> locationData = {
@@ -637,7 +634,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
             ],
             child: SelectTypesOfPropertiesPage(
               applicantType: applicantType,
-              declarationId: declarationId,
+              declarationId: _declarationId,
               locationData: locationData,
             ),
           ),
@@ -646,7 +643,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     }
   }
 
-  Future<void> submit(BuildContext context, UnitType unitType) async {
+  Future<int> submit(BuildContext context, UnitType unitType) async {
     final applicantCubit = context.read<ApplicantCubit>();
     final locationCubit = context.read<UnitLocationCubit>();
     final lookups = context.read<DeclarationLookupsCubit>().lookups!;
@@ -659,8 +656,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           orElse: () => DeclarationLookup(id: 1, name: ''),
         )
         .id;
-
-    log("Applicant payload: ${applicantCubit.buildPayload(context)}");
 
     final payload = {
       ...applicantCubit.buildPayload(context),
@@ -684,8 +679,10 @@ class UnitDataCubit extends Cubit<UnitDataState> {
             successMessage: 'تم حفظ الإقرار بنجاح',
           ),
         );
+        return data['data']['id'];
       case ApiError(:final message):
         emit(state.copyWith(isLoading: false, errorMessage: message));
+        return -1;
     }
   }
 
@@ -947,7 +944,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   // ── Helpers مشتركة ───────────────────────────────────
   Map<String, dynamic> _buildBaseUnitPayload() {
     final floorId = state.isFloorNumberOther ? -1 : _getFloorId();
-    log("Floor id: $floorId - ${_getFloorId()}");
     return {
       'real_estate_floor_id': floorId,
       if (state.isFloorNumberOther)

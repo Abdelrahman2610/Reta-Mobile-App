@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:reta/core/helpers/app_enum.dart';
 
 import '../../../../../../../core/helpers/extensions/dimensions.dart';
+import '../../../../../../../core/helpers/extensions/unit_type.dart';
 import '../../../../../../../core/theme/app_colors.dart';
 import '../../../../../../components/app_container.dart';
 import '../../../../components/add_new_property_button.dart';
@@ -16,12 +18,14 @@ class UnitButtons extends StatelessWidget {
     required this.onSaveData,
     required this.onCancel,
     required this.onSaveAndAddOther,
+    required this.unitType,
   });
 
   final UnitDataCubit cubit;
   final VoidCallback onSaveData;
   final VoidCallback onCancel;
   final VoidCallback onSaveAndAddOther;
+  final UnitType unitType;
 
   @override
   Widget build(BuildContext context) {
@@ -29,12 +33,19 @@ class UnitButtons extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
       child: Column(
         children: [
-          AddNewPropertyButton(
-            label: 'حفظ وإضافة وحدة أخرى في ذات العقار',
-            padding: EdgeInsets.zero,
-            onAdd: onSaveAndAddOther,
+          Column(
+            children: [
+              if (unitType.tabEnum == DeclarationsDataType.unitData ||
+                  unitType.tabEnum == DeclarationsDataType.compositionData)
+                AddNewPropertyButton(
+                  label: 'حفظ وإضافة وحدة أخرى في ذات العقار',
+                  padding: EdgeInsets.zero,
+                  onAdd: onSaveAndAddOther,
+                ),
+              16.hs,
+            ],
           ),
-          16.hs,
+
           Row(
             textDirection: TextDirection.rtl,
             children: [

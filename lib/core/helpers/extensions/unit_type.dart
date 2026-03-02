@@ -29,6 +29,64 @@ extension UnitTypeLabel on UnitType {
         return 'مناجم ومحاجر وملاحات';
     }
   }
+
+  String get unitLabel {
+    switch (this) {
+      case UnitType.residential:
+        return 'وحدة سكنية';
+      case UnitType.commercial:
+        return 'وحدة تجارية';
+      case UnitType.administrative:
+        return 'وحدة إدارية';
+      case UnitType.serviceUnit:
+        return 'وحدة خدمية';
+      case UnitType.fixedInstallations:
+        return 'تركيبات ثابتة';
+      case UnitType.vacantLand:
+        return 'أراضٍ فضاء مستغلة';
+      case UnitType.serviceFacility:
+        return 'المنشآت الخدمية';
+      case UnitType.hotelFacility:
+        return 'المنشآت الفندقية';
+      case UnitType.industrialFacility:
+        return 'المنشآت الصناعية';
+      case UnitType.productionFacility:
+        return 'المنشآت الإنتاجية';
+      case UnitType.petroleumFacility:
+        return 'المنشآت البترولية';
+      case UnitType.minesAndQuarries:
+        return 'مناجم/محاجر/ملاحات';
+    }
+  }
+
+  DeclarationsDataType get tabEnum {
+    switch (this) {
+      case UnitType.residential:
+        return DeclarationsDataType.unitData;
+      case UnitType.commercial:
+        return DeclarationsDataType.unitData;
+      case UnitType.administrative:
+        return DeclarationsDataType.unitData;
+      case UnitType.serviceUnit:
+        return DeclarationsDataType.unitData;
+      case UnitType.fixedInstallations:
+        return DeclarationsDataType.compositionData;
+      case UnitType.vacantLand:
+        return DeclarationsDataType.landData;
+      case UnitType.serviceFacility:
+        return DeclarationsDataType.establishmentData;
+      case UnitType.hotelFacility:
+        return DeclarationsDataType.establishmentData;
+      case UnitType.industrialFacility:
+        return DeclarationsDataType.establishmentData;
+      case UnitType.productionFacility:
+        return DeclarationsDataType.establishmentData;
+      case UnitType.petroleumFacility:
+        return DeclarationsDataType.establishmentData;
+      case UnitType.minesAndQuarries:
+        return DeclarationsDataType.establishmentData;
+    }
+  }
 }
 
 extension UnitTypeParser on String {

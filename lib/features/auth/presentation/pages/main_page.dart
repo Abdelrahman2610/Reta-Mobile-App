@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,23 +7,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
-import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/features/auth/presentation/pages/settings_page.dart';
 import 'package:reta/features/components/app_text.dart';
 
 import '../../../../core/helpers/fixed_assets.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/app_bottom_nav.dart';
-import '../cubit/home_cubit.dart';
-import '../cubit/notifications_cubit.dart';
-import 'home_tab.dart';
-import 'guest_page.dart';
-import 'placeholder_tabs.dart';
-import '../../data/models/user_models.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../components/image_svg_custom_widget.dart';
 import '../../../declarations/presentations/pages/declarations_page.dart';
+import '../../data/models/user_models.dart';
 import '../cubit/home_cubit.dart';
+import '../cubit/notifications_cubit.dart';
+import '../cubit/user_profile_cubit.dart';
+import 'guest_page.dart';
+import 'home_tab.dart';
 import 'login_page.dart';
 import 'signup_page.dart';
 
@@ -41,14 +40,17 @@ class MainPage extends StatelessWidget {
     );
 
     if (!isLoggedIn) {
+      log("UserNotLoggedIn");
       return const GuestPage();
     }
 
+    log("UserLoggedIn");
     return MultiBlocProvider(
       //
       providers: [
         BlocProvider(create: (_) => HomeCubit()),
         BlocProvider(create: (_) => NotificationsCubit()),
+        BlocProvider(create: (_) => UserProfileCubit()..loadFromUser(user)),
       ],
       child: _MainView(user: user ?? UserModel.guest()),
     );
