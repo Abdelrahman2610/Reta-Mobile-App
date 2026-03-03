@@ -24,8 +24,9 @@ class _GuestDeclarationsPageState extends State<GuestDeclarationsPage> {
           settings: settings,
           builder: (_) => _DeclarationsHome(
             onNavigateToGuide: () {
-              _navigatorKey.currentState?.push(
+              _navigatorKey.currentState?.pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const DeclarationGuidePage()),
+                (route) => false,
               );
             },
           ),
