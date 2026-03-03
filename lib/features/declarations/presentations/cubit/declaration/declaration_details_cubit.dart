@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/network/api_constants.dart';
@@ -118,6 +120,7 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
       );
 
       activeCategories = getNonEmptyCategories(response.data['data']);
+      log("FetchedDeclarativeModel: ${{response.data['data']}}");
       return DeclarationDetailsModel.fromJson(response.data['data']);
     });
 
