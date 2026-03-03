@@ -53,6 +53,7 @@ class NationalIDForm extends StatelessWidget {
           enabled: enabled,
           filledColor: filledColor,
           controller: controller,
+          keyboardType: TextInputType.number,
         ),
         16.hs,
         AppTextFormField(

@@ -4,12 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/core/theme/app_colors.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
-import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
 import 'package:reta/features/components/app_bar.dart';
 import 'package:reta/features/components/app_button.dart';
 import 'package:reta/features/components/app_container.dart';
 
 import '../../../../core/helpers/extensions/dimensions.dart';
+import '../../../auth/presentation/cubit/user_profile_cubit.dart';
 import '../../../auth/presentation/cubit/user_profile_state.dart';
 import '../../data/models/declaration_details_model.dart';
 import '../components/declaration_tabs.dart';
@@ -25,15 +25,23 @@ class ProviderDataPage extends StatelessWidget {
     required this.declarationId,
     this.existingDeclaration,
     this.afterUpdating,
+    this.applicantOtherName,
+    required this.userModel,
   });
 
   final ApplicantType applicantType;
   final int declarationId;
   final DeclarationDetailsModel? existingDeclaration;
   final VoidCallback? afterUpdating;
+  final UserModel userModel;
+  final String? applicantOtherName;
 
   @override
   Widget build(BuildContext context) {
+    final profileState = context.read<UserProfileCubit>().state;
+    final user = profileState is UserProfileLoaded
+        ? profileState.userModel
+        : null;
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -43,7 +51,8 @@ class ProviderDataPage extends StatelessWidget {
               declarationId: declarationId,
               isEditMode: existingDeclaration != null,
               afterUpdating: afterUpdating,
-            );
+              applicantOtherName: applicantOtherName,
+            )..initFromUser(user);
 
             if (existingDeclaration != null) {
               cubit.initFromDeclaration(existingDeclaration!);
@@ -57,20 +66,7 @@ class ProviderDataPage extends StatelessWidget {
           lazy: false,
         ),
       ],
-      child: BlocListener<UserProfileCubit, UserProfileState>(
-        listenWhen: (prev, curr) => curr is UserProfileLoaded,
-        listener: (context, state) {
-          final applicantCubit = context.read<ApplicantCubit>();
-
-          UserModel? user;
-          if (state is UserProfileLoaded) user = state.userModel;
-          applicantCubit.initFromUser(user);
-          if (existingDeclaration != null) {
-            applicantCubit.initFromDeclaration(existingDeclaration!);
-          }
-        },
-        child: _ProviderDataView(),
-      ),
+      child: _ProviderDataView(),
     );
   }
 }

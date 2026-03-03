@@ -7,7 +7,7 @@ class DeclarationService {
   static final instance = DeclarationService._();
 
   Future<ApiResult<Map<String, dynamic>>> createDeclaration(
-    Map<String, dynamic> payload, {
+    Map<dynamic, dynamic> payload, {
     required int declarationId,
   }) async {
     String _endPoint = ApiConstants.declarations;
@@ -24,6 +24,20 @@ class DeclarationService {
     return safeApiCall(() async {
       final response = await DioClient.instance.dio.post(
         _endPoint,
+        data: payload,
+      );
+      return response.data as Map<String, dynamic>;
+    });
+  }
+
+  Future<ApiResult<Map<String, dynamic>>> updateDeclaration(
+    Map<dynamic, dynamic> payload, {
+    required int declarationId,
+    required int unitId,
+  }) async {
+    return safeApiCall(() async {
+      final response = await DioClient.instance.dio.put(
+        '${ApiConstants.declarations}/$declarationId',
         data: payload,
       );
       return response.data as Map<String, dynamic>;

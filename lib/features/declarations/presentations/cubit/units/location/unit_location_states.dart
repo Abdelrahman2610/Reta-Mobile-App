@@ -13,7 +13,7 @@ class UnitLocationState {
 
   final String? selectedDistrict;
   final List<DeclarationLookup>? districtsList;
-  final bool? isLoadingDistricts;
+  final bool isLoadingDistricts;
 
   final String? selectedNeighborhood;
   final String? selectedStreet;
@@ -36,6 +36,7 @@ class UnitLocationState {
   final int? selectedDistrictId;
   final int? selectedVillageId;
   final int? selectedStreetId;
+  final bool isInitializing;
 
   const UnitLocationState({
     this.selectedGovernorate,
@@ -55,7 +56,7 @@ class UnitLocationState {
     this.governoratesList = const [],
     this.isLoadingGovernorates = false,
     this.districtsList,
-    this.isLoadingDistricts,
+    this.isLoadingDistricts = false,
     this.villagesList,
     this.allStreetsList,
     this.streetsList,
@@ -64,6 +65,7 @@ class UnitLocationState {
     this.selectedDistrictId,
     this.selectedVillageId,
     this.selectedStreetId,
+    this.isInitializing = false,
   });
 
   UnitLocationState copyWith({
@@ -92,6 +94,7 @@ class UnitLocationState {
     int? selectedDistrictId,
     int? selectedVillageId,
     int? selectedStreetId,
+    bool? isInitializing,
   }) {
     return UnitLocationState(
       isDistrictOther: isDistrictOther ?? this.isDistrictOther,
@@ -137,6 +140,7 @@ class UnitLocationState {
       selectedDistrictId: selectedDistrictId ?? this.selectedDistrictId,
       selectedVillageId: selectedVillageId ?? this.selectedVillageId,
       selectedStreetId: selectedStreetId ?? this.selectedStreetId,
+      isInitializing: isInitializing ?? this.isInitializing,
     );
   }
 }

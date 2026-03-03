@@ -28,6 +28,7 @@ class AppTextFormField extends StatelessWidget {
   final FocusNode? focusNode;
   final TextDirection? textDirection;
   final bool enabled;
+  final bool hideLabel;
   final String? infoText;
   final double? labelFontSize;
   final Color? labelColor;
@@ -60,6 +61,7 @@ class AppTextFormField extends StatelessWidget {
     this.labelFontSize,
     this.labelColor,
     this.description,
+    this.hideLabel = false,
   });
 
   @override
@@ -67,31 +69,32 @@ class AppTextFormField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        RichText(
-          softWrap: true,
-          overflow: TextOverflow.visible,
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: labelText,
-                style: TextStyle(
-                  fontSize: labelFontSize ?? 14.sp,
-                  fontWeight: FontWeight.w700,
-                  color: labelColor ?? AppColors.neutralDarkDark,
-                ),
-              ),
-              if (labelRequired)
+        if (!hideLabel)
+          RichText(
+            softWrap: true,
+            overflow: TextOverflow.visible,
+            text: TextSpan(
+              children: [
                 TextSpan(
-                  text: ' *',
+                  text: labelText,
                   style: TextStyle(
                     fontSize: labelFontSize ?? 14.sp,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.errorDark,
+                    color: labelColor ?? AppColors.neutralDarkDark,
                   ),
                 ),
-            ],
+                if (labelRequired)
+                  TextSpan(
+                    text: ' *',
+                    style: TextStyle(
+                      fontSize: labelFontSize ?? 14.sp,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.errorDark,
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
         if (description != null)
           AppText(
             text: description,

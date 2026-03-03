@@ -44,7 +44,7 @@ class UnitData extends StatelessWidget {
         listener: (context, state) {
           if (state.isLoading) {
             loadingPopup(RuntimeData.getCurrentContext()!);
-          } else if (!state.isLoading) {
+          } else if (!state.isLoading && state.errorMessage == null) {
             Navigator.pop(RuntimeData.getCurrentContext()!);
           }
           if (state.errorMessage != null) {

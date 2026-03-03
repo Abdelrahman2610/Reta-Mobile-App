@@ -56,7 +56,7 @@ class UserModel {
       nationalId: json['national_id']?.toString(),
       dateOfBirth: json['date_of_birth']?.toString(),
       gender: json['gender']?.toString(),
-      nationality: json['nationality']?.toString(),
+      nationality: json['nationality']['name']?.toString(),
       placeOfBirth: json['place_of_birth']?.toString(),
       emailVerified: json['email_verified'] == true,
       phoneVerified: json['phone_verified'] == true,
@@ -69,7 +69,6 @@ class UserModel {
     final data = json['data'] as Map<String, dynamic>;
     final profile = data['profile'] as Map<String, dynamic>? ?? {};
     final nationality = profile['nationality'] as Map<String, dynamic>?;
-
     return UserModel(
       id: data['id']?.toString(),
       firstname: profile['first_name']?.toString(),

@@ -7,10 +7,14 @@ import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_details_states.dart';
 import 'package:reta/features/declarations/presentations/pages/provider_data_page.dart';
 import 'package:reta/features/declarations/presentations/pages/select_applicant_type_page.dart';
+import 'package:reta/features/declarations/presentations/pages/units/unit_location_data_page.dart';
 
 import '../../../../core/helpers/extensions/applicant_type.dart';
+import '../../../../core/helpers/extensions/unit_type.dart';
 import '../../../../core/helpers/loading_popup.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/cubit/user_profile_cubit.dart';
+import '../../../auth/presentation/cubit/user_profile_state.dart';
 import '../../../components/app_bar.dart';
 import '../../../components/circular_progress_indicator_platform_widget.dart';
 import '../../../components/show_confirmation_dialog.dart';
@@ -26,6 +30,7 @@ import '../components/show_submit_declaration_dialog.dart';
 import '../components/submit_declaration_button.dart';
 import '../components/unit_type_category_tab_widget.dart';
 import '../cubit/declaration/declaration_details_cubit.dart';
+import '../cubit/declaration_lookups_cubit.dart';
 
 class PropertiesListInDeclarationPage extends StatelessWidget {
   final DeclarationModel declarationModel;
@@ -91,28 +96,36 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                 if (state is DeclarationDetailsLoaded) {
                   return Column(
                     children: [
-                      PropertiesListInDeclarationHeader(
-                        declarationModel.declarationTypeText ?? "",
-                        declarationModel.statusId != "3",
-                        onTap: () {
-                          PersistentNavBarNavigator.pushNewScreen(
-                            context,
-                            screen: ProviderDataPage(
-                              declarationId: declarationModel.id ?? -1,
-                              applicantType:
-                                  state
-                                      .detailsModel
-                                      ?.declarationTypeId
-                                      .displayApplicant ??
-                                  ApplicantType.owner,
-                              existingDeclaration: state.detailsModel,
-                              afterUpdating: () => context
-                                  .read<DeclarationDetailsCubit>()
-                                  .fetchDeclarationModel(),
-                            ),
-                            withNavBar: true,
-                            pageTransitionAnimation:
-                                PageTransitionAnimation.slideUp,
+                      BlocBuilder<UserProfileCubit, UserProfileState>(
+                        builder: (context, userState) {
+                          if (userState is! UserProfileLoaded) {
+                            return const CircularProgressIndicatorPlatformWidget();
+                          }
+                          return PropertiesListInDeclarationHeader(
+                            declarationModel.declarationTypeText ?? "",
+                            declarationModel.statusId != "3",
+                            onTap: () {
+                              PersistentNavBarNavigator.pushNewScreen(
+                                context,
+                                screen: ProviderDataPage(
+                                  declarationId: declarationModel.id ?? -1,
+                                  applicantType:
+                                      state
+                                          .detailsModel
+                                          ?.declarationTypeId
+                                          .displayApplicant ??
+                                      ApplicantType.owner,
+                                  existingDeclaration: state.detailsModel,
+                                  afterUpdating: () => context
+                                      .read<DeclarationDetailsCubit>()
+                                      .fetchDeclarationModel(),
+                                  userModel: userState.userModel,
+                                ),
+                                withNavBar: true,
+                                pageTransitionAnimation:
+                                    PageTransitionAnimation.slideUp,
+                              );
+                            },
                           );
                         },
                       ),
@@ -240,7 +253,50 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                                           unitId: 5,
                                         );
                                       },
-                                      onEdit: () {},
+                                      onEdit: () async {
+                                        final lookupsCubit = context
+                                            .read<DeclarationLookupsCubit>();
+
+                                        if (lookupsCubit.lookups == null) {
+                                          await lookupsCubit.fetchLookups();
+                                        }
+
+                                        if (!context.mounted) return;
+                                        PersistentNavBarNavigator.pushNewScreen(
+                                          context,
+                                          screen: MultiBlocProvider(
+                                            providers: [
+                                              BlocProvider.value(
+                                                value: lookupsCubit,
+                                              ),
+                                            ],
+                                            child: UnitLocationDataPage(
+                                              declarationId:
+                                                  declarationModel.id ?? -1,
+                                              unitType:
+                                                  (summary['property_type_text']
+                                                          as String)
+                                                      .toUnitType,
+                                              applicantType:
+                                                  state
+                                                      .detailsModel
+                                                      ?.applicantRoleId
+                                                      .displayApplicant ??
+                                                  ApplicantType.owner,
+                                              unitData:
+                                                  state
+                                                      .detailsModel
+                                                      ?.data?[state
+                                                      .activeCategories[state
+                                                          .selectedCategoryIndex]
+                                                      .key]['data'][index],
+                                            ),
+                                          ),
+                                          withNavBar: false,
+                                          pageTransitionAnimation:
+                                              PageTransitionAnimation.slideUp,
+                                        );
+                                      },
                                       propertyTypeText: getPropertyTypeText(
                                         summary,
                                       ),

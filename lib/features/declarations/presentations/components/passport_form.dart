@@ -47,6 +47,7 @@ class PassportForm extends StatelessWidget {
           filledColor: filledColor,
           enabled: enabled,
           controller: controller,
+          keyboardType: TextInputType.text,
         ),
         16.hs,
         AppTextFormField(

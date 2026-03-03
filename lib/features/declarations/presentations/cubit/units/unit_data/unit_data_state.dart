@@ -55,6 +55,7 @@ class UnitDataState {
   final bool isLoading;
   final String? errorMessage;
   final String? successMessage;
+  final bool navigateAfterSave;
 
   const UnitDataState({
     this.selectedFloorNumber,
@@ -98,6 +99,7 @@ class UnitDataState {
     this.successMessage,
     this.selectedUnitSubType,
     this.selectedAmenities,
+    this.navigateAfterSave = false,
   });
 
   static const _undefined = Object();
@@ -144,6 +146,7 @@ class UnitDataState {
     String? successMessage,
     String? selectedUnitSubType,
     List<String>? selectedAmenities,
+    bool? navigateAfterSave,
   }) {
     return UnitDataState(
       selectedFloorNumber: selectedFloorNumber ?? this.selectedFloorNumber,
@@ -230,6 +233,7 @@ class UnitDataState {
       successMessage: successMessage,
       selectedAmenities: selectedAmenities ?? this.selectedAmenities,
       selectedUnitSubType: selectedUnitSubType ?? this.selectedUnitSubType,
+      navigateAfterSave: navigateAfterSave ?? this.navigateAfterSave,
     );
   }
 }

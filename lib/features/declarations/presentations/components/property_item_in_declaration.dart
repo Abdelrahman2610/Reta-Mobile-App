@@ -115,7 +115,7 @@ class PropertyItemInDeclaration extends StatelessWidget {
                 children: [
                   Expanded(
                     child: AppButton(
-                      onTap: () {},
+                      onTap: onEdit,
                       label: "تعديل",
                       width: double.maxFinite,
                       height: 44.h,

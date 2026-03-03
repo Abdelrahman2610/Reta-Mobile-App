@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 //  Base URL — change this if the server changes
 // ════════════════════════════════════════════════════════════════════════════
 const String kBaseUrl =
-    'http://dev-rta-services.etax.com.eg/reta-services/public/api';
+    'https://tst-rta-services.etax.com.eg/reta-services/public/api';
 
 // ════════════════════════════════════════════════════════════════════════════
 //  Token storage helpers

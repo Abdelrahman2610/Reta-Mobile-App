@@ -17,12 +17,14 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
   final ApplicantType applicantType;
   final int declarationId;
   final Map<String, dynamic>? locationData;
+  final Map<String, dynamic>? unitData;
 
   const SelectTypesOfPropertiesPage({
     super.key,
     required this.applicantType,
     required this.declarationId,
     this.locationData,
+    this.unitData,
   });
 
   @override
@@ -76,7 +78,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                           subTitle: "وحدات مخصصة للسكن مثل الشقق والفيلات.",
                           icon: FixedAssets.instance.icon1,
                           onTap: () =>
-                              onUniTapped(UnitType.residential, context),
+                              onUnitTapped(UnitType.residential, context),
                         ),
                         SizedBox(height: 16.h),
                         SelectTypesOfPropertiesItem(
@@ -85,7 +87,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                               "وحدات مخصصة لمزاولة الأنشطة التجارية مثل المحلات والمعارض.",
                           icon: FixedAssets.instance.icon2,
                           onTap: () =>
-                              onUniTapped(UnitType.commercial, context),
+                              onUnitTapped(UnitType.commercial, context),
                         ),
                         SizedBox(height: 16.h),
                         SelectTypesOfPropertiesItem(
@@ -94,7 +96,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                               "وحدات مخصصة للأعمال الإدارية مثل المكاتب ومقار الشركات.",
                           icon: FixedAssets.instance.icon3,
                           onTap: () =>
-                              onUniTapped(UnitType.administrative, context),
+                              onUnitTapped(UnitType.administrative, context),
                         ),
                         SizedBox(height: 16.h),
                         SelectTypesOfPropertiesItem(
@@ -103,7 +105,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                               "وحدات تُستخدم لتقديم خدمات مثل العيادات والمدارس.",
                           icon: FixedAssets.instance.icon4,
                           onTap: () =>
-                              onUniTapped(UnitType.serviceUnit, context),
+                              onUnitTapped(UnitType.serviceUnit, context),
                         ),
                         SizedBox(height: 16.h),
                         SelectTypesOfPropertiesItem(
@@ -111,8 +113,10 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                           subTitle:
                               "تركيبات مثبتة بشكل دائم مثل الأبراج أو الخزانات أو اللوحات.",
                           icon: FixedAssets.instance.icon5,
-                          onTap: () =>
-                              onUniTapped(UnitType.fixedInstallations, context),
+                          onTap: () => onUnitTapped(
+                            UnitType.fixedInstallations,
+                            context,
+                          ),
                         ),
                         SizedBox(height: 16.h),
                         SelectTypesOfPropertiesItem(
@@ -121,14 +125,19 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                               "أراضٍ غير مبنية ويتم استخدامها في نشاط فعلي.",
                           icon: FixedAssets.instance.icon6,
                           onTap: () =>
-                              onUniTapped(UnitType.vacantLand, context),
+                              onUnitTapped(UnitType.vacantLand, context),
                         ),
                       ],
                     ),
                   ),
                 ),
-                if (locationData == null) SizedBox(height: 15.h),
-                if (locationData == null)
+                if (locationData == null &&
+                    ApplicantType.owner != applicantType &&
+                    ApplicantType.sharedOwnership != applicantType)
+                  SizedBox(height: 15.h),
+                if (locationData == null &&
+                    ApplicantType.owner != applicantType &&
+                    ApplicantType.sharedOwnership != applicantType)
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
@@ -155,7 +164,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                                 "منشآت مستقلة تُستخدم لتقديم خدمات متخصصة مثل المدرارس والمستشفيات.",
                             icon: FixedAssets.instance.icon7,
                             onTap: () =>
-                                onUniTapped(UnitType.serviceFacility, context),
+                                onUnitTapped(UnitType.serviceFacility, context),
                           ),
                           SizedBox(height: 16.h),
                           SelectTypesOfPropertiesItem(
@@ -163,14 +172,14 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                             subTitle: "منشآت مخصصة للإقامة والخدمات السياحية.",
                             icon: FixedAssets.instance.icon8,
                             onTap: () =>
-                                onUniTapped(UnitType.hotelFacility, context),
+                                onUnitTapped(UnitType.hotelFacility, context),
                           ),
                           SizedBox(height: 16.h),
                           SelectTypesOfPropertiesItem(
                             title: "المنشآت الصناعية",
                             subTitle: "منشآت مخصصة للأنشطة الصناعية والإنتاج.",
                             icon: FixedAssets.instance.icon9,
-                            onTap: () => onUniTapped(
+                            onTap: () => onUnitTapped(
                               UnitType.industrialFacility,
                               context,
                             ),
@@ -181,7 +190,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                             subTitle:
                                 "منشآت تقوم بأنشطة إنتاجية غير صناعية مباشرة مثل مزارع الدواجن.",
                             icon: FixedAssets.instance.icon10,
-                            onTap: () => onUniTapped(
+                            onTap: () => onUnitTapped(
                               UnitType.productionFacility,
                               context,
                             ),
@@ -191,7 +200,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                             title: "منشآت بترولية",
                             subTitle: "منشآت مرتبطة بأنشطة قطاع البترول.",
                             icon: FixedAssets.instance.icon11,
-                            onTap: () => onUniTapped(
+                            onTap: () => onUnitTapped(
                               UnitType.petroleumFacility,
                               context,
                             ),
@@ -202,8 +211,10 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                             subTitle:
                                 "مواقع مخصصة لأعمال التعدين والمحاجر والملاحات.",
                             icon: FixedAssets.instance.icon12,
-                            onTap: () =>
-                                onUniTapped(UnitType.minesAndQuarries, context),
+                            onTap: () => onUnitTapped(
+                              UnitType.minesAndQuarries,
+                              context,
+                            ),
                           ),
                         ],
                       ),
@@ -218,7 +229,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
     );
   }
 
-  void onUniTapped(UnitType unitType, BuildContext context) {
+  void onUnitTapped(UnitType unitType, BuildContext context) {
     final applicantCubit = context.read<ApplicantCubit>();
     final declarationCubit = context.read<DeclarationCubit>();
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
@@ -236,6 +247,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
             applicantType: applicantType,
             declarationId: declarationId,
             locationData: locationData,
+            unitData: unitData,
           ),
         ),
       ),
