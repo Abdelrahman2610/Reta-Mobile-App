@@ -11,6 +11,7 @@ import '../../../auth/presentation/cubit/user_profile_cubit.dart';
 import '../../../auth/presentation/cubit/user_profile_state.dart';
 import '../../../components/app_bar.dart';
 import '../../../components/app_text.dart';
+import '../../../components/circular_progress_indicator_platform_widget.dart';
 import '../components/select_applicant_type_item.dart';
 
 class SelectApplicantTypePage extends StatelessWidget {
@@ -49,7 +50,7 @@ class SelectApplicantTypePage extends StatelessWidget {
                     child: BlocBuilder<UserProfileCubit, UserProfileState>(
                       builder: (context, state) {
                         if (state is! UserProfileLoaded) {
-                          return const CircularProgressIndicator();
+                          return const CircularProgressIndicatorPlatformWidget();
                         }
                         return Column(
                           children: [
