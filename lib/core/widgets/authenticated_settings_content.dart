@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
 import 'package:reta/features/auth/presentation/cubit/settings_cubit.dart';
-import 'package:reta/features/auth/presentation/cubit/notifications_cubit.dart';
 import 'package:reta/features/auth/presentation/cubit/home_cubit.dart';
 import 'package:reta/features/auth/presentation/pages/user_profile_page.dart';
 import 'package:reta/features/auth/presentation/pages/help_support_page.dart';
 import 'package:reta/features/auth/presentation/pages/terms_privacy_page.dart';
-
 import 'package:reta/core/theme/app_colors.dart';
 import 'package:reta/core/theme/app_text_styles.dart';
 import 'user_profile_header.dart';
 import 'settings_tile.dart';
-import 'settings_toggle_tile.dart';
 import 'confirmation_dialog.dart';
 
 class AuthenticatedSettingsContent extends StatefulWidget {
@@ -33,10 +29,10 @@ class AuthenticatedSettingsContent extends StatefulWidget {
 
 class _AuthenticatedSettingsContentState
     extends State<AuthenticatedSettingsContent> {
-  bool _notificationsEnabled = true;
+  // bool _notificationsEnabled = true;
 
   void _pushWithCubits(BuildContext context, Widget page) {
-    final notificationsCubit = context.read<NotificationsCubit>();
+    // final notificationsCubit = context.read<NotificationsCubit>();
     final homeCubit = context.read<HomeCubit>();
     final settingsCubit = context.read<SettingsCubit>();
 
@@ -44,7 +40,7 @@ class _AuthenticatedSettingsContentState
       MaterialPageRoute(
         builder: (_) => MultiBlocProvider(
           providers: [
-            BlocProvider.value(value: notificationsCubit),
+            // BlocProvider.value(value: notificationsCubit),
             BlocProvider.value(value: homeCubit),
             BlocProvider.value(value: settingsCubit),
           ],
@@ -70,21 +66,18 @@ class _AuthenticatedSettingsContentState
         SettingsTile(
           icon: Icons.person_outline,
           label: 'بيانات المستخدم',
-          onTap: () => _pushWithCubits(
-            RuntimeData.getCurrentContext()!,
-            UserProfilePage(user: widget.user),
-          ),
+          onTap: () =>
+              _pushWithCubits(context, UserProfilePage(user: widget.user)),
         ),
 
-        _SectionLabel('الإعدادات العامة'),
-        const SizedBox(height: 8),
-        SettingsToggleTile(
-          icon: Icons.notifications_none_outlined,
-          label: 'إيقاف الإشعارات',
-          value: _notificationsEnabled,
-          onChanged: (val) => setState(() => _notificationsEnabled = val),
-        ),
-
+        // _SectionLabel('الإعدادات العامة'),
+        // const SizedBox(height: 8),
+        // SettingsToggleTile(
+        //   icon: Icons.notifications_none_outlined,
+        //   label: 'إيقاف الإشعارات',
+        //   value: _notificationsEnabled,
+        //   onChanged: (val) => setState(() => _notificationsEnabled = val),
+        // ),
         const SizedBox(height: 16),
 
         _SectionLabel('الدعم والمعلومات'),
@@ -92,18 +85,12 @@ class _AuthenticatedSettingsContentState
         SettingsTile(
           icon: Icons.help_outline,
           label: 'المساعدة والدعم',
-          onTap: () => _pushWithCubits(
-            RuntimeData.getCurrentContext()!,
-            const HelpSupportPage(),
-          ),
+          onTap: () => _pushWithCubits(context, const HelpSupportPage()),
         ),
         SettingsTile(
           icon: Icons.privacy_tip_outlined,
           label: 'الشروط والخصوصية',
-          onTap: () => _pushWithCubits(
-            RuntimeData.getCurrentContext()!,
-            const TermsPrivacyPage(),
-          ),
+          onTap: () => _pushWithCubits(context, const TermsPrivacyPage()),
         ),
 
         const SizedBox(height: 16),
@@ -114,7 +101,7 @@ class _AuthenticatedSettingsContentState
           icon: Icons.logout_outlined,
           label: 'تسجيل الخروج',
           isDestructive: false,
-          onTap: () => _handleLogout(RuntimeData.getCurrentContext()!, cubit),
+          onTap: () => _handleLogout(context, cubit),
         ),
         SettingsTile(
           icon: Icons.delete_outline,

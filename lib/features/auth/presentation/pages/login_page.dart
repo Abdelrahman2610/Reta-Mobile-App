@@ -76,7 +76,6 @@ class _LoginPageState extends State<LoginPage> {
       child: BlocListener<LoginCubit, LoginState>(
         listener: (context, state) {
           if (state.isSuccess && state.loginResponse != null) {
-            // ✅ build user directly from LoginResponse fields — skip toJson() roundtrip
             final response = state.loginResponse!;
             final user = UserModel(
               firstname: response.firstName,
@@ -212,8 +211,8 @@ class _LoginPageState extends State<LoginPage> {
           controller: _nationalIdController,
           focusNode: _nationalIdFocus,
           nextFocus: _passportFocus,
-          hint: 'الرقم القومي',
-          keyboardType: TextInputType.number,
+          hint: 'الرقم القومي/جواز السفر',
+          keyboardType: TextInputType.text,
           textInputAction: TextInputAction.next,
           errorText: state.nationalIdError,
           onChanged: cubit.onNationalIdChanged,
@@ -414,7 +413,7 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         Expanded(
           child: _buildSingleTab(
-            label: 'برقم جواز السفر',
+            label: 'بالرقم القومي/جواز السفر',
             isSelected: state.selectedTab == LoginTab.nationalId,
             onTap: () {
               _clearAllControllers();
