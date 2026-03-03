@@ -148,9 +148,10 @@ class AuthGateSheet extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const GuestPage()));
+              Navigator.of(RuntimeData.getCurrentContext()!).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const GuestPage()),
+                (route) => false,
+              );
             },
             child: Text(
               'العودة إلى الصفحة الرئيسية',
