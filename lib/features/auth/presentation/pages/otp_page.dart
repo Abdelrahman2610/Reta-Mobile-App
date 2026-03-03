@@ -101,8 +101,10 @@ class _OtpPageState extends State<OtpPage> {
       await Future.delayed(const Duration(seconds: 2));
       if (!mounted) return;
 
-      Navigator.of(RuntimeData.getCurrentContext()!).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => MainPage()),
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => MainPage(isLoggedIn: true, user: user),
+        ),
         (route) => false,
       );
     } else {

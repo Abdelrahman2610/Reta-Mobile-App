@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/helpers/runtime_data.dart';
+import 'package:reta/core/widgets/authenticated_settings_content.dart';
+// import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/features/auth/presentation/pages/main_page.dart';
 
 import '../../../../core/helpers/app_enum.dart';
@@ -9,11 +11,10 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../data/models/user_models.dart';
 import '../cubit/settings_cubit.dart';
 import '../cubit/settings_state.dart';
-import 'package:reta/core/widgets/authenticated_settings_content.dart';
 import 'help_support_page.dart';
-import 'terms_privacy_page.dart';
-import 'guest_page.dart';
+// import 'guest_page.dart';
 import 'login_page.dart';
+import 'terms_privacy_page.dart';
 
 class SettingsPage extends StatelessWidget {
   final UserModel currentUser;
@@ -127,7 +128,7 @@ class _GuestSettingsContent extends StatelessWidget {
               icon: Icons.help_outline,
               label: 'المساعدة والدعم',
               onTap: () {
-                Navigator.of(RuntimeData.getCurrentContext()!).push(
+                Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const HelpSupportPage()),
                 );
               },
@@ -136,7 +137,7 @@ class _GuestSettingsContent extends StatelessWidget {
               icon: Icons.privacy_tip_outlined,
               label: 'الشروط والخصوصية',
               onTap: () {
-                Navigator.of(RuntimeData.getCurrentContext()!).push(
+                Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const TermsPrivacyPage()),
                 );
               },
@@ -152,8 +153,11 @@ class _GuestSettingsContent extends StatelessWidget {
               label: 'تسجيل الدخول',
               onTap: () {
                 Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const LoginPage()));
+                  RuntimeData.getCurrentContext()!,
+                ).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                  (route) => false,
+                );
               },
             ),
           ]),

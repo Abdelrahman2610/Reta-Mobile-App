@@ -20,15 +20,6 @@ class DioClient {
       ),
     );
 
-    dio.interceptors.add(
-      LogInterceptor(
-        request: true,
-        requestBody: true,
-        responseBody: true,
-        error: true,
-      ),
-    );
-
     dio.interceptors.addAll([
       _AuthInterceptor(_storage, _tokenKey),
       _LoggingInterceptor(),
@@ -105,4 +96,16 @@ class _LoggingInterceptor extends Interceptor {
     print('✗ [${err.response?.statusCode}] ${err.requestOptions.uri}');
     handler.next(err);
   }
+}
+
+// ─── Public Dio Client (no auth token) ───────────────────────────────────────
+class PublicDioClient {
+  static final Dio dio = Dio(
+    BaseOptions(
+      baseUrl: ApiConstants.baseUrl,
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      headers: {'Accept': 'application/json'},
+    ),
+  )..interceptors.add(_LoggingInterceptor());
 }

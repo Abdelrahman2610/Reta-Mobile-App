@@ -1,10 +1,10 @@
 import 'dart:io';
 
-import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reta/core/network/api_constants.dart';
 import 'package:reta/core/network/dio_client.dart';
 import 'package:reta/features/auth/data/models/otp_response.dart';
-import 'package:dio/dio.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
 
 import '../../../../core/network/api_result.dart';
@@ -315,8 +315,6 @@ class SignupState {
 
 class SignupCubit extends Cubit<SignupState> {
   final AuthRepository _authRepository;
-  final Dio _dio = DioClient.instance.dio;
-
   String? _pendingOtpToken;
   String? _pendingUserId;
   String? _pendingMobile;
@@ -328,7 +326,32 @@ class SignupCubit extends Cubit<SignupState> {
     _loadResidences();
   }
 
-  // ── Nationality (hardcoded — no dedicated API) ──────────────────────────────
+  // ── Governorates API ────────────────────────────────────────────────────────
+
+  Future<List<DropdownItem>> _fetchGovernorates() async {
+    final response = await PublicDioClient.dio.get(
+      ApiConstants.governoratesPublic,
+    );
+    final raw = response.data as Map<String, dynamic>;
+    final list = raw['data'] as List<dynamic>;
+    return list.map((e) {
+      final rawId = e['id'];
+      final isOther = rawId == -1 || rawId.toString() == '-1';
+      return DropdownItem(
+        id: isOther ? '-1' : (e['code']?.toString() ?? rawId.toString()),
+        label: e['name']?.toString() ?? '',
+      );
+    }).toList();
+  }
+
+  // Fallback list also uses `code` as the id to stay consistent.
+  static const _fallbackGovernorates = [
+    DropdownItem(id: '01', label: 'القاهرة'),
+    DropdownItem(id: '02', label: 'الإسكندرية'),
+    DropdownItem(id: '21', label: 'الجيزة'),
+    DropdownItem(id: '-1', label: 'أخرى'),
+  ];
+
   Future<void> _loadNationalities() async {
     emit(
       state.copyWith(
@@ -343,90 +366,44 @@ class SignupCubit extends Cubit<SignupState> {
 
   Future<void> _loadResidences() async {
     emit(state.copyWith(isResidenceLoading: true));
-    try {
-      final publicDio = Dio(
-        BaseOptions(
-          baseUrl: 'http://10.0.2.2:3000',
-          headers: {'Accept': 'application/json'},
-        ),
-      );
-      final response = await publicDio.get('/api/category/governorates/out');
-
-      final raw = response.data as Map<String, dynamic>;
-      final list = raw['data'] as List<dynamic>;
-
-      final options = list
-          .map(
-            (e) => DropdownItem(
-              id: e['id'].toString(),
-              label: e['name']?.toString() ?? '',
-            ),
-          )
-          .toList();
-
-      emit(
-        state.copyWith(isResidenceLoading: false, residenceOptions: options),
-      );
-    } catch (_) {
-      emit(
-        state.copyWith(
-          isResidenceLoading: false,
-          residenceOptions: const [
-            DropdownItem(id: '1', label: 'القاهرة'),
-            DropdownItem(id: '2', label: 'الإسكندرية'),
-            DropdownItem(id: '14', label: 'الجيزة'),
-            DropdownItem(id: '-1', label: 'أخرى'),
-          ],
-        ),
-      );
+    final result = await safeApiCall(() => _fetchGovernorates());
+    switch (result) {
+      case ApiSuccess(:final data):
+        emit(state.copyWith(isResidenceLoading: false, residenceOptions: data));
+      case ApiError(:final message):
+        debugPrint('_loadResidences error: $message');
+        emit(
+          state.copyWith(
+            isResidenceLoading: false,
+            residenceOptions: _fallbackGovernorates,
+          ),
+        );
     }
   }
 
   Future<void> _loadPassportIssuePlaces() async {
     emit(state.copyWith(isPassportIssuePlaceLoading: true));
-    try {
-      final publicDio = Dio(
-        BaseOptions(
-          baseUrl: 'http://10.0.2.2:3000',
-          headers: {'Accept': 'application/json'},
-        ),
-      );
-      final response = await publicDio.get('/api/category/governorates/out');
-
-      final raw = response.data as Map<String, dynamic>;
-      final list = raw['data'] as List<dynamic>;
-
-      final options = list
-          .map(
-            (e) => DropdownItem(
-              id: e['id'].toString(),
-              label: e['name']?.toString() ?? '',
-            ),
-          )
-          .toList();
-
-      emit(
-        state.copyWith(
-          isPassportIssuePlaceLoading: false,
-          passportIssuePlaceOptions: options,
-        ),
-      );
-    } catch (_) {
-      emit(
-        state.copyWith(
-          isPassportIssuePlaceLoading: false,
-          passportIssuePlaceOptions: const [
-            DropdownItem(id: '1', label: 'القاهرة'),
-            DropdownItem(id: '2', label: 'الإسكندرية'),
-            DropdownItem(id: '14', label: 'الجيزة'),
-            DropdownItem(id: '-1', label: 'أخرى'),
-          ],
-        ),
-      );
+    final result = await safeApiCall(() => _fetchGovernorates());
+    switch (result) {
+      case ApiSuccess(:final data):
+        emit(
+          state.copyWith(
+            isPassportIssuePlaceLoading: false,
+            passportIssuePlaceOptions: data,
+          ),
+        );
+      case ApiError(:final message):
+        debugPrint('_loadPassportIssuePlaces error: $message');
+        emit(
+          state.copyWith(
+            isPassportIssuePlaceLoading: false,
+            passportIssuePlaceOptions: _fallbackGovernorates,
+          ),
+        );
     }
   }
 
-  // ── Field handlers (unchanged from original) ────────────────────────────────
+  // ── Field handlers ──────────────────────────────────────────────────────────
 
   void onFirstNameChanged(String v) => emit(
     state.copyWith(
@@ -662,9 +639,11 @@ class SignupCubit extends Cubit<SignupState> {
         ? nameParts.last
         : state.restOfName.trim();
     final gender = state.selectedGender == GenderType.male ? '1' : '2';
+
     final birthPlace = state.showManualBirthPlace
         ? state.manualBirthPlace.trim()
         : (state.selectedBirthPlace?.id ?? '');
+
     final bd = state.birthDate!;
     final birthDateStr =
         '${bd.year}-${bd.month.toString().padLeft(2, '0')}-${bd.day.toString().padLeft(2, '0')}';
@@ -741,6 +720,7 @@ class SignupCubit extends Cubit<SignupState> {
         return null;
     }
   }
+
   // ── Resend OTP ──────────────────────────────────────────────────────────────
 
   Future<void> resendOtp() async {
