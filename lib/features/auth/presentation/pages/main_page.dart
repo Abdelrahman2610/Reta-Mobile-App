@@ -9,6 +9,7 @@ import 'package:reta/features/auth/presentation/pages/settings_page.dart';
 import 'package:reta/features/components/app_text.dart';
 
 import '../../../../core/helpers/fixed_assets.dart';
+import '../../../../core/helpers/runtime_data.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../components/image_svg_custom_widget.dart';
@@ -460,10 +461,13 @@ class _MainViewState extends State<_MainView> {
                         height: 44,
                         child: ElevatedButton(
                           onPressed: () {
-                            Navigator.of(context).push(
+                            Navigator.of(
+                              RuntimeData.getCurrentContext()!,
+                            ).pushAndRemoveUntil(
                               MaterialPageRoute(
                                 builder: (_) => const LoginPage(),
                               ),
+                              (route) => false,
                             );
                           },
                           style: ElevatedButton.styleFrom(

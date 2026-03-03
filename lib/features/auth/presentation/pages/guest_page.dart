@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:reta/features/auth/presentation/pages/guest_declarations_page.dart';
 
+import '../../../../core/helpers/runtime_data.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_bottom_nav.dart';
-import 'package:reta/features/auth/presentation/pages/guest_declarations_page.dart';
 import '../../data/models/user_models.dart';
 import '../cubit/guest_cubit.dart';
 import 'auth_gate_dialog.dart';
@@ -316,11 +317,16 @@ class _HomeTab extends StatelessWidget {
                       child: SizedBox(
                         height: 44,
                         child: ElevatedButton(
-                          onPressed: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const LoginPage(),
-                            ),
-                          ),
+                          onPressed: () {
+                            Navigator.of(
+                              RuntimeData.getCurrentContext()!,
+                            ).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (_) => const LoginPage(),
+                              ),
+                              (route) => false,
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.highlightDarkest,
                             foregroundColor: AppColors.neutralLightLightest,
@@ -382,6 +388,7 @@ class _HomeTab extends StatelessWidget {
 
 class _ProtectedTab extends StatelessWidget {
   final String label;
+
   const _ProtectedTab({required this.label});
 
   @override

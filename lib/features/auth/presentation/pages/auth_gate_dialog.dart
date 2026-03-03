@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reta/features/auth/presentation/pages/guest_page.dart';
+
+import '../../../../core/helpers/runtime_data.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import 'login_page.dart';
@@ -86,8 +88,11 @@ class AuthGateSheet extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).pop();
                 Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const LoginPage()));
+                  RuntimeData.getCurrentContext()!,
+                ).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                  (route) => false,
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.highlightDarkest,
