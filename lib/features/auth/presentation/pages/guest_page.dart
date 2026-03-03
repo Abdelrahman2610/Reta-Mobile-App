@@ -350,11 +350,15 @@ class _HomeTab extends StatelessWidget {
                       child: SizedBox(
                         height: 44,
                         child: OutlinedButton(
-                          onPressed: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const SignupPage(),
-                            ),
-                          ),
+                          onPressed: () =>
+                              Navigator.of(
+                                RuntimeData.getCurrentContext()!,
+                              ).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                  builder: (_) => const SignupPage(),
+                                ),
+                                (route) => false,
+                              ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.highlightDarkest,
                             side: const BorderSide(
