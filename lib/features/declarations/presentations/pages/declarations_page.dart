@@ -8,6 +8,7 @@ import 'package:reta/features/components/image_svg_custom_widget.dart';
 import 'package:reta/features/declarations/presentations/components/empty_data_widget.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/cubit/home_cubit.dart';
 import '../../../components/app_bar.dart';
 import '../../../components/app_button.dart';
 import '../../../components/circular_progress_indicator_platform_widget.dart';
@@ -24,10 +25,10 @@ class DeclarationsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          lazy: false,
-          create: (_) => DeclarationCubit()..fetchList(),
-        ),
+        // BlocProvider(
+        //   lazy: false,
+        //   create: (_) => DeclarationCubit()..fetchList(),
+        // ),
         BlocProvider(
           lazy: false,
           create: (_) => DeclarationLookupsCubit()..fetchLookups(),
@@ -46,91 +47,98 @@ class _DeclarationsView extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.neutralLightMedium,
         appBar: MainAppBar(
-          backButtonAction: () {},
+          backButtonAction: () {
+            context.read<HomeCubit>().selectTab(0);
+          },
           title: "إقراراتي",
           backgroundColor: AppColors.mainBlueIndigoDye,
           backButtonIconColor: Colors.white,
           titleTextStyle: TextStyle(color: Colors.white, fontSize: 16.sp),
         ),
-        body: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: BlocBuilder<DeclarationCubit, DeclarationState>(
-            builder: (context, state) {
-              if (state is DeclarationListLoading) {
-                return CircularProgressIndicatorPlatformWidget();
-              }
-              if (state is DeclarationListLoaded) {
-                return Column(
-                  children: [
-                    SizedBox(height: 31.h),
-                    Row(
-                      textDirection: TextDirection.rtl,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        AppText(
-                          text: 'إدارة الإقرارات المضافة إلى حسابي',
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.mainBlueIndigoDye,
-                        ),
-                        AppButton(
-                          onTap: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: const SelectApplicantTypePage(
-                                declarationId: -1,
-                              ),
-                              withNavBar: true,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.slideUp,
-                            );
-                          },
-                          label: "إضافة إقرار",
-                          width: 109.w,
-                          height: 46.h,
-                          borderColor: Colors.transparent,
-                          backgroundColor: AppColors.mainOrange,
-                          textColor: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          iconLeft: false,
-                          icon: ImageSvgCustomWidget(
-                            color: Colors.white,
-                            imgPath: FixedAssets.instance.addIcon,
-                            height: 18.h,
-                            width: 18.w,
+        body: RefreshIndicator(
+          onRefresh: () => context.read<DeclarationCubit>().fetchList(),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: BlocBuilder<DeclarationCubit, DeclarationState>(
+              builder: (context, state) {
+                if (state is DeclarationListLoading) {
+                  return CircularProgressIndicatorPlatformWidget();
+                }
+                if (state is DeclarationListLoaded) {
+                  return Column(
+                    children: [
+                      SizedBox(height: 31.h),
+                      Row(
+                        textDirection: TextDirection.rtl,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          AppText(
+                            text: 'إدارة الإقرارات المضافة إلى حسابي',
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.mainBlueIndigoDye,
                           ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 24.h),
-                    Expanded(
-                      child: (state.declarationList ?? []).isEmpty
-                          ? EmptyDataWidget(title: "لم يتم إضافة أي إقرار بعد")
-                          : ListView.builder(
-                              shrinkWrap: true,
-                              primary: true,
-                              itemCount: state.declarationList!.length,
-                              padding: EdgeInsetsGeometry.only(bottom: 31.h),
-                              itemBuilder: (_, index) {
-                                return DeclarationsCardItem(
-                                  item: state.declarationList![index],
-                                  updateDeclarationList: () {
-                                    context
-                                        .read<DeclarationCubit>()
-                                        .fetchList();
-                                  },
-                                );
-                              },
+                          AppButton(
+                            onTap: () {
+                              PersistentNavBarNavigator.pushNewScreen(
+                                context,
+                                screen: const SelectApplicantTypePage(
+                                  declarationId: -1,
+                                ),
+                                withNavBar: true,
+                                pageTransitionAnimation:
+                                    PageTransitionAnimation.slideUp,
+                              );
+                            },
+                            label: "إضافة إقرار",
+                            width: 109.w,
+                            height: 46.h,
+                            borderColor: Colors.transparent,
+                            backgroundColor: AppColors.mainOrange,
+                            textColor: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            iconLeft: false,
+                            icon: ImageSvgCustomWidget(
+                              color: Colors.white,
+                              imgPath: FixedAssets.instance.addIcon,
+                              height: 18.h,
+                              width: 18.w,
                             ),
-                    ),
-                  ],
-                );
-              } else if (state is DeclarationListError) {
-                return Center(child: Text("حدث خطأ: ${state.message}"));
-              }
-              return Center(child: Text("حدث خطأ"));
-            },
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 24.h),
+                      Expanded(
+                        child: (state.declarationList ?? []).isEmpty
+                            ? EmptyDataWidget(
+                                title: "لم يتم إضافة أي إقرار بعد",
+                              )
+                            : ListView.builder(
+                                shrinkWrap: true,
+                                primary: true,
+                                itemCount: state.declarationList!.length,
+                                padding: EdgeInsetsGeometry.only(bottom: 31.h),
+                                itemBuilder: (_, index) {
+                                  return DeclarationsCardItem(
+                                    item: state.declarationList![index],
+                                    updateDeclarationList: () {
+                                      context
+                                          .read<DeclarationCubit>()
+                                          .fetchList();
+                                    },
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
+                  );
+                } else if (state is DeclarationListError) {
+                  return Center(child: Text("حدث خطأ: ${state.message}"));
+                }
+                return Center(child: Text("حدث خطأ"));
+              },
+            ),
           ),
         ),
       ),

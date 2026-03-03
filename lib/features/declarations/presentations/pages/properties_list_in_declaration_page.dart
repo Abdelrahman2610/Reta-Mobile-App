@@ -96,7 +96,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                       BlocBuilder<UserProfileCubit, UserProfileState>(
                         builder: (context, userState) {
                           if (userState is! UserProfileLoaded) {
-                            return const CircularProgressIndicator();
+                            return const CircularProgressIndicatorPlatformWidget();
                           }
                           return PropertiesListInDeclarationHeader(
                             declarationModel.declarationTypeText ?? "",

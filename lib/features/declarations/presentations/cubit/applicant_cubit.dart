@@ -25,10 +25,11 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     required this.declarationId,
     required this.isEditMode,
     this.afterUpdating,
+    this.applicantOtherName,
   }) : super(const ApplicantState());
 
   final formKey = GlobalKey<FormState>();
-
+  String? applicantOtherName;
   ApplicantType applicantType;
   UnitType unitType = UnitType.residential;
   final int declarationId;
@@ -519,7 +520,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     };
 
     if (applicantType == ApplicantType.other) {
-      payload["applicant_role_other"] = null;
+      payload["applicant_role_other"] = applicantOtherName;
     }
 
     // ── سند التوكيل ──────────────────────────────────

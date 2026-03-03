@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:reta/features/auth/presentation/pages/settings_page.dart';
 import 'package:reta/features/components/app_text.dart';
+import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_cubit.dart';
 
 import '../../../../core/helpers/fixed_assets.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -47,6 +48,7 @@ class MainPage extends StatelessWidget {
         BlocProvider(create: (_) => HomeCubit()),
         BlocProvider(create: (_) => NotificationsCubit()),
         BlocProvider(create: (_) => UserProfileCubit()..loadFromUser(user)),
+        BlocProvider(create: (_) => DeclarationCubit()..fetchList()),
       ],
       child: _MainView(user: user ?? UserModel.guest()),
     );
@@ -63,89 +65,57 @@ class _MainView extends StatefulWidget {
 }
 
 class _MainViewState extends State<_MainView> {
-  setTabController() {
-    if (mainScreenTabController == null) {
-      mainScreenTabController = PersistentTabController();
-
-      mainScreenTabController!.notifyListeners();
-
-      mainScreenTabController!.addListener(() {
-        setState(() {});
-      });
-    }
-  }
-
-  int _selectedIndex = 0;
-  PersistentTabController? mainScreenTabController;
-
-  @override
-  void initState() {
-    setTabController();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.neutralLightLight,
-      body: Directionality(
-        textDirection: TextDirection.rtl,
-        child: PersistentTabView(
-          navBarHeight: 84.h,
-          context,
-          controller: mainScreenTabController,
-          screens: [
-            // index 0 — الرئيسية
-            HomeTab(user: widget.user),
-            // Column(
-            //   children: [
-            //     _buildHero(),
-            //     Expanded(
-            //       child: Container(
-            //         color: AppColors.neutralLightLight,
-            //         child: SingleChildScrollView(
-            //           padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-            //           child: Column(
-            //             children: [
-            //               _buildDeclarationCard(context),
-            //               const SizedBox(height: 16),
-            //               _buildAuthCard(context),
-            //             ],
-            //           ),
-            //         ),
-            //       ),
-            //     ),
-            //   ],
-            // ),
-            // index 1 — مديونياتي
-            const Center(child: Text('مديونياتي')),
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: AppColors.neutralLightLight,
+          body: Directionality(
+            textDirection: TextDirection.rtl,
+            child: PersistentTabView(
+              navBarHeight: 84.h,
+              context,
+              controller: context.read<HomeCubit>().mainScreenTabController,
+              screens: [
+                // index 0 — الرئيسية
+                HomeTab(user: widget.user),
 
-            // index 2 — إقراراتي
-            // ProviderDataPage(),
-            DeclarationsPage(),
-            // SelectApplicantTypePage(),
-            // SelectTypesOfPropertiesPage(),
+                const Center(child: Text('مديونياتي')),
 
-            // index 3 — مدفوعاتي
-            const Center(child: Text('مدفوعاتي')),
-            // index 4 — الإعدادات
-            // const SizedBox(),
-            SettingsPage(currentUser: widget.user),
-          ],
-          items: navBarItems(selectedNavBarIndex()),
-          backgroundColor: Colors.white,
-          resizeToAvoidBottomInset: true,
-          animationSettings: const NavBarAnimationSettings(
-            navBarItemAnimation: ItemAnimationSettings(
-              duration: Duration(milliseconds: 200),
-            ),
-            screenTransitionAnimation: ScreenTransitionAnimationSettings(
-              animateTabTransition: true,
+                // index 2 — إقراراتي
+                // ProviderDataPage(),
+                DeclarationsPage(),
+                // SelectApplicantTypePage(),
+                // SelectTypesOfPropertiesPage(),
+
+                // index 3 — مدفوعاتي
+                const Center(child: Text('مدفوعاتي')),
+                // index 4 — الإعدادات
+                // const SizedBox(),
+                SettingsPage(currentUser: widget.user),
+              ],
+              items: navBarItems(
+                context.read<HomeCubit>().mainScreenTabController.index,
+              ),
+              onItemSelected: (int index) {
+                context.read<HomeCubit>().selectTab(index);
+              },
+              backgroundColor: Colors.white,
+              resizeToAvoidBottomInset: true,
+              animationSettings: const NavBarAnimationSettings(
+                navBarItemAnimation: ItemAnimationSettings(
+                  duration: Duration(milliseconds: 200),
+                ),
+                screenTransitionAnimation: ScreenTransitionAnimationSettings(
+                  animateTabTransition: true,
+                ),
+              ),
+              navBarStyle: NavBarStyle.style2,
             ),
           ),
-          navBarStyle: NavBarStyle.style2,
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -229,16 +199,6 @@ class _MainViewState extends State<_MainView> {
       return true;
     } else {
       return false;
-    }
-  }
-
-  int selectedNavBarIndex() {
-    if (mainScreenTabController == null) {
-      return 0;
-    } else if (mainScreenTabController != null) {
-      return mainScreenTabController!.index;
-    } else {
-      return 0;
     }
   }
 
