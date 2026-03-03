@@ -127,8 +127,13 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (locationData == null) SizedBox(height: 15.h),
-                if (locationData == null)
+                if (locationData == null &&
+                    ApplicantType.owner != applicantType &&
+                    ApplicantType.sharedOwnership != applicantType)
+                  SizedBox(height: 15.h),
+                if (locationData == null &&
+                    ApplicantType.owner != applicantType &&
+                    ApplicantType.sharedOwnership != applicantType)
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),

@@ -147,13 +147,15 @@ class SelectApplicantTypePage extends StatelessWidget {
     required ApplicantType applicantType,
     required BuildContext context,
     required UserModel userModel,
+    String? applicantOtherName,
   }) {
     PersistentNavBarNavigator.pushNewScreen(
       context,
       screen: ProviderDataPage(
-        applicantType: ApplicantType.other,
+        applicantType: applicantType,
         declarationId: declarationId,
         userModel: userModel,
+        applicantOtherName: applicantOtherName,
       ),
       withNavBar: true,
       pageTransitionAnimation: PageTransitionAnimation.slideUp,

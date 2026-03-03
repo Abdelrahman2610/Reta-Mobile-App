@@ -43,6 +43,7 @@ class DeclarationsCardItem extends StatelessWidget {
               colors: [Color(0xFFFFFFFF), Color(0xFFF3F6FE), Color(0xFFE4ECFB)],
               stops: [0.1, 0.85, 1.0],
             ),
+            border: Border.all(color: AppColors.neutralLightDark),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Padding(

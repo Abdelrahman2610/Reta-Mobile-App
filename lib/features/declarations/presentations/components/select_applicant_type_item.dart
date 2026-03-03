@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:reta/features/components/app_button.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_text.dart';
+import '../../../components/app_text_form_field.dart';
 import '../../../components/inkwell_transparent.dart';
 
 class SelectApplicantTypeItem extends StatefulWidget {
@@ -26,6 +28,13 @@ class SelectApplicantTypeItem extends StatefulWidget {
 
 class _SelectApplicantTypeItemState extends State<SelectApplicantTypeItem> {
   bool isOtherEditable = false;
+  final applicantOtherNameController = TextEditingController();
+
+  @override
+  void dispose() {
+    applicantOtherNameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,6 +94,42 @@ class _SelectApplicantTypeItemState extends State<SelectApplicantTypeItem> {
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w400,
                     ),
+                    if (isOtherEditable && widget.isOther)
+                      SizedBox(height: 10.h),
+                    if (isOtherEditable && widget.isOther)
+                      AppTextFormField(
+                        hintText: 'الإسم',
+                        hideLabel: true,
+                        labelText: "",
+                        enabled: true,
+                        onChanged: (_) {
+                          setState(() {});
+                        },
+                        filledColor: AppColors.neutralLightLight,
+                        controller: applicantOtherNameController,
+                        labelColor: AppColors.neutralDarkLightest,
+                      ),
+
+                    if (isOtherEditable && widget.isOther)
+                      SizedBox(height: 10.h),
+                    if (isOtherEditable && widget.isOther)
+                      Row(
+                        children: [
+                          AppButton(
+                            label: "حفظ",
+                            width: 65.w,
+                            backgroundColor: AppColors.highlightDarkest,
+                            textColor: Colors.white,
+                            onTap: () {
+                              if (applicantOtherNameController.text
+                                  .trim()
+                                  .isNotEmpty) {
+                                widget.onPress();
+                              }
+                            },
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),

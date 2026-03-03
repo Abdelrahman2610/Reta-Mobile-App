@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_cubit.dart';
+import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_states.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../declarations/presentations/components/declarations_card_item.dart';
 import '../../data/models/user_models.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/notifications_cubit.dart';
@@ -13,59 +17,52 @@ import 'notifications_page.dart';
 
 class HomeTab extends StatelessWidget {
   final UserModel user;
+
   const HomeTab({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Stack(
-          clipBehavior: Clip.none,
+    return Scaffold(
+      backgroundColor: AppColors.neutralLightLight,
+      body: RefreshIndicator(
+        onRefresh: () => context.read<DeclarationCubit>().fetchList(),
+        child: Column(
           children: [
-            _HomeHero(user: user),
-            Positioned(bottom: -66, left: 16, right: 16, child: _HeroCard()),
-          ],
-        ),
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: () => context.read<HomeCubit>().refreshDeclarations(),
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 80, 16, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _DeclarationsSection(),
-                  const SizedBox(height: 16),
-                  // _QuickActionCard(
-                  //   imagePath: 'assets/images/icon(1).svg',
-                  //   title: 'طلبات السداد',
-                  //   subtitle:
-                  //       'جميع طلبات السداد التي تم إصدارها عند تقديم الإقرار، ويمكن سدادها لاحقًا عبر الدفع الإلكتروني أو الإيداع البنكي.',
-                  //   badgeCount: 1,
-                  //   onTap: () {},
-                  // ),
-                  // const SizedBox(height: 16),
-                  // _QuickActionCard(
-                  //   icon: Icons.account_balance_wallet_outlined,
-                  //   title: 'سداد المديونيات',
-                  //   subtitle:
-                  //       'سداد المبالغ المستحقة عن الإقرارات الضريبية المقدمة سابقًا (مديونيات بعلم المكلف).',
-                  //   badgeCount: 2,
-                  //   onTap: () {},
-                  // ),
-                ],
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                _HomeHero(user: user),
+                Positioned(
+                  bottom: -66,
+                  left: 16,
+                  right: 16,
+                  child: _HeroCard(),
+                ),
+              ],
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 80, 16, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _DeclarationsSection(),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
 
 class _HomeHero extends StatelessWidget {
   final UserModel user;
+
   const _HomeHero({required this.user});
 
   String get _greeting {
@@ -78,6 +75,7 @@ class _HomeHero extends StatelessWidget {
   // Returns full name
   String get _displayName =>
       '${user.firstname ?? ''} ${user.lastname ?? ''}'.trim();
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<NotificationsCubit, NotificationsState>(
@@ -247,11 +245,12 @@ class _HeroCard extends StatelessWidget {
 class _DeclarationsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeCubit, HomeState>(
+    return BlocBuilder<DeclarationCubit, DeclarationState>(
       builder: (context, state) {
-        if (!state.isLoadingDeclarations &&
-            state.errorMessage == null &&
-            state.declarations.isEmpty) {
+        if (state is! DeclarationListLoading &&
+            state is! DeclarationListError &&
+            state is DeclarationListLoaded &&
+            (state.declarationList?.isEmpty ?? true)) {
           return _NewUserCTA(
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const GuestDeclarationsPage()),
@@ -274,7 +273,7 @@ class _DeclarationsSection extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.read<HomeCubit>().selectTab(2),
+                  onPressed: () => context.read<HomeCubit>().jumpTo(2),
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
                     minimumSize: Size.zero,
@@ -293,27 +292,39 @@ class _DeclarationsSection extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            if (state.isLoadingDeclarations)
+            if (state is DeclarationListLoading)
               _DeclarationsLoading()
-            else if (state.errorMessage != null)
+            else if (state is DeclarationListError)
               _DeclarationsError(
-                message: state.errorMessage!,
-                onRetry: () => context.read<HomeCubit>().refreshDeclarations(),
+                message: state.message,
+                onRetry: () => context.read<DeclarationCubit>().fetchList(),
               )
-            else
+            else if (state is DeclarationListLoaded)
               SizedBox(
-                height: 160,
+                height: 300.h,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  reverse: true,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 2,
                     vertical: 4,
                   ),
-                  itemCount: state.declarations.length,
+                  itemCount: state.declarationList!.length > 3
+                      ? 3
+                      : state.declarationList!.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (_, i) =>
-                      _DeclarationCard(declaration: state.declarations[i]),
+                  itemBuilder: (_, i) => Column(
+                    children: [
+                      SizedBox(
+                        width: .7.sw,
+                        child: DeclarationsCardItem(
+                          item: state.declarationList![i],
+                          updateDeclarationList: () {
+                            context.read<DeclarationCubit>().fetchList();
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
           ],
@@ -325,6 +336,7 @@ class _DeclarationsSection extends StatelessWidget {
 
 class _NewUserCTA extends StatelessWidget {
   final VoidCallback onTap;
+
   const _NewUserCTA({required this.onTap});
 
   @override
@@ -394,6 +406,7 @@ class _NewUserCTA extends StatelessWidget {
 
 class _DeclarationCard extends StatelessWidget {
   final DeclarationSummary declaration;
+
   const _DeclarationCard({required this.declaration});
 
   String get _formattedDate {
@@ -517,6 +530,7 @@ class _DeclarationCard extends StatelessWidget {
 class _StatusBadge extends StatelessWidget {
   final String label;
   final Color color;
+
   const _StatusBadge({required this.label, required this.color});
 
   @override
@@ -541,6 +555,7 @@ class _StatusBadge extends StatelessWidget {
 class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
+
   const _InfoRow({required this.label, required this.value});
 
   @override
@@ -570,6 +585,7 @@ class _InfoRow extends StatelessWidget {
 class _InfoBox extends StatelessWidget {
   final String label;
   final String value;
+
   const _InfoBox({required this.label, required this.value});
 
   @override
@@ -615,19 +631,23 @@ class _DeclarationsLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 160,
-      child: Row(
-        children: List.generate(
-          2,
-          (_) => Expanded(
-            child: Container(
+      height: 300.h,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+        itemCount: 3,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (_, i) => Column(
+          children: [
+            Container(
               margin: const EdgeInsets.only(left: 12),
               decoration: BoxDecoration(
                 color: AppColors.neutralLightDark,
                 borderRadius: BorderRadius.circular(14),
               ),
+              child: SizedBox(width: .7.sw, height: 230.h),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -637,6 +657,7 @@ class _DeclarationsLoading extends StatelessWidget {
 class _DeclarationsError extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
+
   const _DeclarationsError({required this.message, required this.onRetry});
 
   @override
@@ -790,6 +811,7 @@ class _BadgeIconButton extends StatelessWidget {
   final IconData icon;
   final int count;
   final VoidCallback onTap;
+
   const _BadgeIconButton({
     required this.icon,
     required this.count,

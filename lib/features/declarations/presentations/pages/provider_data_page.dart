@@ -25,6 +25,7 @@ class ProviderDataPage extends StatelessWidget {
     required this.declarationId,
     this.existingDeclaration,
     this.afterUpdating,
+    this.applicantOtherName,
     required this.userModel,
   });
 
@@ -33,6 +34,7 @@ class ProviderDataPage extends StatelessWidget {
   final DeclarationDetailsModel? existingDeclaration;
   final VoidCallback? afterUpdating;
   final UserModel userModel;
+  final String? applicantOtherName;
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +51,7 @@ class ProviderDataPage extends StatelessWidget {
               declarationId: declarationId,
               isEditMode: existingDeclaration != null,
               afterUpdating: afterUpdating,
+              applicantOtherName: applicantOtherName,
             )..initFromUser(user); // 👈 مرره مباشرة
 
             if (existingDeclaration != null) {

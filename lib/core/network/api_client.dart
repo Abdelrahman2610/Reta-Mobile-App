@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 // ════════════════════════════════════════════════════════════════════════════
 // const String kBaseUrl = 'http://dev-rta-services.etax.com.eg/reta-services/public/api';
 const String kBaseUrl =
-    'https://dev-rta-services.etax.com.eg/reta-services/public/api';
+    'https://tst-rta-services.etax.com.eg/reta-services/public/api';
 
 // ════════════════════════════════════════════════════════════════════════════
 //  Token storage helpers
