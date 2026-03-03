@@ -369,7 +369,6 @@ class CategoryConfig {
   final String deleteID;
 
   final List<String> summaryFields; // fields to show in card
-  // final Map<String, dynamic> data;
 
   const CategoryConfig({
     required this.key,
@@ -377,6 +376,5 @@ class CategoryConfig {
     required this.summaryFields,
     required this.deleteLabel,
     required this.deleteID,
-    // required this.data,
   });
 }

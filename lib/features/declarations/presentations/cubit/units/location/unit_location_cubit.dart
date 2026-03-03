@@ -153,7 +153,6 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   Future<void> fetchGovernorates() async {
     emit(state.copyWith(isLoadingGovernorates: true));
 
-    // await Future.delayed(const Duration(milliseconds: 2500));
     final result = await safeApiCall(() async {
       final response = await DioClient.instance.dio.get(
         ApiConstants.governorates,
@@ -419,8 +418,6 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
     final declarationCubit = context.read<DeclarationCubit>();
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
 
-    // DeclarationLookupsModel lookups =
-    //     lookupsCubit.lookups ?? lookupsCubit.fetchLookups();
     final unitDataCubit = UnitDataCubit(
       lookups: lookupsCubit.lookups!,
       declarationId: declarationId,

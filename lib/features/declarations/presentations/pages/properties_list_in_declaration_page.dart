@@ -257,7 +257,6 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                                         final lookupsCubit = context
                                             .read<DeclarationLookupsCubit>();
 
-                                        // fetch لو مش موجودة
                                         if (lookupsCubit.lookups == null) {
                                           await lookupsCubit.fetchLookups();
                                         }

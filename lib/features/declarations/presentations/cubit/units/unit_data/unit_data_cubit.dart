@@ -1,9 +1,8 @@
-import 'dart:developer';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/network/api_constants.dart';
+import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../../../core/helpers/app_enum.dart';
@@ -120,10 +119,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   void initUnitData() {
     if (unitData == null) return;
 
-    // ── مشتركة في كل الأنواع ──────────────────────────
     _initBaseUnitData();
 
-    // ── حسب نوع الوحدة ───────────────────────────────
     switch (unitType) {
       case UnitType.residential:
         _initResidentialData();
@@ -498,8 +495,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   void setIsTaxpayerOwner(bool? value, BuildContext context) {
     if (value ?? false) {
-      // final user = context.read<LoginCubit>().state.user;
-      installationOwnerController.text = 'عادل عبد المقصود ابراهيم';
+      final user = context.read<UserProfileCubit>().userModel;
+      installationOwnerController.text = '${user?.firstname} ${user?.lastname}';
     }
     emit(state.copyWith(isTaxpayerOwner: value));
   }
@@ -855,9 +852,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     UnitType unitType,
   ) async {
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
-    // final applicantCubit = unitData == null
-    //     ? context.read<ApplicantCubit>()
-    //     : null;
     ApplicantCubit applicantCubit;
     try {
       applicantCubit = context.read<ApplicantCubit>();
@@ -870,7 +864,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     }
 
     int _declarationId = await submit(context, unitType);
-    log("_declarationId: $_declarationId");
     if (context.mounted && state.successMessage != null) {
       final locationCubit = context.read<UnitLocationCubit>();
       Map<String, dynamic> locationData = {
@@ -898,7 +891,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       await Future.delayed(const Duration(milliseconds: 100));
       if (!context.mounted) return;
       Navigator.pop(context);
-      log("LocationData: $locationData");
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -917,7 +909,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           ),
         ),
       );
-      log("pushReplacement:");
     }
   }
 
