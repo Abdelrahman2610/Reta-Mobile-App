@@ -52,7 +52,7 @@ class ProviderDataPage extends StatelessWidget {
               isEditMode: existingDeclaration != null,
               afterUpdating: afterUpdating,
               applicantOtherName: applicantOtherName,
-            )..initFromUser(user); // 👈 مرره مباشرة
+            )..initFromUser(user);
 
             if (existingDeclaration != null) {
               cubit.initFromDeclaration(existingDeclaration!);

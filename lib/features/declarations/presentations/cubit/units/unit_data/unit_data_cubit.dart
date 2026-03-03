@@ -1,12 +1,12 @@
-import 'dart:developer';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/network/api_constants.dart';
+import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../../../core/helpers/app_enum.dart';
+import '../../../../../../core/helpers/extensions/applicant_type.dart';
 import '../../../../../../core/helpers/extensions/unit_type.dart';
 import '../../../../../../core/network/api_result.dart';
 import '../../../../../../core/services/declaration_service.dart';
@@ -29,11 +29,17 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     required this.lookups,
     required this.declarationId,
     required this.applicantType,
-  }) : super(const UnitDataState());
+    this.unitData,
+    required this.unitType,
+  }) : super(const UnitDataState()) {
+    initUnitData();
+  }
 
   final DeclarationLookupsModel lookups;
   final int declarationId;
   final ApplicantType applicantType;
+  final Map<String, dynamic>? unitData;
+  final UnitType unitType;
 
   final formKey = GlobalKey<FormState>();
   final _uuid = const Uuid();
@@ -110,6 +116,250 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   // ─────────────────────────────────────────
   // Real and Mock Data
   // ─────────────────────────────────────────
+  void initUnitData() {
+    if (unitData == null) return;
+
+    _initBaseUnitData();
+
+    switch (unitType) {
+      case UnitType.residential:
+        _initResidentialData();
+        break;
+      case UnitType.commercial:
+      case UnitType.administrative:
+      case UnitType.serviceUnit:
+        _initCommercialData();
+        break;
+      case UnitType.fixedInstallations:
+        _initFixedInstallationsData();
+        break;
+      case UnitType.vacantLand:
+        _initVacantLandData();
+        break;
+      case UnitType.serviceFacility:
+      case UnitType.industrialFacility:
+      case UnitType.productionFacility:
+        _initFacilityData();
+        break;
+      case UnitType.hotelFacility:
+        _initHotelData();
+        break;
+      case UnitType.petroleumFacility:
+        _initPetroleumData();
+        break;
+      case UnitType.minesAndQuarries:
+        break;
+    }
+  }
+
+  void _initBaseUnitData() {
+    final floorText = unitData!['real_estate_floor_text'];
+    final floorOther = unitData!['real_estate_floor_other_text'];
+    final isFloorOther =
+        unitData!['real_estate_floor_id'] == -1 ||
+        (floorText != null && !floorNumbers.contains(floorText));
+
+    final unitNum = unitData!['unit_id']?.toString();
+    final unitOther = unitData!['unit_other'];
+    final isUnitOther =
+        unitData!['unit_id'] == -1 ||
+        (unitNum != null && !unitNumbers.contains(unitNum));
+
+    unitCodeController.text = unitData!['account_code'] ?? '';
+
+    areaController.text = unitData!['area']?.toString() ?? '';
+
+    marketValueController.text = unitData!['market_value']?.toString() ?? '';
+
+    final retaContact = unitData!['reta_contact_about_unit'];
+
+    final ownershipDeed = unitData!['ownership_deed'];
+
+    emit(
+      state.copyWith(
+        selectedFloorNumber: isFloorOther ? 'أخرى' : floorText,
+        isFloorNumberOther: isFloorOther,
+
+        selectedUnitNumber: isUnitOther ? 'أخرى' : unitNum,
+        isUnitNumberOther: isUnitOther,
+
+        contactedTaxAuthority: retaContact == 1 ? true : false,
+
+        hasAdditionalDocuments:
+            unitData!['submit_other_supporting_documents'] == 1,
+
+        ownershipDeedFilePath: ownershipDeed?['url'],
+        ownershipDeedOriginalName: ownershipDeed?['original_file_name'],
+      ),
+    );
+    // controllers
+    if (isFloorOther) floorNumberOtherController.text = floorOther ?? '';
+    if (isUnitOther) unitNumberOtherController.text = unitOther ?? '';
+  }
+
+  void _initResidentialData() {
+    final unitTypeText = unitData!['unit_type_text'];
+
+    final attachmentIds = List<int>.from(unitData!['attachments'] ?? []);
+    final selectedAmenityNames = attachmentIds
+        .map((id) {
+          return lookups.unitAttachments
+              .firstWhere(
+                (a) => a.id == id,
+                orElse: () => DeclarationLookup(id: 0, name: ''),
+              )
+              .name;
+        })
+        .where((name) => name.isNotEmpty)
+        .toList();
+
+    emit(
+      state.copyWith(
+        isExempt: unitData!['exempted_as_residence'],
+        selectedUnitSubType: unitTypeText,
+        selectedAmenities: selectedAmenityNames,
+      ),
+    );
+  }
+
+  void _initCommercialData() {
+    activityTypeController.text = unitData!['activity_type'] ?? '';
+
+    final leaseContract = unitData!['lease_contract'];
+    final permitPhoto = unitData!['license_photo'];
+    final exemptionReason = lookups.exemptionReasons
+        .firstWhere(
+          (t) => t.id == unitData!['exemption_reason'],
+          orElse: () => DeclarationLookup(id: -1, name: ''),
+        )
+        .name;
+    ;
+
+    emit(
+      state.copyWith(
+        isExempt: unitData!['exempted'],
+        selectedExemptionReason: exemptionReason,
+      ),
+    );
+
+    if (leaseContract != null) {
+      emit(
+        state.copyWith(
+          leaseContractFilePath: leaseContract['url'],
+          leaseContractOriginalName: leaseContract['original_file_name'],
+        ),
+      );
+    }
+
+    if (permitPhoto != null) {
+      emit(
+        state.copyWith(
+          permitPhotoFilePath: permitPhoto['url'],
+          permitPhotoOriginalName: permitPhoto['original_file_name'],
+        ),
+      );
+    }
+  }
+
+  void _initFixedInstallationsData() {
+    final installationType = lookups.installationTypes.firstWhere(
+      (t) => t.id == unitData!['installation_type_id'],
+      orElse: () => DeclarationLookup(id: 0, name: ''),
+    );
+
+    installationOwnerController.text = unitData!['installation_owner'] ?? '';
+    contractStartDateController.text = unitData!['contract_start'] ?? '';
+    contractEndDateController.text = unitData!['contract_end'] ?? '';
+    annualRentalValueController.text =
+        unitData!['annual_rental_value']?.toString() ?? '';
+    otherInstallationTypeController.text =
+        unitData!['installation_type_other'] ?? '';
+
+    emit(
+      state.copyWith(
+        selectedInstallationType: installationType.name.isNotEmpty
+            ? installationType.name
+            : null,
+        isTaxpayerOwner: unitData!['is_taxpayer_owner_of_installation'],
+      ),
+    );
+  }
+
+  void _initVacantLandData() {
+    totalLandAreaController.text =
+        unitData!['total_land_area']?.toString() ?? '';
+    exploitedAreaController.text =
+        unitData!['exploited_area']?.toString() ?? '';
+
+    emit(
+      state.copyWith(selectedExploitationType: unitData!['exploitation_type']),
+    );
+  }
+
+  void _initFacilityData() {
+    facilityNameController.text = unitData!['facility_name'] ?? '';
+    activityTypeController.text = unitData!['activity_type'] ?? '';
+    totalLandAreaFacilityController.text =
+        unitData!['total_land_area']?.toString() ?? '';
+    exploitedLandAreaController.text =
+        unitData!['exploited_land_area']?.toString() ?? '';
+
+    final constructionLicense = unitData!['construction_license'];
+    final operatingLicense = unitData!['operating_license'];
+
+    emit(
+      state.copyWith(
+        constructionLicenseFilePath: constructionLicense?['url'],
+        constructionLicenseOriginalName:
+            constructionLicense?['original_file_name'],
+        operatingLicenseFilePath: operatingLicense?['url'],
+        operatingLicenseOriginalName: operatingLicense?['original_file_name'],
+      ),
+    );
+  }
+
+  void _initHotelData() {
+    facilityNameController.text = unitData!['facility_name'] ?? '';
+
+    final constructionLicense = unitData!['construction_license'];
+    final operatingLicense = unitData!['operating_license'];
+    final starCertificate = unitData!['star_certificate'];
+
+    emit(
+      state.copyWith(
+        selectedHotelView: unitData!['hotel_view'],
+        selectedStarRating: unitData!['star_rating'],
+        hasSubUnits: unitData!['has_sub_units'],
+        constructionLicenseFilePath: constructionLicense?['url'],
+        constructionLicenseOriginalName:
+            constructionLicense?['original_file_name'],
+        operatingLicenseFilePath: operatingLicense?['url'],
+        operatingLicenseOriginalName: operatingLicense?['original_file_name'],
+        starCertificateFilePath: starCertificate?['url'],
+        starCertificateOriginalName: starCertificate?['original_file_name'],
+      ),
+    );
+  }
+
+  void _initPetroleumData() {
+    facilityNameController.text = unitData!['facility_name'] ?? '';
+    usageTypeController.text = unitData!['usage_type'] ?? '';
+    totalLandAreaFacilityController.text =
+        unitData!['total_land_area']?.toString() ?? '';
+    bookValueController.text = unitData!['book_value']?.toString() ?? '';
+
+    final balanceSheet = unitData!['all_assets_balance_sheet'];
+
+    if (balanceSheet != null) {
+      emit(
+        state.copyWith(
+          allAssetsBalanceSheetFilePath: balanceSheet['url'],
+          allAssetsBalanceSheetOriginalName: balanceSheet['original_file_name'],
+        ),
+      );
+    }
+  }
+
   List<String> get residentialUnitTypes =>
       lookups.residentialUnitTypes.map((e) => e.name).toList();
 
@@ -245,8 +495,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   void setIsTaxpayerOwner(bool? value, BuildContext context) {
     if (value ?? false) {
-      // final user = context.read<LoginCubit>().state.user;
-      installationOwnerController.text = 'عادل عبد المقصود ابراهيم';
+      final user = context.read<UserProfileCubit>().userModel;
+      installationOwnerController.text = '${user?.firstname} ${user?.lastname}';
     }
     emit(state.copyWith(isTaxpayerOwner: value));
   }
@@ -590,7 +840,10 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     await submit(context, unitType);
     if (context.mounted && state.successMessage != null) {
       declarationCubit.fetchList();
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (context.mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
     }
   }
 
@@ -598,6 +851,18 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     BuildContext context,
     UnitType unitType,
   ) async {
+    final lookupsCubit = context.read<DeclarationLookupsCubit>();
+    ApplicantCubit applicantCubit;
+    try {
+      applicantCubit = context.read<ApplicantCubit>();
+    } catch (_) {
+      applicantCubit = ApplicantCubit(
+        applicantType: applicantType,
+        declarationId: declarationId,
+        isEditMode: false,
+      );
+    }
+
     int _declarationId = await submit(context, unitType);
     if (context.mounted && state.successMessage != null) {
       final locationCubit = context.read<UnitLocationCubit>();
@@ -623,21 +888,23 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           .trim();
       locationData['is_other_real_state'] =
           locationCubit.state.isBuildingNumberOther;
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!context.mounted) return;
       Navigator.pop(context);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (_) => MultiBlocProvider(
             providers: [
-              BlocProvider.value(value: context.read<ApplicantCubit>()),
-              BlocProvider.value(
-                value: context.read<DeclarationLookupsCubit>(),
-              ),
+              if (applicantCubit != null)
+                BlocProvider.value(value: applicantCubit),
+              BlocProvider.value(value: lookupsCubit),
             ],
             child: SelectTypesOfPropertiesPage(
               applicantType: applicantType,
               declarationId: _declarationId,
               locationData: locationData,
+              unitData: null,
             ),
           ),
         ),
@@ -646,12 +913,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   Future<int> submit(BuildContext context, UnitType unitType) async {
-    final applicantCubit = context.read<ApplicantCubit>();
     final locationCubit = context.read<UnitLocationCubit>();
     final lookups = context.read<DeclarationLookupsCubit>().lookups!;
 
     emit(state.copyWith(isLoading: true));
-    // نوع العقار من الـ lookups
+
     final propertyTypeId = lookups.propertyTypes
         .firstWhere(
           (p) => p.name == unitType.label,
@@ -659,26 +925,41 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         )
         .id;
 
+    final isEdit = unitData != null;
+
+    final applicantPayload = isEdit
+        ? {"declaration_type_id": 1, "applicant_role_id": applicantType.id}
+        : context.read<ApplicantCubit>().buildPayload(context);
+
     final payload = {
-      ...applicantCubit.buildPayload(context),
+      ...applicantPayload,
       'unit': {
+        if (isEdit) "id": unitData?['id'],
         'property_type_id': propertyTypeId,
         ...locationCubit.buildLocationPayload(),
         ..._buildUnitPayload(unitType, lookups),
       },
     };
 
-    final result = await DeclarationService.instance.createDeclaration(
-      payload,
-      declarationId: declarationId,
-    );
+    final result = isEdit
+        ? await DeclarationService.instance.updateDeclaration(
+            payload,
+            declarationId: declarationId,
+            unitId: unitData!['id'],
+          )
+        : await DeclarationService.instance.createDeclaration(
+            payload,
+            declarationId: declarationId,
+          );
 
     switch (result) {
       case ApiSuccess(:final data):
         emit(
           state.copyWith(
             isLoading: false,
-            successMessage: 'تم حفظ الإقرار بنجاح',
+            successMessage: isEdit
+                ? 'تم تعديل الإقرار بنجاح'
+                : 'تم حفظ الإقرار بنجاح',
           ),
         );
         return data['data']['id'];
@@ -692,7 +973,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     UnitType unitType,
     DeclarationLookupsModel lookups,
   ) {
-    log("BuildPayload: $unitType");
     switch (unitType) {
       case UnitType.residential:
         return buildResidentialPayload(lookups);
@@ -779,13 +1059,25 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         )
         .id;
 
-    log("UnitTypeID: $unitTypeId - unitType: $unitType");
+    final exemptionReasonId = lookups.exemptionReasons
+        .firstWhere(
+          (t) => t.name == state.selectedExemptionReason,
+          orElse: () => DeclarationLookup(id: -1, name: ''),
+        )
+        .id;
+
+    Map<String, dynamic> map = {
+      'exempted': state.isExempt,
+      'exempted_reason': state.selectedExemptionReason,
+    };
     return {
       ..._buildBaseUnitPayload(),
       'usage_type': 'غير سكني',
       'unit_type_id': unitTypeId,
       'area': double.tryParse(areaController.text.trim()) ?? 0,
       'activity_type': activityTypeController.text.trim(),
+      'exempted': state.isExempt,
+      'exemption_reason': exemptionReasonId,
       if (state.ownershipDeedFilePath != null)
         'ownership_deed': {
           'path': state.ownershipDeedFilePath,

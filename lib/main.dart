@@ -29,6 +29,7 @@ class MainApp extends StatelessWidget {
           BlocProvider(create: (_) => DeclarationCubit()),
           BlocProvider(create: (_) => NotificationsCubit()),
           BlocProvider(lazy: true, create: (_) => UserProfileCubit()),
+          BlocProvider(lazy: true, create: (_) => UserProfileCubit()),
         ],
         child: Directionality(
           textDirection: TextDirection.rtl,

@@ -23,6 +23,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
     required this.applicantType,
     required this.declarationId,
     this.locationData,
+    this.unitData,
   }) : super(const UnitLocationState()) {
     fetchGovernorates();
   }
@@ -31,6 +32,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   final ApplicantType applicantType;
   final int declarationId;
   final Map<String, dynamic>? locationData;
+  final Map<String, dynamic>? unitData;
 
   final formKey = GlobalKey<FormState>();
 
@@ -88,6 +90,66 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
         locationData!['real_estate_other'] ?? '';
   }
 
+  Future<void> _initFromUnitData(List<DeclarationLookup> governorates) async {
+    emit(state.copyWith(isInitializing: true));
+    final governorateId = int.tryParse(unitData!['governorate_id']);
+    final governorate = governorates.firstWhere(
+      (g) => g.id == governorateId,
+      orElse: () => DeclarationLookup(id: 0, name: ''),
+    );
+
+    if (governorate.id == 0) return;
+
+    await fetchDistricts(governorate.id);
+
+    final districtId = int.tryParse(unitData!['district_id']);
+    final district = state.districtsList?.firstWhere(
+      (d) => d.id == districtId,
+      orElse: () => DeclarationLookup(id: 0, name: ''),
+    );
+
+    if (district != null && district.id != 0) {
+      await fetchVillagesAndStreets(district.id);
+    }
+
+    final villageId = int.tryParse(unitData!['village_id']);
+    final village = state.villagesList?.firstWhere(
+      (v) => v.id == villageId,
+      orElse: () => DeclarationLookup(id: 0, name: ''),
+    );
+    selectNeighborhood(village?.name);
+
+    final regionId = int.tryParse(unitData!['region_id']);
+    final street = state.streetsList?.firstWhere(
+      (s) => s.id == regionId,
+      orElse: () => StreetModel(id: 0, name: '', villageId: 0),
+    );
+    selectStreet(street?.name);
+
+    final realEstateId = unitData!['real_estate_id']?.toString();
+
+    emit(
+      state.copyWith(
+        isInitializing: false,
+        selectedGovernorate: governorate.name,
+        selectedGovernorateId: governorate.id,
+        selectedDistrict: district?.name,
+        selectedDistrictId: district?.id,
+        selectedNeighborhood: village?.name,
+        isNeighborhoodOther: unitData!['village_other'] != null,
+        selectedStreet: street?.name,
+        isStreetOther: unitData!['region_other'] != null,
+        selectedBuildingNumber: realEstateId,
+        isBuildingNumberOther: unitData!['real_estate_other'] != null,
+      ),
+    );
+
+    // controllers
+    neighborhoodOtherController.text = unitData!['village_other'] ?? '';
+    streetOtherController.text = unitData!['region_other'] ?? '';
+    buildingNumberOtherController.text = unitData!['real_estate_other'] ?? '';
+  }
+
   Future<void> fetchGovernorates() async {
     emit(state.copyWith(isLoadingGovernorates: true));
 
@@ -105,6 +167,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
           state.copyWith(governoratesList: data, isLoadingGovernorates: false),
         );
         if (locationData != null) await _restoreLocationData(data);
+        if (unitData != null) await _initFromUnitData(data);
       case ApiError(:final message):
         List<DeclarationLookup> governorates = [];
         governorates.add(DeclarationLookup(id: 1, name: 'القاهرة'));
@@ -116,7 +179,6 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
         governorates.add(DeclarationLookup(id: 7, name: 'المنيا'));
         governorates.add(DeclarationLookup(id: 8, name: 'أسيوط'));
         governorates.add(DeclarationLookup(id: 9, name: 'سوهاج'));
-        governorates.add(DeclarationLookup(id: 10, name: 'أخرى'));
         emit(
           state.copyWith(
             governoratesList: governorates,
@@ -350,13 +412,18 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   bool validate() => formKey.currentState?.validate() ?? false;
 
   void onNextButtonTapped(BuildContext context, ApplicantType applicantType) {
-    final applicantCubit = context.read<ApplicantCubit>();
+    final applicantCubit = unitData != null
+        ? null
+        : context.read<ApplicantCubit>();
     final declarationCubit = context.read<DeclarationCubit>();
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
+
     final unitDataCubit = UnitDataCubit(
       lookups: lookupsCubit.lookups!,
       declarationId: declarationId,
       applicantType: applicantType,
+      unitData: unitData,
+      unitType: unitType,
     );
     Navigator.push(
       context,
@@ -365,7 +432,8 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
           providers: [
             BlocProvider.value(value: this),
             BlocProvider.value(value: unitDataCubit),
-            BlocProvider.value(value: applicantCubit),
+            if (applicantCubit != null)
+              BlocProvider.value(value: applicantCubit),
             BlocProvider.value(value: declarationCubit),
             BlocProvider.value(value: lookupsCubit),
           ],
