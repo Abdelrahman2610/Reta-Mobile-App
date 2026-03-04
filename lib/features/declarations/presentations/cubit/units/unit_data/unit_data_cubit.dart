@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -107,7 +105,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   final totalLandAreaFacilityController = TextEditingController();
   final exploitedLandAreaController = TextEditingController();
   final landMarketValueController = TextEditingController();
-  final bool? ministryBurden; // تحمل على وزارة المالية
+  final bool? ministryBurden;
 
   // ─────────────────────────────────────────
   // Controllers - منشآت بترولية
@@ -490,9 +488,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     // burden_activity_id → display text
     String? burdenActivityText;
     final burdenActivityId = unitData!['burden_activity_id'];
-    log(
-      "burdenActivityId: $burdenActivityId - ${burdenActivityId.runtimeType}",
-    );
     if (burdenActivityId != null) {
       final found = lookups.burdenActivityTypes.firstWhere(
         (b) => b.id == int.parse(burdenActivityId),
