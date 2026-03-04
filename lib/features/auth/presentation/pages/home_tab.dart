@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_cubit.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_states.dart';
 
@@ -249,9 +250,14 @@ class _DeclarationsSection extends StatelessWidget {
             state is DeclarationListLoaded &&
             (state.declarationList?.isEmpty ?? true)) {
           return _NewUserCTA(
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const GuestDeclarationsPage()),
-            ),
+            onTap: () => Navigator.of(RuntimeData.getCurrentContext()!)
+                .pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (_) => const GuestDeclarationsPage(),
+                  ),
+
+                  (route) => false,
+                ),
           );
         }
 

@@ -128,8 +128,9 @@ class _GuestSettingsContent extends StatelessWidget {
               icon: Icons.help_outline,
               label: 'المساعدة والدعم',
               onTap: () {
-                Navigator.of(context).push(
+                Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const HelpSupportPage()),
+                  (route) => false,
                 );
               },
             ),
@@ -137,8 +138,9 @@ class _GuestSettingsContent extends StatelessWidget {
               icon: Icons.privacy_tip_outlined,
               label: 'الشروط والخصوصية',
               onTap: () {
-                Navigator.of(context).push(
+                Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const TermsPrivacyPage()),
+                  (route) => false,
                 );
               },
             ),
