@@ -32,6 +32,8 @@ class DeclarationLookupsModel {
   final List<DeclarationLookup> starRatings;
   final List<DeclarationLookup> hotelViewTypes;
   final List<DeclarationLookup> exploitationTypes;
+  final List<DeclarationLookup> burdenActivityTypes;
+  final List<DeclarationLookup> buildingTypes;
 
   const DeclarationLookupsModel({
     required this.declarationTypes,
@@ -52,6 +54,8 @@ class DeclarationLookupsModel {
     required this.starRatings,
     required this.hotelViewTypes,
     required this.exploitationTypes,
+    required this.burdenActivityTypes,
+    required this.buildingTypes,
   });
 
   factory DeclarationLookupsModel.fromJson(
@@ -59,6 +63,8 @@ class DeclarationLookupsModel {
     List<DeclarationLookup> starRatings = const [],
     List<DeclarationLookup> viewTypes = const [],
     List<DeclarationLookup> exploitationTypes = const [],
+    List<DeclarationLookup> burdenActivityTypes = const [],
+    List<DeclarationLookup> buildingTypes = const [],
   }) {
     final data = json['data'] as Map<String, dynamic>;
 
@@ -88,13 +94,17 @@ class DeclarationLookupsModel {
       starRatings: starRatings,
       hotelViewTypes: viewTypes,
       exploitationTypes: exploitationTypes,
+      burdenActivityTypes: burdenActivityTypes,
+      buildingTypes: buildingTypes,
     );
   }
 
   DeclarationLookupsModel copyWith({
     List<DeclarationLookup>? starRatings,
-    List<DeclarationLookup>? viewTypes,
+    List<DeclarationLookup>? hotelViewTypes,
     List<DeclarationLookup>? exploitationTypes,
+    List<DeclarationLookup>? burdenActivityTypes,
+    List<DeclarationLookup>? buildingTypes,
   }) {
     return DeclarationLookupsModel(
       declarationTypes: declarationTypes,
@@ -113,8 +123,10 @@ class DeclarationLookupsModel {
       egyptNationalityId: egyptNationalityId,
       canCreateDeclaration: canCreateDeclaration,
       starRatings: starRatings ?? this.starRatings,
-      hotelViewTypes: viewTypes ?? this.hotelViewTypes,
+      hotelViewTypes: hotelViewTypes ?? this.hotelViewTypes,
       exploitationTypes: exploitationTypes ?? this.exploitationTypes,
+      burdenActivityTypes: burdenActivityTypes ?? this.burdenActivityTypes,
+      buildingTypes: buildingTypes ?? this.buildingTypes,
     );
   }
 

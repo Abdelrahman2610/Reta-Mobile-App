@@ -59,10 +59,16 @@ class UnitDataState {
   final String? errorMessage;
   final String? successMessage;
   final bool navigateAfterSave;
+
   final List<VacantLandItem> vacantLandItems;
   final List<HotelSubUnit> hotelSubUnits;
   final int hotelSubUnitsUpdateCount;
   final int roomsCount;
+  final bool? ministryBurden;
+  final String? selectedBurdenActivity;
+  final String? allocationContractFilePath;
+  final String? allocationContractOriginalName;
+  final int industrialBuildingsCount;
 
   const UnitDataState({
     this.selectedFloorNumber,
@@ -111,6 +117,11 @@ class UnitDataState {
     this.hotelSubUnits = const [],
     this.hotelSubUnitsUpdateCount = 0,
     this.roomsCount = 1,
+    this.ministryBurden,
+    this.selectedBurdenActivity,
+    this.allocationContractFilePath,
+    this.allocationContractOriginalName,
+    this.industrialBuildingsCount = 1,
   });
 
   static const _undefined = Object();
@@ -162,6 +173,11 @@ class UnitDataState {
     List<HotelSubUnit>? hotelSubUnits,
     int? hotelSubUnitsUpdateCount,
     int? roomsCount,
+    bool? ministryBurden,
+    String? selectedBurdenActivity,
+    Object? allocationContractFilePath = _undefined,
+    Object? allocationContractOriginalName = _undefined,
+    int? industrialBuildingsCount,
   }) {
     return UnitDataState(
       selectedFloorNumber: selectedFloorNumber ?? this.selectedFloorNumber,
@@ -254,6 +270,18 @@ class UnitDataState {
       hotelSubUnitsUpdateCount:
           hotelSubUnitsUpdateCount ?? this.hotelSubUnitsUpdateCount,
       roomsCount: roomsCount ?? this.roomsCount,
+      ministryBurden: ministryBurden ?? this.ministryBurden,
+      selectedBurdenActivity:
+          selectedBurdenActivity ?? this.selectedBurdenActivity,
+      allocationContractFilePath: allocationContractFilePath == _undefined
+          ? this.allocationContractFilePath
+          : allocationContractFilePath as String?,
+      allocationContractOriginalName:
+          allocationContractOriginalName == _undefined
+          ? this.allocationContractOriginalName
+          : allocationContractOriginalName as String?,
+      industrialBuildingsCount:
+          industrialBuildingsCount ?? this.industrialBuildingsCount,
     );
   }
 }
