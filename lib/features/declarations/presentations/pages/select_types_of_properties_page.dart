@@ -18,6 +18,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
   final int declarationId;
   final Map<String, dynamic>? locationData;
   final Map<String, dynamic>? unitData;
+  final String? otherName;
 
   const SelectTypesOfPropertiesPage({
     super.key,
@@ -25,6 +26,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
     required this.declarationId,
     this.locationData,
     this.unitData,
+    this.otherName,
   });
 
   @override
@@ -131,13 +133,8 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (locationData == null &&
-                    ApplicantType.owner != applicantType &&
-                    ApplicantType.sharedOwnership != applicantType)
-                  SizedBox(height: 15.h),
-                if (locationData == null &&
-                    ApplicantType.owner != applicantType &&
-                    ApplicantType.sharedOwnership != applicantType)
+                if (locationData == null) SizedBox(height: 15.h),
+                if (locationData == null)
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
@@ -195,6 +192,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                               context,
                             ),
                           ),
+
                           SizedBox(height: 16.h),
                           SelectTypesOfPropertiesItem(
                             title: "منشآت بترولية",
@@ -205,17 +203,21 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                               context,
                             ),
                           ),
-                          SizedBox(height: 16.h),
-                          SelectTypesOfPropertiesItem(
-                            title: "مناجم ومحاجر وملاحات",
-                            subTitle:
-                                "مواقع مخصصة لأعمال التعدين والمحاجر والملاحات.",
-                            icon: FixedAssets.instance.icon12,
-                            onTap: () => onUnitTapped(
-                              UnitType.minesAndQuarries,
-                              context,
+                          if (ApplicantType.owner != applicantType &&
+                              ApplicantType.sharedOwnership != applicantType)
+                            SizedBox(height: 16.h),
+                          if (ApplicantType.owner != applicantType &&
+                              ApplicantType.sharedOwnership != applicantType)
+                            SelectTypesOfPropertiesItem(
+                              title: "مناجم ومحاجر وملاحات",
+                              subTitle:
+                                  "مواقع مخصصة لأعمال التعدين والمحاجر والملاحات.",
+                              icon: FixedAssets.instance.icon12,
+                              onTap: () => onUnitTapped(
+                                UnitType.minesAndQuarries,
+                                context,
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),
@@ -248,6 +250,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
             declarationId: declarationId,
             locationData: locationData,
             unitData: unitData,
+            otherName: otherName,
           ),
         ),
       ),

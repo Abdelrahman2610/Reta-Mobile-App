@@ -84,17 +84,17 @@ class _FixedInstallationsView extends StatelessWidget {
                 16.hs,
 
                 AppTextFormField(
-                  labelText: 'نوع التركيب الآخر',
+                  labelText: 'نوع التركيبة الآخر',
                   labelRequired: true,
                   controller: cubit.otherInstallationTypeController,
-                  hintText: 'إدخال نوع التركيب الآخر',
+                  hintText: 'إدخال نوع التركيبة الآخر',
                   validator: (v) =>
                       v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
                 ),
                 16.hs,
 
                 AppDropdownField<String>(
-                  labelText: 'هل المكلف بأداء الضريبة هو مالك التركيب؟',
+                  labelText: 'هل المكلف بأداء الضريبة هو مالك التركيبة؟',
                   labelRequired: true,
                   hintText: 'اختر',
                   value: state.isTaxpayerOwner == null
@@ -115,8 +115,8 @@ class _FixedInstallationsView extends StatelessWidget {
 
                 AppTextFormField(
                   labelText: (state.isTaxpayerOwner ?? false)
-                      ? 'مالك التركيب'
-                      : 'اسم مالك التركيب',
+                      ? 'مالك التركيبة'
+                      : 'اسم مالك التركيبة',
                   labelRequired: !(state.isTaxpayerOwner ?? false),
                   labelColor: (state.isTaxpayerOwner ?? false)
                       ? AppColors.neutralDarkLightest

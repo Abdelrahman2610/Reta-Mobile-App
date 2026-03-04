@@ -82,7 +82,7 @@ class _DeclarationsView extends StatelessWidget {
                             onTap: () {
                               PersistentNavBarNavigator.pushNewScreen(
                                 context,
-                                screen: const SelectApplicantTypePage(
+                                screen: SelectApplicantTypePage(
                                   declarationId: -1,
                                 ),
                                 withNavBar: true,
