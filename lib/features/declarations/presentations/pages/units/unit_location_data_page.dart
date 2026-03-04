@@ -86,7 +86,7 @@ class _UnitLocationDataPage extends StatelessWidget {
                   child: Column(
                     children: [
                       31.hs,
-                      UnitTitle(title: cubit.unitType.label),
+                      UnitTitle(title: cubit.unitType.displayLabel),
                       10.hs,
                       AppContainer(
                         height: 93,
