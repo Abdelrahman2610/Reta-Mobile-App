@@ -14,7 +14,8 @@ extension UnitTypeLabel on UnitType {
       case UnitType.fixedInstallations:
         return 'التركيبات الثابتة';
       case UnitType.vacantLand:
-        return 'أراضي فضاء مستغلة';
+        // return 'أراضي فضاء مستغلة';
+        return 'الأرض الفضاء المستغلة';
       case UnitType.serviceFacility:
         return 'المنشآت الخدمية';
       case UnitType.hotelFacility:
@@ -103,6 +104,7 @@ extension UnitTypeParser on String {
       case 'التركيبات الثابتة':
         return UnitType.fixedInstallations;
       case 'أراضي فضاء مستغلة':
+      case 'الأرض الفضاء المستغلة':
         return UnitType.vacantLand;
       case 'المنشآت الخدمية':
         return UnitType.serviceFacility;

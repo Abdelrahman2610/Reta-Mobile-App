@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:reta/core/helpers/app_enum.dart';
 
 import '../../../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../../../core/theme/app_colors.dart';
@@ -19,27 +18,21 @@ import 'components/floor_unit_section.dart';
 import 'components/tax_contact_section.dart';
 
 class FixedInstallationsPage extends StatelessWidget {
-  const FixedInstallationsPage({
-    super.key,
-    required this.applicantType,
-    required this.unitCubit,
-  });
+  const FixedInstallationsPage({super.key, required this.unitCubit});
 
-  final ApplicantType applicantType;
   final UnitDataCubit unitCubit;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: unitCubit,
-      child: _FixedInstallationsView(applicantType: applicantType),
+      child: _FixedInstallationsView(),
     );
   }
 }
 
 class _FixedInstallationsView extends StatelessWidget {
-  const _FixedInstallationsView({required this.applicantType});
-  final ApplicantType applicantType;
+  const _FixedInstallationsView();
 
   @override
   Widget build(BuildContext context) {

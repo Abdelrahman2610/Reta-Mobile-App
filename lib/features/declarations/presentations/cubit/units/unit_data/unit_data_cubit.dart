@@ -14,6 +14,7 @@ import '../../../../../../core/services/upload_service.dart';
 import '../../../../data/models/additional_document.dart';
 import '../../../../data/models/building_info.dart';
 import '../../../../data/models/declarations_lookups.dart';
+import '../../../../data/models/vacant_land_item.dart';
 import '../../../pages/select_types_of_properties_page.dart';
 import '../../applicant_cubit.dart';
 import '../../declaration/declaration_cubit.dart';
@@ -31,7 +32,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     required this.applicantType,
     this.unitData,
     required this.unitType,
-  }) : super(const UnitDataState()) {
+  }) : super(UnitDataState(vacantLandItems: [VacantLandItem()])) {
     initUnitData();
   }
 
@@ -288,11 +289,57 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   void _initVacantLandData() {
     totalLandAreaController.text =
         unitData!['total_land_area']?.toString() ?? '';
-    exploitedAreaController.text =
-        unitData!['exploited_area']?.toString() ?? '';
+
+    // ── init الـ vacant lands list ──────────────
+    final vacantLandsData = unitData!['vacantLands'] as List? ?? [];
+
+    if (vacantLandsData.isNotEmpty) {
+      // dispose الـ default item
+      for (final item in state.vacantLandItems) {
+        item.dispose();
+      }
+
+      final items = vacantLandsData.map((vl) {
+        final item = VacantLandItem();
+
+        item.usedLandAreaController.text =
+            vl['used_land_area']?.toString() ?? '';
+        item.accountCodeController.text = vl['account_code']?.toString() ?? '';
+        item.marketValueController.text = vl['market_value']?.toString() ?? '';
+        item.retaContactAboutUnit = vl['reta_contact_about_unit'] == 1;
+
+        // نوع الاستغلال من الـ lookups
+        final exploitationTypeId = vl['exploitation_type_id'];
+        final exploitationType = lookups.installationTypes.firstWhere(
+          (t) => t.id == exploitationTypeId,
+          orElse: () => DeclarationLookup(id: -1, name: ''),
+        );
+        item.selectedExploitationType = exploitationType.name.isNotEmpty
+            ? exploitationType.name
+            : null;
+
+        item.otherExploitationTypeController.text =
+            vl['exploitation_type_other'] ?? '';
+
+        return item;
+      }).toList();
+
+      emit(state.copyWith(vacantLandItems: items));
+    }
+
+    // ── ملفات الأرض ──────────────────────────────
+    final ownershipDoc = unitData!['land_ownership_legal_document'];
+    final leaseAgreement = unitData!['land_lease_agreement'];
 
     emit(
-      state.copyWith(selectedExploitationType: unitData!['exploitation_type']),
+      state.copyWith(
+        ownershipDeedFilePath: ownershipDoc?['url'],
+        ownershipDeedOriginalName: ownershipDoc?['original_file_name'],
+        leaseContractFilePath: leaseAgreement?['url'],
+        leaseContractOriginalName: leaseAgreement?['original_file_name'],
+        hasAdditionalDocuments:
+            unitData!['submit_other_supporting_documents'] == 1,
+      ),
     );
   }
 
@@ -388,16 +435,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     'أخرى',
   ];
   final List<String> yesNoOptions = [kYes, kNo];
-
-  final List<String> exploitationTypes = [
-    'تشوينات',
-    'جراج',
-    'ساحة انتظار',
-    'شبكات محمول',
-    'ماكينة صراف آلي',
-    'لوحة إعلانات',
-    'أخرى',
-  ];
 
   final List<String> starRatings = [
     'نجمة واحدة',
@@ -511,6 +548,36 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   void selectExploitationType(String? value) {
     emit(state.copyWith(selectedExploitationType: value));
+  }
+
+  void addVacantLandItem() {
+    if (state.vacantLandItems.length >= 10) return;
+    final items = [...state.vacantLandItems, VacantLandItem()];
+    emit(state.copyWith(vacantLandItems: items));
+  }
+
+  void removeVacantLandItem(String id) {
+    if (state.vacantLandItems.length <= 1) return;
+    final item = state.vacantLandItems.firstWhere((i) => i.id == id);
+    item.dispose();
+    final items = state.vacantLandItems.where((i) => i.id != id).toList();
+    emit(state.copyWith(vacantLandItems: items));
+  }
+
+  void selectVacantLandItemExploitationType(String id, String? value) {
+    final items = state.vacantLandItems.map((item) {
+      if (item.id == id) item.selectedExploitationType = value;
+      return item;
+    }).toList();
+    emit(state.copyWith(vacantLandItems: items));
+  }
+
+  void setVacantLandItemRetaContact(String id, bool value) {
+    final items = state.vacantLandItems.map((item) {
+      if (item.id == id) item.retaContactAboutUnit = value;
+      return item;
+    }).toList();
+    emit(state.copyWith(vacantLandItems: items));
   }
 
   // ─────────────────────────────────────────
@@ -916,56 +983,61 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     final locationCubit = context.read<UnitLocationCubit>();
     final lookups = context.read<DeclarationLookupsCubit>().lookups!;
 
-    emit(state.copyWith(isLoading: true));
+    try {
+      emit(state.copyWith(isLoading: true));
 
-    final propertyTypeId = lookups.propertyTypes
-        .firstWhere(
-          (p) => p.name == unitType.label,
-          orElse: () => DeclarationLookup(id: 1, name: ''),
-        )
-        .id;
-
-    final isEdit = unitData != null;
-
-    final applicantPayload = isEdit
-        ? {"declaration_type_id": 1, "applicant_role_id": applicantType.id}
-        : context.read<ApplicantCubit>().buildPayload(context);
-
-    final payload = {
-      ...applicantPayload,
-      'unit': {
-        if (isEdit) "id": unitData?['id'],
-        'property_type_id': propertyTypeId,
-        ...locationCubit.buildLocationPayload(),
-        ..._buildUnitPayload(unitType, lookups),
-      },
-    };
-
-    final result = isEdit
-        ? await DeclarationService.instance.updateDeclaration(
-            payload,
-            declarationId: declarationId,
-            unitId: unitData!['id'],
+      final propertyTypeId = lookups.propertyTypes
+          .firstWhere(
+            (p) => p.name == unitType.label,
+            orElse: () => DeclarationLookup(id: 1, name: ''),
           )
-        : await DeclarationService.instance.createDeclaration(
-            payload,
-            declarationId: declarationId,
-          );
+          .id;
 
-    switch (result) {
-      case ApiSuccess(:final data):
-        emit(
-          state.copyWith(
-            isLoading: false,
-            successMessage: isEdit
-                ? 'تم تعديل الإقرار بنجاح'
-                : 'تم حفظ الإقرار بنجاح',
-          ),
-        );
-        return data['data']['id'];
-      case ApiError(:final message):
-        emit(state.copyWith(isLoading: false, errorMessage: message));
-        return -1;
+      final isEdit = unitData != null;
+
+      final applicantPayload = isEdit
+          ? {"declaration_type_id": 1, "applicant_role_id": applicantType.id}
+          : context.read<ApplicantCubit>().buildPayload(context);
+
+      final payload = {
+        ...applicantPayload,
+        'unit': {
+          if (isEdit) "id": unitData?['id'],
+          'property_type_id': propertyTypeId,
+          ...locationCubit.buildLocationPayload(),
+          ..._buildUnitPayload(unitType, lookups),
+        },
+      };
+
+      final result = isEdit
+          ? await DeclarationService.instance.updateDeclaration(
+              payload,
+              declarationId: declarationId,
+              unitId: unitData!['id'],
+            )
+          : await DeclarationService.instance.createDeclaration(
+              payload,
+              declarationId: declarationId,
+            );
+
+      switch (result) {
+        case ApiSuccess(:final data):
+          emit(
+            state.copyWith(
+              isLoading: false,
+              successMessage: isEdit
+                  ? 'تم تعديل الإقرار بنجاح'
+                  : 'تم حفظ الإقرار بنجاح',
+            ),
+          );
+          return data['data']['id'];
+        case ApiError(:final message):
+          emit(state.copyWith(isLoading: false, errorMessage: message));
+          return -1;
+      }
+    } catch (error) {
+      emit(state.copyWith(isLoading: false));
+      return -1;
     }
   }
 
@@ -1131,16 +1203,20 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   // أراضي فضاء مستغلة
   Map<String, dynamic> buildVacantLandPayload() {
     return {
-      ..._buildBaseUnitPayload(),
-      'total_land_area':
-          double.tryParse(totalLandAreaController.text.trim()) ?? 0,
-      'exploited_area':
-          double.tryParse(exploitedAreaController.text.trim()) ?? 0,
-      'exploitation_type': state.selectedExploitationType,
+      'total_land_area': totalLandAreaController.text.trim(),
+      "submit_other_supporting_documents": state.hasAdditionalDocuments ? 1 : 2,
+      'vacantLands': state.vacantLandItems
+          .map((item) => item.toPayload(lookups.installationTypes))
+          .toList(),
       if (state.ownershipDeedFilePath != null)
-        'ownership_deed': {
+        'land_ownership_legal_document': {
           'path': state.ownershipDeedFilePath,
           'original_file_name': state.ownershipDeedOriginalName,
+        },
+      if (state.leaseContractFilePath != null)
+        'land_lease_agreement': {
+          'path': state.leaseContractFilePath,
+          'original_file_name': state.leaseContractOriginalName,
         },
       ..._buildSupportingDocsPayload(),
     };

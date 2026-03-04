@@ -39,4 +39,5 @@ class FixedAssets {
   String selectedSettings = "${svg}selected_settings.svg";
   String unselectedSettings = "${svg}unselected_settings.svg";
   String calendarIC = "${svg}calendar_ic.svg";
+  String deleteIC = "${svg}delete_ic.svg";
 }
