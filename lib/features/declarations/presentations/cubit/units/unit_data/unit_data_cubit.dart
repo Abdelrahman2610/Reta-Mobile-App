@@ -14,6 +14,7 @@ import '../../../../../../core/services/upload_service.dart';
 import '../../../../data/models/additional_document.dart';
 import '../../../../data/models/building_info.dart';
 import '../../../../data/models/declarations_lookups.dart';
+import '../../../../data/models/hotel_sub_unit.dart';
 import '../../../../data/models/vacant_land_item.dart';
 import '../../../pages/select_types_of_properties_page.dart';
 import '../../applicant_cubit.dart';
@@ -88,6 +89,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   final activityTypeController = TextEditingController(); // نوع النشاط
   final facilityMarketValueController =
       TextEditingController(); // القيمة السوقية للمنشأة
+  final totalBuildingAreaController = TextEditingController();
 
   // ─────────────────────────────────────────
   // Controllers - منشآت فندقية
@@ -112,7 +114,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   // Dynamic Lists
   // ─────────────────────────────────────────
   final List<AdditionalDocument> additionalDocuments = [];
-  final List<BuildingInfo> buildings = [];
+  final List<BuildingInfo> buildings = [BuildingInfo(id: '1')];
 
   // ─────────────────────────────────────────
   // Real and Mock Data
@@ -290,7 +292,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     totalLandAreaController.text =
         unitData!['total_land_area']?.toString() ?? '';
 
-    // ── init الـ vacant lands list ──────────────
     final vacantLandsData = unitData!['vacantLands'] as List? ?? [];
 
     if (vacantLandsData.isNotEmpty) {
@@ -327,7 +328,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       emit(state.copyWith(vacantLandItems: items));
     }
 
-    // ── ملفات الأرض ──────────────────────────────
     final ownershipDoc = unitData!['land_ownership_legal_document'];
     final leaseAgreement = unitData!['land_lease_agreement'];
 
@@ -348,44 +348,124 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     activityTypeController.text = unitData!['activity_type'] ?? '';
     totalLandAreaFacilityController.text =
         unitData!['total_land_area']?.toString() ?? '';
-    exploitedLandAreaController.text =
-        unitData!['exploited_land_area']?.toString() ?? '';
+    unitCodeController.text = unitData!['account_code'] ?? '';
+    marketValueController.text = unitData!['market_value']?.toString() ?? '';
+    lawNumberController.text = unitData!['law_number'] ?? '';
+    lawYearController.text = unitData!['law_year']?.toString() ?? '';
 
-    final constructionLicense = unitData!['construction_license'];
-    final operatingLicense = unitData!['operating_license'];
+    final buildingsData = unitData!['buildings'] as List? ?? [];
+    if (buildingsData.isNotEmpty) {
+      for (final b in buildings) b.dispose();
+      buildings.clear();
+      for (final b in buildingsData) {
+        final building = BuildingInfo(id: _uuid.v4());
+        building.floorsCount = b['floors_count'] ?? 1;
+        building.areaController.text = b['building_area']?.toString() ?? '';
+        buildings.add(building);
+      }
+    }
 
+    final exemptionReasonId = unitData!['exemption_reason'];
+    final exemptionReasonName = exemptionReasonId != null
+        ? lookups.exemptionReasons
+              .firstWhere(
+                (e) => e.id == exemptionReasonId,
+                orElse: () => DeclarationLookup(id: -1, name: ''),
+              )
+              .name
+        : null;
+
+    // ---------------------------- Files ----------------------------
+    final ownershipDeed = unitData!['facility_ownership_deed'];
+    final leaseContracts = unitData!['facility_lease_contracts'];
+    final buildingPermits = unitData!['building_permits'];
+    final operatingLicenses = unitData!['operating_licenses'];
+
+    _updateTotalBuildingArea();
     emit(
       state.copyWith(
-        constructionLicenseFilePath: constructionLicense?['url'],
-        constructionLicenseOriginalName:
-            constructionLicense?['original_file_name'],
-        operatingLicenseFilePath: operatingLicense?['url'],
-        operatingLicenseOriginalName: operatingLicense?['original_file_name'],
+        buildingsCount: buildings.length,
+        isExempt: unitData!['exempted'] ?? false,
+        selectedExemptionReason: exemptionReasonName,
+        contactedTaxAuthority: unitData!['reta_contact_about_unit'] == 1,
+        hasAdditionalDocuments:
+            unitData!['submit_other_supporting_documents'] == 1,
+        ownershipDeedFilePath: ownershipDeed?['url'],
+        ownershipDeedOriginalName: ownershipDeed?['original_file_name'],
+        leaseContractFilePath: leaseContracts?['url'],
+        leaseContractOriginalName: leaseContracts?['original_file_name'],
+        constructionLicenseFilePath: buildingPermits?['url'],
+        constructionLicenseOriginalName: buildingPermits?['original_file_name'],
+        operatingLicenseFilePath: operatingLicenses?['url'],
+        operatingLicenseOriginalName: operatingLicenses?['original_file_name'],
       ),
     );
   }
 
   void _initHotelData() {
-    facilityNameController.text = unitData!['facility_name'] ?? '';
+    facilityNameController.text = unitData!['trade_name'] ?? '';
+    operatingLicenseDateController.text = unitData!['license_date'] ?? '';
 
-    final constructionLicense = unitData!['construction_license'];
-    final operatingLicense = unitData!['operating_license'];
-    final starCertificate = unitData!['star_certificate'];
+    final viewTypeId = unitData!['view_type_id'];
+    String? viewText;
+    if (viewTypeId != null) {
+      final found = lookups.hotelViewTypes.firstWhere(
+        (v) => v.id == int.parse(viewTypeId),
+        orElse: () => DeclarationLookup(id: -1, name: ''),
+      );
+      viewText = found.id == -1 ? null : found.name;
+    }
+
+    final starRatingId = unitData!['star_rating_id'];
+    String? starText;
+    if (starRatingId != null) {
+      final found = lookups.starRatings.firstWhere(
+        (s) => s.id == int.parse(starRatingId),
+        orElse: () => DeclarationLookup(id: -1, name: ''),
+      );
+      starText = found.id == -1 ? null : found.name;
+    }
+
+    final constructionLicense = unitData!['copy_of_the_construction_permits'];
+    final operatingLicense = unitData!['copy_of_the_operating_licenses'];
+    final starCertificate = unitData!['certificate_of_stardom_level'];
 
     emit(
       state.copyWith(
-        selectedHotelView: unitData!['hotel_view'],
-        selectedStarRating: unitData!['star_rating'],
-        hasSubUnits: unitData!['has_sub_units'],
-        constructionLicenseFilePath: constructionLicense?['url'],
+        selectedHotelView: viewText,
+        selectedStarRating: starText,
+        buildingsCount:
+            int.tryParse(unitData!['buildings_count']?.toString() ?? '') ?? 1,
+        roomsCount:
+            int.tryParse(unitData!['rooms_count']?.toString() ?? '') ?? 1,
+        hasSubUnits: unitData!['has_sub_units'] == 1,
+        constructionLicenseFilePath: constructionLicense?['path'],
         constructionLicenseOriginalName:
             constructionLicense?['original_file_name'],
-        operatingLicenseFilePath: operatingLicense?['url'],
+        operatingLicenseFilePath: operatingLicense?['path'],
         operatingLicenseOriginalName: operatingLicense?['original_file_name'],
-        starCertificateFilePath: starCertificate?['url'],
+        starCertificateFilePath: starCertificate?['path'],
         starCertificateOriginalName: starCertificate?['original_file_name'],
+        contactedTaxAuthority: unitData!['reta_contact_about_unit'] == 1,
+        hasAdditionalDocuments:
+            unitData!['submit_other_supporting_documents'] == 1,
       ),
     );
+
+    final subUnitsData = unitData!['hotelUnits'] as List? ?? [];
+    if (subUnitsData.isNotEmpty) {
+      final subUnits = subUnitsData.map((u) {
+        final unit = HotelSubUnit();
+        unit.initFromMap(u as Map<String, dynamic>, lookups.realEstateFloors);
+        return unit;
+      }).toList();
+      emit(
+        state.copyWith(
+          hotelSubUnits: subUnits,
+          hotelSubUnitsUpdateCount: state.hotelSubUnitsUpdateCount + 1,
+        ),
+      );
+    }
   }
 
   void _initPetroleumData() {
@@ -436,18 +516,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   ];
   final List<String> yesNoOptions = [kYes, kNo];
 
-  final List<String> starRatings = [
-    'نجمة واحدة',
-    'نجمتان',
-    'ثلاث نجوم',
-    'أربع نجوم',
-    'خمس نجوم',
-    'ست نجوم',
-    'سبع نجوم',
-  ];
-
-  final List<String> hotelViews = ['مطل على النيل', 'مطل على البحر', 'غير مطل'];
-
   final List<String> buildingTypes = [
     'منشآت معدنية',
     'منشآت خرسانية',
@@ -479,7 +547,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   ];
 
   // ─────────────────────────────────────────
-  // Actions - مشتركة
+  // Shared Actions
   // ─────────────────────────────────────────
 
   void selectUnitSubType(String? value) {
@@ -590,12 +658,25 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     emit(state.copyWith(buildingsCount: buildings.length));
   }
 
-  void decrementBuildings() {
+  void decrementBuildings(int index) {
     if (buildings.length > 1) {
-      buildings.last.dispose();
-      buildings.removeLast();
+      buildings[index].dispose();
+      buildings.removeAt(index);
+      _updateTotalBuildingArea();
       emit(state.copyWith(buildingsCount: buildings.length));
     }
+  }
+
+  void updateBuildingArea() => _updateTotalBuildingArea();
+
+  void _updateTotalBuildingArea() {
+    final total = buildings.fold<double>(
+      0,
+      (sum, b) => sum + (double.tryParse(b.areaController.text) ?? 0),
+    );
+    totalBuildingAreaController.text = total > 0
+        ? total.toStringAsFixed(2)
+        : '';
   }
 
   void selectHotelView(String? value) {
@@ -608,6 +689,38 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   void setHasSubUnits(bool? value) {
     emit(state.copyWith(hasSubUnits: value));
+  }
+
+  void addHotelSubUnit() {
+    final updated = [...state.hotelSubUnits, HotelSubUnit()];
+    emit(
+      state.copyWith(
+        hotelSubUnits: updated,
+        hotelSubUnitsUpdateCount: state.hotelSubUnitsUpdateCount + 1,
+      ),
+    );
+  }
+
+  void removeHotelSubUnit(String id) {
+    final unit = state.hotelSubUnits.firstWhere((u) => u.id == id);
+    unit.dispose();
+    final updated = state.hotelSubUnits.where((u) => u.id != id).toList();
+    // لو الليست فضت — ارجع hasSubUnits لـ false
+    emit(
+      state.copyWith(
+        hotelSubUnits: updated,
+        hasSubUnits: updated.isEmpty ? false : state.hasSubUnits,
+        hotelSubUnitsUpdateCount: state.hotelSubUnitsUpdateCount + 1,
+      ),
+    );
+  }
+
+  void triggerHotelSubUnitRebuild() {
+    emit(
+      state.copyWith(
+        hotelSubUnitsUpdateCount: state.hotelSubUnitsUpdateCount + 1,
+      ),
+    );
   }
 
   // ─────────────────────────────────────────
@@ -864,7 +977,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     final isFormValid = formKey.currentState?.validate() ?? false;
     if (!isFormValid) return false;
 
-    // ── كود حساب الوحدة (14 رقم لو موجود) ──────────
+    // ── كود حساب الوحدة ───────────────────────────────────────────
     final unitCode = unitCodeController.text.trim();
     if (unitCode.isNotEmpty && unitCode.length != 14) {
       emit(
@@ -873,29 +986,76 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       return false;
     }
 
-    // ── سند تمليك الوحدة (required) ──────────────────
+    // ── validation خاص بكل نوع ───────────────────────────────────
+    switch (unitType) {
+      case UnitType.hotelFacility:
+        return _validateHotelFacility();
+
+      case UnitType.serviceFacility:
+      case UnitType.industrialFacility:
+      case UnitType.productionFacility:
+        return _validateFacility();
+
+      case UnitType.vacantLand:
+        return _validateAdditionalDocs(); // مفيش سند تمليك للأراضي
+
+      case UnitType.petroleumFacility:
+      case UnitType.minesAndQuarries:
+        return _validateAdditionalDocs();
+
+      default:
+        return _validateDefault();
+    }
+  }
+
+  // ── سند التمليك + مستندات داعمة (الأنواع العادية) ────────────────
+  bool _validateDefault() {
     if (state.ownershipDeedFilePath == null) {
       emit(state.copyWith(errorMessage: 'يرجى رفع سند تمليك الوحدة'));
       return false;
     }
+    return _validateAdditionalDocs();
+  }
 
-    // ── المستندات الداعمة لو اختار نعم ───────────────
-    if (state.hasAdditionalDocuments) {
-      if (additionalDocuments.isEmpty) {
-        emit(
-          state.copyWith(errorMessage: 'يرجى إضافة مستند داعم واحد على الأقل'),
-        );
+  // ── منشآت عادية (خدمية / صناعية / إنتاجية) ──────────────────────
+  bool _validateFacility() {
+    if (state.ownershipDeedFilePath == null) {
+      emit(state.copyWith(errorMessage: 'يرجى رفع سند ملكية المنشأة'));
+      return false;
+    }
+    return _validateAdditionalDocs();
+  }
+
+  // ── منشأة فندقية — مفيش سند تمليك، في ملفات تانية ───────────────
+  bool _validateHotelFacility() {
+    // لو اختار "نعم" للوحدات التابعة — تأكد إن في وحدة واحدة على الأقل
+    if (state.hasSubUnits == true && state.hotelSubUnits.isEmpty) {
+      emit(
+        state.copyWith(errorMessage: 'يرجى إضافة وحدة تابعة واحدة على الأقل'),
+      );
+      return false;
+    }
+    return _validateAdditionalDocs();
+  }
+
+  bool _validateAdditionalDocs() {
+    if (!state.hasAdditionalDocuments) return true;
+
+    if (additionalDocuments.isEmpty) {
+      emit(
+        state.copyWith(errorMessage: 'يرجى إضافة مستند داعم واحد على الأقل'),
+      );
+      return false;
+    }
+
+    for (final doc in additionalDocuments) {
+      if (doc.nameController.text.trim().isEmpty) {
+        emit(state.copyWith(errorMessage: 'يرجى إدخال اسم المستند الداعم'));
         return false;
       }
-      for (final doc in additionalDocuments) {
-        if (doc.nameController.text.trim().isEmpty) {
-          emit(state.copyWith(errorMessage: 'يرجى إدخال اسم المستند الداعم'));
-          return false;
-        }
-        if (doc.filePath == null) {
-          emit(state.copyWith(errorMessage: 'يرجى رفع ملف المستند الداعم'));
-          return false;
-        }
+      if (doc.filePath == null) {
+        emit(state.copyWith(errorMessage: 'يرجى رفع ملف المستند الداعم'));
+        return false;
       }
     }
 
@@ -1224,65 +1384,105 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   // منشآت فندقية
   Map<String, dynamic> buildHotelPayload(DeclarationLookupsModel lookups) {
+    final viewTypeId = lookups.hotelViewTypes
+        .firstWhere(
+          (v) => v.name == state.selectedHotelView,
+          orElse: () => DeclarationLookup(id: -1, name: ''),
+        )
+        .id;
+
+    // star_rating_id من display text
+    final starRatingId = lookups.starRatings
+        .firstWhere(
+          (s) => s.name == state.selectedStarRating,
+          orElse: () => DeclarationLookup(id: -1, name: ''),
+        )
+        .id;
+
     return {
       ..._buildBaseUnitPayload(),
-      'facility_name': facilityNameController.text.trim(),
-      'hotel_view': state.selectedHotelView,
-      'star_rating': state.selectedStarRating,
-      'buildings_count': buildings.length,
-      'buildings': buildings
-          .map(
-            (b) => {
-              'floors': b.floorsCount,
-              'area': b.areaController.text.trim(),
-              'market_value': b.marketValueController.text.trim(),
-            },
-          )
+      'trade_name': facilityNameController.text.trim(),
+      'view_type_id': viewTypeId,
+      'license_date': operatingLicenseDateController.text.trim(),
+      'buildings_count': state.buildingsCount,
+      'rooms_count': state.roomsCount,
+      'star_rating_id': starRatingId,
+      'has_sub_units': state.hasSubUnits == true ? 1 : 2,
+      'hotelUnits': state.hotelSubUnits
+          .map((u) => u.toPayload(lookups.realEstateFloors))
           .toList(),
       if (state.constructionLicenseFilePath != null)
-        'construction_license': {
+        'copy_of_the_construction_permits': {
           'path': state.constructionLicenseFilePath,
           'original_file_name': state.constructionLicenseOriginalName,
         },
       if (state.operatingLicenseFilePath != null)
-        'operating_license': {
+        'copy_of_the_operating_licenses': {
           'path': state.operatingLicenseFilePath,
           'original_file_name': state.operatingLicenseOriginalName,
         },
       if (state.starCertificateFilePath != null)
-        'star_certificate': {
+        'certificate_of_stardom_level': {
           'path': state.starCertificateFilePath,
           'original_file_name': state.starCertificateOriginalName,
         },
-      'has_sub_units': state.hasSubUnits,
       ..._buildSupportingDocsPayload(),
     };
   }
 
   // منشآت صناعية / إنتاجية
   Map<String, dynamic> buildFacilityPayload(DeclarationLookupsModel lookups) {
+    final totalBuildingArea = buildings.fold<double>(
+      0,
+      (sum, b) => sum + (double.tryParse(b.areaController.text) ?? 0),
+    );
+
+    final exemptionReasonId = lookups.exemptionReasons
+        .firstWhere(
+          (t) => t.name == state.selectedExemptionReason,
+          orElse: () => DeclarationLookup(id: -1, name: ''),
+        )
+        .id;
+
     return {
       ..._buildBaseUnitPayload(),
       'facility_name': facilityNameController.text.trim(),
       'activity_type': activityTypeController.text.trim(),
       'total_land_area': totalLandAreaFacilityController.text.trim(),
-      'exploited_land_area': exploitedLandAreaController.text.trim(),
+      'total_building_area': totalBuildingArea,
       'buildings_count': buildings.length,
       'buildings': buildings
           .map(
             (b) => {
-              'floors': b.floorsCount,
-              'area': b.areaController.text.trim(),
+              'floors_count': b.floorsCount,
+              'building_area':
+                  double.tryParse(b.areaController.text.trim()) ?? 0,
             },
           )
           .toList(),
+      'exempted': state.isExempt,
+      if (state.isExempt) 'exemption_reason': exemptionReasonId,
+      if (state.isExempt && lawNumberController.text.isNotEmpty)
+        'law_number': lawNumberController.text.trim(),
+      if (state.isExempt && lawYearController.text.isNotEmpty)
+        'law_year': int.tryParse(lawYearController.text.trim()),
+      if (state.ownershipDeedFilePath != null)
+        'facility_ownership_deed': {
+          'path': state.ownershipDeedFilePath,
+          'original_file_name': state.ownershipDeedOriginalName,
+        },
+      if (state.leaseContractFilePath != null)
+        'facility_lease_contracts': {
+          'path': state.leaseContractFilePath,
+          'original_file_name': state.leaseContractOriginalName,
+        },
       if (state.constructionLicenseFilePath != null)
-        'construction_license': {
+        'building_permits': {
           'path': state.constructionLicenseFilePath,
           'original_file_name': state.constructionLicenseOriginalName,
         },
       if (state.operatingLicenseFilePath != null)
-        'operating_license': {
+        'operating_licenses': {
           'path': state.operatingLicenseFilePath,
           'original_file_name': state.operatingLicenseOriginalName,
         },
@@ -1313,7 +1513,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     return {..._buildBaseUnitPayload(), ..._buildSupportingDocsPayload()};
   }
 
-  // ── Helpers مشتركة ───────────────────────────────────
   Map<String, dynamic> _buildBaseUnitPayload() {
     final floorId = state.isFloorNumberOther ? -1 : _getFloorId();
     return {
@@ -1401,6 +1600,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     bookValueController.dispose();
     for (final doc in additionalDocuments) doc.dispose();
     for (final building in buildings) building.dispose();
+    for (final unit in state.hotelSubUnits) unit.dispose();
     return super.close();
   }
 

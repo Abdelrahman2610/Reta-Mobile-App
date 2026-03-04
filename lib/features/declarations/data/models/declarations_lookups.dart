@@ -29,6 +29,10 @@ class DeclarationLookupsModel {
   final int egyptNationalityId;
   final bool canCreateDeclaration;
 
+  final List<DeclarationLookup> starRatings;
+  final List<DeclarationLookup> hotelViewTypes;
+  final List<DeclarationLookup> exploitationTypes;
+
   const DeclarationLookupsModel({
     required this.declarationTypes,
     required this.applicantRoles,
@@ -45,9 +49,17 @@ class DeclarationLookupsModel {
     required this.exemptionReasons,
     required this.egyptNationalityId,
     required this.canCreateDeclaration,
+    required this.starRatings,
+    required this.hotelViewTypes,
+    required this.exploitationTypes,
   });
 
-  factory DeclarationLookupsModel.fromJson(Map<String, dynamic> json) {
+  factory DeclarationLookupsModel.fromJson(
+    Map<String, dynamic> json, {
+    List<DeclarationLookup> starRatings = const [],
+    List<DeclarationLookup> viewTypes = const [],
+    List<DeclarationLookup> exploitationTypes = const [],
+  }) {
     final data = json['data'] as Map<String, dynamic>;
 
     List<DeclarationLookup> parse(String key) {
@@ -73,10 +85,39 @@ class DeclarationLookupsModel {
       exemptionReasons: parse('exemptionReasons'),
       egyptNationalityId: data['egypt_nationality_id'] as int? ?? 63,
       canCreateDeclaration: data['can_create_declaration'] as bool? ?? false,
+      starRatings: starRatings,
+      hotelViewTypes: viewTypes,
+      exploitationTypes: exploitationTypes,
     );
   }
 
-  // ── Helpers ───────────────────────────────────────────────────
+  DeclarationLookupsModel copyWith({
+    List<DeclarationLookup>? starRatings,
+    List<DeclarationLookup>? viewTypes,
+    List<DeclarationLookup>? exploitationTypes,
+  }) {
+    return DeclarationLookupsModel(
+      declarationTypes: declarationTypes,
+      applicantRoles: applicantRoles,
+      taxpayerTypes: taxpayerTypes,
+      propertyTypes: propertyTypes,
+      residentialUnitTypes: residentialUnitTypes,
+      commercialUnitTypes: commercialUnitTypes,
+      nationalities: nationalities,
+      unitAttachments: unitAttachments,
+      governorates: governorates,
+      realEstateFloors: realEstateFloors,
+      yesNoOptions: yesNoOptions,
+      installationTypes: installationTypes,
+      exemptionReasons: exemptionReasons,
+      egyptNationalityId: egyptNationalityId,
+      canCreateDeclaration: canCreateDeclaration,
+      starRatings: starRatings ?? this.starRatings,
+      hotelViewTypes: viewTypes ?? this.hotelViewTypes,
+      exploitationTypes: exploitationTypes ?? this.exploitationTypes,
+    );
+  }
+
   List<String> get nationalityNames =>
       nationalities.map((n) => n.name).toList();
 
@@ -100,4 +141,8 @@ class DeclarationLookupsModel {
       exemptionReasons.map((e) => e.name).toList();
 
   bool isEgyptian(int nationalityId) => nationalityId == egyptNationalityId;
+
+  List<String> get starRatingNames => starRatings.map((s) => s.name).toList();
+
+  List<String> get viewTypeNames => hotelViewTypes.map((v) => v.name).toList();
 }

@@ -13,7 +13,9 @@ import '../../../../cubit/units/unit_data/unit_data_state.dart';
 import 'file_upload_field.dart';
 
 class AdditionalDocumentsSection extends StatelessWidget {
-  const AdditionalDocumentsSection({super.key});
+  const AdditionalDocumentsSection({super.key, this.title});
+
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +29,7 @@ class AdditionalDocumentsSection extends StatelessWidget {
         return Column(
           children: [
             AppDropdownField<String>(
-              labelText: 'هل تريد تقديم مستندات أخرى داعمة للطلب؟',
+              labelText: title ?? 'هل تريد تقديم مستندات أخرى داعمة للطلب؟',
               labelRequired: true,
               hintText: 'اختر',
               value: state.hasAdditionalDocuments ? kYes : kNo,
