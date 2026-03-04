@@ -56,12 +56,20 @@ class DeclarationLookupsCubit extends Cubit<DeclarationLookupsState> {
             .toList();
         return list;
       }),
+
+      safeApiCall(() async {
+        final res = await DioClient.instance.dio.get(
+          ApiConstants.industrialFacilityLookups,
+        );
+        return res.data['data'] as Map<String, dynamic>;
+      }),
     ]);
 
     final mainResult = results[0] as ApiResult<DeclarationLookupsModel>;
     final starResult = results[1] as ApiResult<List<DeclarationLookup>>;
     final viewResult = results[2] as ApiResult<List<DeclarationLookup>>;
     final exploitationResult = results[3] as ApiResult<List<DeclarationLookup>>;
+    final industrialResult = results[4];
 
     if (mainResult is ApiError<DeclarationLookupsModel>) {
       emit(DeclarationLookupsError(mainResult.message));
@@ -75,11 +83,29 @@ class DeclarationLookupsCubit extends Cubit<DeclarationLookupsState> {
     }
 
     if (viewResult is ApiSuccess<List<DeclarationLookup>>) {
-      model = model.copyWith(viewTypes: viewResult.data);
+      model = model.copyWith(hotelViewTypes: viewResult.data);
     }
 
     if (exploitationResult is ApiSuccess<List<DeclarationLookup>>) {
       model = model.copyWith(exploitationTypes: exploitationResult.data);
+    }
+
+    if (industrialResult is ApiSuccess) {
+      final data =
+          (industrialResult as ApiSuccess).data as Map<String, dynamic>;
+
+      final burdenList = (data['burden_activity_types'] as List? ?? [])
+          .map((e) => DeclarationLookup.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      final buildingList = (data['building_types'] as List? ?? [])
+          .map((e) => DeclarationLookup.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      model = model.copyWith(
+        burdenActivityTypes: burdenList,
+        buildingTypes: buildingList,
+      );
     }
 
     _lookups = model;
