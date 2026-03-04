@@ -1,5 +1,3 @@
-// lib/features/declarations/presentations/pages/units/units_data_pages/industrial_facility_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -60,7 +58,6 @@ class _IndustrialFacilityView extends StatelessWidget {
             ),
             24.hs,
 
-            // ── اسم المنشأة (facility_name) ────────
             AppTextFormField(
               labelText: 'أسم المنشأة',
               labelRequired: true,
@@ -71,7 +68,6 @@ class _IndustrialFacilityView extends StatelessWidget {
             ),
             16.hs,
 
-            // ── نوع النشاط (activity_type) ─────────
             AppTextFormField(
               labelText: 'نوع النشاط',
               labelRequired: true,
@@ -82,7 +78,6 @@ class _IndustrialFacilityView extends StatelessWidget {
             ),
             16.hs,
 
-            // ── مساحة الأرض الكلية (total_land_area) ─
             AppTextFormField(
               labelText: 'مساحة الأرض الكلية',
               labelRequired: true,
@@ -94,7 +89,6 @@ class _IndustrialFacilityView extends StatelessWidget {
             ),
             16.hs,
 
-            // ── مساحة الأرض المستغلة (used_land_area) ─
             AppTextFormField(
               labelText: 'مساحة الأرض المستغلة',
               labelRequired: true,
@@ -106,7 +100,6 @@ class _IndustrialFacilityView extends StatelessWidget {
             ),
             16.hs,
 
-            // ── القيمة السوقية للأرض (market_value) ─
             AppTextFormField(
               labelText: 'القيمة السوقية للأرض',
               controller: cubit.landMarketValueController,
@@ -115,11 +108,9 @@ class _IndustrialFacilityView extends StatelessWidget {
             ),
             16.hs,
 
-            // ── وصف المباني ───────────────────────
             TitleWithDivider(title: 'وصف المباني'),
             12.hs,
 
-            // ── قائمة المباني (من cubit.industrialBuildings) ─────────
             BlocBuilder<UnitDataCubit, UnitDataState>(
               buildWhen: (prev, curr) =>
                   prev.industrialBuildingsCount !=
@@ -128,7 +119,6 @@ class _IndustrialFacilityView extends StatelessWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    // عدد المباني counter
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -156,7 +146,6 @@ class _IndustrialFacilityView extends StatelessWidget {
                     ),
                     12.hs,
 
-                    // قائمة المباني
                     ...cubit.industrialBuildings.asMap().entries.map(
                       (e) => _BuildingItem(
                         index: e.key,
@@ -172,14 +161,12 @@ class _IndustrialFacilityView extends StatelessWidget {
             ),
             16.hs,
 
-            // ── هل تم التواصل مع الضرائب؟ ─────────
             const TaxContactSection(
               customLabel:
                   'هل تم التواصل مع الضرائب العقارية بخصوص المنشأة محل الإقرار سابقاً؟',
             ),
             16.hs,
 
-            // ── كود حساب المنشأة (account_code) ────
             BlocBuilder<UnitDataCubit, UnitDataState>(
               buildWhen: (prev, curr) =>
                   prev.contactedTaxAuthority != curr.contactedTaxAuthority,
@@ -200,7 +187,6 @@ class _IndustrialFacilityView extends StatelessWidget {
               },
             ),
 
-            // ── تحمل على وزارة المالية (ministry_burden) ─
             BlocBuilder<UnitDataCubit, UnitDataState>(
               buildWhen: (prev, curr) =>
                   prev.ministryBurden != curr.ministryBurden ||
@@ -226,7 +212,6 @@ class _IndustrialFacilityView extends StatelessWidget {
                       ],
                     ),
 
-                    // ── النشاط المستفاد (burden_activity_id) ─
                     if (state.ministryBurden == true) ...[
                       16.hs,
                       AppDropdownField<String>(
@@ -247,7 +232,6 @@ class _IndustrialFacilityView extends StatelessWidget {
             ),
             16.hs,
 
-            // ── صورة من التراخيص الإنشائية (construction_license) ─
             BlocBuilder<UnitDataCubit, UnitDataState>(
               buildWhen: (prev, curr) =>
                   prev.constructionLicenseFilePath !=
@@ -267,7 +251,6 @@ class _IndustrialFacilityView extends StatelessWidget {
             ),
             16.hs,
 
-            // ── صورة من ترخيص التشغيل (operation_license) ─────────
             BlocBuilder<UnitDataCubit, UnitDataState>(
               buildWhen: (prev, curr) =>
                   prev.operatingLicenseFilePath !=
@@ -287,7 +270,6 @@ class _IndustrialFacilityView extends StatelessWidget {
             ),
             16.hs,
 
-            // ── صورة من عقد التخصيص (allocation_contract) ──────────
             BlocBuilder<UnitDataCubit, UnitDataState>(
               buildWhen: (prev, curr) =>
                   prev.allocationContractFilePath !=
@@ -307,7 +289,6 @@ class _IndustrialFacilityView extends StatelessWidget {
             ),
             16.hs,
 
-            // ── مستندات داعمة أخرى ─────────────────
             const AdditionalDocumentsSection(title: 'مستندات داعمة أخرى'),
           ],
         ),
@@ -358,7 +339,6 @@ class _BuildingItemState extends State<_BuildingItem> {
           ),
           15.hs,
 
-          // ── نوع المبنى (building_type_id) ──────
           AppDropdownField<String>(
             labelText: 'نوع المبنى',
             labelRequired: true,
@@ -372,7 +352,6 @@ class _BuildingItemState extends State<_BuildingItem> {
           ),
           16.hs,
 
-          // ── عدد الأدوار (floors_count) ─────────
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -403,7 +382,6 @@ class _BuildingItemState extends State<_BuildingItem> {
           ),
           16.hs,
 
-          // ── المساحة الإجمالية للمبنى (total_area) ─
           AppTextFormField(
             labelText: 'المساحة الإجمالية للمبنى',
             labelRequired: true,
@@ -414,7 +392,6 @@ class _BuildingItemState extends State<_BuildingItem> {
           ),
           15.hs,
 
-          // ── تاريخ الإنشاء للمبنى (construction_date) ─
           AppTextFormField(
             labelText: 'تاريخ الإنشاء للمبنى',
             labelRequired: true,
@@ -440,7 +417,6 @@ class _BuildingItemState extends State<_BuildingItem> {
           ),
           15.hs,
 
-          // ── القيمة السوقية للمبنى (market_value) ─
           AppTextFormField(
             labelText: 'القيمة السوقية للمبنى',
             controller: widget.building.marketValue,
@@ -449,7 +425,6 @@ class _BuildingItemState extends State<_BuildingItem> {
           ),
           15.hs,
 
-          // ── زرار إضافة + حذف ──────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

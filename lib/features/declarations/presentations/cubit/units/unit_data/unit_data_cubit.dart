@@ -777,8 +777,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     emit(state.copyWith(industrialBuildingsCount: industrialBuildings.length));
   }
 
-  // ── 2. أضف file actions للـ allocation contract ───────────────────
-
   Future<void> setAllocationContractFile(String path) async {
     emit(state.copyWith(isLoading: true));
     final result = await UploadService.instance.uploadFile(
@@ -1128,7 +1126,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   bool _validateIndustrialFacility() {
-    // لو اختار ministry_burden — تأكد إن النشاط متاخد
     if ((state.ministryBurden ?? false) &&
         state.selectedBurdenActivity == null) {
       emit(
@@ -1139,7 +1136,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     return _validateAdditionalDocs();
   }
 
-  // ── سند التمليك + مستندات داعمة (الأنواع العادية) ────────────────
   bool _validateDefault() {
     if (state.ownershipDeedFilePath == null) {
       emit(state.copyWith(errorMessage: 'يرجى رفع سند تمليك الوحدة'));
@@ -1518,7 +1514,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     DeclarationLookupsModel lookups,
     List<IndustrialBuilding> buildings,
   ) {
-    // burden_activity_id من display text
     final burdenActivityId = state.selectedBurdenActivity == null
         ? null
         : lookups.burdenActivityTypes

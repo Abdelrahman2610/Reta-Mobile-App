@@ -1,5 +1,3 @@
-// lib/features/declarations/data/models/industrial_building.dart
-
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
@@ -12,7 +10,7 @@ class IndustrialBuilding {
   final TextEditingController constructionDate = TextEditingController();
   final TextEditingController marketValue = TextEditingController();
 
-  String? buildingType; // display name → converted to ID in toPayload()
+  String? buildingType;
   int floorsCount = 1;
 
   IndustrialBuilding({String? id}) : id = id ?? const Uuid().v4();
