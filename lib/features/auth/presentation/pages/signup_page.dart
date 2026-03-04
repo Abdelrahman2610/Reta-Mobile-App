@@ -82,14 +82,13 @@ class _SignupPageState extends State<SignupPage> {
       child: BlocListener<SignupCubit, SignupState>(
         listener: (context, state) {
           if (state.isSubmitSuccess) {
-            Navigator.of(context).pushAndRemoveUntil(
+            Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => BlocProvider.value(
                   value: context.read<SignupCubit>(),
                   child: OtpPage(phoneNumber: state.phone),
                 ),
               ),
-              (route) => false,
             );
           }
           if (state.submitError != null) {

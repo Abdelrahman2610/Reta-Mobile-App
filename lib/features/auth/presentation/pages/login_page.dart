@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/helpers/app_enum.dart';
-import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
 import 'package:reta/features/auth/presentation/pages/main_page.dart';
 
@@ -267,10 +266,9 @@ class _LoginPageState extends State<LoginPage> {
       alignment: Alignment.centerRight,
       child: TextButton(
         onPressed: () {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
-            (route) => false,
-          );
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const ForgotPasswordPage()));
         },
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
@@ -352,10 +350,9 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         TextButton(
           onPressed: () {
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => const SignupPage()),
-              (route) => false,
-            );
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const SignupPage()));
           },
           style: TextButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
