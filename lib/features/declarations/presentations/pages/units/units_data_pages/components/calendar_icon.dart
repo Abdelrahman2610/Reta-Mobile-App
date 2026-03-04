@@ -5,7 +5,9 @@ import '../../../../../../../core/helpers/fixed_assets.dart';
 import '../../../../../../components/image_svg_custom_widget.dart';
 
 class CalendarIcon extends StatelessWidget {
-  const CalendarIcon({super.key});
+  const CalendarIcon({super.key, this.color});
+
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -13,6 +15,7 @@ class CalendarIcon extends StatelessWidget {
       imgPath: FixedAssets.instance.calendarIC,
       width: 20.w,
       height: 20.h,
+      color: color,
     );
   }
 }

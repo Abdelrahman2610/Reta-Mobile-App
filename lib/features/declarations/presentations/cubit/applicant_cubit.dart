@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -519,6 +521,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       'applicant_role_id': applicantRoleId,
     };
 
+    log('applicantType: $applicantType - $applicantOtherName');
     if (applicantType == ApplicantType.other) {
       payload["applicant_role_other"] = applicantOtherName;
     }

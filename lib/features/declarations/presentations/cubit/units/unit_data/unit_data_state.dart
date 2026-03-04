@@ -1,5 +1,6 @@
 import 'package:reta/features/declarations/data/models/additional_document.dart';
 
+import '../../../../data/models/hotel_sub_unit.dart';
 import '../../../../data/models/vacant_land_item.dart';
 
 class UnitDataState {
@@ -59,6 +60,9 @@ class UnitDataState {
   final String? successMessage;
   final bool navigateAfterSave;
   final List<VacantLandItem> vacantLandItems;
+  final List<HotelSubUnit> hotelSubUnits;
+  final int hotelSubUnitsUpdateCount;
+  final int roomsCount;
 
   const UnitDataState({
     this.selectedFloorNumber,
@@ -104,6 +108,9 @@ class UnitDataState {
     this.selectedAmenities,
     this.navigateAfterSave = false,
     this.vacantLandItems = const [],
+    this.hotelSubUnits = const [],
+    this.hotelSubUnitsUpdateCount = 0,
+    this.roomsCount = 1,
   });
 
   static const _undefined = Object();
@@ -152,6 +159,9 @@ class UnitDataState {
     List<String>? selectedAmenities,
     bool? navigateAfterSave,
     List<VacantLandItem>? vacantLandItems,
+    List<HotelSubUnit>? hotelSubUnits,
+    int? hotelSubUnitsUpdateCount,
+    int? roomsCount,
   }) {
     return UnitDataState(
       selectedFloorNumber: selectedFloorNumber ?? this.selectedFloorNumber,
@@ -240,6 +250,10 @@ class UnitDataState {
       selectedUnitSubType: selectedUnitSubType ?? this.selectedUnitSubType,
       navigateAfterSave: navigateAfterSave ?? this.navigateAfterSave,
       vacantLandItems: vacantLandItems ?? this.vacantLandItems,
+      hotelSubUnits: hotelSubUnits ?? this.hotelSubUnits,
+      hotelSubUnitsUpdateCount:
+          hotelSubUnitsUpdateCount ?? this.hotelSubUnitsUpdateCount,
+      roomsCount: roomsCount ?? this.roomsCount,
     );
   }
 }

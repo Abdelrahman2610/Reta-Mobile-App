@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:reta/core/helpers/fixed_assets.dart';
-import 'package:reta/features/components/app_button.dart';
 
 import '../../../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../components/app_container.dart';
 import '../../../../../components/app_text.dart';
 import '../../../../../components/app_text_form_field.dart';
-import '../../../../../components/image_svg_custom_widget.dart';
 import '../../../../data/models/vacant_land_item.dart';
 import '../../../components/app_drop_down.dart';
 import '../../../components/app_drop_down_option.dart';
@@ -17,6 +14,7 @@ import '../../../cubit/units/unit_data/unit_data_cubit.dart';
 import '../../../cubit/units/unit_data/unit_data_state.dart';
 import 'components/additional_documents_section.dart';
 import 'components/file_upload_field.dart';
+import 'components/units_add_delete_buttons.dart';
 
 class VacantLandPage extends StatelessWidget {
   const VacantLandPage({super.key, required this.unitCubit});
@@ -201,7 +199,7 @@ class _VacantLandItemWidget extends StatelessWidget {
                 labelRequired: true,
                 hintText: 'اختر نوع الاستغلال',
                 value: currentItem.selectedExploitationType,
-                items: cubit.lookups.installationTypes
+                items: cubit.lookups.exploitationTypes
                     .map((t) => appDropDownOption(label: t.name))
                     .toList(),
                 onChanged: (value) =>
@@ -285,33 +283,11 @@ class _VacantLandItemWidget extends StatelessWidget {
 
           15.hs,
           // ── زرار إضافة استغلال ──────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (index == vacantLandItemsLength - 1)
-                Expanded(
-                  child: AppButton(
-                    label: 'إضافة إستغلال',
-                    backgroundColor: AppColors.highlightDarkest,
-                    icon: Icon(Icons.add, color: AppColors.white),
-                    iconLeft: false,
-                    onTap: cubit.addVacantLandItem,
-                  ),
-                )
-              else
-                SizedBox.shrink(),
-              15.ws,
-              if (canDelete)
-                Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: GestureDetector(
-                    onTap: () => cubit.removeVacantLandItem(item.id),
-                    child: ImageSvgCustomWidget(
-                      imgPath: FixedAssets.instance.deleteIC,
-                    ),
-                  ),
-                ),
-            ],
+          UnitsAddDeleteButtons(
+            onAddTapped: cubit.addVacantLandItem,
+            onDeleteTapped: () => cubit.removeVacantLandItem(item.id),
+            isLast: index == vacantLandItemsLength - 1,
+            canDelete: canDelete,
           ),
           15.hs,
         ],

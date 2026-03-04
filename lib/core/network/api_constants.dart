@@ -137,6 +137,7 @@ class ApiConstants {
   static const String permitPhotoLabel = 'license_photo'; //صورة رخصة
   static const String constructionLicenseLabel =
       'construction_license'; //رخصة بناء
-  static const String operatingLicenseLabel = 'operating_license'; //ترخيص تشغيل
+  static const String operatingLicenseLabel =
+      'operating_licenses'; //ترخيص تشغيل
   static const String starCertificateLabel = 'star_certificate'; //شهادة_نجومية
 }

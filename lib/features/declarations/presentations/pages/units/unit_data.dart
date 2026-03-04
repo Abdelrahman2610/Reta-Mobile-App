@@ -9,7 +9,9 @@ import 'package:reta/features/declarations/presentations/pages/units/units_data_
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/commercial_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/components/unit_buttons.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/fixed_installation_unit_page.dart';
+import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/hotel_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/residential_unit_page.dart';
+import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/service_facility_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/service_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/vacant_land_page.dart';
 
@@ -124,8 +126,12 @@ class UnitData extends StatelessWidget {
                           unitCubit: cubit,
                         ),
                         UnitType.vacantLand => VacantLandPage(unitCubit: cubit),
-                        UnitType.serviceFacility => SizedBox.shrink(),
-                        UnitType.hotelFacility => SizedBox.shrink(),
+                        UnitType.serviceFacility => ServiceFacilityPage(
+                          unitCubit: cubit,
+                        ),
+                        UnitType.hotelFacility => HotelFacilityPage(
+                          unitCubit: cubit,
+                        ),
                         UnitType.industrialFacility => SizedBox.shrink(),
                         UnitType.productionFacility => SizedBox.shrink(),
                         UnitType.petroleumFacility => SizedBox.shrink(),
