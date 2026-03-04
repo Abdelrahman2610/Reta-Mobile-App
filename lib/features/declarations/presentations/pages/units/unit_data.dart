@@ -11,6 +11,7 @@ import 'package:reta/features/declarations/presentations/pages/units/units_data_
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/fixed_installation_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/residential_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/service_unit_page.dart';
+import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/vacant_land_page.dart';
 
 import '../../../../../core/helpers/extensions/applicant_type.dart';
 import '../../../../../core/helpers/extensions/dimensions.dart';
@@ -44,7 +45,7 @@ class UnitData extends StatelessWidget {
         listener: (context, state) {
           if (state.isLoading) {
             loadingPopup(RuntimeData.getCurrentContext()!);
-          } else if (!state.isLoading && state.errorMessage == null) {
+          } else if (!state.isLoading) {
             Navigator.pop(RuntimeData.getCurrentContext()!);
           }
           if (state.errorMessage != null) {
@@ -117,14 +118,12 @@ class UnitData extends StatelessWidget {
                           unitCubit: cubit,
                         ),
                         UnitType.serviceUnit => ServiceUnitPage(
-                          applicantType: applicantType,
                           unitCubit: cubit,
                         ),
                         UnitType.fixedInstallations => FixedInstallationsPage(
-                          applicantType: applicantType,
                           unitCubit: cubit,
                         ),
-                        UnitType.vacantLand => SizedBox.shrink(),
+                        UnitType.vacantLand => VacantLandPage(unitCubit: cubit),
                         UnitType.serviceFacility => SizedBox.shrink(),
                         UnitType.hotelFacility => SizedBox.shrink(),
                         UnitType.industrialFacility => SizedBox.shrink(),

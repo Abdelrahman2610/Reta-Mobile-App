@@ -1,5 +1,7 @@
 import 'package:reta/features/declarations/data/models/additional_document.dart';
 
+import '../../../../data/models/vacant_land_item.dart';
+
 class UnitDataState {
   final String? selectedFloorNumber;
   final bool isFloorNumberOther;
@@ -56,6 +58,7 @@ class UnitDataState {
   final String? errorMessage;
   final String? successMessage;
   final bool navigateAfterSave;
+  final List<VacantLandItem> vacantLandItems;
 
   const UnitDataState({
     this.selectedFloorNumber,
@@ -100,6 +103,7 @@ class UnitDataState {
     this.selectedUnitSubType,
     this.selectedAmenities,
     this.navigateAfterSave = false,
+    this.vacantLandItems = const [],
   });
 
   static const _undefined = Object();
@@ -147,6 +151,7 @@ class UnitDataState {
     String? selectedUnitSubType,
     List<String>? selectedAmenities,
     bool? navigateAfterSave,
+    List<VacantLandItem>? vacantLandItems,
   }) {
     return UnitDataState(
       selectedFloorNumber: selectedFloorNumber ?? this.selectedFloorNumber,
@@ -234,6 +239,7 @@ class UnitDataState {
       selectedAmenities: selectedAmenities ?? this.selectedAmenities,
       selectedUnitSubType: selectedUnitSubType ?? this.selectedUnitSubType,
       navigateAfterSave: navigateAfterSave ?? this.navigateAfterSave,
+      vacantLandItems: vacantLandItems ?? this.vacantLandItems,
     );
   }
 }

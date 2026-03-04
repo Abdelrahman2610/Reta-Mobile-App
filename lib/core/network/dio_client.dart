@@ -20,6 +20,18 @@ class DioClient {
       ),
     );
 
+    dio.interceptors.add(
+      LogInterceptor(
+        request: true,
+        requestUrl: true,
+        requestHeader: true,
+        requestBody: false,
+        responseUrl: true,
+        responseHeader: true,
+        responseBody: false,
+      ),
+    );
+
     dio.interceptors.addAll([
       _AuthInterceptor(_storage, _tokenKey),
       _LoggingInterceptor(),
@@ -94,6 +106,7 @@ class _LoggingInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     print('✗ [${err.response?.statusCode}] ${err.requestOptions.uri}');
+    print('Error body: ${err.response?.data}');
     handler.next(err);
   }
 }

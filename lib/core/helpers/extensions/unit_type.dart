@@ -1,7 +1,7 @@
 import '../app_enum.dart';
 
 extension UnitTypeLabel on UnitType {
-  String get label {
+  String get displayLabel {
     switch (this) {
       case UnitType.residential:
         return 'الوحدات السكنية';
@@ -15,6 +15,35 @@ extension UnitTypeLabel on UnitType {
         return 'التركيبات الثابتة';
       case UnitType.vacantLand:
         return 'أراضي فضاء مستغلة';
+      case UnitType.serviceFacility:
+        return 'المنشآت الخدمية';
+      case UnitType.hotelFacility:
+        return 'المنشآت الفندقية';
+      case UnitType.industrialFacility:
+        return 'المنشآت الصناعية';
+      case UnitType.productionFacility:
+        return 'المنشآت الإنتاجية';
+      case UnitType.petroleumFacility:
+        return 'منشآت بترولية';
+      case UnitType.minesAndQuarries:
+        return 'مناجم ومحاجر وملاحات';
+    }
+  }
+
+  String get label {
+    switch (this) {
+      case UnitType.residential:
+        return 'الوحدات السكنية';
+      case UnitType.commercial:
+        return 'الوحدات التجارية';
+      case UnitType.administrative:
+        return 'الوحدات الإدارية';
+      case UnitType.serviceUnit:
+        return 'الوحدات الخدمية';
+      case UnitType.fixedInstallations:
+        return 'التركيبات الثابتة';
+      case UnitType.vacantLand:
+        return 'الأرض الفضاء المستغلة';
       case UnitType.serviceFacility:
         return 'المنشآت الخدمية';
       case UnitType.hotelFacility:
@@ -103,6 +132,7 @@ extension UnitTypeParser on String {
       case 'التركيبات الثابتة':
         return UnitType.fixedInstallations;
       case 'أراضي فضاء مستغلة':
+      case 'الأرض الفضاء المستغلة':
         return UnitType.vacantLand;
       case 'المنشآت الخدمية':
         return UnitType.serviceFacility;

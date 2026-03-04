@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:reta/core/helpers/app_enum.dart';
 
 import '../../../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../../../core/theme/app_colors.dart';
@@ -17,27 +16,18 @@ import 'components/floor_unit_section.dart';
 import 'components/tax_contact_section.dart';
 
 class ServiceUnitPage extends StatelessWidget {
-  const ServiceUnitPage({
-    super.key,
-    required this.applicantType,
-    required this.unitCubit,
-  });
+  const ServiceUnitPage({super.key, required this.unitCubit});
 
-  final ApplicantType applicantType;
   final UnitDataCubit unitCubit;
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: unitCubit,
-      child: _ServiceUnitView(applicantType: applicantType),
-    );
+    return BlocProvider.value(value: unitCubit, child: _ServiceUnitView());
   }
 }
 
 class _ServiceUnitView extends StatelessWidget {
-  const _ServiceUnitView({required this.applicantType});
-  final ApplicantType applicantType;
+  const _ServiceUnitView();
 
   @override
   Widget build(BuildContext context) {
