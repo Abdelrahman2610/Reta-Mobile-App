@@ -1,5 +1,3 @@
-// lib/features/declarations/data/models/hotel_sub_unit.dart
-
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 

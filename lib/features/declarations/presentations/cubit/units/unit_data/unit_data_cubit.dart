@@ -292,7 +292,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     totalLandAreaController.text =
         unitData!['total_land_area']?.toString() ?? '';
 
-    // ── init الـ vacant lands list ──────────────
     final vacantLandsData = unitData!['vacantLands'] as List? ?? [];
 
     if (vacantLandsData.isNotEmpty) {
@@ -329,7 +328,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       emit(state.copyWith(vacantLandItems: items));
     }
 
-    // ── ملفات الأرض ──────────────────────────────
     final ownershipDoc = unitData!['land_ownership_legal_document'];
     final leaseAgreement = unitData!['land_lease_agreement'];
 
@@ -355,7 +353,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     lawNumberController.text = unitData!['law_number'] ?? '';
     lawYearController.text = unitData!['law_year']?.toString() ?? '';
 
-    // ── المباني ──────────────────────────────
     final buildingsData = unitData!['buildings'] as List? ?? [];
     if (buildingsData.isNotEmpty) {
       for (final b in buildings) b.dispose();
@@ -368,7 +365,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       }
     }
 
-    // ── الإعفاء ───────────────────────────────
     final exemptionReasonId = unitData!['exemption_reason'];
     final exemptionReasonName = exemptionReasonId != null
         ? lookups.exemptionReasons
@@ -456,7 +452,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       ),
     );
 
-    // ── init hotel sub-units ─────────────────────────────────────────
     final subUnitsData = unitData!['hotelUnits'] as List? ?? [];
     if (subUnitsData.isNotEmpty) {
       final subUnits = subUnitsData.map((u) {
@@ -1043,7 +1038,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     return _validateAdditionalDocs();
   }
 
-  // ── مستندات داعمة (مشتركة في كل الأنواع) ────────────────────────
   bool _validateAdditionalDocs() {
     if (!state.hasAdditionalDocuments) return true;
 
@@ -1519,7 +1513,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     return {..._buildBaseUnitPayload(), ..._buildSupportingDocsPayload()};
   }
 
-  // ── Helpers مشتركة ───────────────────────────────────
   Map<String, dynamic> _buildBaseUnitPayload() {
     final floorId = state.isFloorNumberOther ? -1 : _getFloorId();
     return {

@@ -29,10 +29,9 @@ class DeclarationLookupsModel {
   final int egyptNationalityId;
   final bool canCreateDeclaration;
 
-  // ── جديد ──────────────────────────────────────
-  final List<DeclarationLookup> starRatings; // getStarRatings
-  final List<DeclarationLookup> hotelViewTypes; // getViewTypes
-  final List<DeclarationLookup> exploitationTypes; // getViewTypes
+  final List<DeclarationLookup> starRatings;
+  final List<DeclarationLookup> hotelViewTypes;
+  final List<DeclarationLookup> exploitationTypes;
 
   const DeclarationLookupsModel({
     required this.declarationTypes,
@@ -92,7 +91,6 @@ class DeclarationLookupsModel {
     );
   }
 
-  /// بيعمل copy مع تحديث starRatings أو viewTypes بعد ما يرجعوا من الـ API
   DeclarationLookupsModel copyWith({
     List<DeclarationLookup>? starRatings,
     List<DeclarationLookup>? viewTypes,

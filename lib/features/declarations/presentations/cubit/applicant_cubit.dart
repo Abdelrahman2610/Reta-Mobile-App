@@ -521,7 +521,6 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       'applicant_role_id': applicantRoleId,
     };
 
-    log('applicantType: $applicantType - $applicantOtherName');
     if (applicantType == ApplicantType.other) {
       payload["applicant_role_other"] = applicantOtherName;
     }

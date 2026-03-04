@@ -20,7 +20,6 @@ class DeclarationLookupsCubit extends Cubit<DeclarationLookupsState> {
 
     emit(DeclarationLookupsLoading());
 
-    // ── كل الـ calls بالتوازي ──────────────────────────────────────
     final results = await Future.wait([
       safeApiCall(() async {
         final response = await DioClient.instance.dio.get(

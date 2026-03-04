@@ -58,7 +58,7 @@ class _ServiceFacilityView extends StatelessWidget {
               labelText: 'إسم المنشأة',
               labelRequired: true,
               controller: cubit.facilityNameController,
-              hintText: 'المساحة بالمتر المربع', // placeholder زي الصورة
+              hintText: 'المساحة بالمتر المربع',
               validator: (v) =>
                   v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
             ),
@@ -219,19 +219,14 @@ class _BuildingsSection extends StatelessWidget {
     return BlocBuilder<UnitDataCubit, UnitDataState>(
       buildWhen: (prev, curr) => prev.buildingsCount != curr.buildingsCount,
       builder: (context, state) {
-        final totalArea = cubit.buildings.fold<double>(
-          0,
-          (sum, b) => sum + (double.tryParse(b.areaController.text) ?? 0),
-        );
-
         return Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            // ── divider + title ─────────────────
+            // --- divider + title ------------------
             TitleWithDivider(title: 'المباني المضافة داخل المنشأة'),
             12.hs,
 
-            // ── عدد المباني counter ──────────────
+            // --- عدد المباني counter ------------------
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -258,7 +253,7 @@ class _BuildingsSection extends StatelessWidget {
             ),
             12.hs,
 
-            // ── قائمة المباني ────────────────────
+            // --- قائمة المباني ------------------
             ...cubit.buildings.asMap().entries.map((entry) {
               return _BuildingItemWidget(
                 index: entry.key,
@@ -269,7 +264,7 @@ class _BuildingsSection extends StatelessWidget {
               );
             }),
 
-            // ── إجمالي مساحة المباني ─────────────
+            // ---- إجمالي مساحة المباني ------------------
             12.hs,
             AppTextFormField(
               labelText: 'إجمالي مساحة المباني',
@@ -357,7 +352,7 @@ class _BuildingItemWidgetState extends State<_BuildingItemWidget> {
           ),
           16.hs,
 
-          // ── مساحة المبنى ───────────────────
+          // --- مساحة المبنى ------------------
           AppTextFormField(
             labelText: 'مساحة المبنى',
             labelRequired: true,
@@ -372,7 +367,7 @@ class _BuildingItemWidgetState extends State<_BuildingItemWidget> {
           ),
           15.hs,
 
-          // ── زرار إضافة + حذف ───────────────
+          // --- زرار إضافة + حذف ------------------
           UnitsAddDeleteButtons(
             onAddTapped: widget.cubit.incrementBuildings,
             onDeleteTapped: () => widget.cubit.decrementBuildings(widget.index),
