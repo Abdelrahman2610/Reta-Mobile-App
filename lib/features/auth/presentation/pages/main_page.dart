@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:reta/core/widgets/coming_soon_bottom_sheet.dart';
 import 'package:reta/features/auth/presentation/pages/settings_page.dart';
 import 'package:reta/features/components/app_text.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_cubit.dart';
@@ -44,7 +45,6 @@ class MainPage extends StatelessWidget {
     }
 
     return MultiBlocProvider(
-      //
       providers: [
         BlocProvider(create: (_) => HomeCubit()),
         BlocProvider(create: (_) => NotificationsCubit()),
@@ -82,18 +82,16 @@ class _MainViewState extends State<_MainView> {
                 // index 0 — الرئيسية
                 HomeTab(user: widget.user),
 
-                const Center(child: Text('مديونياتي')),
+                // index 1 — مديونياتي
+                const SizedBox(),
 
                 // index 2 — إقراراتي
-                // ProviderDataPage(),
                 DeclarationsPage(),
-                // SelectApplicantTypePage(),
-                // SelectTypesOfPropertiesPage(),
 
                 // index 3 — مدفوعاتي
-                const Center(child: Text('مدفوعاتي')),
+                const SizedBox(),
+
                 // index 4 — الإعدادات
-                // const SizedBox(),
                 SettingsPage(currentUser: widget.user),
               ],
               items: navBarItems(
@@ -128,12 +126,12 @@ class _MainViewState extends State<_MainView> {
         "الرئيسية",
         checkIsNavBarSelected(0, selectedIndex),
       ),
-
       item(
         FixedAssets.instance.unselectedDebt,
         FixedAssets.instance.selectedDebt,
         "مديونياتي",
         checkIsNavBarSelected(1, selectedIndex),
+        isLocked: true,
       ),
       item(
         FixedAssets.instance.declaration,
@@ -147,6 +145,7 @@ class _MainViewState extends State<_MainView> {
         FixedAssets.instance.selectedPayment,
         "مدفوعاتي",
         checkIsNavBarSelected(3, selectedIndex),
+        isLocked: true,
       ),
       item(
         FixedAssets.instance.selectedSettings,
@@ -163,45 +162,48 @@ class _MainViewState extends State<_MainView> {
     String title,
     bool isSelected, {
     bool isHome = false,
+    bool isLocked = false,
   }) {
+    final iconWidget = Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        ImageSvgCustomWidget(
+          imgPath: isHome || isSelected ? selectedIcon : unSelectedIcon,
+          color: isHome
+              ? null
+              : isSelected
+              ? AppColors.mainBlueIndigoDye
+              : AppColors.neutralDarkLightest,
+          height: isHome ? 44.h : 20.h,
+          width: isHome ? 44.w : 24.w,
+        ),
+        AppText(
+          text: title,
+          alignment: AlignmentDirectional.center,
+          textAlign: TextAlign.center,
+          color: isSelected
+              ? AppColors.mainBlueSecondary
+              : AppColors.neutralDarkLightest,
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w500,
+        ),
+      ],
+    );
+
     return PersistentBottomNavBarItem(
-      icon: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          ImageSvgCustomWidget(
-            imgPath: isHome || isSelected ? selectedIcon : unSelectedIcon,
-            color: isHome
-                ? null
-                : isSelected
-                ? AppColors.mainBlueIndigoDye
-                : AppColors.neutralDarkLightest,
-            height: isHome ? 44.h : 20.h,
-            width: isHome ? 44.w : 24.w,
-          ),
-          AppText(
-            text: title,
-            alignment: AlignmentDirectional.center,
-            textAlign: TextAlign.center,
-            color: isSelected
-                ? AppColors.mainBlueSecondary
-                : AppColors.neutralDarkLightest,
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w500,
-          ),
-        ],
-      ),
+      icon: isLocked
+          ? GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => ComingSoonBottomSheet.show(context),
+              child: AbsorbPointer(child: iconWidget),
+            )
+          : iconWidget,
       inactiveColorPrimary: CupertinoColors.systemGrey,
     );
   }
 
-  bool checkIsNavBarSelected(index, selectedIndex) {
-    if (index == selectedIndex) {
-      return true;
-    } else {
-      return false;
-    }
-  }
+  bool checkIsNavBarSelected(index, selectedIndex) => index == selectedIndex;
 
   Widget _buildHero() {
     return SizedBox(

@@ -291,10 +291,15 @@ class LoginCubit extends Cubit<LoginState> {
 
     final nationalId = state.name.trim();
 
+    // if (nationalId.isEmpty) {
+    //   nationalIdError = 'هذا الحقل مطلوب';
+    // } else if (!RegExp(r'^\d{14}$').hasMatch(nationalId) &&
+    //     !RegExp(r'^[A-Za-z0-9]{6,20}$').hasMatch(nationalId)) {
+    //   nationalIdError = 'الرقم القومي أو جواز السفر غير صحيح';
+    // }
+
     if (nationalId.isEmpty) {
       nationalIdError = 'هذا الحقل مطلوب';
-    } else if (!RegExp(r'^\d{14}$').hasMatch(nationalId)) {
-      nationalIdError = 'الرقم القومي يجب أن يكون 14 رقماً';
     }
 
     if (state.password.isEmpty) {
