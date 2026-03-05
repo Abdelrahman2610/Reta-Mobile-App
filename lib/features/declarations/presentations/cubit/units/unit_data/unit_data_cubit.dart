@@ -1805,12 +1805,12 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           'path': state.constructionLicenseFilePath,
           'original_file_name': state.constructionLicenseOriginalName,
         },
-      if (state.constructionLicenseFilePath != null)
+      if (state.openingBudgetFilePath != null)
         'opening_budget': {
           'path': state.openingBudgetFilePath,
           'original_file_name': state.openingBudgetOriginalName,
         },
-      if (state.constructionLicenseFilePath != null)
+      if (state.allBookBValueFilePath != null)
         'all_book_value': {
           'path': state.allBookBValueFilePath,
           'original_file_name': state.allBookBValueOriginalName,
