@@ -98,6 +98,7 @@ class TaxpayerDataPage extends StatelessWidget {
                               ApplicantType.sharedOwnership =>
                                 SharedOwnershipForm(),
                               ApplicantType.beneficiary => SizedBox.shrink(),
+                              ApplicantType.exploited => SizedBox.shrink(),
                               ApplicantType.agent => SharedForm(
                                 uploadDocumentTitle:
                                     'رفع سند إثبات صفة الوكيل (التوكيل الرسمي)',

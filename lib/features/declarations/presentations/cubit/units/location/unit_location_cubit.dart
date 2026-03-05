@@ -23,11 +23,12 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
     required this.applicantType,
     required this.declarationId,
     this.locationData,
+    this.otherName,
     this.unitData,
   }) : super(const UnitLocationState()) {
     fetchGovernorates();
   }
-
+  final String? otherName;
   final UnitType unitType;
   final ApplicantType applicantType;
   final int declarationId;

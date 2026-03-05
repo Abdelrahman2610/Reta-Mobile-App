@@ -2,6 +2,7 @@ enum ApplicantType {
   owner,
   sharedOwnership,
   beneficiary,
+  exploited,
   agent,
   legalRepresentative,
   other,

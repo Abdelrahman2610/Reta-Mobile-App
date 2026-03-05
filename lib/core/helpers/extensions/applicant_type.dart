@@ -9,6 +9,8 @@ extension ApplicantTypeLabel on ApplicantType {
         return 'مالك على الشيوع';
       case ApplicantType.beneficiary:
         return 'منتفع';
+      case ApplicantType.exploited:
+        return 'مستغل';
       case ApplicantType.agent:
         return 'وكيل';
       case ApplicantType.legalRepresentative:
@@ -26,6 +28,8 @@ extension ApplicantTypeLabel on ApplicantType {
         return 2;
       case ApplicantType.beneficiary:
         return 3;
+      case ApplicantType.exploited:
+        return 4;
       case ApplicantType.agent:
         return 5;
       case ApplicantType.legalRepresentative:
