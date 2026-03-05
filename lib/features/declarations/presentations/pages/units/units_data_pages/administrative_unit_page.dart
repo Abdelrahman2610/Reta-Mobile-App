@@ -134,7 +134,6 @@ class _AdministrativeUnitView extends StatelessWidget {
               builder: (context, state) {
                 return FileUploadField(
                   labelText: 'سند تمليك الوحدة',
-                  labelRequired: true,
                   description: 'عقد مسجل/عقد ابتدائي/حكم قضائي',
                   text: 'حمل ملف',
                   backgroundColor: AppColors.highlightDarkest,
