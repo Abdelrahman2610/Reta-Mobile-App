@@ -15,9 +15,10 @@ import '../../../components/circular_progress_indicator_platform_widget.dart';
 import '../components/select_applicant_type_item.dart';
 
 class SelectApplicantTypePage extends StatelessWidget {
-  const SelectApplicantTypePage({super.key, required this.declarationId});
+  SelectApplicantTypePage({super.key, required this.declarationId});
 
   final int declarationId;
+  String? otherTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -106,6 +107,17 @@ class SelectApplicantTypePage extends StatelessWidget {
                             ),
                             SizedBox(height: 16.h),
                             SelectApplicantTypeItem(
+                              title: "مستغل",
+                              subTitle:
+                                  "تقديم الإقرار عن عقار تقوم باستغلاله أو الانتفاع به بموجب عقد أو سند قانوني.",
+                              onPress: () => onApplicantTaped(
+                                applicantType: ApplicantType.exploited,
+                                userModel: state.userModel,
+                                context: context,
+                              ),
+                            ),
+                            SizedBox(height: 16.h),
+                            SelectApplicantTypeItem(
                               title: "ممثل قانوني",
                               subTitle:
                                   "تقديم الإقرار بصفتك ممثلًا قانونيًا عن شخص أو جهة مكلفة.",
@@ -123,10 +135,14 @@ class SelectApplicantTypePage extends StatelessWidget {
                               subTitle:
                                   "تقديم الإقرار في حالات خاصة لا تندرج ضمن الصفات السابقة.",
                               isOther: true,
+                              otherName: (otherName) {
+                                otherTitle = otherName;
+                              },
                               onPress: () => onApplicantTaped(
                                 applicantType: ApplicantType.other,
                                 userModel: state.userModel,
                                 context: context,
+                                applicantOtherName: otherTitle,
                               ),
                             ),
                           ],

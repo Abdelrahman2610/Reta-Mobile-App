@@ -29,8 +29,10 @@ class UnitLocationDataPage extends StatelessWidget {
     required this.declarationId,
     this.locationData,
     this.unitData,
+    this.otherName,
   });
 
+  final String? otherName;
   final UnitType unitType;
   final ApplicantType applicantType;
   final int declarationId;
@@ -46,6 +48,7 @@ class UnitLocationDataPage extends StatelessWidget {
         declarationId: declarationId,
         locationData: locationData,
         unitData: unitData,
+        otherName: otherName,
       ),
       child: _UnitLocationDataPage(),
     );
@@ -62,7 +65,8 @@ class _UnitLocationDataPage extends StatelessWidget {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: MainAppBar(
-          title: 'إقرار ${cubit.applicantType.label}',
+          title:
+              'إقرار ${cubit.applicantType == ApplicantType.other ? (cubit.otherName ?? cubit.applicantType.label) : cubit.applicantType.label}',
           backgroundColor: AppColors.mainBlueIndigoDye,
           backButtonIconColor: Colors.white,
           titleTextStyle: TextStyle(

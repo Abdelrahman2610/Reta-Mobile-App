@@ -290,6 +290,9 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                                                       .activeCategories[state
                                                           .selectedCategoryIndex]
                                                       .key]['data'][index],
+                                              otherName: state
+                                                  .detailsModel
+                                                  ?.applicantRoleOther,
                                             ),
                                           ),
                                           withNavBar: false,

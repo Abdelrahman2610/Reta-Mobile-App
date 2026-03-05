@@ -399,6 +399,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
     switch (state.applicantType) {
       case ApplicantType.owner:
+      case ApplicantType.exploited:
       case ApplicantType.beneficiary:
         return true;
       case ApplicantType.sharedOwnership:
@@ -441,7 +442,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   Future<void> onNextTapped(BuildContext context) async {
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
     if (applicantType == ApplicantType.owner ||
-        applicantType == ApplicantType.beneficiary) {
+        applicantType == ApplicantType.beneficiary ||
+        applicantType == ApplicantType.exploited) {
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -453,6 +455,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
             child: SelectTypesOfPropertiesPage(
               applicantType: applicantType,
               declarationId: declarationId,
+              otherName: applicantOtherName,
             ),
           ),
         ),
@@ -487,6 +490,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
           child: SelectTypesOfPropertiesPage(
             applicantType: applicantType,
             declarationId: declarationId,
+            otherName: applicantOtherName,
           ),
         ),
       ),

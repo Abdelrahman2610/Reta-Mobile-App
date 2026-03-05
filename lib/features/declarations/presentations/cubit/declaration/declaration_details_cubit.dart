@@ -84,7 +84,7 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
       deleteLabel: "mine",
       deleteID: "mine_quarry",
       key: 'mine_quarry',
-      label: 'mine_quarry',
+      label: 'مناجم ومحاجر',
       summaryFields: baseCategoryInfo,
     ),
     CategoryConfig(

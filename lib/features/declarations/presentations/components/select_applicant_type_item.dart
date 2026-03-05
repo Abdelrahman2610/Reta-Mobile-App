@@ -12,12 +12,14 @@ class SelectApplicantTypeItem extends StatefulWidget {
   final String subTitle;
   final bool isOther;
   final Function onPress;
+  final Function(String)? otherName;
 
   const SelectApplicantTypeItem({
     super.key,
     required this.onPress,
     required this.title,
     required this.subTitle,
+    this.otherName,
     this.isOther = false,
   });
 
@@ -102,8 +104,11 @@ class _SelectApplicantTypeItemState extends State<SelectApplicantTypeItem> {
                         hideLabel: true,
                         labelText: "",
                         enabled: true,
-                        onChanged: (_) {
+                        onChanged: (otherName) {
                           setState(() {});
+                          if (widget.otherName != null) {
+                            widget.otherName!(otherName.trim());
+                          }
                         },
                         filledColor: AppColors.neutralLightLight,
                         controller: applicantOtherNameController,
