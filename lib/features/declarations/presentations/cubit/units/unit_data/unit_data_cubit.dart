@@ -18,6 +18,7 @@ import '../../../../data/models/additional_document.dart';
 import '../../../../data/models/building_info.dart';
 import '../../../../data/models/declarations_lookups.dart';
 import '../../../../data/models/hotel_sub_unit.dart';
+import '../../../../data/models/industrial_building.dart';
 import '../../../../data/models/vacant_land_item.dart';
 import '../../../pages/select_types_of_properties_page.dart';
 import '../../applicant_cubit.dart';
@@ -36,6 +37,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     required this.applicantType,
     this.unitData,
     required this.unitType,
+    this.ministryBurden,
   }) : super(UnitDataState(vacantLandItems: [VacantLandItem()])) {
     initUnitData();
   }
@@ -106,6 +108,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   final totalLandAreaFacilityController = TextEditingController();
   final exploitedLandAreaController = TextEditingController();
   final landMarketValueController = TextEditingController();
+  final bool? ministryBurden;
 
   // ─────────────────────────────────────────
   // Controllers - منشآت بترولية
@@ -121,6 +124,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   // ─────────────────────────────────────────
   final List<AdditionalDocument> additionalDocuments = [];
   final List<BuildingInfo> buildings = [BuildingInfo(id: '1')];
+  final List<IndustrialBuilding> industrialBuildings = [IndustrialBuilding()];
 
   // ─────────────────────────────────────────
   // Real and Mock Data
@@ -146,9 +150,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         _initVacantLandData();
         break;
       case UnitType.serviceFacility:
-      case UnitType.industrialFacility:
       case UnitType.productionFacility:
         _initFacilityData();
+        break;
+      case UnitType.industrialFacility:
+        _initIndustrialData();
         break;
       case UnitType.hotelFacility:
         _initHotelData();
@@ -474,6 +480,66 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     }
   }
 
+  void _initIndustrialData() {
+    facilityNameController.text = unitData!['facility_name'] ?? '';
+    activityTypeController.text = unitData!['activity_type'] ?? '';
+    totalLandAreaFacilityController.text =
+        unitData!['total_land_area']?.toString() ?? '';
+    exploitedLandAreaController.text =
+        unitData!['used_land_area']?.toString() ?? '';
+    landMarketValueController.text =
+        unitData!['market_value']?.toString() ?? '';
+    unitCodeController.text = unitData!['account_code'] ?? '';
+
+    // burden_activity_id → display text
+    String? burdenActivityText;
+    final burdenActivityId = unitData!['burden_activity_id'];
+    if (burdenActivityId != null) {
+      final found = lookups.burdenActivityTypes.firstWhere(
+        (b) => b.id == int.parse(burdenActivityId),
+        orElse: () => DeclarationLookup(id: -1, name: ''),
+      );
+      burdenActivityText = found.id == -1 ? null : found.name;
+    }
+
+    // buildings
+    final buildingsData = unitData!['buildings'] as List? ?? [];
+    if (buildingsData.isNotEmpty) {
+      for (final b in industrialBuildings) b.dispose();
+      industrialBuildings.clear();
+      for (final b in buildingsData) {
+        final building = IndustrialBuilding();
+        building.initFromMap(b as Map<String, dynamic>, lookups.buildingTypes);
+        industrialBuildings.add(building);
+      }
+    }
+
+    // files
+    final constructionLicense = unitData!['construction_license'];
+    final operationLicense = unitData!['operation_license'];
+    final allocationContract = unitData!['allocation_contract'];
+    final ministryBurdenVal = unitData!['ministry_burden'];
+
+    emit(
+      state.copyWith(
+        ministryBurden: ministryBurdenVal == true || ministryBurdenVal == 1,
+        selectedBurdenActivity: burdenActivityText,
+        contactedTaxAuthority: unitData!['reta_contact_about_unit'] == 1,
+        hasAdditionalDocuments:
+            unitData!['submit_other_supporting_documents'] == 1,
+        industrialBuildingsCount: industrialBuildings.length,
+        constructionLicenseFilePath: constructionLicense?['path'],
+        constructionLicenseOriginalName:
+            constructionLicense?['original_file_name'],
+        operatingLicenseFilePath: operationLicense?['path'],
+        operatingLicenseOriginalName: operationLicense?['original_file_name'],
+        allocationContractFilePath: allocationContract?['path'],
+        allocationContractOriginalName:
+            allocationContract?['original_file_name'],
+      ),
+    );
+  }
+
   void _initPetroleumData() {
     facilityNameController.text = unitData!['facility_name'] ?? '';
     usageTypeController.text = unitData!['usage_type'] ?? '';
@@ -688,6 +754,50 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   void selectHotelView(String? value) {
     emit(state.copyWith(selectedHotelView: value));
   }
+
+  void toggleMinistryBurden() {
+    emit(state.copyWith(ministryBurden: !(state.ministryBurden ?? false)));
+    if (!(state.ministryBurden ?? false)) {
+      emit(state.copyWith(selectedBurdenActivity: null));
+    }
+  }
+
+  void selectBurdenActivity(String? value) {
+    emit(state.copyWith(selectedBurdenActivity: value));
+  }
+
+  void addIndustrialBuilding() {
+    industrialBuildings.add(IndustrialBuilding());
+    emit(state.copyWith(industrialBuildingsCount: industrialBuildings.length));
+  }
+
+  void removeIndustrialBuilding(int index) {
+    if (industrialBuildings.length <= 1) return;
+    industrialBuildings[index].dispose();
+    industrialBuildings.removeAt(index);
+    emit(state.copyWith(industrialBuildingsCount: industrialBuildings.length));
+  }
+
+  Future<void> setAllocationContractFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: 'allocation_contract',
+    );
+    _handleUploadResult(
+      result,
+      onSuccess: (data) => emit(
+        state.copyWith(
+          isLoading: false,
+          allocationContractFilePath: data.path,
+          allocationContractOriginalName: data.originalFileName,
+        ),
+      ),
+    );
+  }
+
+  void removeAllocationContractFile() =>
+      emit(state.copyWith(allocationContractFilePath: null));
 
   void selectStarRating(String? value) {
     emit(state.copyWith(selectedStarRating: value));
@@ -997,9 +1107,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       case UnitType.hotelFacility:
         return _validateHotelFacility();
 
-      case UnitType.serviceFacility:
       case UnitType.industrialFacility:
       case UnitType.productionFacility:
+        return _validateIndustrialFacility();
+
+      case UnitType.serviceFacility:
         return _validateFacility();
 
       case UnitType.vacantLand:
@@ -1014,7 +1126,17 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     }
   }
 
-  // ── سند التمليك + مستندات داعمة (الأنواع العادية) ────────────────
+  bool _validateIndustrialFacility() {
+    if ((state.ministryBurden ?? false) &&
+        state.selectedBurdenActivity == null) {
+      emit(
+        state.copyWith(errorMessage: 'يرجى اختيار النشاط المستفاد من التحمل'),
+      );
+      return false;
+    }
+    return _validateAdditionalDocs();
+  }
+
   bool _validateDefault() {
     if (state.ownershipDeedFilePath == null) {
       emit(state.copyWith(errorMessage: 'يرجى رفع سند تمليك الوحدة'));
@@ -1228,9 +1350,10 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       case UnitType.vacantLand:
         return buildVacantLandPayload();
       case UnitType.serviceFacility:
-      case UnitType.industrialFacility:
       case UnitType.productionFacility:
         return buildFacilityPayload(lookups);
+      case UnitType.industrialFacility:
+        return buildIndustrialPayload(lookups, industrialBuildings);
       case UnitType.hotelFacility:
         return buildHotelPayload(lookups);
       case UnitType.petroleumFacility:
@@ -1383,6 +1506,76 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         'land_lease_agreement': {
           'path': state.leaseContractFilePath,
           'original_file_name': state.leaseContractOriginalName,
+        },
+      ..._buildSupportingDocsPayload(),
+    };
+  }
+
+  Map<String, dynamic> buildIndustrialPayload(
+    DeclarationLookupsModel lookups,
+    List<IndustrialBuilding> buildings,
+  ) {
+    final burdenActivityId = state.selectedBurdenActivity == null
+        ? null
+        : lookups.burdenActivityTypes
+              .firstWhere(
+                (b) => b.name == state.selectedBurdenActivity,
+                orElse: () => DeclarationLookup(id: -1, name: ''),
+              )
+              .id;
+
+    return {
+      ..._buildBaseUnitPayload(),
+      'facility_name': facilityNameController.text.trim(),
+      'activity_type': activityTypeController.text.trim(),
+      'total_land_area': double.tryParse(
+        totalLandAreaFacilityController.text.trim(),
+      ),
+      'used_land_area': double.tryParse(
+        exploitedLandAreaController.text.trim(),
+      ),
+      'market_value': landMarketValueController.text.trim().isEmpty
+          ? null
+          : double.tryParse(landMarketValueController.text.trim()),
+      'ministry_burden': state.ministryBurden ?? false,
+      if (state.ministryBurden == true &&
+          burdenActivityId != null &&
+          burdenActivityId != -1)
+        'burden_activity_id': burdenActivityId,
+      'buildings_count': buildings.length,
+      'buildings': buildings.map((b) {
+        final buildingTypeId = b.buildingType == null
+            ? null
+            : lookups.buildingTypes
+                  .firstWhere(
+                    (t) => t.name == b.buildingType,
+                    orElse: () => DeclarationLookup(id: -1, name: ''),
+                  )
+                  .id;
+        return {
+          'building_type_id': buildingTypeId == -1 ? null : buildingTypeId,
+          'floors_count': b.floorsCount,
+          'total_area': double.tryParse(b.totalArea.text.trim()),
+          'construction_date': b.constructionDate.text.trim(),
+          'market_value': b.marketValue.text.trim().isEmpty
+              ? null
+              : double.tryParse(b.marketValue.text.trim()),
+        };
+      }).toList(),
+      if (state.constructionLicenseFilePath != null)
+        'construction_license': {
+          'path': state.constructionLicenseFilePath,
+          'original_file_name': state.constructionLicenseOriginalName,
+        },
+      if (state.operatingLicenseFilePath != null)
+        'operation_license': {
+          'path': state.operatingLicenseFilePath,
+          'original_file_name': state.operatingLicenseOriginalName,
+        },
+      if (state.allocationContractFilePath != null)
+        'allocation_contract': {
+          'path': state.allocationContractFilePath,
+          'original_file_name': state.allocationContractOriginalName,
         },
       ..._buildSupportingDocsPayload(),
     };
@@ -1607,6 +1800,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     for (final doc in additionalDocuments) doc.dispose();
     for (final building in buildings) building.dispose();
     for (final unit in state.hotelSubUnits) unit.dispose();
+    for (final b in industrialBuildings) b.dispose();
     return super.close();
   }
 
