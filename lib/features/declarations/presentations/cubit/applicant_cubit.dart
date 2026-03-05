@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -706,6 +708,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   void saveEdit(BuildContext context) {
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
     if (applicantType == ApplicantType.owner ||
+        applicantType == ApplicantType.exploited ||
         applicantType == ApplicantType.beneficiary) {
       if (context.mounted) Navigator.pop(context);
     } else {
@@ -730,6 +733,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     final payload = <String, dynamic>{
       'declaration_type_id': 1,
       'applicant_role_id': applicantType.id,
+      'applicant_role_other': applicantOtherName,
     };
 
     // ── سند التوكيل ──────────────────────────
@@ -830,7 +834,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     }
 
     payload['taxpayer'] = taxpayer;
-
+    log("payload: $payload");
     final result = await safeApiCall(() async {
       final response = await DioClient.instance.dio.put(
         ApiConstants.declarationById(declarationId.toString()),

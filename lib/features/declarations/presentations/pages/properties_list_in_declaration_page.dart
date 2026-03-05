@@ -120,6 +120,8 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                                       .read<DeclarationDetailsCubit>()
                                       .fetchDeclarationModel(),
                                   userModel: userState.userModel,
+                                  applicantOtherName:
+                                      state.detailsModel?.applicantRoleOther,
                                 ),
                                 withNavBar: true,
                                 pageTransitionAnimation:

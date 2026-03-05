@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
@@ -67,6 +68,7 @@ class ApiClient {
       if (requiresAuth) {
         final token = await TokenStorage.get();
         if (token != null) headers['Authorization'] = 'Bearer $token';
+        log("token: $token");
       }
 
       final response = await http
@@ -102,6 +104,7 @@ class ApiClient {
         final token = await TokenStorage.get();
         if (token != null) {
           request.headers['Authorization'] = 'Bearer $token';
+          log("token: $token");
         }
       }
 
@@ -138,6 +141,7 @@ class ApiClient {
       if (requiresAuth) {
         final token = await TokenStorage.get();
         if (token != null) headers['Authorization'] = 'Bearer $token';
+        log("token: $token");
       }
 
       final uri = Uri.parse(

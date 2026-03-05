@@ -3,14 +3,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../../core/helpers/extensions/dimensions.dart';
+import '../../../../../../core/helpers/fixed_assets.dart';
 import '../../../../../../core/theme/app_colors.dart';
+import '../../../../../components/app_button.dart';
 import '../../../../../components/app_container.dart';
 import '../../../../../components/app_text.dart';
 import '../../../../../components/app_text_form_field.dart';
+import '../../../../../components/image_svg_custom_widget.dart';
+import '../../../../data/models/petro_building.dart';
 import '../../../cubit/units/unit_data/unit_data_cubit.dart';
 import '../../../cubit/units/unit_data/unit_data_state.dart';
 import 'components/additional_documents_section.dart';
 import 'components/app_counter.dart';
+import 'components/calendar_icon.dart';
+import 'components/file_upload_field.dart';
 import 'components/tax_contact_section.dart';
 import 'components/title_with_divider.dart';
 
@@ -94,8 +100,6 @@ class _PetroleumFacilityUnitView extends StatelessWidget {
               controller: cubit.bookValueController,
               keyboardType: TextInputType.number,
               hintText: 'إدخل التكلفة الدفترية للأرض',
-              validator: (v) =>
-                  v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
             ),
             16.hs,
             TitleWithDivider(
@@ -108,38 +112,44 @@ class _PetroleumFacilityUnitView extends StatelessWidget {
             // ── عدد المباني (buildings_count) ──────
             BlocBuilder<UnitDataCubit, UnitDataState>(
               buildWhen: (prev, curr) =>
-                  prev.buildingsCount != curr.buildingsCount,
-              builder: (context, state) => Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                  prev.petroBuildingsCount != curr.petroBuildingsCount,
+              builder: (context, state) => Column(
                 children: [
-                  AppText(
-                    text: 'عدد المباني',
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.neutralDarkDark,
-                  ),
-                  AppText(
-                    text: ' *',
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.errorDark,
-                  ),
-                  const Spacer(),
-                  AppCounter(
-                    count: state.buildingsCount,
-                    onDecrement: () {
-                      if (cubit.state.buildingsCount > 1) {
-                        cubit.emit(
-                          cubit.state.copyWith(
-                            buildingsCount: cubit.state.buildingsCount - 1,
-                          ),
-                        );
-                      }
-                    },
-                    onIncrement: () => cubit.emit(
-                      cubit.state.copyWith(
-                        buildingsCount: cubit.state.buildingsCount + 1,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      AppText(
+                        text: 'عدد المباني',
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.neutralDarkDark,
                       ),
+                      AppText(
+                        text: ' *',
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.errorDark,
+                      ),
+                      const Spacer(),
+                      AppCounter(
+                        count: cubit.petroBuildings.length,
+                        onDecrement: () => cubit.removePetroBuilding(
+                          cubit.petroBuildings.length - 1,
+                        ),
+                        onIncrement: cubit.addPetroBuilding,
+                      ),
+                    ],
+                  ),
+
+                  12.hs,
+
+                  ...cubit.petroBuildings.asMap().entries.map(
+                    (e) => _BuildingItem(
+                      index: e.key,
+                      building: e.value,
+                      cubit: cubit,
+                      isLast: e.key == cubit.petroBuildings.length - 1,
+                      canDelete: cubit.petroBuildings.length > 1,
                     ),
                   ),
                 ],
@@ -175,11 +185,183 @@ class _PetroleumFacilityUnitView extends StatelessWidget {
               },
             ),
 
+            BlocBuilder<UnitDataCubit, UnitDataState>(
+              buildWhen: (prev, curr) =>
+                  prev.constructionLicenseFilePath !=
+                  curr.constructionLicenseFilePath,
+              builder: (context, state) => FileUploadField(
+                labelText: 'صورة من التراخيص الإنشائية',
+                text: 'حمل ملف',
+                backgroundColor: AppColors.highlightDarkest,
+                textColor: AppColors.white,
+                filePath: state.constructionLicenseFilePath,
+                onFilePicked: () async {
+                  final path = await cubit.pickFile();
+                  if (path != null) cubit.setConstructionLicenseFile(path);
+                },
+                onFileRemoved: () => cubit.removeConstructionLicenseFile(),
+              ),
+            ),
+            16.hs,
+            BlocBuilder<UnitDataCubit, UnitDataState>(
+              buildWhen: (prev, curr) =>
+                  prev.openingBudgetFilePath != curr.openingBudgetFilePath,
+              builder: (context, state) => FileUploadField(
+                labelText: 'صورة من الميزانية الافتتاحية',
+                text: 'حمل ملف',
+                backgroundColor: AppColors.highlightDarkest,
+                textColor: AppColors.white,
+                filePath: state.openingBudgetFilePath,
+                onFilePicked: () async {
+                  final path = await cubit.pickFile();
+                  if (path != null) cubit.setOpeningBudgetFile(path);
+                },
+                onFileRemoved: () => cubit.removeOpeningBudgetFile(),
+              ),
+            ),
+            16.hs,
+            BlocBuilder<UnitDataCubit, UnitDataState>(
+              buildWhen: (prev, curr) =>
+                  prev.allBookBValueFilePath != curr.allBookBValueFilePath,
+              builder: (context, state) => FileUploadField(
+                labelText: 'صورة بالقيمة الدفترية لكافه الأصول',
+                text: 'حمل ملف',
+                backgroundColor: AppColors.highlightDarkest,
+                textColor: AppColors.white,
+                filePath: state.allBookBValueFilePath,
+                onFilePicked: () async {
+                  final path = await cubit.pickFile();
+                  if (path != null) cubit.setAllBookBValueFile(path);
+                },
+                onFileRemoved: () => cubit.removeAllBookBValueFile(),
+              ),
+            ),
+            16.hs,
+
             // ── مستندات داعمة أخرى (supporting_documents) ──────────
             const AdditionalDocumentsSection(title: 'مستندات داعمة أخرى'),
             16.hs,
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────
+// Building Item Widget
+// ─────────────────────────────────────────
+
+class _BuildingItem extends StatefulWidget {
+  const _BuildingItem({
+    required this.index,
+    required this.building,
+    required this.cubit,
+    required this.isLast,
+    required this.canDelete,
+  });
+
+  final int index;
+  final PetroBuilding building;
+  final UnitDataCubit cubit;
+  final bool isLast;
+  final bool canDelete;
+
+  @override
+  State<_BuildingItem> createState() => _BuildingItemState();
+}
+
+class _BuildingItemState extends State<_BuildingItem> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: AppColors.neutralLightLight,
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          TitleWithDivider(
+            title: 'مبنى (${widget.index + 1})',
+            fontSize: 14.sp,
+          ),
+          15.hs,
+
+          AppTextFormField(
+            labelText: 'نوع المبنى',
+            labelRequired: false,
+            controller: widget.building.buildingType,
+            hintText: 'إدخل نوع المبنى',
+          ),
+          15.hs,
+          AppTextFormField(
+            labelText: 'التكلفة الدفترية للمبنى',
+            labelRequired: false,
+            controller: widget.building.bookCostBuilding,
+            hintText: 'إدخل التكلفة الدفترية للمبنى',
+          ),
+          15.hs,
+
+          AppTextFormField(
+            labelText: 'تاريخ الإنشاء للمبنى',
+            labelRequired: true,
+            controller: widget.building.buildingDate,
+            hintText: 'ادخل تاريخ الإنشاء للمبنى',
+            readOnly: true,
+            onTap: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime(1900),
+                lastDate: DateTime.now(),
+              );
+              if (picked != null) {
+                setState(() {
+                  widget.building.buildingDate.text =
+                      '${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}';
+                });
+              }
+            },
+            suffixWidget: CalendarIcon(color: AppColors.neutralDarkLightest),
+            validator: (v) => v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+          ),
+          15.hs,
+          AppTextFormField(
+            labelText: 'مساحة المبنى',
+            labelRequired: true,
+            controller: widget.building.totalArea,
+            hintText: 'المساحة الإجمالية بالمتر المربع',
+            keyboardType: TextInputType.number,
+            validator: (v) => v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+          ),
+          15.hs,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: AppButton(
+                  label: 'إضافة مبنى',
+                  backgroundColor: AppColors.highlightDarkest,
+                  icon: Icon(Icons.add, color: AppColors.white),
+                  iconLeft: false,
+                  onTap: widget.cubit.addPetroBuilding,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              15.ws,
+              if (widget.canDelete)
+                GestureDetector(
+                  onTap: () => widget.cubit.removePetroBuilding(widget.index),
+                  child: ImageSvgCustomWidget(
+                    imgPath: FixedAssets.instance.deleteIC,
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }

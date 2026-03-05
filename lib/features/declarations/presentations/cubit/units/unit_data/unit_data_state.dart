@@ -53,6 +53,10 @@ class UnitDataState {
   final String? constructionPermitOriginalName;
   final String? allAssetsBalanceSheetFilePath;
   final String? allAssetsBalanceSheetOriginalName;
+  final String? openingBudgetFilePath;
+  final String? openingBudgetOriginalName;
+  final String? allBookBValueFilePath;
+  final String? allBookBValueOriginalName;
 
   // ── loading / error ──────────────────────
   final bool isLoading;
@@ -69,6 +73,7 @@ class UnitDataState {
   final String? allocationContractFilePath;
   final String? allocationContractOriginalName;
   final int industrialBuildingsCount;
+  final int petroBuildingsCount;
 
   const UnitDataState({
     this.selectedFloorNumber,
@@ -121,7 +126,12 @@ class UnitDataState {
     this.selectedBurdenActivity,
     this.allocationContractFilePath,
     this.allocationContractOriginalName,
+    this.openingBudgetFilePath,
+    this.openingBudgetOriginalName,
+    this.allBookBValueFilePath,
+    this.allBookBValueOriginalName,
     this.industrialBuildingsCount = 1,
+    this.petroBuildingsCount = 1,
   });
 
   static const _undefined = Object();
@@ -163,6 +173,10 @@ class UnitDataState {
     Object? constructionPermitOriginalName = _undefined,
     Object? allAssetsBalanceSheetFilePath = _undefined,
     Object? allAssetsBalanceSheetOriginalName = _undefined,
+    Object? openingBudgetFilePath = _undefined,
+    Object? openingBudgetOriginalName = _undefined,
+    Object? allBookBValueFilePath = _undefined,
+    Object? allBookBValueOriginalName = _undefined,
     bool? isLoading,
     String? errorMessage,
     String? successMessage,
@@ -178,6 +192,7 @@ class UnitDataState {
     Object? allocationContractFilePath = _undefined,
     Object? allocationContractOriginalName = _undefined,
     int? industrialBuildingsCount,
+    int? petroBuildingsCount,
   }) {
     return UnitDataState(
       selectedFloorNumber: selectedFloorNumber ?? this.selectedFloorNumber,
@@ -259,6 +274,18 @@ class UnitDataState {
           allAssetsBalanceSheetOriginalName == _undefined
           ? this.allAssetsBalanceSheetOriginalName
           : allAssetsBalanceSheetOriginalName as String?,
+      openingBudgetFilePath: openingBudgetFilePath == _undefined
+          ? this.openingBudgetFilePath
+          : openingBudgetFilePath as String?,
+      openingBudgetOriginalName: openingBudgetOriginalName == _undefined
+          ? this.openingBudgetOriginalName
+          : openingBudgetOriginalName as String?,
+      allBookBValueOriginalName: allBookBValueOriginalName == _undefined
+          ? this.allBookBValueOriginalName
+          : allBookBValueOriginalName as String?,
+      allBookBValueFilePath: allBookBValueFilePath == _undefined
+          ? this.allBookBValueFilePath
+          : allBookBValueFilePath as String?,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
       successMessage: successMessage,
@@ -282,6 +309,7 @@ class UnitDataState {
           : allocationContractOriginalName as String?,
       industrialBuildingsCount:
           industrialBuildingsCount ?? this.industrialBuildingsCount,
+      petroBuildingsCount: petroBuildingsCount ?? this.petroBuildingsCount,
     );
   }
 }
