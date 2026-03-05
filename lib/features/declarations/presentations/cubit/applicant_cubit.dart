@@ -576,13 +576,18 @@ class ApplicantCubit extends Cubit<ApplicantState> {
           applicantType == ApplicantType.other)
         'type_id': taxpayerTypeId,
       if (applicantType == ApplicantType.sharedOwnership) 'type_id': null,
-      if (taxpayerTypeId == 1)
+
+      if (taxpayerTypeId == 1 || applicantType != ApplicantType.sharedOwnership)
         'first_name': taxpayerNameController.text.trim().isNotEmpty
             ? taxpayerNameController.text.trim()
             : taxpayerFirstNameController.text.trim(), // اسم المكلف
-      if (taxpayerTypeId == 2) 'name': taxpayerNameController.text.trim(),
+
+      if (taxpayerTypeId == 2 || applicantType == ApplicantType.sharedOwnership)
+        'name': taxpayerNameController.text.trim(),
+
       if (taxpayerLastNameController.text.trim().isNotEmpty)
         'last_name': taxpayerLastNameController.text.trim(),
+
       if (taxpayerTypes == 'طبيعي') 'nationality_id': taxpayerNationality.id,
       if (phone.isNotEmpty) 'phone': phone,
       if (phone.isEmpty) 'phone': null,
