@@ -1,11 +1,10 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:reta/core/network/api_constants.dart';
 import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
+import 'package:reta/features/declarations/data/models/declaration_model.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../../../core/helpers/app_enum.dart';
@@ -20,6 +19,7 @@ import '../../../../data/models/declarations_lookups.dart';
 import '../../../../data/models/hotel_sub_unit.dart';
 import '../../../../data/models/industrial_building.dart';
 import '../../../../data/models/vacant_land_item.dart';
+import '../../../pages/properties_list_in_declaration_page.dart';
 import '../../../pages/select_types_of_properties_page.dart';
 import '../../applicant_cubit.dart';
 import '../../declaration/declaration_cubit.dart';
@@ -1105,7 +1105,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     // ── validation خاص بكل نوع ───────────────────────────────────
     switch (unitType) {
       case UnitType.fixedInstallations:
-        return _validateAdditionalDocs();
+        return _validateFixedInstallations();
 
       case UnitType.hotelFacility:
         return _validateHotelFacility();
@@ -1130,15 +1130,27 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   bool _validateFixedInstallations() {
-    if (state.ownershipDeedFilePath == null) {
+    if (!state.hasAdditionalDocuments) return true;
+
+    if (additionalDocuments.isEmpty) {
       emit(
-        state.copyWith(
-          errorMessage: 'يرجى رفع سند الملكية أو الانتفاع أو الاستغلال',
-        ),
+        state.copyWith(errorMessage: 'يرجى إضافة مستند داعم واحد على الأقل'),
       );
       return false;
     }
-    return _validateAdditionalDocs();
+
+    for (final doc in additionalDocuments) {
+      if (doc.nameController.text.trim().isEmpty) {
+        emit(state.copyWith(errorMessage: 'يرجى إدخال اسم المستند الداعم'));
+        return false;
+      }
+      if (doc.filePath == null) {
+        emit(state.copyWith(errorMessage: 'يرجى رفع ملف المستند الداعم'));
+        return false;
+      }
+    }
+
+    return true;
   }
 
   bool _validateIndustrialFacility() {
@@ -1203,12 +1215,27 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   Future<void> onSaveDataTapped(BuildContext context, UnitType unitType) async {
     final declarationCubit = context.read<DeclarationCubit>();
-    await submit(context, unitType);
+    int declarationId = await submit(context, unitType);
     if (context.mounted && state.successMessage != null) {
-      declarationCubit.fetchList();
+      await declarationCubit.fetchList();
       await Future.delayed(const Duration(milliseconds: 100));
+      DeclarationModel declarationModel =
+          declarationCubit.declarationList?.firstWhere(
+            (declaration) => declaration.id == declarationId,
+            orElse: () => DeclarationModel(),
+          ) ??
+          DeclarationModel();
+
       if (context.mounted) {
         Navigator.of(context).popUntil((route) => route.isFirst);
+        PersistentNavBarNavigator.pushNewScreen(
+          context,
+          screen: PropertiesListInDeclarationPage(declarationModel, () {
+            declarationCubit.fetchList();
+          }),
+          withNavBar: true,
+          pageTransitionAnimation: PageTransitionAnimation.slideUp,
+        );
       }
     }
   }
@@ -1307,7 +1334,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           ..._buildUnitPayload(unitType, lookups),
         },
       };
-      log("create unit: ${jsonEncode(payload)}");
       final result = isEdit
           ? await DeclarationService.instance.updateDeclaration(
               payload,
@@ -1774,6 +1800,23 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   void onCancelButtonTapped(BuildContext context) {
     Navigator.of(context).popUntil((route) => route.isFirst);
+    if (declarationId != -1) {
+      final declarationCubit = context.read<DeclarationCubit>();
+      DeclarationModel declarationModel =
+          declarationCubit.declarationList?.firstWhere(
+            (declaration) => declaration.id == declarationId,
+            orElse: () => DeclarationModel(),
+          ) ??
+          DeclarationModel();
+      PersistentNavBarNavigator.pushNewScreen(
+        context,
+        screen: PropertiesListInDeclarationPage(declarationModel, () {
+          declarationCubit.fetchList();
+        }),
+        withNavBar: true,
+        pageTransitionAnimation: PageTransitionAnimation.slideUp,
+      );
+    }
   }
 
   // ─────────────────────────────────────────

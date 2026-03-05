@@ -247,31 +247,50 @@ class _VacantLandItemWidget extends StatelessWidget {
                 (i) => i.id == item.id,
                 orElse: () => item,
               );
-              return AppDropdownField<String>(
-                labelText: 'هل تم التواصل مع الضرائب العقارية بخصوص الأرض؟',
-                labelRequired: true,
-                hintText: 'اختر',
-                value: currentItem.retaContactAboutUnit ? 'نعم' : 'لا',
-                items: [
-                  'نعم',
-                  'لا',
-                ].map((o) => appDropDownOption(label: o)).toList(),
-                onChanged: (value) =>
-                    cubit.setVacantLandItemRetaContact(item.id, value == 'نعم'),
-                validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
+              return Column(
+                children: [
+                  AppDropdownField<String>(
+                    labelText: 'هل تم التواصل مع الضرائب العقارية بخصوص الأرض؟',
+                    labelRequired: true,
+                    hintText: 'اختر',
+                    value: currentItem.retaContactAboutUnit ? 'نعم' : 'لا',
+                    items: [
+                      'نعم',
+                      'لا',
+                    ].map((o) => appDropDownOption(label: o)).toList(),
+                    onChanged: (value) => cubit.setVacantLandItemRetaContact(
+                      item.id,
+                      value == 'نعم',
+                    ),
+                    validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
+                  ),
+                  16.hs,
+
+                  // ── كود حساب الوحدة ───────────────────
+                  if (currentItem.retaContactAboutUnit)
+                    Column(
+                      children: [
+                        AppTextFormField(
+                          labelText: 'كود حساب الوحدة',
+                          controller: item.accountCodeController,
+                          hintText: 'ادخل كود حساب الوحدة',
+                          keyboardType: TextInputType.number,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return null;
+                            if (v.length != 14) return 'يجب أن يكون 14 رقماً';
+                            if (!RegExp(r'^\d+$').hasMatch(v)) {
+                              return 'يجب أن يحتوي على أرقام فقط';
+                            }
+                            return null;
+                          },
+                        ),
+                        16.hs,
+                      ],
+                    ),
+                ],
               );
             },
           ),
-          16.hs,
-
-          // ── كود حساب الوحدة ────────────────────
-          AppTextFormField(
-            labelText: 'كود حساب الوحدة',
-            controller: item.accountCodeController,
-            hintText: 'ادخل كود حساب الوحدة',
-            keyboardType: TextInputType.number,
-          ),
-          16.hs,
 
           // ── القيمة السوقية ──────────────────────
           AppTextFormField(
