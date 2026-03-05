@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -297,7 +299,9 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         selectedInstallationType: installationType.name.isNotEmpty
             ? installationType.name
             : null,
-        isTaxpayerOwner: unitData!['is_taxpayer_owner_of_installation'],
+        isTaxpayerOwner: unitData!['is_taxpayer_owner_of_installation'] == 1
+            ? true
+            : false,
       ),
     );
   }
@@ -1228,10 +1232,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   bool _validateDefault() {
-    if (state.ownershipDeedFilePath == null) {
-      emit(state.copyWith(errorMessage: 'يرجى رفع سند تمليك الوحدة'));
-      return false;
-    }
     return _validateAdditionalDocs();
   }
 
@@ -1397,6 +1397,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           ..._buildUnitPayload(unitType, lookups),
         },
       };
+
+      log('unitPayload: ${_buildUnitPayload(unitType, lookups)}');
       final result = isEdit
           ? await DeclarationService.instance.updateDeclaration(
               payload,
@@ -1569,13 +1571,16 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         )
         .id;
 
+    log('state.isTaxpayerOwner: ${state.isTaxpayerOwner}');
     return {
       ..._buildBaseUnitPayload(),
       'installation_type_id': installationTypeId,
       'installation_type_other': (installationTypeId == -1)
           ? otherInstallationTypeController.text.trim()
           : null,
-      'is_taxpayer_owner_of_installation': state.isTaxpayerOwner,
+      'is_taxpayer_owner_of_installation': (state.isTaxpayerOwner ?? false)
+          ? 1
+          : 0,
       'installation_owner_name': installationOwnerController.text.trim(),
       'installation_owner': installationOwnerController.text.trim(),
       'contract_start': contractStartDateController.text.trim(),

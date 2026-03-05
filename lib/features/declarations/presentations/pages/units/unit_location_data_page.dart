@@ -119,9 +119,6 @@ class _UnitLocationDataPage extends StatelessWidget {
                         child:
                             BlocBuilder<UnitLocationCubit, UnitLocationState>(
                               builder: (context, state) {
-                                final buildingItems = cubit.getBuildingNumbers(
-                                  state.selectedStreet,
-                                );
                                 return Column(
                                   children: [
                                     AppText(
@@ -321,7 +318,9 @@ class _UnitLocationDataPage extends StatelessWidget {
                                       hintText: 'اختر رقم العقار',
                                       value: _safeValue(
                                         state.selectedBuildingNumber,
-                                        buildingItems,
+                                        (state.buildingList ?? [])
+                                            .map((v) => v.name)
+                                            .toList(),
                                       ),
                                       enabled:
                                           state.selectedStreet != null &&
@@ -339,14 +338,11 @@ class _UnitLocationDataPage extends StatelessWidget {
                                                       false)))
                                           ? AppColors.neutralLightLight
                                           : null,
-                                      items: cubit
-                                          .getBuildingNumbers(
-                                            state.selectedStreet ??
-                                                cubit.streetOtherController.text
-                                                    .trim(),
-                                          )
+                                      items: (state.buildingList ?? [])
                                           .map(
-                                            (b) => appDropDownOption(label: b),
+                                            (b) => appDropDownOption(
+                                              label: b.name,
+                                            ),
                                           )
                                           .toList(),
                                       onChanged: cubit.selectBuildingNumber,
