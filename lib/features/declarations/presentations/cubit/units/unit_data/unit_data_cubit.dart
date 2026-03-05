@@ -1792,47 +1792,42 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   // منشآت بترولية
   Map<String, dynamic> buildPetroleumPayload() {
-    try {
-      return {
-        ..._buildBaseUnitPayload(),
-        'facility_name': petroleumFacilityNameController.text.trim(),
-        'usage_type': usageTypeController.text.trim(),
-        'total_land_area': totalLandArea.text.trim(),
-        'used_land_area': totalLandUtilized.text.trim(),
-        'land_book_value': bookValueController.text.trim(),
-        'buildings_count': petroBuildings.length,
-        if (state.constructionLicenseFilePath != null)
-          'construction_license': {
-            'path': state.constructionLicenseFilePath,
-            'original_file_name': state.constructionLicenseOriginalName,
-          },
-        if (state.constructionLicenseFilePath != null)
-          'opening_budget': {
-            'path': state.openingBudgetFilePath,
-            'original_file_name': state.openingBudgetOriginalName,
-          },
-        if (state.constructionLicenseFilePath != null)
-          'all_book_value': {
-            'path': state.allBookBValueFilePath,
-            'original_file_name': state.allBookBValueOriginalName,
-          },
-        'buildings': petroBuildings
-            .map(
-              (b) => {
-                'building_type_text': b.buildingType.text.trim(),
-                'total_area': double.tryParse(b.totalArea.text.trim()),
-                'construction_date': b.buildingDate.text.trim(),
-                'book_value':
-                    double.tryParse(b.bookCostBuilding.text.trim()) ?? 0,
-              },
-            )
-            .toList(),
-        ..._buildSupportingDocsPayload(),
-      };
-    } catch (e) {
-      log(e.toString());
-    }
-    return <String, dynamic>{};
+    return {
+      ..._buildBaseUnitPayload(),
+      'facility_name': petroleumFacilityNameController.text.trim(),
+      'usage_type': usageTypeController.text.trim(),
+      'total_land_area': totalLandArea.text.trim(),
+      'used_land_area': totalLandUtilized.text.trim(),
+      'land_book_value': bookValueController.text.trim(),
+      'buildings_count': petroBuildings.length,
+      if (state.constructionLicenseFilePath != null)
+        'construction_license': {
+          'path': state.constructionLicenseFilePath,
+          'original_file_name': state.constructionLicenseOriginalName,
+        },
+      if (state.constructionLicenseFilePath != null)
+        'opening_budget': {
+          'path': state.openingBudgetFilePath,
+          'original_file_name': state.openingBudgetOriginalName,
+        },
+      if (state.constructionLicenseFilePath != null)
+        'all_book_value': {
+          'path': state.allBookBValueFilePath,
+          'original_file_name': state.allBookBValueOriginalName,
+        },
+      'buildings': petroBuildings
+          .map(
+            (b) => {
+              'building_type_text': b.buildingType.text.trim(),
+              'total_area': double.tryParse(b.totalArea.text.trim()),
+              'construction_date': b.buildingDate.text.trim(),
+              'book_value':
+                  double.tryParse(b.bookCostBuilding.text.trim()) ?? 0,
+            },
+          )
+          .toList(),
+      ..._buildSupportingDocsPayload(),
+    };
   }
 
   // مناجم ومحاجر
