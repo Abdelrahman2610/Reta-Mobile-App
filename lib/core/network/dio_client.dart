@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -76,6 +78,7 @@ class _AuthInterceptor extends Interceptor {
     final token = await _storage.read(key: _tokenKey);
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
+      log("token: $token");
     }
     handler.next(options);
   }

@@ -19,6 +19,7 @@ import '../../../../data/models/building_info.dart';
 import '../../../../data/models/declarations_lookups.dart';
 import '../../../../data/models/hotel_sub_unit.dart';
 import '../../../../data/models/industrial_building.dart';
+import '../../../../data/models/petro_building.dart';
 import '../../../../data/models/vacant_land_item.dart';
 import '../../../pages/select_types_of_properties_page.dart';
 import '../../applicant_cubit.dart';
@@ -125,6 +126,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   final List<AdditionalDocument> additionalDocuments = [];
   final List<BuildingInfo> buildings = [BuildingInfo(id: '1')];
   final List<IndustrialBuilding> industrialBuildings = [IndustrialBuilding()];
+  final List<PetroBuilding> petroBuildings = [PetroBuilding()];
 
   // ─────────────────────────────────────────
   // Real and Mock Data
@@ -778,6 +780,18 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     emit(state.copyWith(industrialBuildingsCount: industrialBuildings.length));
   }
 
+  void addPetroBuilding() {
+    petroBuildings.add(PetroBuilding());
+    emit(state.copyWith(petroBuildingsCount: petroBuildings.length));
+  }
+
+  void removePetroBuilding(int index) {
+    if (petroBuildings.length <= 1) return;
+    petroBuildings[index].dispose();
+    petroBuildings.removeAt(index);
+    emit(state.copyWith(petroBuildingsCount: petroBuildings.length));
+  }
+
   Future<void> setAllocationContractFile(String path) async {
     emit(state.copyWith(isLoading: true));
     final result = await UploadService.instance.uploadFile(
@@ -984,6 +998,42 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     );
   }
 
+  Future<void> setOpeningBudgetFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: "opening_budget",
+    );
+    _handleUploadResult(
+      result,
+      onSuccess: (data) => emit(
+        state.copyWith(
+          isLoading: false,
+          openingBudgetFilePath: data.path,
+          openingBudgetOriginalName: data.originalFileName,
+        ),
+      ),
+    );
+  }
+
+  Future<void> setAllBookBValueFile(String path) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await UploadService.instance.uploadFile(
+      filePath: path,
+      label: "all_book_value",
+    );
+    _handleUploadResult(
+      result,
+      onSuccess: (data) => emit(
+        state.copyWith(
+          isLoading: false,
+          allBookBValueFilePath: data.path,
+          allBookBValueOriginalName: data.originalFileName,
+        ),
+      ),
+    );
+  }
+
   Future<void> setOperatingLicenseFile(String path) async {
     emit(state.copyWith(isLoading: true));
     final result = await UploadService.instance.uploadFile(
@@ -1058,20 +1108,33 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   void removeOwnershipDeedFile() =>
       emit(state.copyWith(ownershipDeedFilePath: null));
+
   void removeLeaseContractFile() =>
       emit(state.copyWith(leaseContractFilePath: null));
+
   void removePermitPhotoFile() =>
       emit(state.copyWith(permitPhotoFilePath: null));
+
   void removeConstructionLicenseFile() =>
       emit(state.copyWith(constructionLicenseFilePath: null));
+
   void removeOperatingLicenseFile() =>
       emit(state.copyWith(operatingLicenseFilePath: null));
+
   void removeStarCertificateFile() =>
       emit(state.copyWith(starCertificateFilePath: null));
+
   void removeConstructionPermitFile() =>
       emit(state.copyWith(constructionPermitFilePath: null));
+
   void removeAllAssetsBalanceSheetFile() =>
       emit(state.copyWith(allAssetsBalanceSheetFilePath: null));
+
+  void removeAllBookBValueFile() =>
+      emit(state.copyWith(allBookBValueFilePath: null));
+
+  void removeOpeningBudgetFile() =>
+      emit(state.copyWith(openingBudgetFilePath: null));
 
   // ── Helper مشترك ─────────────────────────────────
   void _handleUploadResult(
@@ -1703,20 +1766,47 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   // منشآت بترولية
   Map<String, dynamic> buildPetroleumPayload() {
-    return {
-      ..._buildBaseUnitPayload(),
-      'facility_name': facilityNameController.text.trim(),
-      'usage_type': usageTypeController.text.trim(),
-      'total_land_area': totalLandAreaFacilityController.text.trim(),
-      'book_value': bookValueController.text.trim(),
-      'buildings_count': buildings.length,
-      if (state.allAssetsBalanceSheetFilePath != null)
-        'all_assets_balance_sheet': {
-          'path': state.allAssetsBalanceSheetFilePath,
-          'original_file_name': 'ميزانية',
-        },
-      ..._buildSupportingDocsPayload(),
-    };
+    try {
+      return {
+        ..._buildBaseUnitPayload(),
+        'facility_name': petroleumFacilityNameController.text.trim(),
+        'usage_type': usageTypeController.text.trim(),
+        'total_land_area': totalLandArea.text.trim(),
+        'used_land_area': totalLandUtilized.text.trim(),
+        'land_book_value': bookValueController.text.trim(),
+        'buildings_count': petroBuildings.length,
+        if (state.constructionLicenseFilePath != null)
+          'construction_license': {
+            'path': state.constructionLicenseFilePath,
+            'original_file_name': state.constructionLicenseOriginalName,
+          },
+        if (state.constructionLicenseFilePath != null)
+          'opening_budget': {
+            'path': state.openingBudgetFilePath,
+            'original_file_name': state.openingBudgetOriginalName,
+          },
+        if (state.constructionLicenseFilePath != null)
+          'all_book_value': {
+            'path': state.allBookBValueFilePath,
+            'original_file_name': state.allBookBValueOriginalName,
+          },
+        'buildings': petroBuildings
+            .map(
+              (b) => {
+                'building_type_text': b.buildingType.text.trim(),
+                'total_area': double.tryParse(b.totalArea.text.trim()),
+                'construction_date': b.buildingDate.text.trim(),
+                'book_value':
+                    double.tryParse(b.bookCostBuilding.text.trim()) ?? 0,
+              },
+            )
+            .toList(),
+        ..._buildSupportingDocsPayload(),
+      };
+    } catch (e) {
+      log(e.toString());
+    }
+    return <String, dynamic>{};
   }
 
   // مناجم ومحاجر
@@ -1813,6 +1903,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     for (final building in buildings) building.dispose();
     for (final unit in state.hotelSubUnits) unit.dispose();
     for (final b in industrialBuildings) b.dispose();
+    for (final b in petroBuildings) b.dispose();
     return super.close();
   }
 
