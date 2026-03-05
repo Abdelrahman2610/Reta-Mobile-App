@@ -111,8 +111,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   // Controllers - منشآت بترولية
   // ─────────────────────────────────────────
   final usageTypeController = TextEditingController(); // نوع الاستخدام
+  final totalLandArea = TextEditingController();
+  final totalLandUtilized = TextEditingController();
   final bookValueController = TextEditingController(); // التكلفة الدفترية للأرض
-
+  final petroleumFacilityNameController =
+      TextEditingController(); // اسم المنشأة
   // ─────────────────────────────────────────
   // Dynamic Lists
   // ─────────────────────────────────────────
