@@ -63,12 +63,35 @@ class _FixedInstallationsView extends StatelessWidget {
                 ),
                 16.hs,
 
-                AppTextFormField(
-                  labelText: 'كود حساب التركيبة',
-                  controller: cubit.unitCodeController,
-                  hintText: 'ادخل كود حساب التركيبة',
+                BlocBuilder<UnitDataCubit, UnitDataState>(
+                  buildWhen: (prev, curr) =>
+                      prev.contactedTaxAuthority != curr.contactedTaxAuthority,
+                  builder: (context, state) {
+                    return (state.contactedTaxAuthority ?? false)
+                        ? Column(
+                            children: [
+                              AppTextFormField(
+                                labelText: 'كود حساب الوحدة',
+                                controller: cubit.unitCodeController,
+                                hintText: 'ادخل كود حساب الوحدة',
+                                keyboardType: TextInputType.number,
+                                validator: (v) {
+                                  if (v == null || v.isEmpty) return null;
+                                  if (v.length != 14) {
+                                    return 'يجب أن يكون 14 رقماً';
+                                  }
+                                  if (!RegExp(r'^\d+$').hasMatch(v)) {
+                                    return 'يجب أن يحتوي على أرقام فقط';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              16.hs,
+                            ],
+                          )
+                        : SizedBox.shrink();
+                  },
                 ),
-                16.hs,
 
                 AppDropdownField<String>(
                   labelText: 'نوع التركيبة',
@@ -175,8 +198,19 @@ class _FixedInstallationsView extends StatelessWidget {
                     }
                   },
                   suffixWidget: CalendarIcon(),
-                  validator: (v) =>
-                      v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'هذا الحقل مطلوب';
+
+                    final start = DateTime.tryParse(
+                      cubit.contractStartDateController.text.trim(),
+                    );
+                    final end = DateTime.tryParse(v.trim());
+
+                    if (start != null && end != null && end.isBefore(start)) {
+                      return 'تاريخ النهاية يجب أن يكون بعد تاريخ البداية';
+                    }
+                    return null;
+                  },
                 ),
                 16.hs,
 

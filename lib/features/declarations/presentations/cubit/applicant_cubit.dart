@@ -234,8 +234,9 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     );
     switch (result) {
       case ApiSuccess<UploadedFileModel>(:final data):
-        applicantPassportFilePath = data.path;
-        applicantPassportOriginalName = data.originalFileName;
+        taxpayerPassportFilePath = data.path;
+        taxpayerPassportOriginalName = data.originalFileName;
+        taxpayerPassportUrl = data.fullUrl;
         emit(state.copyWith(isLoading: false));
       case ApiError<UploadedFileModel>(:final message):
         emit(state.copyWith(isLoading: false, errorMessage: message));
