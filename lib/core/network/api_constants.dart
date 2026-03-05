@@ -1,11 +1,11 @@
 class ApiConstants {
   // ─── Base URL ───────────────────────────────────────────────────────────────
-  // static const String baseUrl =
-  //     'http://dev-rta-services.etax.com.eg/reta-services/public/api';
+  static const String baseUrl =
+      'http://dev-rta-services.etax.com.eg/reta-services/public/api';
 
-  //   static const String baseUrl =
-  //       'https://tst-rta-services.etax.com.eg/reta-services/public/api';
-  static const String baseUrl = 'http://10.0.2.2:3000/api';
+  // static const String baseUrl =
+  //     'https://tst-rta-services.etax.com.eg/reta-services/public/api';
+  // static const String baseUrl = 'http://10.0.2.2:3000/api';
   // ─── Auth ───────────────────────────────────────────────────────────────────
   static const String login = '/login';
   static const String registerSendOtp = '/register/sendOTP';

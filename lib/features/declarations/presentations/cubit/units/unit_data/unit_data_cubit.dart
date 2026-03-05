@@ -317,7 +317,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
         // نوع الاستغلال من الـ lookups
         final exploitationTypeId = vl['exploitation_type_id'];
-        final exploitationType = lookups.installationTypes.firstWhere(
+        final exploitationType = lookups.exploitationTypes.firstWhere(
           (t) => t.id == exploitationTypeId,
           orElse: () => DeclarationLookup(id: -1, name: ''),
         );
@@ -1055,17 +1055,17 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   void removeLeaseContractFile() =>
       emit(state.copyWith(leaseContractFilePath: null));
   void removePermitPhotoFile() =>
-      emit(state.copyWith(ownershipDeedFilePath: null));
+      emit(state.copyWith(permitPhotoFilePath: null));
   void removeConstructionLicenseFile() =>
-      emit(state.copyWith(leaseContractFilePath: null));
+      emit(state.copyWith(constructionLicenseFilePath: null));
   void removeOperatingLicenseFile() =>
-      emit(state.copyWith(ownershipDeedFilePath: null));
+      emit(state.copyWith(operatingLicenseFilePath: null));
   void removeStarCertificateFile() =>
-      emit(state.copyWith(leaseContractFilePath: null));
+      emit(state.copyWith(starCertificateFilePath: null));
   void removeConstructionPermitFile() =>
-      emit(state.copyWith(ownershipDeedFilePath: null));
+      emit(state.copyWith(constructionPermitFilePath: null));
   void removeAllAssetsBalanceSheetFile() =>
-      emit(state.copyWith(leaseContractFilePath: null));
+      emit(state.copyWith(allAssetsBalanceSheetFilePath: null));
 
   // ── Helper مشترك ─────────────────────────────────
   void _handleUploadResult(
@@ -1098,6 +1098,9 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
     // ── validation خاص بكل نوع ───────────────────────────────────
     switch (unitType) {
+      case UnitType.fixedInstallations:
+        return _validateAdditionalDocs();
+
       case UnitType.hotelFacility:
         return _validateHotelFacility();
 
@@ -1109,7 +1112,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         return _validateFacility();
 
       case UnitType.vacantLand:
-        return _validateAdditionalDocs(); // مفيش سند تمليك للأراضي
+        return _validateAdditionalDocs();
 
       case UnitType.petroleumFacility:
       case UnitType.minesAndQuarries:
@@ -1118,6 +1121,18 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       default:
         return _validateDefault();
     }
+  }
+
+  bool _validateFixedInstallations() {
+    if (state.ownershipDeedFilePath == null) {
+      emit(
+        state.copyWith(
+          errorMessage: 'يرجى رفع سند الملكية أو الانتفاع أو الاستغلال',
+        ),
+      );
+      return false;
+    }
+    return _validateAdditionalDocs();
   }
 
   bool _validateIndustrialFacility() {
@@ -1141,10 +1156,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   // ── منشآت عادية (خدمية / صناعية / إنتاجية) ──────────────────────
   bool _validateFacility() {
-    if (state.ownershipDeedFilePath == null) {
-      emit(state.copyWith(errorMessage: 'يرجى رفع سند ملكية المنشأة'));
-      return false;
-    }
     return _validateAdditionalDocs();
   }
 
@@ -1432,7 +1443,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       'area': double.tryParse(areaController.text.trim()) ?? 0,
       'activity_type': activityTypeController.text.trim(),
       'exempted': state.isExempt,
-      'exemption_reason': exemptionReasonId,
+      if (unitType == UnitType.serviceUnit.name)
+        'exemption_reason': exemptionReasonId,
       if (state.ownershipDeedFilePath != null)
         'ownership_deed': {
           'path': state.ownershipDeedFilePath,
@@ -1489,7 +1501,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       'total_land_area': totalLandAreaController.text.trim(),
       "submit_other_supporting_documents": state.hasAdditionalDocuments ? 1 : 2,
       'vacantLands': state.vacantLandItems
-          .map((item) => item.toPayload(lookups.installationTypes))
+          .map((item) => item.toPayload(lookups.exploitationTypes))
           .toList(),
       if (state.ownershipDeedFilePath != null)
         'land_ownership_legal_document': {
