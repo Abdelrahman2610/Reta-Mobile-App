@@ -367,6 +367,7 @@ class _BuildingItemState extends State<_BuildingItem> {
             labelRequired: true,
             controller: widget.building.totalArea,
             hintText: 'إدخل المساحة الإجمالية للمبنى',
+            validator: (v) => v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
           ),
           15.hs,
           AppTextFormField(

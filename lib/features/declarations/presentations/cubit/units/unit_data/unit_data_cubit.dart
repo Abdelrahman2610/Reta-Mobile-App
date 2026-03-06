@@ -2082,6 +2082,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     for (final unit in state.hotelSubUnits) unit.dispose();
     for (final b in industrialBuildings) b.dispose();
     for (final b in petroBuildings) b.dispose();
+    for (final b in productionBuildings) b.dispose();
     return super.close();
   }
 

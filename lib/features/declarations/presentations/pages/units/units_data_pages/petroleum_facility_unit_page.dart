@@ -295,6 +295,7 @@ class _BuildingItemState extends State<_BuildingItem> {
             labelRequired: true,
             controller: widget.building.buildingType,
             hintText: 'إدخل نوع المبنى',
+            validator: (v) => v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
           ),
           15.hs,
           AppTextFormField(
