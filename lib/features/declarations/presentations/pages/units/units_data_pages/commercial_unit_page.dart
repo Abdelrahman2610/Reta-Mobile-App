@@ -49,7 +49,7 @@ class _ResidentialUnitView extends StatelessWidget {
         child: Column(
           children: [
             AppText(
-              text: 'بيانات الوحدة السكنية',
+              text: 'بيانات الوحدة التجارية',
               fontWeight: FontWeight.w700,
               color: AppColors.mainBlueIndigoDye,
             ),
@@ -156,7 +156,6 @@ class _ResidentialUnitView extends StatelessWidget {
               builder: (context, state) {
                 return FileUploadField(
                   labelText: 'سند تمليك الوحدة',
-                  labelRequired: true,
                   text: 'حمل ملف',
                   description: 'عقد مسجل/عقد ابتدائي/حكم قضائي',
                   backgroundColor: AppColors.highlightDarkest,

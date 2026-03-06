@@ -235,10 +235,23 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
     }
   }
 
-  List<String> getBuildingNumbers(String? street) {
-    if (street == null) return [];
-    if (street == kOther) return [kOther];
-    return [...List.generate(100, (i) => '${i + 1}'), kOther];
+  Future<void> fetchBuildingNumber(int? streetId) async {
+    emit(state.copyWith(isLoadingVillages: true));
+
+    final result = await safeApiCall(() async {
+      final response = await DioClient.instance.dio.get(
+        ApiConstants.realEstatesByRegion(streetId ?? 0),
+      );
+      final list = response.data['data'] as List;
+      return list.map((e) => DeclarationLookup.fromJson(e)).toList();
+    });
+
+    switch (result) {
+      case ApiSuccess(:final data):
+        emit(state.copyWith(buildingList: data, isLoadingVillages: false));
+      case ApiError(:final message):
+        emit(state.copyWith(isLoadingVillages: false));
+    }
   }
 
   void onDistrictOtherChanged(String value) {
@@ -355,10 +368,12 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
       ),
     );
     if (!isOther) streetOtherController.clear();
+    if (!isOther && selected?.id != 0) fetchBuildingNumber(selected?.id);
   }
 
   void selectBuildingNumber(String? value) {
     final isOther = value == kOther;
+
     emit(
       state.copyWith(
         selectedBuildingNumber: value,

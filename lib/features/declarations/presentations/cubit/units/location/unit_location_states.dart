@@ -20,6 +20,7 @@ class UnitLocationState {
   final List<DeclarationLookup>? villagesList;
   final List<StreetModel>? allStreetsList;
   final List<StreetModel>? streetsList;
+  final List<DeclarationLookup>? buildingList;
   final bool isLoadingVillages;
 
   final String? selectedBuildingNumber;
@@ -66,6 +67,7 @@ class UnitLocationState {
     this.selectedVillageId,
     this.selectedStreetId,
     this.isInitializing = false,
+    this.buildingList,
   });
 
   UnitLocationState copyWith({
@@ -88,6 +90,7 @@ class UnitLocationState {
     List<DeclarationLookup>? villagesList,
     List<StreetModel>? allStreetsList,
     List<StreetModel>? streetsList,
+    List<DeclarationLookup>? buildingList,
     bool? isLoadingVillages,
 
     int? selectedGovernorateId,
@@ -141,6 +144,7 @@ class UnitLocationState {
       selectedVillageId: selectedVillageId ?? this.selectedVillageId,
       selectedStreetId: selectedStreetId ?? this.selectedStreetId,
       isInitializing: isInitializing ?? this.isInitializing,
+      buildingList: buildingList ?? this.buildingList,
     );
   }
 }
