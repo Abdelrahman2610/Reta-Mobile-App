@@ -28,7 +28,6 @@ import '../../../../components/app_bar.dart';
 import '../../../../components/app_container.dart';
 import '../../components/declaration_data_tab.dart';
 import '../../components/units/unit_title.dart';
-import '../../cubit/units/location/unit_location_cubit.dart';
 import '../../cubit/units/unit_data/unit_data_state.dart';
 
 class UnitData extends StatelessWidget {
@@ -46,7 +45,6 @@ class UnitData extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<UnitDataCubit>();
-    final unitLocationCubit = context.read<UnitLocationCubit>();
     return BlocProvider.value(
       value: cubit,
       child: BlocConsumer<UnitDataCubit, UnitDataState>(
