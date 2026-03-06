@@ -8,7 +8,9 @@ import 'package:reta/features/components/image_svg_custom_widget.dart';
 import 'package:reta/features/declarations/presentations/components/empty_data_widget.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/data/models/user_models.dart';
 import '../../../auth/presentation/cubit/home_cubit.dart';
+import '../../../auth/presentation/pages/declaration_guide_page.dart';
 import '../../../components/app_bar.dart';
 import '../../../components/app_button.dart';
 import '../../../components/circular_progress_indicator_platform_widget.dart';
@@ -16,7 +18,6 @@ import '../components/declarations_card_item.dart';
 import '../cubit/declaration/declaration_cubit.dart';
 import '../cubit/declaration/declaration_states.dart';
 import '../cubit/declaration_lookups_cubit.dart';
-import 'select_applicant_type_page.dart';
 
 class DeclarationsPage extends StatelessWidget {
   const DeclarationsPage({super.key});
@@ -80,14 +81,17 @@ class _DeclarationsView extends StatelessWidget {
                           ),
                           AppButton(
                             onTap: () {
+                              // Navigator.push(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //     builder: (_) =>
+                              //         DeclarationGuidePage(user: UserModel()),
+                              //   ),
+                              // );
                               PersistentNavBarNavigator.pushNewScreen(
                                 context,
-                                screen: SelectApplicantTypePage(
-                                  declarationId: -1,
-                                ),
-                                withNavBar: true,
-                                pageTransitionAnimation:
-                                    PageTransitionAnimation.slideUp,
+                                screen: DeclarationGuidePage(user: UserModel()),
+                                // SelectApplicantTypePage(declarationId: -1),
                               );
                             },
                             label: "إضافة إقرار",

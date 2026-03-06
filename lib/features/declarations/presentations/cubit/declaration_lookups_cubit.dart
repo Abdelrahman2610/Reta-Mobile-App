@@ -10,6 +10,7 @@ class DeclarationLookupsCubit extends Cubit<DeclarationLookupsState> {
   DeclarationLookupsCubit() : super(DeclarationLookupsInitial());
 
   DeclarationLookupsModel? _lookups;
+
   DeclarationLookupsModel? get lookups => _lookups;
 
   Future<void> fetchLookups() async {
@@ -63,6 +64,18 @@ class DeclarationLookupsCubit extends Cubit<DeclarationLookupsState> {
         );
         return res.data['data'] as Map<String, dynamic>;
       }),
+      safeApiCall(() async {
+        final res = await DioClient.instance.dio.get(
+          ApiConstants.productionFacilityLookups,
+        );
+        return res.data['data'] as Map<String, dynamic>;
+      }),
+      safeApiCall(() async {
+        final res = await DioClient.instance.dio.get(
+          ApiConstants.mineQuarryFacilityLookups,
+        );
+        return res.data['data'] as Map<String, dynamic>;
+      }),
     ]);
 
     final mainResult = results[0] as ApiResult<DeclarationLookupsModel>;
@@ -70,6 +83,8 @@ class DeclarationLookupsCubit extends Cubit<DeclarationLookupsState> {
     final viewResult = results[2] as ApiResult<List<DeclarationLookup>>;
     final exploitationResult = results[3] as ApiResult<List<DeclarationLookup>>;
     final industrialResult = results[4];
+    final productionResult = results[5];
+    final mineQuarryFacilityTypes = results[6];
 
     if (mainResult is ApiError<DeclarationLookupsModel>) {
       emit(DeclarationLookupsError(mainResult.message));
@@ -105,6 +120,37 @@ class DeclarationLookupsCubit extends Cubit<DeclarationLookupsState> {
       model = model.copyWith(
         burdenActivityTypes: burdenList,
         buildingTypes: buildingList,
+      );
+    }
+
+    if (productionResult is ApiSuccess) {
+      final data =
+          (productionResult as ApiSuccess).data as Map<String, dynamic>;
+
+      final burdenList = (data['burden_activity_types'] as List? ?? [])
+          .map((e) => DeclarationLookup.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      model = model.copyWith(productionBurdenActivityTypes: burdenList);
+    }
+
+    if (mineQuarryFacilityTypes is ApiSuccess) {
+      final data =
+          (mineQuarryFacilityTypes as ApiSuccess).data as Map<String, dynamic>;
+
+      final mineQuarryMaterialsValue =
+          (data['mine_quarry_materials'] as List? ?? [])
+              .map((e) => DeclarationLookup.fromJson(e as Map<String, dynamic>))
+              .toList();
+
+      final mineQuarryFacilityTypesValue =
+          (data['mine_quarry_facility_types'] as List? ?? [])
+              .map((e) => DeclarationLookup.fromJson(e as Map<String, dynamic>))
+              .toList();
+
+      model = model.copyWith(
+        mineQuarryMaterialsValue: mineQuarryMaterialsValue,
+        mineQuarryFacilityTypesValue: mineQuarryFacilityTypesValue,
       );
     }
 

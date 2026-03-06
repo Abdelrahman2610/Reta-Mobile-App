@@ -57,6 +57,8 @@ class UnitDataState {
   final String? openingBudgetOriginalName;
   final String? allBookBValueFilePath;
   final String? allBookBValueOriginalName;
+  final String? operationLicenseFilePath;
+  final String? operationLicenseOriginalName;
 
   // ── loading / error ──────────────────────
   final bool isLoading;
@@ -70,10 +72,13 @@ class UnitDataState {
   final int roomsCount;
   final bool? ministryBurden;
   final String? selectedBurdenActivity;
+  final String? selectedMineQuarryFacilityTypesValue;
+  final String? selectedMineQuarryMaterialsValue;
   final String? allocationContractFilePath;
   final String? allocationContractOriginalName;
   final int industrialBuildingsCount;
   final int petroBuildingsCount;
+  final int productionBuildingsCount;
 
   const UnitDataState({
     this.selectedFloorNumber,
@@ -130,8 +135,13 @@ class UnitDataState {
     this.openingBudgetOriginalName,
     this.allBookBValueFilePath,
     this.allBookBValueOriginalName,
+    this.operationLicenseFilePath,
+    this.selectedMineQuarryFacilityTypesValue,
+    this.selectedMineQuarryMaterialsValue,
+    this.operationLicenseOriginalName,
     this.industrialBuildingsCount = 1,
     this.petroBuildingsCount = 1,
+    this.productionBuildingsCount = 1,
   });
 
   static const _undefined = Object();
@@ -177,6 +187,8 @@ class UnitDataState {
     Object? openingBudgetOriginalName = _undefined,
     Object? allBookBValueFilePath = _undefined,
     Object? allBookBValueOriginalName = _undefined,
+    Object? operationLicenseFilePath = _undefined,
+    Object? operationLicenseOriginalName = _undefined,
     bool? isLoading,
     String? errorMessage,
     String? successMessage,
@@ -193,6 +205,9 @@ class UnitDataState {
     Object? allocationContractOriginalName = _undefined,
     int? industrialBuildingsCount,
     int? petroBuildingsCount,
+    int? productionBuildingsCount,
+    String? selectedMineQuarryFacilityTypesValue,
+    String? selectedMineQuarryMaterialsValue,
   }) {
     return UnitDataState(
       selectedFloorNumber: selectedFloorNumber ?? this.selectedFloorNumber,
@@ -227,6 +242,12 @@ class UnitDataState {
       permitPhotoOriginalName: permitPhotoOriginalName == _undefined
           ? this.permitPhotoOriginalName
           : permitPhotoOriginalName as String?,
+      operationLicenseOriginalName: operationLicenseOriginalName == _undefined
+          ? this.operationLicenseOriginalName
+          : operationLicenseOriginalName as String?,
+      operationLicenseFilePath: operationLicenseFilePath == _undefined
+          ? this.operationLicenseFilePath
+          : operationLicenseFilePath as String?,
       isServiceUnitExempt: isServiceUnitExempt ?? this.isServiceUnitExempt,
       selectedServiceExemptionReason:
           selectedServiceExemptionReason ?? this.selectedServiceExemptionReason,
@@ -310,6 +331,14 @@ class UnitDataState {
       industrialBuildingsCount:
           industrialBuildingsCount ?? this.industrialBuildingsCount,
       petroBuildingsCount: petroBuildingsCount ?? this.petroBuildingsCount,
+      selectedMineQuarryFacilityTypesValue:
+          selectedMineQuarryFacilityTypesValue ??
+          this.selectedMineQuarryFacilityTypesValue,
+      selectedMineQuarryMaterialsValue:
+          selectedMineQuarryMaterialsValue ??
+          this.selectedMineQuarryMaterialsValue,
+      productionBuildingsCount:
+          productionBuildingsCount ?? this.productionBuildingsCount,
     );
   }
 }
