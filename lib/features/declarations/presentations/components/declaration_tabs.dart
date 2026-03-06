@@ -16,7 +16,8 @@ class DeclarationTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return applicantType == ApplicantType.owner ||
-            applicantType == ApplicantType.beneficiary
+            applicantType == ApplicantType.beneficiary ||
+            applicantType == ApplicantType.exploited
         ? AppContainer(
             height: 93,
             child: AppText(

@@ -81,17 +81,13 @@ class _DeclarationsView extends StatelessWidget {
                           ),
                           AppButton(
                             onTap: () {
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //     builder: (_) =>
-                              //         DeclarationGuidePage(user: UserModel()),
-                              //   ),
-                              // );
                               PersistentNavBarNavigator.pushNewScreen(
                                 context,
                                 screen: DeclarationGuidePage(user: UserModel()),
                                 // SelectApplicantTypePage(declarationId: -1),
+                                withNavBar: true,
+                                pageTransitionAnimation:
+                                    PageTransitionAnimation.slideUp,
                               );
                             },
                             label: "إضافة إقرار",
