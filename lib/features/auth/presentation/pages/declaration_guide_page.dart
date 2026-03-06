@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
+import 'package:reta/features/components/app_bar.dart';
+
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../declarations/presentations/pages/select_applicant_type_page.dart';
 import 'auth_gate_dialog.dart';
 
 class DeclarationGuidePage extends StatefulWidget {
@@ -18,10 +22,12 @@ class _DeclarationGuidePageState extends State<DeclarationGuidePage> {
 
   void _onContinue() {
     if (widget.user != null) {
-      // TODO: navigate to applicant role selection page (صفة مقدم الطلب)
-      // Navigator.of(context).push(
-      //   MaterialPageRoute(builder: (_) => const ApplicantRolePage()),
-      // );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SelectApplicantTypePage(declarationId: -1),
+        ),
+      );
     } else {
       showAuthGateDialog(
         context,
@@ -38,24 +44,10 @@ class _DeclarationGuidePageState extends State<DeclarationGuidePage> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: AppColors.neutralLightMedium,
-        appBar: AppBar(
+        appBar: MainAppBar(
+          title: 'طلب إقرار ضريبي جديد',
           backgroundColor: AppColors.mainBlueIndigoDye,
-          elevation: 0,
-          centerTitle: true,
-          leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back_ios_new,
-              color: AppColors.neutralLightLightest,
-              size: 18,
-            ),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          title: Text(
-            'طلب إقرار ضريبي جديد',
-            style: AppTextStyles.actionXL.copyWith(
-              color: AppColors.neutralLightLightest,
-            ),
-          ),
+          titleTextStyle: TextStyle(color: Colors.white, fontSize: 16.sp),
         ),
         body: Column(
           children: [

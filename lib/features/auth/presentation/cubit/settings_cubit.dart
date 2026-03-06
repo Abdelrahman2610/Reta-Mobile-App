@@ -20,7 +20,7 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> loadSettings() async {
     emit(SettingsLoaded(user: _initialUser));
 
-    if (_initialUser.isGuest) return;
+    // if (_initialUser.isGuest) return;
 
     final result = await _repository.getUserProfile();
 

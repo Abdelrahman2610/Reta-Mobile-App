@@ -33,6 +33,9 @@ class DeclarationLookupsModel {
   final List<DeclarationLookup> hotelViewTypes;
   final List<DeclarationLookup> exploitationTypes;
   final List<DeclarationLookup> burdenActivityTypes;
+  final List<DeclarationLookup> productionBurdenActivityTypes;
+  final List<DeclarationLookup> mineQuarryFacilityTypesValue;
+  final List<DeclarationLookup> mineQuarryMaterialsValue;
   final List<DeclarationLookup> buildingTypes;
 
   const DeclarationLookupsModel({
@@ -55,6 +58,9 @@ class DeclarationLookupsModel {
     required this.hotelViewTypes,
     required this.exploitationTypes,
     required this.burdenActivityTypes,
+    required this.productionBurdenActivityTypes,
+    required this.mineQuarryMaterialsValue,
+    required this.mineQuarryFacilityTypesValue,
     required this.buildingTypes,
   });
 
@@ -65,6 +71,9 @@ class DeclarationLookupsModel {
     List<DeclarationLookup> exploitationTypes = const [],
     List<DeclarationLookup> burdenActivityTypes = const [],
     List<DeclarationLookup> buildingTypes = const [],
+    List<DeclarationLookup> productionBurdenActivityTypes = const [],
+    List<DeclarationLookup> mineQuarryFacilityTypesValue = const [],
+    List<DeclarationLookup> mineQuarryMaterialsValue = const [],
   }) {
     final data = json['data'] as Map<String, dynamic>;
 
@@ -95,6 +104,9 @@ class DeclarationLookupsModel {
       hotelViewTypes: viewTypes,
       exploitationTypes: exploitationTypes,
       burdenActivityTypes: burdenActivityTypes,
+      productionBurdenActivityTypes: productionBurdenActivityTypes,
+      mineQuarryFacilityTypesValue: mineQuarryFacilityTypesValue,
+      mineQuarryMaterialsValue: mineQuarryMaterialsValue,
       buildingTypes: buildingTypes,
     );
   }
@@ -104,7 +116,11 @@ class DeclarationLookupsModel {
     List<DeclarationLookup>? hotelViewTypes,
     List<DeclarationLookup>? exploitationTypes,
     List<DeclarationLookup>? burdenActivityTypes,
+    List<DeclarationLookup>? productionActivityTypes,
     List<DeclarationLookup>? buildingTypes,
+    List<DeclarationLookup>? productionBurdenActivityTypes,
+    List<DeclarationLookup>? mineQuarryMaterialsValue,
+    List<DeclarationLookup>? mineQuarryFacilityTypesValue,
   }) {
     return DeclarationLookupsModel(
       declarationTypes: declarationTypes,
@@ -127,6 +143,12 @@ class DeclarationLookupsModel {
       exploitationTypes: exploitationTypes ?? this.exploitationTypes,
       burdenActivityTypes: burdenActivityTypes ?? this.burdenActivityTypes,
       buildingTypes: buildingTypes ?? this.buildingTypes,
+      mineQuarryFacilityTypesValue:
+          mineQuarryFacilityTypesValue ?? this.mineQuarryFacilityTypesValue,
+      mineQuarryMaterialsValue:
+          mineQuarryMaterialsValue ?? this.mineQuarryMaterialsValue,
+      productionBurdenActivityTypes:
+          productionBurdenActivityTypes ?? this.productionBurdenActivityTypes,
     );
   }
 

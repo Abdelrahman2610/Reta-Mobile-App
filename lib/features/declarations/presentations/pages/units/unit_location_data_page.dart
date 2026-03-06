@@ -390,6 +390,7 @@ class _UnitLocationDataPage extends StatelessWidget {
                               cubit.onNextButtonTapped(
                                 context,
                                 cubit.applicantType,
+                                context.read<UnitLocationCubit>().otherName,
                               );
                             }
                           },

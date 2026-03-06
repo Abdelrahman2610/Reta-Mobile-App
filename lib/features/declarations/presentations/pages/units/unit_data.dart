@@ -10,8 +10,10 @@ import 'package:reta/features/declarations/presentations/pages/units/units_data_
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/components/unit_buttons.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/fixed_installation_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/hotel_unit_page.dart';
-import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/petroleum_facility_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/industrial_unit_page.dart';
+import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/mine_unit_page.dart';
+import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/petroleum_facility_unit_page.dart';
+import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/production_facility_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/residential_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/service_facility_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/service_unit_page.dart';
@@ -26,6 +28,7 @@ import '../../../../components/app_bar.dart';
 import '../../../../components/app_container.dart';
 import '../../components/declaration_data_tab.dart';
 import '../../components/units/unit_title.dart';
+import '../../cubit/units/location/unit_location_cubit.dart';
 import '../../cubit/units/unit_data/unit_data_state.dart';
 
 class UnitData extends StatelessWidget {
@@ -33,14 +36,17 @@ class UnitData extends StatelessWidget {
     super.key,
     required this.applicantType,
     required this.unitType,
+    this.otherName,
   });
 
+  final String? otherName;
   final ApplicantType applicantType;
   final UnitType unitType;
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<UnitDataCubit>();
+    final unitLocationCubit = context.read<UnitLocationCubit>();
     return BlocProvider.value(
       value: cubit,
       child: BlocConsumer<UnitDataCubit, UnitDataState>(
@@ -73,7 +79,7 @@ class UnitData extends StatelessWidget {
             child: Scaffold(
               backgroundColor: AppColors.neutralLightMedium,
               appBar: MainAppBar(
-                title: 'إقرار ${applicantType.label}',
+                title: 'إقرار ${otherName ?? applicantType.label}',
                 backgroundColor: AppColors.mainBlueIndigoDye,
                 backButtonIconColor: Colors.white,
                 titleTextStyle: TextStyle(
@@ -137,11 +143,14 @@ class UnitData extends StatelessWidget {
                         UnitType.industrialFacility => IndustrialFacilityPage(
                           unitCubit: cubit,
                         ),
-                        UnitType.productionFacility => SizedBox.shrink(),
+                        UnitType.productionFacility =>
+                          ProductionFacilityUnitPage(unitCubit: cubit),
                         UnitType.petroleumFacility => PetroleumFacilityUnitPage(
                           unitCubit: cubit,
                         ),
-                        UnitType.minesAndQuarries => SizedBox.shrink(),
+                        UnitType.minesAndQuarries => MineUnitPage(
+                          unitCubit: cubit,
+                        ),
                       },
                       16.hs,
 

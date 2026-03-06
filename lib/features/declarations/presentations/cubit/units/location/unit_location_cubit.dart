@@ -28,6 +28,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   }) : super(const UnitLocationState()) {
     fetchGovernorates();
   }
+
   final String? otherName;
   final UnitType unitType;
   final ApplicantType applicantType;
@@ -412,7 +413,11 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
 
   bool validate() => formKey.currentState?.validate() ?? false;
 
-  void onNextButtonTapped(BuildContext context, ApplicantType applicantType) {
+  void onNextButtonTapped(
+    BuildContext context,
+    ApplicantType applicantType,
+    String? otherName,
+  ) {
     final applicantCubit = unitData != null
         ? null
         : context.read<ApplicantCubit>();
@@ -438,7 +443,11 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
             BlocProvider.value(value: declarationCubit),
             BlocProvider.value(value: lookupsCubit),
           ],
-          child: UnitData(applicantType: applicantType, unitType: unitType),
+          child: UnitData(
+            applicantType: applicantType,
+            unitType: unitType,
+            otherName: otherName,
+          ),
         ),
       ),
     );

@@ -72,6 +72,8 @@ class ApiConstants {
   static const String taxpayerTypes = '$lookupBase/taxpayer-types';
   static const String applicantRoles = '$lookupBase/applicant-roles';
   static const String realEstateFloors = '$lookupBase/real-estate-floors';
+  static const String mineQuarryFacilityLookups =
+      '$lookupBase/mineQuarry-facility-lookups';
   static const String industrialFacilityLookups =
       '$lookupBase/industrial-facility-lookups';
   static const String productionFacilityLookups =

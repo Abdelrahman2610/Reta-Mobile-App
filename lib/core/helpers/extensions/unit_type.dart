@@ -53,9 +53,9 @@ extension UnitTypeLabel on UnitType {
       case UnitType.productionFacility:
         return 'المنشآت الإنتاجية';
       case UnitType.petroleumFacility:
-        return 'منشآت بترولية';
+        return 'المنشآت البترولية';
       case UnitType.minesAndQuarries:
-        return 'مناجم ومحاجر وملاحات';
+        return 'المناجم، المحاجر، و الملاحات';
     }
   }
 
