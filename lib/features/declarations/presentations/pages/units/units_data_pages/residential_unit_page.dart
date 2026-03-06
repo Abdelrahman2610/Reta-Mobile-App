@@ -228,7 +228,6 @@ class _ResidentialUnitView extends StatelessWidget {
               builder: (context, state) {
                 return FileUploadField(
                   labelText: 'سند تمليك الوحدة',
-                  labelRequired: true,
                   text: 'حمل ملف',
                   backgroundColor: AppColors.highlightDarkest,
                   textColor: AppColors.white,
