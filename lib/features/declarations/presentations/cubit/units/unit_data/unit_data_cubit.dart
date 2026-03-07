@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,6 +11,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../../../core/helpers/app_enum.dart';
 import '../../../../../../core/helpers/extensions/applicant_type.dart';
 import '../../../../../../core/network/api_result.dart';
+import '../../../../../../core/network/dio_client.dart';
 import '../../../../../../core/services/declaration_service.dart';
 import '../../../../../../core/services/upload_service.dart';
 import '../../../../data/models/additional_document.dart';
@@ -40,10 +39,13 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     required this.declarationId,
     required this.applicantType,
     this.unitData,
+    this.applicantData,
     this.propertyTypeIdValue,
     required this.unitType,
     this.ministryBurden,
+    required this.buildingNumber,
   }) : super(UnitDataState(vacantLandItems: [VacantLandItem()])) {
+    fetchBuildingFloorNumber(buildingNumber);
     initUnitData();
   }
 
@@ -52,7 +54,9 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   final int declarationId;
   final ApplicantType applicantType;
   final Map<String, dynamic>? unitData;
+  final Map<String, dynamic>? applicantData;
   final UnitType unitType;
+  final int buildingNumber;
 
   final formKey = GlobalKey<FormState>();
   final _uuid = const Uuid();
@@ -186,15 +190,26 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   void _initBaseUnitData() {
     final floorText = unitData!['real_estate_floor_text'];
     final floorOther = unitData!['real_estate_floor_other_text'];
-    final isFloorOther =
-        unitData!['real_estate_floor_id'] == -1 ||
-        (floorText != null && !floorNumbers.contains(floorText));
+    bool isFloorOther = false;
+    if (unitType == UnitType.hotelFacility) {
+      isFloorOther =
+          unitData!['real_estate_floor_id'] == -1 ||
+          (floorText != null && !floorNumbers.contains(floorText));
+    } else {
+      isFloorOther =
+          unitData!['real_estate_floor_id'] == -1 ||
+          (floorText != null &&
+              !(state.buildingFloorList
+                  .map((e) => e.name)
+                  .contains(floorText)));
+    }
 
     final unitNum = unitData!['unit_id']?.toString();
     final unitOther = unitData!['unit_other'];
     final isUnitOther =
         unitData!['unit_id'] == -1 ||
-        (unitNum != null && !unitNumbers.contains(unitNum));
+        (unitNum != null &&
+            !state.buildingUnitList.map((e) => e.name).contains(unitNum));
 
     unitCodeController.text = unitData!['account_code'] ?? '';
 
@@ -213,7 +228,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
         selectedUnitNumber: isUnitOther ? 'أخرى' : unitNum,
         isUnitNumberOther: isUnitOther,
-
         contactedTaxAuthority: retaContact == 1 ? true : false,
 
         hasAdditionalDocuments:
@@ -385,7 +399,9 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
     final buildingsData = unitData!['buildings'] as List? ?? [];
     if (buildingsData.isNotEmpty) {
-      for (final b in buildings) b.dispose();
+      for (final b in buildings) {
+        b.dispose();
+      }
       buildings.clear();
       for (final b in buildingsData) {
         final building = BuildingInfo(id: _uuid.v4());
@@ -523,7 +539,9 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     // buildings
     final buildingsData = unitData!['buildings'] as List? ?? [];
     if (buildingsData.isNotEmpty) {
-      for (final b in industrialBuildings) b.dispose();
+      for (final b in industrialBuildings) {
+        b.dispose();
+      }
       industrialBuildings.clear();
       for (final b in buildingsData) {
         final building = IndustrialBuilding();
@@ -588,22 +606,93 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     'أخرى',
   ];
 
+  Future<void> fetchBuildingFloorNumber(int? buildingNumber) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    emit(state.copyWith(isFloorLoading: true));
+    final result = await safeApiCall(() async {
+      final response = await DioClient.instance.dio.get(
+        '${ApiConstants.realEstateFloors}?realEstateId=$buildingNumber',
+      );
+      final list = response.data['data'] as List;
+      return list.map((e) => DeclarationLookup.fromJson(e)).toList();
+    });
+
+    switch (result) {
+      case ApiSuccess(:final data):
+        if (unitData != null) {
+          final currentFloor = unitData!['real_estate_floor_text'];
+          final floorExists =
+              currentFloor == null || data.any((f) => f.name == currentFloor);
+          final unitNum = unitData!['unit_id']?.toString();
+          unitNumberOtherController.text = unitData!['unit_other'] ?? '';
+          bool isUnitOther = false;
+          if (currentFloor != null) {
+            fetchBuildingUnitNumber(currentFloor, data: data);
+            isUnitOther =
+                unitData!['unit_id'] == -1 ||
+                (unitNum != null &&
+                    !state.buildingUnitList
+                        .map((e) => e.name)
+                        .contains(unitNum));
+          }
+          emit(
+            state.copyWith(
+              buildingFloorList: data,
+              isFloorLoading: false,
+              selectedFloorNumber: floorExists ? currentFloor : null,
+              isFloorNumberOther: !floorExists,
+              selectedUnitNumber: unitNum,
+              isUnitNumberOther: isUnitOther,
+            ),
+          );
+        } else {
+          emit(state.copyWith(buildingFloorList: data, isFloorLoading: false));
+        }
+      case ApiError(:final message):
+        emit(state.copyWith(isFloorLoading: false));
+    }
+  }
+
+  Future<void> fetchBuildingUnitNumber(
+    String floorText, {
+    List<DeclarationLookup>? data,
+  }) async {
+    emit(state.copyWith(isFloorLoading: true));
+    int floorNumber = (data ?? state.buildingFloorList)
+        .firstWhere((floor) => floor.name == floorText)
+        .id;
+    final result = await safeApiCall(() async {
+      final response = await DioClient.instance.dio.get(
+        ApiConstants.unitsByRealEstate(floorNumber),
+      );
+      final list = response.data['data'] as List;
+      return list.map((e) => DeclarationLookup.fromJson(e)).toList();
+    });
+
+    switch (result) {
+      case ApiSuccess(:final data):
+        final currentUnit = state.selectedUnitNumber;
+        final unitExists =
+            currentUnit == null || data.any((f) => f.name == currentUnit);
+        emit(
+          state.copyWith(
+            buildingUnitList: data,
+            isFloorLoading: false,
+            selectedUnitNumber: unitExists ? currentUnit : null,
+            isUnitNumberOther: !unitExists,
+          ),
+        );
+      case ApiError(:final message):
+        emit(state.copyWith(isFloorLoading: false));
+    }
+  }
+
   List<String> get exemptionReasons =>
       lookups.exemptionReasons.map((e) => e.name).toList();
 
   List<String> get installationTypes =>
       lookups.installationTypes.map((e) => e.name).toList();
-  final List<String> unitNumbers = [
-    '1',
-    '2',
-    '3',
-    '4',
-    '5',
-    '10',
-    '15',
-    '20',
-    'أخرى',
-  ];
+
   final List<String> yesNoOptions = [kYes, kNo];
 
   final List<String> buildingTypes = [
@@ -657,9 +746,23 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   void selectFloorNumber(String? value) {
     final isOther = value == 'أخرى';
     emit(
-      state.copyWith(selectedFloorNumber: value, isFloorNumberOther: isOther),
+      state.copyWith(
+        selectedFloorNumber: value,
+        isFloorNumberOther: isOther,
+        selectedUnitNumber: null, // 👈 صفّي الوحدة
+        isUnitNumberOther: false,
+      ),
     );
     if (!isOther) floorNumberOtherController.clear();
+    if (isOther) {
+      emit(
+        state.copyWith(
+          buildingUnitList: [DeclarationLookup(id: -1, name: kOther)],
+        ),
+      );
+    } else {
+      fetchBuildingUnitNumber(value ?? '');
+    }
   }
 
   void selectUnitNumber(String? value) {
@@ -1437,9 +1540,13 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
       final isEdit = unitData != null;
 
-      final applicantPayload = isEdit
+      Map<String, dynamic> applicantPayload = isEdit
           ? {"declaration_type_id": 1, "applicant_role_id": applicantType.id}
           : context.read<ApplicantCubit>().buildPayload(context);
+
+      if (isEdit && applicantData != null) {
+        applicantPayload = applicantData!;
+      }
 
       final payload = {
         ...applicantPayload,
@@ -1450,7 +1557,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           ..._buildUnitPayload(unitType, lookups),
         },
       };
-      log("payload: $payload");
 
       final result = isEdit
           ? await DeclarationService.instance.updateDeclaration(
@@ -1583,10 +1689,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         )
         .id;
 
-    Map<String, dynamic> map = {
-      'exempted': state.isExempt,
-      'exempted_reason': state.selectedExemptionReason,
-    };
     return {
       ..._buildBaseUnitPayload(),
       'usage_type': 'غير سكني',
@@ -2077,12 +2179,24 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     landMarketValueController.dispose();
     usageTypeController.dispose();
     bookValueController.dispose();
-    for (final doc in additionalDocuments) doc.dispose();
-    for (final building in buildings) building.dispose();
-    for (final unit in state.hotelSubUnits) unit.dispose();
-    for (final b in industrialBuildings) b.dispose();
-    for (final b in petroBuildings) b.dispose();
-    for (final b in productionBuildings) b.dispose();
+    for (final doc in additionalDocuments) {
+      doc.dispose();
+    }
+    for (final building in buildings) {
+      building.dispose();
+    }
+    for (final unit in state.hotelSubUnits) {
+      unit.dispose();
+    }
+    for (final b in industrialBuildings) {
+      b.dispose();
+    }
+    for (final b in petroBuildings) {
+      b.dispose();
+    }
+    for (final b in productionBuildings) {
+      b.dispose();
+    }
     return super.close();
   }
 

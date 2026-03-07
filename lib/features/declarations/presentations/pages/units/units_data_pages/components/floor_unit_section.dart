@@ -20,7 +20,9 @@ class FloorUnitSection extends StatelessWidget {
           prev.selectedFloorNumber != curr.selectedFloorNumber ||
           prev.isFloorNumberOther != curr.isFloorNumberOther ||
           prev.selectedUnitNumber != curr.selectedUnitNumber ||
-          prev.isUnitNumberOther != curr.isUnitNumberOther,
+          prev.isUnitNumberOther != curr.isUnitNumberOther ||
+          prev.buildingFloorList != curr.buildingFloorList ||
+          prev.buildingUnitList != curr.buildingUnitList,
       builder: (context, state) {
         return Column(
           children: [
@@ -30,8 +32,8 @@ class FloorUnitSection extends StatelessWidget {
               labelColor: AppColors.neutralDarkDark,
               hintText: 'اختر رقم الدور',
               value: state.selectedFloorNumber,
-              items: cubit.floorNumbers
-                  .map((f) => appDropDownOption(label: f))
+              items: (state.buildingFloorList ?? [])
+                  .map((f) => appDropDownOption(label: f.name))
                   .toList(),
               onChanged: cubit.selectFloorNumber,
               validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
@@ -56,8 +58,8 @@ class FloorUnitSection extends StatelessWidget {
               labelRequired: true,
               hintText: 'اختر رقم الوحدة',
               value: state.selectedUnitNumber,
-              items: cubit.unitNumbers
-                  .map((u) => appDropDownOption(label: u))
+              items: state.buildingUnitList
+                  .map((u) => appDropDownOption(label: u.name))
                   .toList(),
               onChanged: cubit.selectUnitNumber,
               validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,

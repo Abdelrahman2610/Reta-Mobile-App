@@ -1,5 +1,6 @@
 import 'package:reta/features/declarations/data/models/additional_document.dart';
 
+import '../../../../data/models/declarations_lookups.dart';
 import '../../../../data/models/hotel_sub_unit.dart';
 import '../../../../data/models/vacant_land_item.dart';
 
@@ -79,6 +80,9 @@ class UnitDataState {
   final int industrialBuildingsCount;
   final int petroBuildingsCount;
   final int productionBuildingsCount;
+  final List<DeclarationLookup> buildingFloorList;
+  final List<DeclarationLookup> buildingUnitList;
+  final bool isFloorLoading;
 
   const UnitDataState({
     this.selectedFloorNumber,
@@ -142,15 +146,18 @@ class UnitDataState {
     this.industrialBuildingsCount = 1,
     this.petroBuildingsCount = 1,
     this.productionBuildingsCount = 1,
+    this.buildingFloorList = const [],
+    this.buildingUnitList = const [],
+    this.isFloorLoading = false,
   });
 
   static const _undefined = Object();
 
   UnitDataState copyWith({
-    String? selectedFloorNumber,
+    Object? selectedFloorNumber = _undefined,
     bool? isFloorNumberOther,
-    String? selectedUnitNumber,
-    bool? isUnitNumberOther,
+    Object? selectedUnitNumber = _undefined,
+    Object? isUnitNumberOther = _undefined,
     bool? contactedTaxAuthority,
     bool? isExempt,
     String? selectedExemptionReason,
@@ -208,12 +215,21 @@ class UnitDataState {
     int? productionBuildingsCount,
     String? selectedMineQuarryFacilityTypesValue,
     String? selectedMineQuarryMaterialsValue,
+    List<DeclarationLookup>? buildingFloorList,
+    List<DeclarationLookup>? buildingUnitList,
+    bool? isFloorLoading,
   }) {
     return UnitDataState(
-      selectedFloorNumber: selectedFloorNumber ?? this.selectedFloorNumber,
+      selectedFloorNumber: selectedFloorNumber == _undefined
+          ? this.selectedFloorNumber
+          : selectedFloorNumber as String?,
       isFloorNumberOther: isFloorNumberOther ?? this.isFloorNumberOther,
-      selectedUnitNumber: selectedUnitNumber ?? this.selectedUnitNumber,
-      isUnitNumberOther: isUnitNumberOther ?? this.isUnitNumberOther,
+      selectedUnitNumber: selectedUnitNumber == _undefined
+          ? this.selectedUnitNumber
+          : selectedUnitNumber as String?,
+      isUnitNumberOther: isUnitNumberOther == _undefined
+          ? this.isUnitNumberOther
+          : isUnitNumberOther as bool? ?? false,
       contactedTaxAuthority:
           contactedTaxAuthority ?? this.contactedTaxAuthority,
       isExempt: isExempt ?? this.isExempt,
@@ -339,6 +355,9 @@ class UnitDataState {
           this.selectedMineQuarryMaterialsValue,
       productionBuildingsCount:
           productionBuildingsCount ?? this.productionBuildingsCount,
+      buildingFloorList: buildingFloorList ?? this.buildingFloorList,
+      buildingUnitList: buildingUnitList ?? this.buildingUnitList,
+      isFloorLoading: isFloorLoading ?? this.isFloorLoading,
     );
   }
 }
