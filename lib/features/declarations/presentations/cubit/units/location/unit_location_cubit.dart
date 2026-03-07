@@ -25,6 +25,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
     this.locationData,
     this.otherName,
     this.unitData,
+    this.applicantData,
   }) : super(const UnitLocationState()) {
     fetchGovernorates();
   }
@@ -35,6 +36,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   final int declarationId;
   final Map<String, dynamic>? locationData;
   final Map<String, dynamic>? unitData;
+  final Map<String, dynamic>? applicantData;
 
   final formKey = GlobalKey<FormState>();
 
@@ -439,12 +441,22 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
     final declarationCubit = context.read<DeclarationCubit>();
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
 
+    int id =
+        state.buildingList
+            ?.firstWhere(
+              (buildingNumber) =>
+                  buildingNumber.name == state.selectedBuildingNumber,
+            )
+            .id ??
+        -1;
     final unitDataCubit = UnitDataCubit(
       lookups: lookupsCubit.lookups!,
       declarationId: declarationId,
       applicantType: applicantType,
       unitData: unitData,
       unitType: unitType,
+      applicantData: applicantData,
+      buildingNumber: id,
     );
     Navigator.push(
       context,

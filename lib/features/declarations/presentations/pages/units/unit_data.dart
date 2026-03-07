@@ -49,11 +49,13 @@ class UnitData extends StatelessWidget {
       value: cubit,
       child: BlocConsumer<UnitDataCubit, UnitDataState>(
         listenWhen: (prev, curr) =>
-            curr.errorMessage != null || prev.isLoading != curr.isLoading,
+            curr.errorMessage != null ||
+            prev.isLoading != curr.isLoading ||
+            prev.isFloorLoading != curr.isFloorLoading,
         listener: (context, state) {
-          if (state.isLoading) {
+          if (state.isLoading || state.isFloorLoading) {
             loadingPopup(RuntimeData.getCurrentContext()!);
-          } else if (!state.isLoading) {
+          } else if (!state.isLoading && !state.isFloorLoading) {
             Navigator.pop(RuntimeData.getCurrentContext()!);
           }
           if (state.errorMessage != null) {

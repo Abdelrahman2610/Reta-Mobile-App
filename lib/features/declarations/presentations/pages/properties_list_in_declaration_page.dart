@@ -264,6 +264,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                                         }
 
                                         if (!context.mounted) return;
+
                                         PersistentNavBarNavigator.pushNewScreen(
                                           context,
                                           screen: MultiBlocProvider(
@@ -273,6 +274,8 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                                               ),
                                             ],
                                             child: UnitLocationDataPage(
+                                              applicantData:
+                                                  state.detailsModel?.data,
                                               declarationId:
                                                   declarationModel.id ?? -1,
                                               unitType:
