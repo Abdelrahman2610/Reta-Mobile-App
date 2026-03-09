@@ -16,6 +16,7 @@ class AppText extends StatelessWidget {
     this.textDirection,
     this.textOverflow,
     this.decorationColor,
+    this.letterSpacing,
   });
 
   final String? text;
@@ -29,6 +30,7 @@ class AppText extends StatelessWidget {
   final TextDecoration? textDecoration;
   final TextDirection? textDirection;
   final TextOverflow? textOverflow;
+  final double? letterSpacing;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +49,7 @@ class AppText extends StatelessWidget {
           decoration: textDecoration ?? TextDecoration.none,
           decorationColor: decorationColor,
           overflow: textOverflow,
+          letterSpacing: letterSpacing,
         ),
       ),
     );

@@ -136,4 +136,11 @@ class AppColors {
   static const Color color1 = Color(0xFF00A174);
 
   static const Color decrementBG = Color(0xFFF5F6FA);
+
+  static const Color paymentBoxShadow = Color(0xCFECF8B2);
+
+  static const Color bottomSheetDragger = Color(0xFFCCCCCC);
+
+  static const Color bottomSheetTitle = Color(0xFF333333);
+  static const Color bottomSheetContent = Color(0xFF999999);
 }

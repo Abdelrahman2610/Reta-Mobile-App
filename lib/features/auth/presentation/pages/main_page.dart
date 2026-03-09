@@ -9,6 +9,7 @@ import 'package:reta/core/widgets/coming_soon_bottom_sheet.dart';
 import 'package:reta/features/auth/presentation/pages/settings_page.dart';
 import 'package:reta/features/components/app_text.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_cubit.dart';
+import 'package:reta/features/payment/presentations/pages/my_payment_page.dart';
 
 import '../../../../core/helpers/fixed_assets.dart';
 import '../../../../core/helpers/runtime_data.dart';
@@ -89,7 +90,7 @@ class _MainViewState extends State<_MainView> {
                 DeclarationsPage(),
 
                 // index 3 — مدفوعاتي
-                const SizedBox(),
+                MyPaymentPage(),
 
                 // index 4 — الإعدادات
                 SettingsPage(currentUser: widget.user),
@@ -145,7 +146,7 @@ class _MainViewState extends State<_MainView> {
         FixedAssets.instance.selectedPayment,
         "مدفوعاتي",
         checkIsNavBarSelected(3, selectedIndex),
-        isLocked: true,
+        isLocked: false,
       ),
       item(
         FixedAssets.instance.selectedSettings,

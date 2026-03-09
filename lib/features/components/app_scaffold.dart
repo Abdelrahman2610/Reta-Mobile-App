@@ -1,0 +1,39 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import '../../core/theme/app_colors.dart';
+import 'app_bar.dart';
+
+class AppScaffold extends StatelessWidget {
+  const AppScaffold({
+    super.key,
+    this.title,
+    this.onBackTapped,
+    required this.child,
+  });
+
+  final String? title;
+  final VoidCallback? onBackTapped;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: AppColors.neutralLightLight,
+        appBar: MainAppBar(
+          backButtonAction: () => Navigator.pop(context),
+          title: title ?? '',
+          backgroundColor: AppColors.mainBlueIndigoDye,
+          backButtonIconColor: Colors.white,
+          titleTextStyle: TextStyle(color: Colors.white, fontSize: 16.sp),
+        ),
+        body: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 25.w, vertical: 25.h),
+          child: child,
+        ),
+      ),
+    );
+  }
+}

@@ -17,6 +17,10 @@ extension ProviderDataType on DeclarationsDataType {
         return 'بيانات الأرض';
       case DeclarationsDataType.establishmentData:
         return 'بيانات المنشأة';
+      case DeclarationsDataType.payInfo:
+        return 'بيانات الدفع';
+      case DeclarationsDataType.paymentRequests:
+        return 'طلبات السداد';
     }
   }
 
@@ -35,6 +39,10 @@ extension ProviderDataType on DeclarationsDataType {
       case DeclarationsDataType.landData:
         return '2';
       case DeclarationsDataType.establishmentData:
+        return '2';
+      case DeclarationsDataType.payInfo:
+        return '1';
+      case DeclarationsDataType.paymentRequests:
         return '2';
     }
   }
