@@ -157,15 +157,20 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                               flex: 5,
                               child: SubmitDeclarationButton(
                                 onSubmit: () {
-                                  showSubmitDeclarationDialog(
-                                    RuntimeData.getCurrentContext()!,
-                                    () {
-                                      context
-                                          .read<DeclarationDetailsCubit>()
-                                          .submitDeclaration();
-                                    },
-                                  );
+                                  if (state.detailsModel?.unitsCount.total !=
+                                      0) {
+                                    showSubmitDeclarationDialog(
+                                      RuntimeData.getCurrentContext()!,
+                                      () {
+                                        context
+                                            .read<DeclarationDetailsCubit>()
+                                            .submitDeclaration();
+                                      },
+                                    );
+                                  }
                                 },
+                                isEnabled:
+                                    state.detailsModel?.unitsCount.total != 0,
                               ),
                             ),
                             SizedBox(width: 10.w),

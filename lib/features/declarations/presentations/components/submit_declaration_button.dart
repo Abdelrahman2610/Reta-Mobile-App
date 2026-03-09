@@ -11,12 +11,14 @@ class SubmitDeclarationButton extends StatelessWidget {
   final String? label;
   final bool withIcon;
   final Color? borderColor;
+  final bool isEnabled;
 
   const SubmitDeclarationButton({
     super.key,
     required this.onSubmit,
     this.label,
     this.withIcon = true,
+    this.isEnabled = true,
     this.borderColor,
   });
 
@@ -29,15 +31,23 @@ class SubmitDeclarationButton extends StatelessWidget {
       label: label ?? "تقديم الإقرار",
       width: double.maxFinite,
       height: 48.h,
-      borderColor: borderColor ?? AppColors.highlightDarkest,
-      backgroundColor: Colors.white,
-      textColor: borderColor ?? AppColors.highlightDarkest,
+      borderColor: !isEnabled
+          ? AppColors.neutralLightDarkest
+          : borderColor ?? AppColors.highlightDarkest,
+      backgroundColor: !isEnabled
+          ? AppColors.neutralLightDarkest
+          : Colors.white,
+      textColor: !isEnabled
+          ? AppColors.neutralDarkLight
+          : borderColor ?? AppColors.highlightDarkest,
       fontSize: 12,
       fontWeight: FontWeight.w600,
       iconLeft: false,
       icon: withIcon
           ? ImageSvgCustomWidget(
-              color: AppColors.highlightDarkest,
+              color: !isEnabled
+                  ? AppColors.neutralDarkLight
+                  : AppColors.highlightDarkest,
               imgPath: FixedAssets.instance.sendIcon,
               height: 18.h,
               width: 18.w,
