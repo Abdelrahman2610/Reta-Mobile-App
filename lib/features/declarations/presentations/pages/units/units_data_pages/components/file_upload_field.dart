@@ -45,6 +45,9 @@ class FileUploadField extends StatelessWidget {
       labelFontSize: labelFontSize,
       readOnly: true,
       suffixWidget: ImageSvgCustomWidget(
+        ///TODo
+        ///AppColors.errorDark if has file
+        ///use urlLauncher(filePath);
         imgPath: FixedAssets.instance.attachmentWhiteIC,
         width: 16.w,
         height: 16.h,
