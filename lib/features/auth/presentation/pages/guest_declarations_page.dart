@@ -1,12 +1,14 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:reta/features/auth/data/models/user_models.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import 'declaration_guide_page.dart';
 
 class GuestDeclarationsPage extends StatefulWidget {
-  const GuestDeclarationsPage({super.key});
+  final UserModel? user;
+  const GuestDeclarationsPage({super.key, this.user});
 
   @override
   State<GuestDeclarationsPage> createState() => _GuestDeclarationsPageState();
@@ -25,7 +27,9 @@ class _GuestDeclarationsPageState extends State<GuestDeclarationsPage> {
           builder: (_) => _DeclarationsHome(
             onNavigateToGuide: () {
               _navigatorKey.currentState?.pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const DeclarationGuidePage()),
+                MaterialPageRoute(
+                  builder: (_) => DeclarationGuidePage(user: widget.user),
+                ),
                 (route) => false,
               );
             },

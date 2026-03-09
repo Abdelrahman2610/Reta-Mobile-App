@@ -137,16 +137,27 @@ class _ProfileBody extends StatelessWidget {
               value: state.userModel.nationality ?? '',
             ),
             _Divider(),
-            _ProfileField(
-              label: 'الرقم القومي/جواز السفر',
-              value: state.userModel.nationalId ?? '',
-              showEdit: true,
-              showVerifyButton: !(state.userModel.nationalIdVerified ?? false),
-              onEditTap: () =>
-                  _onEditTapped(context, 'الرقم القومي/جواز السفر'),
-              onVerifyTap: () =>
-                  _onVerifyTapped(context, 'الرقم القومي/جواز السفر'),
-            ),
+            if (state.userModel.isEgyptian) ...[
+              _ProfileField(
+                label: 'الرقم القومي',
+                value: state.userModel.nationalId ?? '',
+                showEdit: true,
+                showVerifyButton:
+                    !(state.userModel.nationalIdVerified ?? false),
+                onEditTap: () => _onEditTapped(context, 'الرقم القومي'),
+                onVerifyTap: () => _onVerifyTapped(context, 'الرقم القومي'),
+              ),
+            ] else ...[
+              _ProfileField(
+                label: 'رقم جواز السفر',
+                value: state.userModel.passportNumber ?? '',
+                showEdit: true,
+                showVerifyButton:
+                    !(state.userModel.nationalIdVerified ?? false),
+                onEditTap: () => _onEditTapped(context, 'رقم جواز السفر'),
+                onVerifyTap: () => _onVerifyTapped(context, 'رقم جواز السفر'),
+              ),
+            ],
             _Divider(),
             _ProfileField(
               label: 'مرفق الرقم القومي/جواز السفر',

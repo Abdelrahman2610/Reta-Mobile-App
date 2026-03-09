@@ -15,6 +15,7 @@ class UserModel {
   final bool? phoneVerified;
   final bool? nationalIdVerified;
   final String? nationality;
+  final String? nationalityCode;
   final String? placeOfBirth;
 
   //TODO: Add from json to these vars
@@ -36,6 +37,7 @@ class UserModel {
     this.phoneVerified,
     this.nationalIdVerified,
     this.nationality,
+    this.nationalityCode,
     this.placeOfBirth,
     this.passportNumber,
     this.nationalIdFiles,
@@ -76,6 +78,8 @@ class UserModel {
       email: data['email']?.toString(),
       phone: profile['mobile']?.toString(),
       nationalId: profile['national_id']?.toString(),
+      passportNumber: profile['passport_num']?.toString(),
+      nationalityCode: nationality?['code']?.toString(),
       dateOfBirth: profile['birth_date']?.toString(),
       gender: profile['gender']?.toString(),
       nationality: nationality?['name']?.toString(),
@@ -88,6 +92,8 @@ class UserModel {
   }
 
   bool get isGuest => userType == UserType.guest;
+
+  bool get isEgyptian => nationalityCode == 'EG';
 
   bool get isAuthenticated => userType == UserType.authenticated;
 
@@ -106,6 +112,8 @@ class UserModel {
     bool? nationalIdVerified,
     String? nationality,
     String? placeOfBirth,
+    String? nationalityCode,
+    String? passportNumber,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -122,6 +130,8 @@ class UserModel {
       nationalIdVerified: nationalIdVerified ?? this.nationalIdVerified,
       nationality: nationality ?? this.nationality,
       placeOfBirth: placeOfBirth ?? this.placeOfBirth,
+      nationalityCode: nationalityCode ?? this.nationalityCode,
+      passportNumber: passportNumber ?? this.passportNumber,
     );
   }
 }
