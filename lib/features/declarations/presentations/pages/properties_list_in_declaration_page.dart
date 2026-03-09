@@ -16,6 +16,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/cubit/user_profile_cubit.dart';
 import '../../../auth/presentation/cubit/user_profile_state.dart';
 import '../../../components/app_bar.dart';
+import '../../../components/app_text.dart';
 import '../../../components/circular_progress_indicator_platform_widget.dart';
 import '../../../components/show_confirmation_dialog.dart';
 import '../../data/models/declaration_details_model.dart';
@@ -178,14 +179,29 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                               flex: 3,
                               child: CancelDeclarationButton(
                                 onCancel: () {
-                                  showCancelDeclarationDialog(
-                                    RuntimeData.getCurrentContext()!,
-                                    () {
-                                      context
-                                          .read<DeclarationDetailsCubit>()
-                                          .deleteDeclarationModel();
-                                    },
-                                  );
+                                  if (state.detailsModel?.statusId == "2" &&
+                                      state.detailsModel?.unitsCount.total !=
+                                          0) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: AppText(
+                                          text: "يجب مسح كل العقارات اولا.",
+                                          maxLines: 3,
+                                          color: AppColors.white,
+                                        ),
+                                        backgroundColor: AppColors.errorDark,
+                                      ),
+                                    );
+                                  } else {
+                                    showCancelDeclarationDialog(
+                                      RuntimeData.getCurrentContext()!,
+                                      () {
+                                        context
+                                            .read<DeclarationDetailsCubit>()
+                                            .deleteDeclarationModel();
+                                      },
+                                    );
+                                  }
                                 },
                               ),
                             ),
