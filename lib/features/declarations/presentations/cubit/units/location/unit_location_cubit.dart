@@ -357,8 +357,8 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
         selectedNeighborhood: value,
         isNeighborhoodOther: isOther,
         selectedVillageId: selectedVillage?.id,
-        selectedStreet: null,
-        selectedBuildingNumber: null,
+        selectedStreet: 'null',
+        selectedBuildingNumber: 'null',
         isStreetOther: false,
         isBuildingNumberOther: false,
         streetsList: streetsWithOther,
@@ -380,12 +380,12 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
         selectedStreet: value,
         selectedStreetId: selected?.id,
         isStreetOther: isOther,
-        selectedBuildingNumber: null,
+        selectedBuildingNumber: 'null',
         isBuildingNumberOther: false,
       ),
     );
     if (!isOther) streetOtherController.clear();
-    if (!isOther && selected?.id != 0) fetchBuildingNumber(selected?.id);
+    fetchBuildingNumber(selected?.id);
   }
 
   void selectBuildingNumber(String? value) {

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -58,7 +56,6 @@ class UnitData extends StatelessWidget {
           if (state.isLoading || state.isFloorLoading) {
             loadingPopup(RuntimeData.getCurrentContext()!);
           } else if (state.errorMessage != null) {
-            log('Error message is not empty');
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: AppText(

@@ -6,6 +6,7 @@ import '../../../../data/models/vacant_land_item.dart';
 
 class UnitDataState {
   final String? selectedFloorNumber;
+  final String? selectedFloorNumberOther;
   final bool isFloorNumberOther;
   final String? selectedUnitNumber;
   final bool isUnitNumberOther;
@@ -97,6 +98,7 @@ class UnitDataState {
 
   const UnitDataState({
     this.selectedFloorNumber,
+    this.selectedFloorNumberOther,
     this.isFloorNumberOther = false,
     this.selectedUnitNumber,
     this.isUnitNumberOther = false,
@@ -177,6 +179,7 @@ class UnitDataState {
 
   UnitDataState copyWith({
     Object? selectedFloorNumber = _undefined,
+    Object? selectedFloorNumberOther = _undefined,
     bool? isFloorNumberOther,
     Object? selectedUnitNumber = _undefined,
     Object? isUnitNumberOther = _undefined,
@@ -256,6 +259,9 @@ class UnitDataState {
       selectedFloorNumber: selectedFloorNumber == _undefined
           ? this.selectedFloorNumber
           : selectedFloorNumber as String?,
+      selectedFloorNumberOther: selectedFloorNumberOther == _undefined
+          ? this.selectedFloorNumberOther
+          : selectedFloorNumberOther as String?,
       isFloorNumberOther: isFloorNumberOther ?? this.isFloorNumberOther,
       selectedUnitNumber: selectedUnitNumber == _undefined
           ? this.selectedUnitNumber

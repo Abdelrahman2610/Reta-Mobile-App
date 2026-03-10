@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:reta/core/helpers/extensions/unit_type.dart';
+import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/core/network/api_constants.dart';
 import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
 import 'package:reta/features/declarations/data/models/declaration_model.dart';
@@ -14,6 +15,7 @@ import '../../../../../../core/network/api_result.dart';
 import '../../../../../../core/network/dio_client.dart';
 import '../../../../../../core/services/declaration_service.dart';
 import '../../../../../../core/services/upload_service.dart';
+import '../../../../../auth/presentation/pages/main_page.dart';
 import '../../../../data/models/additional_document.dart';
 import '../../../../data/models/building_info.dart';
 import '../../../../data/models/declarations_lookups.dart';
@@ -187,7 +189,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     }
   }
 
-  void _initBaseUnitData() {
+  Future<void> _initBaseUnitData() async {
     final floorText = unitData!['real_estate_floor_text'];
     final floorOther = unitData!['real_estate_floor_other_text'];
     bool isFloorOther = false;
@@ -204,12 +206,15 @@ class UnitDataCubit extends Cubit<UnitDataState> {
                   .contains(floorText)));
     }
 
-    final unitNum = unitData!['unit_id']?.toString();
+    await fetchBuildingUnitNumber(
+      unitData!['real_estate_floor_id'],
+      loading: false,
+    );
+
+    final unitNum = unitData!['unit_unit_num']?.toString();
+
     final unitOther = unitData!['unit_other'];
-    final isUnitOther =
-        unitData!['unit_id'] == -1 ||
-        (unitNum != null &&
-            !state.buildingUnitList.map((e) => e.name).contains(unitNum));
+    final isUnitOther = unitData!['unit_id'] == -1;
 
     unitCodeController.text = unitData!['account_code'] ?? '';
 
@@ -653,7 +658,10 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           unitNumberOtherController.text = unitData!['unit_other'] ?? '';
           bool isUnitOther = false;
           if (currentFloor != null) {
-            fetchBuildingUnitNumber(currentFloor, data: data);
+            int floorNumber = (data)
+                .firstWhere((floor) => floor.name == currentFloor)
+                .id;
+            fetchBuildingUnitNumber(floorNumber, data: data);
             isUnitOther =
                 unitData!['unit_id'] == -1 ||
                 (unitNum != null &&
@@ -680,13 +688,14 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   Future<void> fetchBuildingUnitNumber(
-    String floorText, {
+    dynamic floorNumber, {
     List<DeclarationLookup>? data,
+    bool loading = true,
   }) async {
-    emit(state.copyWith(isFloorLoading: true));
-    int floorNumber = (data ?? state.buildingFloorList)
-        .firstWhere((floor) => floor.name == floorText)
-        .id;
+    if (loading) {
+      emit(state.copyWith(isFloorLoading: true));
+    }
+
     final result = await safeApiCall(() async {
       final response = await DioClient.instance.dio.get(
         ApiConstants.unitsByRealEstate(floorNumber),
@@ -697,7 +706,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
     switch (result) {
       case ApiSuccess(:final data):
-        final currentUnit = state.selectedUnitNumber;
+        String? currentUnit = state.selectedUnitNumber;
+        if (unitData != null) {
+          currentUnit = unitData!['unit_unit_num'];
+        }
+
         final unitExists =
             currentUnit == null || data.any((f) => f.name == currentUnit);
         emit(
@@ -775,7 +788,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       state.copyWith(
         selectedFloorNumber: value,
         isFloorNumberOther: isOther,
-        selectedUnitNumber: null, // 👈 صفّي الوحدة
+        selectedUnitNumber: null,
         isUnitNumberOther: false,
       ),
     );
@@ -787,8 +800,26 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         ),
       );
     } else {
-      fetchBuildingUnitNumber(value ?? '');
+      int floorNumber = (state.buildingFloorList)
+          .firstWhere((floor) => floor.name == value)
+          .id;
+      fetchBuildingUnitNumber(floorNumber);
     }
+  }
+
+  Future<void> selectFloorNumberOther(String? value) async {
+    emit(
+      state.copyWith(
+        selectedFloorNumberOther: value,
+        selectedUnitNumber: null,
+        isUnitNumberOther: false,
+      ),
+    );
+
+    int floorNumber = (state.buildingFloorList)
+        .firstWhere((floor) => floor.name == value)
+        .id;
+    await fetchBuildingUnitNumber(floorNumber, data: lookups.realEstateFloors);
   }
 
   void selectUnitNumber(String? value) {
@@ -1477,9 +1508,20 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           DeclarationModel();
 
       if (context.mounted) {
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        // Navigator.of(context).popUntil((route) => route.isFirst);
+        // Navigator.canPop(context);
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => BlocProvider(
+              lazy: false,
+              create: (_) => UserProfileCubit()..loadFromUser(null),
+              child: const MainPage(isLoggedIn: true),
+            ),
+          ),
+        );
+        await Future.delayed(const Duration(milliseconds: 200));
         PersistentNavBarNavigator.pushNewScreen(
-          context,
+          RuntimeData.getCurrentContext() ?? context,
           screen: PropertiesListInDeclarationPage(declarationModel, () {
             declarationCubit.fetchList();
           }),
@@ -2190,23 +2232,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   void onCancelButtonTapped(BuildContext context) {
     Navigator.of(context).popUntil((route) => route.isFirst);
-    if (declarationId != -1) {
-      final declarationCubit = context.read<DeclarationCubit>();
-      DeclarationModel declarationModel =
-          declarationCubit.declarationList?.firstWhere(
-            (declaration) => declaration.id == declarationId,
-            orElse: () => DeclarationModel(),
-          ) ??
-          DeclarationModel();
-      PersistentNavBarNavigator.pushNewScreen(
-        context,
-        screen: PropertiesListInDeclarationPage(declarationModel, () {
-          declarationCubit.fetchList();
-        }),
-        withNavBar: true,
-        pageTransitionAnimation: PageTransitionAnimation.slideUp,
-      );
-    }
   }
 
   // ─────────────────────────────────────────

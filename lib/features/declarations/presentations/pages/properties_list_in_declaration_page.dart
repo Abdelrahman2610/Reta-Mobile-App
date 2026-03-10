@@ -100,7 +100,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                       BlocBuilder<UserProfileCubit, UserProfileState>(
                         builder: (context, userState) {
                           if (userState is! UserProfileLoaded) {
-                            return const CircularProgressIndicatorPlatformWidget();
+                            return const SizedBox.shrink();
                           }
                           return PropertiesListInDeclarationHeader(
                             declarationModel.declarationTypeText ?? "",
