@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:reta/core/helpers/url_launcher.dart';
 
 import '../../../../../../../core/helpers/fixed_assets.dart';
 import '../../../../../../../core/theme/app_colors.dart';
@@ -15,12 +16,14 @@ class FileUploadField extends StatelessWidget {
     required this.onFileRemoved,
     this.filePath,
     this.labelRequired = false,
-    this.infoText = 'ملف بصيغة Jpg أو pdf لا يتجاوز حجمه 5 ميجا بايت',
+    this.infoText =
+        'ملف بصيغة JPG أو PNG أو PDF، على ألا يتجاوز حجمه 5 ميجا بايت.',
     this.text,
     this.backgroundColor,
     this.textColor,
     this.labelFontSize,
     this.description,
+    this.isUserInfo = false,
   });
 
   final String labelText;
@@ -34,6 +37,7 @@ class FileUploadField extends StatelessWidget {
   final Color? textColor;
   final double? labelFontSize;
   final String? description;
+  final bool isUserInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -44,14 +48,18 @@ class FileUploadField extends StatelessWidget {
       labelRequired: labelRequired,
       labelFontSize: labelFontSize,
       readOnly: true,
-      suffixWidget: ImageSvgCustomWidget(
-        ///TODo
-        ///AppColors.errorDark if has file
-        ///use urlLauncher(filePath);
-        imgPath: FixedAssets.instance.attachmentWhiteIC,
-        width: 16.w,
-        height: 16.h,
-        color: AppColors.neutralDarkLightest,
+      suffixWidget: GestureDetector(
+        onTap: () {
+          if (filePath != null) {
+            urlLauncher(filePath);
+          }
+        },
+        child: ImageSvgCustomWidget(
+          imgPath: FixedAssets.instance.attachmentWhiteIC,
+          width: 16.w,
+          height: 16.h,
+          color: hasFile ? AppColors.errorDark : AppColors.neutralDarkLightest,
+        ),
       ),
       prefixWidget: AppAttachmentItem(
         onTap: hasFile ? onFileRemoved : onFilePicked,
@@ -59,6 +67,7 @@ class FileUploadField extends StatelessWidget {
         backgroundColor: backgroundColor,
         textColor: textColor,
         containFile: hasFile,
+        isUserInfo: isUserInfo,
       ),
       infoText: infoText,
     );

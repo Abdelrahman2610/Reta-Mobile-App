@@ -32,7 +32,7 @@ class FloorUnitSection extends StatelessWidget {
               labelColor: AppColors.neutralDarkDark,
               hintText: 'اختر رقم الدور',
               value: state.selectedFloorNumber,
-              items: (state.buildingFloorList ?? [])
+              items: (state.buildingFloorList)
                   .map((f) => appDropDownOption(label: f.name))
                   .toList(),
               onChanged: cubit.selectFloorNumber,
@@ -72,7 +72,6 @@ class FloorUnitSection extends StatelessWidget {
                 labelColor: AppColors.neutralDarkDark,
                 controller: cubit.unitNumberOtherController,
                 hintText: 'ادخل رقم الوحدة',
-                keyboardType: TextInputType.number,
                 validator: (v) =>
                     v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
               ),

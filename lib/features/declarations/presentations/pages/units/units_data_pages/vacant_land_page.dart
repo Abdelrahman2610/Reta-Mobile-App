@@ -103,7 +103,7 @@ class _VacantLandView extends StatelessWidget {
                   description: 'عقد مسجل/عقد ابتدائي/حكم قضائي/مستند رسمي',
                   backgroundColor: AppColors.highlightDarkest,
                   textColor: AppColors.white,
-                  filePath: state.ownershipDeedFilePath,
+                  filePath: state.ownershipDeedFullUrl,
                   onFilePicked: () async {
                     final path = await cubit.pickFile();
                     if (path != null) cubit.setOwnershipDeedFile(path);
@@ -124,7 +124,7 @@ class _VacantLandView extends StatelessWidget {
                   text: 'حمل ملف',
                   backgroundColor: AppColors.highlightDarkest,
                   textColor: AppColors.white,
-                  filePath: state.leaseContractFilePath,
+                  filePath: state.leaseContractFullUrl,
                   onFilePicked: () async {
                     final path = await cubit.pickFile();
                     if (path != null) cubit.setLeaseContractFile(path);

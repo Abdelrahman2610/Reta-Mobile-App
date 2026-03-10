@@ -149,7 +149,7 @@ class _ServiceFacilityView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.ownershipDeedFilePath,
+                filePath: state.ownershipDeedFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setOwnershipDeedFile(path);
@@ -168,7 +168,7 @@ class _ServiceFacilityView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.leaseContractFilePath,
+                filePath: state.leaseContractFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setLeaseContractFile(path);
@@ -188,7 +188,7 @@ class _ServiceFacilityView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.constructionLicenseFilePath,
+                filePath: state.constructionLicenseFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setConstructionLicenseFile(path);
@@ -208,7 +208,7 @@ class _ServiceFacilityView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.operatingLicenseFilePath,
+                filePath: state.operatingLicenseFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setOperatingLicenseFile(path);

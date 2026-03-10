@@ -235,6 +235,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
         ownershipDeedFilePath: ownershipDeed?['url'],
         ownershipDeedOriginalName: ownershipDeed?['original_file_name'],
+        ownershipDeedFullUrl: ownershipDeed?['full_url'],
       ),
     );
     // controllers
@@ -292,6 +293,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         state.copyWith(
           leaseContractFilePath: leaseContract['url'],
           leaseContractOriginalName: leaseContract['original_file_name'],
+          leaseContractFullUrl: leaseContract['full_url'],
         ),
       );
     }
@@ -301,6 +303,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         state.copyWith(
           permitPhotoFilePath: permitPhoto['url'],
           permitPhotoOriginalName: permitPhoto['original_file_name'],
+          permitPhotoFullUrl: permitPhoto['full_url'],
         ),
       );
     }
@@ -379,8 +382,12 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       state.copyWith(
         ownershipDeedFilePath: ownershipDoc?['url'],
         ownershipDeedOriginalName: ownershipDoc?['original_file_name'],
+        ownershipDeedFullUrl: ownershipDoc?['full_url'],
+
         leaseContractFilePath: leaseAgreement?['url'],
         leaseContractOriginalName: leaseAgreement?['original_file_name'],
+        leaseContractFullUrl: leaseAgreement?['full_url'],
+
         hasAdditionalDocuments:
             unitData!['submit_other_supporting_documents'] == 1,
       ),
@@ -438,12 +445,19 @@ class UnitDataCubit extends Cubit<UnitDataState> {
             unitData!['submit_other_supporting_documents'] == 1,
         ownershipDeedFilePath: ownershipDeed?['url'],
         ownershipDeedOriginalName: ownershipDeed?['original_file_name'],
+        ownershipDeedFullUrl: ownershipDeed?['full_url'],
+
         leaseContractFilePath: leaseContracts?['url'],
         leaseContractOriginalName: leaseContracts?['original_file_name'],
+        leaseContractFullUrl: leaseContracts?['full_url'],
+
         constructionLicenseFilePath: buildingPermits?['url'],
         constructionLicenseOriginalName: buildingPermits?['original_file_name'],
+        constructionLicenseFullUrl: buildingPermits?['full_url'],
+
         operatingLicenseFilePath: operatingLicenses?['url'],
         operatingLicenseOriginalName: operatingLicenses?['original_file_name'],
+        operatingLicenseFullUrl: operatingLicenses?['full_url'],
       ),
     );
   }
@@ -488,10 +502,16 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         constructionLicenseFilePath: constructionLicense?['path'],
         constructionLicenseOriginalName:
             constructionLicense?['original_file_name'],
+        constructionLicenseFullUrl: constructionLicense?['full_url'],
+
         operatingLicenseFilePath: operatingLicense?['path'],
         operatingLicenseOriginalName: operatingLicense?['original_file_name'],
+        operatingLicenseFullUrl: operatingLicense?['full_url'],
+
         starCertificateFilePath: starCertificate?['path'],
         starCertificateOriginalName: starCertificate?['original_file_name'],
+        starCertificateFullUrl: starCertificate?['full_url'],
+
         contactedTaxAuthority: unitData!['reta_contact_about_unit'] == 1,
         hasAdditionalDocuments:
             unitData!['submit_other_supporting_documents'] == 1,
@@ -567,11 +587,16 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         constructionLicenseFilePath: constructionLicense?['path'],
         constructionLicenseOriginalName:
             constructionLicense?['original_file_name'],
+        constructionLicenseFullUrl: constructionLicense?['full_url'],
+
         operatingLicenseFilePath: operationLicense?['path'],
         operatingLicenseOriginalName: operationLicense?['original_file_name'],
+        operatingLicenseFullUrl: operationLicense?['full_url'],
+
         allocationContractFilePath: allocationContract?['path'],
         allocationContractOriginalName:
             allocationContract?['original_file_name'],
+        allocationContractFullUrl: allocationContract?['full_url'],
       ),
     );
   }
@@ -590,6 +615,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         state.copyWith(
           allAssetsBalanceSheetFilePath: balanceSheet['url'],
           allAssetsBalanceSheetOriginalName: balanceSheet['original_file_name'],
+          allAssetsBalanceSheetFullUrl: balanceSheet['full_url'],
         ),
       );
     }
@@ -944,6 +970,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           isLoading: false,
           allocationContractFilePath: data.path,
           allocationContractOriginalName: data.originalFileName,
+          allocationContractFullUrl: data.fullUrl,
         ),
       ),
     );
@@ -1025,26 +1052,39 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   Future<void> setAdditionalDocumentFile(String id, String filePath) async {
     emit(state.copyWith(isLoading: true));
 
-    final result = await UploadService.instance.uploadFile(
-      filePath: filePath,
-      label: 'supporting_documents',
-    );
+    if (filePath != '') {
+      final result = await UploadService.instance.uploadFile(
+        filePath: filePath,
+        label: 'supporting_documents',
+      );
 
-    _handleUploadResult(
-      result,
-      onSuccess: (data) {
-        final index = additionalDocuments.indexWhere((doc) => doc.id == id);
-        additionalDocuments[index].filePath = data.path;
-        additionalDocuments[index].originalFileName = data.originalFileName;
-        additionalDocuments[index].fullUrl = data.fullUrl;
-        emit(
-          state.copyWith(
-            isLoading: false,
-            additionalUpdateCount: state.additionalUpdateCount + 1,
-          ),
-        );
-      },
-    );
+      _handleUploadResult(
+        result,
+        onSuccess: (data) {
+          final index = additionalDocuments.indexWhere((doc) => doc.id == id);
+          additionalDocuments[index].filePath = data.path;
+          additionalDocuments[index].originalFileName = data.originalFileName;
+          additionalDocuments[index].fullUrl = data.fullUrl;
+          emit(
+            state.copyWith(
+              isLoading: false,
+              additionalUpdateCount: state.additionalUpdateCount + 1,
+            ),
+          );
+        },
+      );
+    } else {
+      final index = additionalDocuments.indexWhere((doc) => doc.id == id);
+      additionalDocuments[index].filePath = null;
+      additionalDocuments[index].originalFileName = null;
+      additionalDocuments[index].fullUrl = null;
+      emit(
+        state.copyWith(
+          isLoading: false,
+          additionalUpdateCount: state.additionalUpdateCount + 1,
+        ),
+      );
+    }
   }
 
   // ─────────────────────────────────────────
@@ -1054,7 +1094,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   Future<String?> pickFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['jpg', 'jpeg', 'pdf'],
+      allowedExtensions: ['jpg', 'jpeg', 'pdf', 'jfif', 'png'],
     );
     if (result != null && result.files.isNotEmpty) {
       return result.files.single.path;
@@ -1078,6 +1118,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           isLoading: false,
           ownershipDeedFilePath: data.path,
           ownershipDeedOriginalName: data.originalFileName,
+          ownershipDeedFullUrl: data.fullUrl,
         ),
       ),
     );
@@ -1096,6 +1137,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           isLoading: false,
           leaseContractFilePath: data.path,
           leaseContractOriginalName: data.originalFileName,
+          leaseContractFullUrl: data.fullUrl,
         ),
       ),
     );
@@ -1114,6 +1156,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           isLoading: false,
           permitPhotoFilePath: data.path,
           permitPhotoOriginalName: data.originalFileName,
+          permitPhotoFullUrl: data.fullUrl,
         ),
       ),
     );
@@ -1132,6 +1175,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           isLoading: false,
           constructionLicenseFilePath: data.path,
           constructionLicenseOriginalName: data.originalFileName,
+          constructionLicenseFullUrl: data.fullUrl,
         ),
       ),
     );
@@ -1150,6 +1194,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           isLoading: false,
           openingBudgetFilePath: data.path,
           openingBudgetOriginalName: data.originalFileName,
+          openingBudgetFullUrl: data.fullUrl,
         ),
       ),
     );
@@ -1168,6 +1213,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           isLoading: false,
           operationLicenseFilePath: data.path,
           operationLicenseOriginalName: data.originalFileName,
+          operationLicenseFullUrl: data.originalFileName,
         ),
       ),
     );
@@ -1186,6 +1232,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           isLoading: false,
           allBookBValueFilePath: data.path,
           allBookBValueOriginalName: data.originalFileName,
+          allBookBValueFullUrl: data.fullUrl,
         ),
       ),
     );
@@ -1204,6 +1251,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           isLoading: false,
           operatingLicenseFilePath: data.path,
           operatingLicenseOriginalName: data.originalFileName,
+          operatingLicenseFullUrl: data.fullUrl,
         ),
       ),
     );
@@ -1222,79 +1270,62 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           isLoading: false,
           starCertificateFilePath: data.path,
           starCertificateOriginalName: data.originalFileName,
+          starCertificateFullUrl: data.fullUrl,
         ),
       ),
     );
   }
 
-  Future<void> setConstructionPermitFile(String path) async {
-    emit(state.copyWith(isLoading: true));
-    final result = await UploadService.instance.uploadFile(
-      filePath: path,
-      label: 'construction_permit',
-    );
-    _handleUploadResult(
-      result,
-      onSuccess: (data) => emit(
-        state.copyWith(
-          isLoading: false,
-          constructionPermitFilePath: data.path,
-          constructionPermitOriginalName: data.originalFileName,
-        ),
-      ),
-    );
-  }
+  void removeOwnershipDeedFile() => emit(
+    state.copyWith(ownershipDeedFilePath: null, ownershipDeedFullUrl: null),
+  );
 
-  Future<void> setAllAssetsBalanceSheetFile(String path) async {
-    emit(state.copyWith(isLoading: true));
-    final result = await UploadService.instance.uploadFile(
-      filePath: path,
-      label: 'balance_sheet',
-    );
-    _handleUploadResult(
-      result,
-      onSuccess: (data) => emit(
-        state.copyWith(
-          isLoading: false,
-          allAssetsBalanceSheetFilePath: data.path,
-          allAssetsBalanceSheetOriginalName: data.originalFileName,
-        ),
-      ),
-    );
-  }
-
-  void removeOwnershipDeedFile() =>
-      emit(state.copyWith(ownershipDeedFilePath: null));
-
-  void removeLeaseContractFile() =>
-      emit(state.copyWith(leaseContractFilePath: null));
+  void removeLeaseContractFile() => emit(
+    state.copyWith(leaseContractFilePath: null, leaseContractFullUrl: null),
+  );
 
   void removePermitPhotoFile() =>
-      emit(state.copyWith(permitPhotoFilePath: null));
+      emit(state.copyWith(permitPhotoFilePath: null, permitPhotoFullUrl: null));
 
-  void removeConstructionLicenseFile() =>
-      emit(state.copyWith(constructionLicenseFilePath: null));
+  void removeConstructionLicenseFile() => emit(
+    state.copyWith(
+      constructionLicenseFilePath: null,
+      constructionLicenseFullUrl: null,
+    ),
+  );
 
-  void removeOperatingLicenseFile() =>
-      emit(state.copyWith(operatingLicenseFilePath: null));
+  void removeOperatingLicenseFile() => emit(
+    state.copyWith(
+      operatingLicenseFilePath: null,
+      operatingLicenseFullUrl: null,
+    ),
+  );
 
-  void removeStarCertificateFile() =>
-      emit(state.copyWith(starCertificateFilePath: null));
+  void removeStarCertificateFile() => emit(
+    state.copyWith(starCertificateFilePath: null, starCertificateFullUrl: null),
+  );
 
-  void removeConstructionPermitFile() =>
-      emit(state.copyWith(constructionPermitFilePath: null));
+  void removeAllAssetsBalanceSheetFile() => emit(
+    state.copyWith(
+      allAssetsBalanceSheetFilePath: null,
+      allAssetsBalanceSheetFullUrl: null,
+    ),
+  );
 
-  void removeAllAssetsBalanceSheetFile() =>
-      emit(state.copyWith(allAssetsBalanceSheetFilePath: null));
+  void removeAllBookBValueFile() => emit(
+    state.copyWith(allBookBValueFilePath: null, allBookBValueFullUrl: null),
+  );
 
-  void removeAllBookBValueFile() =>
-      emit(state.copyWith(allBookBValueFilePath: null));
+  void removeOpeningBudgetFile() => emit(
+    state.copyWith(openingBudgetFilePath: null, openingBudgetFullUrl: null),
+  );
 
-  void removeOpeningBudgetFile() =>
-      emit(state.copyWith(openingBudgetFilePath: null));
-
-  void removeOperationLicenseFile() =>
-      emit(state.copyWith(operationLicenseFilePath: null));
+  void removeOperationLicenseFile() => emit(
+    state.copyWith(
+      operationLicenseFilePath: null,
+      operationLicenseFullUrl: null,
+    ),
+  );
 
   // ── Helper مشترك ─────────────────────────────────
   void _handleUploadResult(
@@ -1660,11 +1691,13 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         'ownership_deed': {
           'path': state.ownershipDeedFilePath,
           'original_file_name': state.ownershipDeedOriginalName,
+          'full_url': state.ownershipDeedFullUrl,
         },
       if (state.leaseContractFilePath != null)
         'lease_contract': {
           'path': state.leaseContractFilePath,
           'original_file_name': state.leaseContractOriginalName,
+          'full_url': state.leaseContractFullUrl,
         },
       ..._buildSupportingDocsPayload(),
     };
@@ -1702,16 +1735,19 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         'ownership_deed': {
           'path': state.ownershipDeedFilePath,
           'original_file_name': state.ownershipDeedOriginalName,
+          'full_url': state.ownershipDeedFullUrl,
         },
       if (state.leaseContractFilePath != null)
         'lease_contract': {
           'path': state.leaseContractFilePath,
           'original_file_name': state.leaseContractOriginalName,
+          'full_url': state.leaseContractFullUrl,
         },
       if (state.permitPhotoFilePath != null)
         'license_photo': {
           'path': state.permitPhotoFilePath,
           'original_file_name': state.permitPhotoOriginalName,
+          'full_url': state.permitPhotoFullUrl,
         },
 
       ..._buildSupportingDocsPayload(),
@@ -1735,7 +1771,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           : null,
       'is_taxpayer_owner_of_installation': (state.isTaxpayerOwner ?? false)
           ? 1
-          : 0,
+          : 2,
       'installation_owner_name': installationOwnerController.text.trim(),
       'installation_owner': installationOwnerController.text.trim(),
       'contract_start': contractStartDateController.text.trim(),
@@ -1745,6 +1781,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         'ownership_deed': {
           'path': state.ownershipDeedFilePath,
           'original_file_name': state.ownershipDeedOriginalName,
+          'full_url': state.ownershipDeedFullUrl,
         },
       ..._buildSupportingDocsPayload(),
     };
@@ -1762,11 +1799,13 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         'land_ownership_legal_document': {
           'path': state.ownershipDeedFilePath,
           'original_file_name': state.ownershipDeedOriginalName,
+          'full_url': state.ownershipDeedFullUrl,
         },
       if (state.leaseContractFilePath != null)
         'land_lease_agreement': {
           'path': state.leaseContractFilePath,
           'original_file_name': state.leaseContractOriginalName,
+          'full_url': state.leaseContractFullUrl,
         },
       ..._buildSupportingDocsPayload(),
     };
@@ -1827,16 +1866,19 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         'construction_license': {
           'path': state.constructionLicenseFilePath,
           'original_file_name': state.constructionLicenseOriginalName,
+          'full_url': state.constructionLicenseFullUrl,
         },
       if (state.operatingLicenseFilePath != null)
         'operation_license': {
           'path': state.operatingLicenseFilePath,
           'original_file_name': state.operatingLicenseOriginalName,
+          'full_url': state.operatingLicenseFullUrl,
         },
       if (state.allocationContractFilePath != null)
         'allocation_contract': {
           'path': state.allocationContractFilePath,
           'original_file_name': state.allocationContractOriginalName,
+          'full_url': state.allocationContractFullUrl,
         },
       ..._buildSupportingDocsPayload(),
     };
@@ -1875,16 +1917,19 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         'copy_of_the_construction_permits': {
           'path': state.constructionLicenseFilePath,
           'original_file_name': state.constructionLicenseOriginalName,
+          'full_url': state.constructionLicenseFullUrl,
         },
       if (state.operatingLicenseFilePath != null)
         'copy_of_the_operating_licenses': {
           'path': state.operatingLicenseFilePath,
           'original_file_name': state.operatingLicenseOriginalName,
+          'full_url': state.operatingLicenseFullUrl,
         },
       if (state.starCertificateFilePath != null)
         'certificate_of_stardom_level': {
           'path': state.starCertificateFilePath,
           'original_file_name': state.starCertificateOriginalName,
+          'full_url': state.starCertificateFullUrl,
         },
       ..._buildSupportingDocsPayload(),
     };
@@ -1930,21 +1975,25 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         'facility_ownership_deed': {
           'path': state.ownershipDeedFilePath,
           'original_file_name': state.ownershipDeedOriginalName,
+          'full_url': state.ownershipDeedFullUrl,
         },
       if (state.leaseContractFilePath != null)
         'facility_lease_contracts': {
           'path': state.leaseContractFilePath,
           'original_file_name': state.leaseContractOriginalName,
+          'full_url': state.leaseContractFullUrl,
         },
       if (state.constructionLicenseFilePath != null)
         'building_permits': {
           'path': state.constructionLicenseFilePath,
           'original_file_name': state.constructionLicenseOriginalName,
+          'full_url': state.constructionLicenseFullUrl,
         },
       if (state.operatingLicenseFilePath != null)
         'operating_licenses': {
           'path': state.operatingLicenseFilePath,
           'original_file_name': state.operatingLicenseOriginalName,
+          'full_url': state.operatingLicenseFullUrl,
         },
       ..._buildSupportingDocsPayload(),
     };
@@ -1983,16 +2032,18 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         'allocation_contract': {
           'path': state.allocationContractFilePath,
           'original_file_name': state.allocationContractOriginalName,
+          'full_url': state.allocationContractFullUrl,
         },
       if (state.constructionLicenseFilePath != null)
         'construction_license': {
           'path': state.constructionLicenseFilePath,
-          'original_file_name': state.constructionLicenseOriginalName,
+          'full_url': state.constructionLicenseFullUrl,
         },
       if (state.operatingLicenseFilePath != null)
         'operating_licenses': {
           'path': state.operatingLicenseFilePath,
           'original_file_name': state.operatingLicenseOriginalName,
+          'full_url': state.operatingLicenseFullUrl,
         },
       ..._buildSupportingDocsPayload(),
     };
@@ -2012,16 +2063,19 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         'construction_license': {
           'path': state.constructionLicenseFilePath,
           'original_file_name': state.constructionLicenseOriginalName,
+          'full_url': state.constructionLicenseFullUrl,
         },
       if (state.openingBudgetFilePath != null)
         'opening_budget': {
           'path': state.openingBudgetFilePath,
           'original_file_name': state.openingBudgetOriginalName,
+          'full_url': state.openingBudgetFullUrl,
         },
       if (state.allBookBValueFilePath != null)
         'all_book_value': {
           'path': state.allBookBValueFilePath,
           'original_file_name': state.allBookBValueOriginalName,
+          'full_url': state.allBookBValueFullUrl,
         },
       'buildings': petroBuildings
           .map(
@@ -2072,6 +2126,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         'deed_of_exploitation': {
           'path': state.allocationContractFilePath,
           'original_file_name': state.allocationContractOriginalName,
+          'full_url': state.allocationContractFullUrl,
         },
       ..._buildSupportingDocsPayload(docKey: "mine_supporting_documents"),
     };
@@ -2083,9 +2138,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       'real_estate_floor_id': floorId,
       if (state.isFloorNumberOther)
         'real_estate_floor_other': floorNumberOtherController.text.trim(),
-      'unit_id': state.isUnitNumberOther
-          ? -1
-          : int.tryParse(state.selectedUnitNumber ?? '') ?? -1,
+      'unit_id': state.isUnitNumberOther ? -1 : _getUnitID(),
       if (state.isUnitNumberOther)
         'unit_other': unitNumberOtherController.text.trim(),
       'reta_contact_about_unit': state.contactedTaxAuthority == true ? 1 : 2,
@@ -2123,6 +2176,16 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         )
         .id;
     return floorId;
+  }
+
+  int _getUnitID() {
+    int unitId = state.buildingUnitList
+        .firstWhere(
+          (a) => a.name == state.selectedUnitNumber,
+          orElse: () => DeclarationLookup(id: 0, name: ''),
+        )
+        .id;
+    return unitId;
   }
 
   void onCancelButtonTapped(BuildContext context) {

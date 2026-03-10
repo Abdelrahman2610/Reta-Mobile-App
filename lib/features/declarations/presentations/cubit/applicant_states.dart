@@ -7,13 +7,20 @@ class ApplicantState {
   final String? successMessage;
   final Nationality? taxpayerNationality;
   final String? ownershipProofDocumentPath;
+  final String? ownershipProofDocumentFullUrl;
   final String? taxpayerNationalIdFilePath;
+  final String? taxpayerNationalIdFileUrl;
   final String? taxpayerPassportFilePath;
+  final String? taxpayerPassportFileUrl;
   final String? taxpayerTypes;
   final String? taxpayerAuthorizationFilePath;
+  final String? taxpayerAuthorizationFullUrl;
   final String? taxpayerTaxCardFilePath;
+  final String? taxpayerTaxCardFullUrl;
   final String? taxpayerCommercialRegisterFilePath;
+  final String? taxpayerCommercialRegisterFullUrl;
   final String? taxpayerOtherAttachmentFilePath;
+  final String? taxpayerOtherAttachmentFullUrl;
 
   const ApplicantState({
     this.applicantType,
@@ -22,13 +29,20 @@ class ApplicantState {
     this.successMessage,
     this.taxpayerNationality,
     this.ownershipProofDocumentPath,
+    this.ownershipProofDocumentFullUrl,
     this.taxpayerNationalIdFilePath,
+    this.taxpayerNationalIdFileUrl,
     this.taxpayerPassportFilePath,
+    this.taxpayerPassportFileUrl,
     this.taxpayerTypes,
     this.taxpayerAuthorizationFilePath,
+    this.taxpayerAuthorizationFullUrl,
     this.taxpayerTaxCardFilePath,
+    this.taxpayerTaxCardFullUrl,
     this.taxpayerCommercialRegisterFilePath,
+    this.taxpayerCommercialRegisterFullUrl,
     this.taxpayerOtherAttachmentFilePath,
+    this.taxpayerOtherAttachmentFullUrl,
   });
 
   ApplicantState copyWith({
@@ -38,13 +52,20 @@ class ApplicantState {
     String? successMessage,
     Nationality? taxpayerNationality,
     String? ownershipProofDocumentPath,
+    String? ownershipProofDocumentFullUrl,
     String? taxpayerNationalIdFilePath,
+    String? taxpayerNationalIdFileUrl,
     String? taxpayerPassportFilePath,
+    String? taxpayerPassportFileUrl,
     String? taxpayerTypes,
     String? taxpayerAuthorizationFilePath,
+    String? taxpayerAuthorizationFullUrl,
     String? taxpayerTaxCardFilePath,
+    String? taxpayerTaxCardFullUrl,
     String? taxpayerCommercialRegisterFilePath,
+    String? taxpayerCommercialRegisterFullUrl,
     String? taxpayerOtherAttachmentFilePath,
+    String? taxpayerOtherAttachmentFullUrl,
   }) {
     return ApplicantState(
       applicantType: applicantType ?? this.applicantType,
@@ -55,29 +76,53 @@ class ApplicantState {
       ownershipProofDocumentPath: ownershipProofDocumentPath == 'remove'
           ? null
           : ownershipProofDocumentPath ?? this.ownershipProofDocumentPath,
+      ownershipProofDocumentFullUrl: ownershipProofDocumentFullUrl == 'remove'
+          ? null
+          : ownershipProofDocumentFullUrl ?? this.ownershipProofDocumentFullUrl,
       taxpayerNationalIdFilePath: taxpayerNationalIdFilePath == 'remove'
           ? null
           : taxpayerNationalIdFilePath ?? this.taxpayerNationalIdFilePath,
+      taxpayerNationalIdFileUrl: taxpayerNationalIdFileUrl == 'remove'
+          ? null
+          : taxpayerNationalIdFileUrl ?? this.taxpayerNationalIdFileUrl,
       taxpayerPassportFilePath: taxpayerPassportFilePath == 'remove'
           ? null
           : taxpayerPassportFilePath ?? this.taxpayerPassportFilePath,
+      taxpayerPassportFileUrl: taxpayerPassportFileUrl == 'remove'
+          ? null
+          : taxpayerPassportFileUrl ?? this.taxpayerPassportFileUrl,
       taxpayerTypes: taxpayerTypes ?? this.taxpayerTypes,
       taxpayerAuthorizationFilePath: taxpayerAuthorizationFilePath == 'remove'
           ? null
           : taxpayerAuthorizationFilePath ?? this.taxpayerAuthorizationFilePath,
+      taxpayerAuthorizationFullUrl: taxpayerAuthorizationFullUrl == 'remove'
+          ? null
+          : taxpayerAuthorizationFullUrl ?? this.taxpayerAuthorizationFullUrl,
       taxpayerTaxCardFilePath: taxpayerTaxCardFilePath == 'remove'
           ? null
           : taxpayerTaxCardFilePath ?? this.taxpayerTaxCardFilePath,
+      taxpayerTaxCardFullUrl: taxpayerTaxCardFullUrl == 'remove'
+          ? null
+          : taxpayerTaxCardFullUrl ?? this.taxpayerTaxCardFullUrl,
       taxpayerCommercialRegisterFilePath:
           taxpayerCommercialRegisterFilePath == 'remove'
           ? null
           : taxpayerCommercialRegisterFilePath ??
                 this.taxpayerCommercialRegisterFilePath,
+      taxpayerCommercialRegisterFullUrl:
+          taxpayerCommercialRegisterFullUrl == 'remove'
+          ? null
+          : taxpayerCommercialRegisterFullUrl ??
+                this.taxpayerCommercialRegisterFullUrl,
       taxpayerOtherAttachmentFilePath:
           taxpayerOtherAttachmentFilePath == 'remove'
           ? null
           : taxpayerOtherAttachmentFilePath ??
                 this.taxpayerOtherAttachmentFilePath,
+      taxpayerOtherAttachmentFullUrl: taxpayerOtherAttachmentFullUrl == 'remove'
+          ? null
+          : taxpayerOtherAttachmentFullUrl ??
+                this.taxpayerOtherAttachmentFullUrl,
     );
   }
 }

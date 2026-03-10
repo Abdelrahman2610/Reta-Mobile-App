@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:reta/features/components/app_button.dart';
 
 import '../../../../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../../../../core/theme/app_colors.dart';
@@ -58,7 +59,7 @@ class AdditionalDocumentsSection extends StatelessWidget {
                     FileUploadField(
                       labelText: 'تحميل المستند',
                       labelRequired: true,
-                      filePath: doc.filePath,
+                      filePath: doc.fullUrl,
                       text: 'حمل ملف',
                       backgroundColor: AppColors.highlightDarkest,
                       textColor: AppColors.white,
@@ -70,6 +71,16 @@ class AdditionalDocumentsSection extends StatelessWidget {
                       },
                       onFileRemoved: () =>
                           cubit.setAdditionalDocumentFile(doc.id, ''),
+                    ),
+                    16.hs,
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: AppButton(
+                        width: 144.w,
+                        label: 'حذف المستند',
+                        backgroundColor: AppColors.errorDark,
+                        onTap: () => cubit.removeAdditionalDocument(doc.id),
+                      ),
                     ),
                     16.hs,
                   ],

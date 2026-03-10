@@ -130,7 +130,7 @@ class _AdministrativeUnitView extends StatelessWidget {
 
             BlocBuilder<UnitDataCubit, UnitDataState>(
               buildWhen: (prev, curr) =>
-                  prev.ownershipDeedFilePath != curr.ownershipDeedFilePath,
+                  prev.ownershipDeedFullUrl != curr.ownershipDeedFullUrl,
               builder: (context, state) {
                 return FileUploadField(
                   labelText: 'سند تمليك الوحدة',
@@ -139,7 +139,7 @@ class _AdministrativeUnitView extends StatelessWidget {
                   backgroundColor: AppColors.highlightDarkest,
                   textColor: AppColors.white,
                   infoText: 'عقد مسجل/عقد ابتدائي/حكم قضائي',
-                  filePath: state.ownershipDeedFilePath,
+                  filePath: state.ownershipDeedFullUrl,
                   onFilePicked: () async {
                     final path = await cubit.pickFile();
                     if (path != null) cubit.setOwnershipDeedFile(path);
@@ -160,7 +160,7 @@ class _AdministrativeUnitView extends StatelessWidget {
                   text: 'حمل ملف',
                   backgroundColor: AppColors.highlightDarkest,
                   textColor: AppColors.white,
-                  filePath: state.leaseContractFilePath,
+                  filePath: state.leaseContractFullUrl,
                   onFilePicked: () async {
                     final path = await cubit.pickFile();
                     if (path != null) cubit.setLeaseContractFile(path);
@@ -181,7 +181,7 @@ class _AdministrativeUnitView extends StatelessWidget {
                   text: 'حمل ملف',
                   backgroundColor: AppColors.highlightDarkest,
                   textColor: AppColors.white,
-                  filePath: state.permitPhotoFilePath,
+                  filePath: state.permitPhotoFullUrl,
                   onFilePicked: () async {
                     final path = await cubit.pickFile();
                     if (path != null) cubit.setPermitPhotoFile(path);

@@ -5,16 +5,14 @@ import 'package:reta/features/declarations/presentations/components/shared_conve
 import 'package:reta/features/declarations/presentations/components/shared_natural_form.dart';
 
 import '../../../../core/helpers/extensions/dimensions.dart';
-import '../../../../core/helpers/fixed_assets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_container.dart';
 import '../../../components/app_text.dart';
 import '../../../components/app_text_form_field.dart';
-import '../../../components/image_svg_custom_widget.dart';
 import '../cubit/applicant_cubit.dart';
 import '../cubit/applicant_states.dart';
 import '../cubit/declaration_lookups_cubit.dart';
-import 'app_attachment_item.dart';
+import '../pages/units/units_data_pages/components/file_upload_field.dart';
 import 'app_drop_down.dart';
 import 'app_drop_down_option.dart';
 
@@ -101,34 +99,18 @@ class SharedForm extends StatelessWidget {
           16.hs,
           BlocBuilder<ApplicantCubit, ApplicantState>(
             buildWhen: (prev, curr) =>
-                (prev.taxpayerAuthorizationFilePath !=
-                curr.taxpayerAuthorizationFilePath),
+                (prev.taxpayerAuthorizationFullUrl !=
+                curr.taxpayerAuthorizationFullUrl),
             builder: (context, state) {
-              return AppTextFormField(
+              return FileUploadField(
                 labelText: uploadDocumentTitle,
+                filePath: cubit.taxpayerAuthorizationUrl,
                 labelRequired: true,
-                readOnly: true,
-                description: uploadDocumentDescription,
-                labelColor: AppColors.neutralDarkDark,
-                labelFontSize: 14.sp,
-                suffixWidget: ImageSvgCustomWidget(
-                  imgPath: FixedAssets.instance.attachmentWhiteIC,
-                  width: 16.w,
-                  height: 16.h,
-                  color: AppColors.neutralDarkLightest,
-                ),
-                prefixWidget: AppAttachmentItem(
-                  onTap: () async {
-                    if (cubit.taxpayerAuthorizationFilePath == null) {
-                      final path = await cubit.pickFile();
-                      if (path != null) cubit.setLegalAuthorizationFile(path);
-                    } else {
-                      cubit.removeLegalAuthorizationFile.call();
-                    }
-                  },
-                  containFile: cubit.taxpayerAuthorizationFilePath != null,
-                ),
-                infoText: 'ملف بصيغة Jpg أو pdf لا يتجاوز حجمه 5 ميجا بايت',
+                onFilePicked: () async {
+                  final path = await cubit.pickFile();
+                  if (path != null) cubit.setLegalAuthorizationFile(path);
+                },
+                onFileRemoved: () => cubit.removeLegalAuthorizationFile.call(),
               );
             },
           ),

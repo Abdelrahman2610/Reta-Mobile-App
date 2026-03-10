@@ -252,7 +252,7 @@ class _HotelFacilityView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.constructionLicenseFilePath,
+                filePath: state.constructionLicenseFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setConstructionLicenseFile(path);
@@ -272,7 +272,7 @@ class _HotelFacilityView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.operatingLicenseFilePath,
+                filePath: state.operatingLicenseFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setOperatingLicenseFile(path);
@@ -291,7 +291,7 @@ class _HotelFacilityView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.starCertificateFilePath,
+                filePath: state.starCertificateFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setStarCertificateFile(path);

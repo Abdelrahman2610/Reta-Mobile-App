@@ -46,6 +46,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   Nationality applicantNationality = Nationality.egyptian;
   final applicantNationalIdController = TextEditingController();
   String? applicantNationalIdFilePath;
+  String? applicantNationalIdUrl;
   String? applicantNationalIdOriginalName;
   final applicantPassportNumberController = TextEditingController();
   String? applicantPassportFilePath;
@@ -67,18 +68,18 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
     if (applicantNationality == Nationality.egyptian) {
       applicantNationalIdController.text = user.nationalId ?? '';
+      final nationalIdFiles = user.nationalIdFiles as List?;
+      log('NationalIds: ${user.nationalIdFiles}');
+      if (nationalIdFiles != null && nationalIdFiles.isNotEmpty) {
+        applicantNationalIdFilePath = nationalIdFiles.first['full_url'];
+        log('SetNationalFiles: $applicantNationalIdFilePath');
+      }
     } else {
       applicantPassportNumberController.text = user.passportNumber ?? '';
-    }
-
-    final nationalIdFiles = user.nationalIdFiles as List?;
-    if (nationalIdFiles != null && nationalIdFiles.isNotEmpty) {
-      applicantNationalIdFilePath = nationalIdFiles.first['full_url'];
-    }
-
-    final passportFiles = user.passportFiles as List?;
-    if (passportFiles != null && passportFiles.isNotEmpty) {
-      applicantPassportFilePath = passportFiles.first['full_url'];
+      final passportFiles = user.passportFiles as List?;
+      if (passportFiles != null && passportFiles.isNotEmpty) {
+        applicantPassportFilePath = passportFiles.first['full_url'];
+      }
     }
 
     emit(state.copyWith(applicantType: state.applicantType));
@@ -189,6 +190,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayerPassportFilePath: taxpayerPassportFilePath,
         taxpayerAuthorizationFilePath: taxpayerAuthorizationFilePath,
         ownershipProofDocumentPath: ownershipProofDocumentPath,
+        ownershipProofDocumentFullUrl: ownershipProofDocumentUrl,
       ),
     );
   }
@@ -214,18 +216,28 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayerNationalIdFilePath = data.path;
         taxpayerNationalIdOriginalName = data.originalFileName;
         taxpayerNationalIdUrl = data.fullUrl;
+        log('TaxpayerFullUrl: $taxpayerNationalIdUrl');
         emit(state.copyWith(isLoading: false));
       case ApiError<UploadedFileModel>(:final message):
         emit(state.copyWith(isLoading: false, errorMessage: message));
     }
     emit(
-      state.copyWith(taxpayerNationalIdFilePath: taxpayerNationalIdFilePath),
+      state.copyWith(
+        taxpayerNationalIdFilePath: taxpayerNationalIdFilePath,
+        taxpayerNationalIdFileUrl: taxpayerNationalIdUrl,
+      ),
     );
   }
 
   void removeNationalIdFile() {
     taxpayerNationalIdFilePath = null;
-    emit(state.copyWith(taxpayerNationalIdFilePath: 'remove'));
+    taxpayerNationalIdUrl = null;
+    emit(
+      state.copyWith(
+        taxpayerNationalIdFilePath: 'remove',
+        taxpayerNationalIdFileUrl: 'remove',
+      ),
+    );
   }
 
   Future<void> setPassportFile(String path) async {
@@ -248,7 +260,13 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
   void removePassportFile() {
     taxpayerPassportFilePath = null;
-    emit(state.copyWith(taxpayerPassportFilePath: 'remove'));
+    taxpayerPassportUrl = null;
+    emit(
+      state.copyWith(
+        taxpayerPassportFilePath: 'remove',
+        taxpayerPassportFileUrl: 'remove',
+      ),
+    );
   }
 
   Future<void> setOwnershipProofDocumentFile(String path) async {
@@ -267,13 +285,21 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         emit(state.copyWith(isLoading: false, errorMessage: message));
     }
     emit(
-      state.copyWith(ownershipProofDocumentPath: ownershipProofDocumentPath),
+      state.copyWith(
+        ownershipProofDocumentPath: ownershipProofDocumentPath,
+        ownershipProofDocumentFullUrl: ownershipProofDocumentUrl,
+      ),
     );
   }
 
   void removeOwnershipProofDocumentFile() {
     ownershipProofDocumentPath = null;
-    emit(state.copyWith(ownershipProofDocumentPath: 'remove'));
+    emit(
+      state.copyWith(
+        ownershipProofDocumentPath: 'remove',
+        ownershipProofDocumentFullUrl: 'remove',
+      ),
+    );
   }
 
   Future<void> setLegalAuthorizationFile(String path) async {
@@ -294,13 +320,20 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     emit(
       state.copyWith(
         taxpayerAuthorizationFilePath: taxpayerAuthorizationFilePath,
+        taxpayerAuthorizationFullUrl: taxpayerAuthorizationUrl,
       ),
     );
   }
 
   void removeLegalAuthorizationFile() {
+    taxpayerAuthorizationUrl = null;
     taxpayerAuthorizationFilePath = null;
-    emit(state.copyWith(taxpayerAuthorizationFilePath: 'remove'));
+    emit(
+      state.copyWith(
+        taxpayerAuthorizationFilePath: 'remove',
+        taxpayerAuthorizationFullUrl: 'remove',
+      ),
+    );
   }
 
   Future<void> setTaxCardFile(String path) async {
@@ -318,12 +351,23 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       case ApiError<UploadedFileModel>(:final message):
         emit(state.copyWith(isLoading: false, errorMessage: message));
     }
-    emit(state.copyWith(taxpayerTaxCardFilePath: taxpayerTaxCardFilePath));
+    emit(
+      state.copyWith(
+        taxpayerTaxCardFilePath: taxpayerTaxCardFilePath,
+        taxpayerTaxCardFullUrl: taxpayerTaxCardUrl,
+      ),
+    );
   }
 
   void removeTaxCardFile() {
     taxpayerTaxCardFilePath = null;
-    emit(state.copyWith(taxpayerTaxCardFilePath: 'remove'));
+    taxpayerTaxCardUrl = null;
+    emit(
+      state.copyWith(
+        taxpayerTaxCardFilePath: 'remove',
+        taxpayerTaxCardFullUrl: 'remove',
+      ),
+    );
   }
 
   Future<void> setCommercialRegisterFile(String path) async {
@@ -344,13 +388,20 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     emit(
       state.copyWith(
         taxpayerCommercialRegisterFilePath: taxpayerCommercialRegisterFilePath,
+        taxpayerCommercialRegisterFullUrl: taxpayerCommercialRegisterUrl,
       ),
     );
   }
 
   void removeCommercialRegisterFile() {
     taxpayerCommercialRegisterFilePath = null;
-    emit(state.copyWith(taxpayerCommercialRegisterFilePath: 'remove'));
+    taxpayerCommercialRegisterUrl = null;
+    emit(
+      state.copyWith(
+        taxpayerCommercialRegisterFilePath: 'remove',
+        taxpayerCommercialRegisterFullUrl: 'remove',
+      ),
+    );
   }
 
   Future<void> setOtherAttachmentFile(String path) async {
@@ -371,19 +422,26 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     emit(
       state.copyWith(
         taxpayerOtherAttachmentFilePath: taxpayerOtherAttachmentFilePath,
+        taxpayerOtherAttachmentFullUrl: taxpayerOtherAttachmentUrl,
       ),
     );
   }
 
   void removeOtherAttachmentFile() {
     taxpayerOtherAttachmentFilePath = null;
-    emit(state.copyWith(taxpayerOtherAttachmentFilePath: 'remove'));
+    taxpayerOtherAttachmentUrl = null;
+    emit(
+      state.copyWith(
+        taxpayerOtherAttachmentFilePath: 'remove',
+        taxpayerOtherAttachmentFullUrl: 'remove',
+      ),
+    );
   }
 
   Future<String?> pickFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['jpg', 'jpeg', 'pdf'],
+      allowedExtensions: ['jpg', 'jpeg', 'pdf', 'jfif', 'png'],
     );
 
     if (result != null && result.files.isNotEmpty) {
