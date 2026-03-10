@@ -37,6 +37,7 @@ class UnitLocationState {
   final int? selectedDistrictId;
   final int? selectedVillageId;
   final int? selectedStreetId;
+  final int? selectedBuildingNumberId;
   final bool isInitializing;
 
   const UnitLocationState({
@@ -66,6 +67,7 @@ class UnitLocationState {
     this.selectedDistrictId,
     this.selectedVillageId,
     this.selectedStreetId,
+    this.selectedBuildingNumberId,
     this.isInitializing = false,
     this.buildingList,
   });
@@ -97,6 +99,7 @@ class UnitLocationState {
     int? selectedDistrictId,
     int? selectedVillageId,
     int? selectedStreetId,
+    int? selectedBuildingNumberId,
     bool? isInitializing,
   }) {
     return UnitLocationState(
@@ -143,6 +146,8 @@ class UnitLocationState {
       selectedDistrictId: selectedDistrictId ?? this.selectedDistrictId,
       selectedVillageId: selectedVillageId ?? this.selectedVillageId,
       selectedStreetId: selectedStreetId ?? this.selectedStreetId,
+      selectedBuildingNumberId:
+          selectedBuildingNumberId ?? this.selectedBuildingNumberId,
       isInitializing: isInitializing ?? this.isInitializing,
       buildingList: buildingList ?? this.buildingList,
     );

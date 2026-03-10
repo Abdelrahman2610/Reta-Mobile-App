@@ -194,7 +194,7 @@ class _PetroleumFacilityUnitView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.constructionLicenseFilePath,
+                filePath: state.constructionLicenseFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setConstructionLicenseFile(path);
@@ -211,7 +211,7 @@ class _PetroleumFacilityUnitView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.openingBudgetFilePath,
+                filePath: state.openingBudgetFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setOpeningBudgetFile(path);
@@ -228,7 +228,7 @@ class _PetroleumFacilityUnitView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.allBookBValueFilePath,
+                filePath: state.allBookBValueFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setAllBookBValueFile(path);

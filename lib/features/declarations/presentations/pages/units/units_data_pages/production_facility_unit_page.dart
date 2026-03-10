@@ -236,7 +236,7 @@ class _ProductionFacilityUnitView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.constructionLicenseFilePath,
+                filePath: state.constructionLicenseFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setConstructionLicenseFile(path);
@@ -254,7 +254,7 @@ class _ProductionFacilityUnitView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.operationLicenseFilePath,
+                filePath: state.operatingLicenseFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setOperationLicenseFile(path);
@@ -272,7 +272,7 @@ class _ProductionFacilityUnitView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.allocationContractFilePath,
+                filePath: state.allocationContractFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setAllocationContractFile(path);

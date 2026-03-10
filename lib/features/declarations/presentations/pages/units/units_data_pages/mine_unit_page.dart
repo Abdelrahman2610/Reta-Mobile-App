@@ -187,7 +187,7 @@ class _MineUnitView extends StatelessWidget {
                     text: 'حمل ملف',
                     backgroundColor: AppColors.highlightDarkest,
                     textColor: AppColors.white,
-                    filePath: state.allocationContractFilePath,
+                    filePath: state.allocationContractFullUrl,
                     onFilePicked: () async {
                       final path = await cubit.pickFile();
                       if (path != null) cubit.setAllocationContractFile(path);

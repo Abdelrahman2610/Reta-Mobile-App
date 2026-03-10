@@ -13,7 +13,6 @@ import '../../../cubit/units/unit_data/unit_data_state.dart';
 import 'components/additional_documents_section.dart';
 import 'components/file_upload_field.dart';
 import 'components/floor_unit_section.dart';
-import 'components/private_residence.dart';
 import 'components/tax_contact_section.dart';
 
 class CommercialUnitPage extends StatelessWidget {
@@ -54,21 +53,6 @@ class _ResidentialUnitView extends StatelessWidget {
               color: AppColors.mainBlueIndigoDye,
             ),
             24.hs,
-            if (applicantType == ApplicantType.owner)
-              BlocBuilder<UnitDataCubit, UnitDataState>(
-                buildWhen: (prev, curr) => prev.isExempt != curr.isExempt,
-                builder: (context, state) {
-                  return Column(
-                    children: [
-                      PrivateResidence(
-                        isSelected: state.isExempt,
-                        onTap: cubit.changePrivateResidence,
-                      ),
-                      16.hs,
-                    ],
-                  );
-                },
-              ),
 
             const FloorUnitSection(),
             16.hs,
@@ -160,7 +144,7 @@ class _ResidentialUnitView extends StatelessWidget {
                   description: 'عقد مسجل/عقد ابتدائي/حكم قضائي',
                   backgroundColor: AppColors.highlightDarkest,
                   textColor: AppColors.white,
-                  filePath: state.ownershipDeedFilePath,
+                  filePath: state.ownershipDeedFullUrl,
                   onFilePicked: () async {
                     final path = await cubit.pickFile();
                     if (path != null) {
@@ -179,7 +163,7 @@ class _ResidentialUnitView extends StatelessWidget {
               builder: (context, state) {
                 return FileUploadField(
                   labelText: 'عقد الإيجار (إن وجد)',
-                  filePath: state.leaseContractFilePath,
+                  filePath: state.leaseContractFullUrl,
                   text: 'حمل ملف',
                   backgroundColor: AppColors.highlightDarkest,
                   textColor: AppColors.white,
@@ -199,7 +183,7 @@ class _ResidentialUnitView extends StatelessWidget {
               builder: (context, state) {
                 return FileUploadField(
                   labelText: 'صورة الرخصة',
-                  filePath: state.permitPhotoFilePath,
+                  filePath: state.permitPhotoFullUrl,
                   text: 'حمل ملف',
                   backgroundColor: AppColors.highlightDarkest,
                   textColor: AppColors.white,

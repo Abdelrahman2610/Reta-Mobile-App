@@ -231,7 +231,7 @@ class _FixedInstallationsView extends StatelessWidget {
                       text: 'حمل ملف',
                       backgroundColor: AppColors.highlightDarkest,
                       textColor: AppColors.white,
-                      filePath: state.ownershipDeedFilePath,
+                      filePath: state.ownershipDeedFullUrl,
                       onFilePicked: () async {
                         final path = await cubit.pickFile();
                         if (path != null) {

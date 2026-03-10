@@ -75,6 +75,9 @@ class UserInformation extends StatelessWidget {
             onPassportFilePicked: () {},
             passportFilePath: cubit.applicantPassportFilePath,
             displayFile: false,
+            onNationalIdFileRemoved: () {},
+            onPassportFileRemoved: () {},
+            isUserInfo: true,
           ),
 
           16.hs,

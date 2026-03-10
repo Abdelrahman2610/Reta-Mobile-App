@@ -45,6 +45,8 @@ class UserProfileCubit extends Cubit<UserProfileState> {
       dateOfBirth: user.dateOfBirth ?? '',
       placeOfBirth: user.placeOfBirth ?? '',
       gender: user.gender ?? '',
+      nationalIdFiles: user.nationalIdFiles ?? [],
+      passportFiles: user.passportFiles ?? [],
     );
     emit(UserProfileLoaded(userModel: userModel));
   }
