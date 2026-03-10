@@ -40,15 +40,17 @@ class FloorUnitSection extends StatelessWidget {
             ),
             if (state.isFloorNumberOther) ...[
               16.hs,
-              AppTextFormField(
+              AppDropdownField<String>(
                 labelText: 'رقم الدور',
                 labelRequired: true,
                 labelColor: AppColors.neutralDarkDark,
-                controller: cubit.floorNumberOtherController,
-                hintText: 'ادخل رقم الدور',
-                keyboardType: TextInputType.number,
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+                hintText: 'اختر رقم الدور',
+                value: state.selectedFloorNumberOther,
+                items: (cubit.lookups.realEstateFloors)
+                    .map((f) => appDropDownOption(label: f.name))
+                    .toList(),
+                onChanged: cubit.selectFloorNumberOther,
+                validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
               ),
             ],
             16.hs,
