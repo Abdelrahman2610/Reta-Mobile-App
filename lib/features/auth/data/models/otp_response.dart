@@ -73,7 +73,7 @@ class ConfirmOtpRequest {
   Map<String, dynamic> toJson() => {
     'user_id': userId,
     'mobile': mobile,
-    'token': token,
+    'request_code': token,
     'otp': otp,
     'context': context,
   };

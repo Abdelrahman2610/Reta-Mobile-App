@@ -627,6 +627,9 @@ class SignupCubit extends Cubit<SignupState> {
   void toggleTerms(bool? v) =>
       emit(state.copyWith(agreedToTerms: v ?? false, termsError: () => null));
 
+  void resetSubmitSuccess() =>
+      emit(state.copyWith(isSubmitSuccess: false, submitError: () => null));
+
   // ── Submit ──────────────────────────────────────────────────────────────────
 
   Future<void> submit() async {
@@ -675,9 +678,13 @@ class SignupCubit extends Cubit<SignupState> {
         _pendingUserId = data.userId;
         _pendingMobile = state.phone.trim();
 
-        emit(state.copyWith(isLoading: false, submitError: () => null));
-        emit(state.copyWith(isSubmitSuccess: true));
-        emit(state.copyWith(isSubmitSuccess: false));
+        emit(
+          state.copyWith(
+            isLoading: false,
+            submitError: () => null,
+            isSubmitSuccess: true,
+          ),
+        );
 
       case ApiError(:final message):
         emit(state.copyWith(isLoading: false, submitError: () => message));
@@ -825,12 +832,12 @@ class SignupCubit extends Cubit<SignupState> {
       if (state.passportNumber.trim().isEmpty) {
         passportNumberError = 'رقم جواز السفر مطلوب';
       }
-      if (state.passportExpiry == null) {
-        passportExpiryError = 'تاريخ الانتهاء مطلوب';
-      }
-      if (state.selectedPassportIssuePlace == null) {
-        passportIssuePlaceError = 'محل الإصدار مطلوب';
-      }
+      // if (state.passportExpiry == null) {
+      //   passportExpiryError = 'تاريخ الانتهاء مطلوب';
+      // }
+      // if (state.selectedPassportIssuePlace == null) {
+      //   passportIssuePlaceError = 'محل الإصدار مطلوب';
+      // }
       if (state.selectedBirthPlace == null) {
         birthPlaceError = 'محل الميلاد مطلوب';
       }
@@ -854,8 +861,8 @@ class SignupCubit extends Cubit<SignupState> {
       birthPlaceError,
       manualBirthPlaceError,
       passportNumberError,
-      passportExpiryError,
-      passportIssuePlaceError,
+      // passportExpiryError,
+      // passportIssuePlaceError,
     ].any((e) => e != null);
 
     if (hasError) {
@@ -875,8 +882,8 @@ class SignupCubit extends Cubit<SignupState> {
           birthPlaceError: () => birthPlaceError,
           manualBirthPlaceError: () => manualBirthPlaceError,
           passportNumberError: () => passportNumberError,
-          passportExpiryError: () => passportExpiryError,
-          passportIssuePlaceError: () => passportIssuePlaceError,
+          // passportExpiryError: () => passportExpiryError,
+          // passportIssuePlaceError: () => passportIssuePlaceError,
         ),
       );
       return false;

@@ -82,6 +82,8 @@ class _SignupPageState extends State<SignupPage> {
       child: BlocListener<SignupCubit, SignupState>(
         listener: (context, state) {
           if (state.isSubmitSuccess) {
+            context.read<SignupCubit>().resetSubmitSuccess();
+
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => BlocProvider.value(
@@ -306,18 +308,18 @@ class _SignupPageState extends State<SignupPage> {
                           errorText: state.manualBirthPlaceError,
                           onChanged: cubit.onManualBirthPlaceChanged,
                         ),
-                      _InlineExpandField(
-                        label: 'محل إصدار الجواز',
-                        isRequired: true,
-                        value: state.selectedPassportIssuePlace?.label,
-                        hint: 'اختر محل الإصدار',
-                        isExpanded: state.isPassportIssuePlaceExpanded,
-                        options: state.passportIssuePlaceOptions,
-                        isLoading: state.isPassportIssuePlaceLoading,
-                        errorText: state.passportIssuePlaceError,
-                        onToggle: cubit.togglePassportIssuePlaceExpand,
-                        onSelected: cubit.onPassportIssuePlaceSelected,
-                      ),
+                      // _InlineExpandField(
+                      //   label: 'محل إصدار الجواز',
+                      //   isRequired: true,
+                      //   value: state.selectedPassportIssuePlace?.label,
+                      //   hint: 'اختر محل الإصدار',
+                      //   isExpanded: state.isPassportIssuePlaceExpanded,
+                      //   options: state.passportIssuePlaceOptions,
+                      //   isLoading: state.isPassportIssuePlaceLoading,
+                      //   errorText: state.passportIssuePlaceError,
+                      //   onToggle: cubit.togglePassportIssuePlaceExpand,
+                      //   onSelected: cubit.onPassportIssuePlaceSelected,
+                      // ),
                       _InlineExpandGenderField(
                         label: 'النوع',
                         isRequired: true,
