@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
@@ -96,20 +97,21 @@ class _AuthInterceptor extends Interceptor {
 class _LoggingInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    print('→ [${options.method}] ${options.uri}');
+    log('→ [${options.method}] ${options.uri}');
     handler.next(options);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    print('← [${response.statusCode}] ${response.requestOptions.uri}');
+    log('← [${response.statusCode}] ${response.requestOptions.uri}');
+    log('← Body: [${jsonEncode(response.data)}]');
     handler.next(response);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    print('✗ [${err.response?.statusCode}] ${err.requestOptions.uri}');
-    print('Error body: ${err.response?.data}');
+    log('✗ [${err.response?.statusCode}] ${err.requestOptions.uri}');
+    log('Error body: ${err.response?.data}');
     handler.next(err);
   }
 }

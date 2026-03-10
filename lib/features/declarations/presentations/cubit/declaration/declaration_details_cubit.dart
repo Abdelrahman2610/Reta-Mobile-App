@@ -29,6 +29,8 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
     'unit_id',
     'unit_type_text',
     'usage_type',
+    'installation_type_text',
+    'installation_type_other',
   ];
   final List<CategoryConfig> allCategories = [
     CategoryConfig(

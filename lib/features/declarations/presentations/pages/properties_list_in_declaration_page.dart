@@ -363,7 +363,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
   }
 
   String getPropertyTypeText(Map<String, dynamic> data) {
-    return data['usage_type'] ?? "-";
+    return data['usage_type'] ?? data['property_type_text'] ?? "-";
   }
 
   String getGovernorateText(Map<String, dynamic> data) {
@@ -383,7 +383,10 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
   }
 
   String getUnitTypeText(Map<String, dynamic> data) {
-    return data['unit_type_text'] ?? "-";
+    return data['unit_type_text'] ??
+        data['installation_type_text'] ??
+        data['installation_type_other'] ??
+        "-";
   }
 
   String getUnitUnitNum(Map<String, dynamic> data) {
