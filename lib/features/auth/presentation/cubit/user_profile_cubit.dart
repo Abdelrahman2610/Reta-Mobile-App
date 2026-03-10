@@ -38,13 +38,14 @@ class UserProfileCubit extends Cubit<UserProfileState> {
       phone: user.phone ?? '',
       phoneVerified: user.phoneVerified ?? false,
       nationality: user.nationality ?? 'مصري',
+      nationalityCode: user.nationalityCode, // ← add
       nationalId: user.nationalId ?? '',
       nationalIdVerified: user.nationalIdVerified ?? false,
+      passportNumber: user.passportNumber, // ← add
       dateOfBirth: user.dateOfBirth ?? '',
       placeOfBirth: user.placeOfBirth ?? '',
       gender: user.gender ?? '',
     );
-
     emit(UserProfileLoaded(userModel: userModel));
   }
 }

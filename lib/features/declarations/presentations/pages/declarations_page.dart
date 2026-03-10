@@ -20,7 +20,8 @@ import '../cubit/declaration/declaration_states.dart';
 import '../cubit/declaration_lookups_cubit.dart';
 
 class DeclarationsPage extends StatelessWidget {
-  const DeclarationsPage({super.key});
+  final UserModel user;
+  const DeclarationsPage({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -35,12 +36,14 @@ class DeclarationsPage extends StatelessWidget {
           create: (_) => DeclarationLookupsCubit()..fetchLookups(),
         ),
       ],
-      child: _DeclarationsView(),
+      child: _DeclarationsView(user: user),
     );
   }
 }
 
 class _DeclarationsView extends StatelessWidget {
+  final UserModel user;
+  const _DeclarationsView({required this.user});
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -83,7 +86,7 @@ class _DeclarationsView extends StatelessWidget {
                             onTap: () {
                               PersistentNavBarNavigator.pushNewScreen(
                                 context,
-                                screen: DeclarationGuidePage(user: UserModel()),
+                                screen: DeclarationGuidePage(user: user),
                                 // SelectApplicantTypePage(declarationId: -1),
                                 withNavBar: true,
                                 pageTransitionAnimation:

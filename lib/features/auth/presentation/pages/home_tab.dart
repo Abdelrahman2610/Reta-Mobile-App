@@ -47,7 +47,7 @@ class HomeTab extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _DeclarationsSection(),
+                    _DeclarationsSection(user: user),
                     const SizedBox(height: 16),
                   ],
                 ),
@@ -240,6 +240,9 @@ class _HeroCard extends StatelessWidget {
 }
 
 class _DeclarationsSection extends StatelessWidget {
+  final UserModel user;
+  const _DeclarationsSection({required this.user});
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DeclarationCubit, DeclarationState>(
@@ -250,7 +253,9 @@ class _DeclarationsSection extends StatelessWidget {
             (state.declarationList?.isEmpty ?? true)) {
           return _NewUserCTA(
             onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const GuestDeclarationsPage()),
+              MaterialPageRoute(
+                builder: (_) => GuestDeclarationsPage(user: user),
+              ),
             ),
           );
         }

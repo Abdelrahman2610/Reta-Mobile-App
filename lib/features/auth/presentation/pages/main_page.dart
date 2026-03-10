@@ -86,7 +86,7 @@ class _MainViewState extends State<_MainView> {
                 const SizedBox(),
 
                 // index 2 — إقراراتي
-                DeclarationsPage(),
+                DeclarationsPage(user: widget.user),
 
                 // index 3 — مدفوعاتي
                 const SizedBox(),
