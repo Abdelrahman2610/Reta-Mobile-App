@@ -12,7 +12,6 @@ import '../../data/models/user_models.dart';
 import '../cubit/home_cubit.dart';
 // import '../cubit/notifications_cubit.dart';
 import 'declaration_summary.dart';
-import 'guest_declarations_page.dart';
 // import 'notifications_page.dart';
 
 class HomeTab extends StatelessWidget {
@@ -81,7 +80,6 @@ class _HomeHero extends StatelessWidget {
     // return BlocBuilder<NotificationsCubit, NotificationsState>(
     //   builder: (context, notifState) {
     //     final unreadCount = notifState.unreadCount;
-
     return SizedBox(
       width: double.infinity,
       height: 260,
@@ -252,11 +250,15 @@ class _DeclarationsSection extends StatelessWidget {
             state is DeclarationListLoaded &&
             (state.declarationList?.isEmpty ?? true)) {
           return _NewUserCTA(
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => GuestDeclarationsPage(user: user),
-              ),
-            ),
+            onTap: () {
+              context.read<HomeCubit>().selectTab(2);
+            },
+
+            //   Navigator.of(context).push(
+            //   MaterialPageRoute(
+            //     builder: (_) => GuestDeclarationsPage(user: user),
+            //   ),
+            // ),
           );
         }
 
@@ -343,62 +345,67 @@ class _NewUserCTA extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.warningDark,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Material(
+        color: AppColors.warningDark,
         borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: Row(
-            textDirection: TextDirection.rtl,
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(40),
-                  color: const Color(0xFFF8F9FE),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            child: Row(
+              textDirection: TextDirection.rtl,
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(40),
+                    color: const Color(0xFFF8F9FE),
+                  ),
+                  child: const Icon(
+                    Icons.article_outlined,
+                    color: AppColors.warningDark,
+                    size: 26,
+                  ),
                 ),
-                child: const Icon(
-                  Icons.article_outlined,
-                  color: AppColors.warningDark,
-                  size: 26,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      'تقديم الإقرار الضريبي',
-                      textDirection: TextDirection.rtl,
-                      style: AppTextStyles.h5.copyWith(
-                        color: AppColors.neutralLightLightest,
-                        fontSize: 15,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'تقديم الإقرار الضريبي',
+                        textDirection: TextDirection.rtl,
+                        style: AppTextStyles.h5.copyWith(
+                          color: AppColors.neutralLightLightest,
+                          fontSize: 15,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'قدّم إقرارًا موحّدًا لجميع ممتلكاتك العقارية، مع إمكانية إضافة أكثر من عقار قبل الإرسال.',
-                      textDirection: TextDirection.rtl,
-                      style: AppTextStyles.bodyS.copyWith(
-                        color: AppColors.neutralLightLightest.withOpacity(0.90),
-                        height: 1.6,
+                      const SizedBox(height: 6),
+                      Text(
+                        'قدّم إقرارًا موحّدًا لجميع ممتلكاتك العقارية، مع إمكانية إضافة أكثر من عقار قبل الإرسال.',
+                        textDirection: TextDirection.rtl,
+                        style: AppTextStyles.bodyS.copyWith(
+                          color: AppColors.neutralLightLightest.withOpacity(
+                            0.90,
+                          ),
+                          height: 1.6,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.arrow_back_ios_rounded,
-                color: AppColors.neutralLightLightest,
-                size: 16,
-              ),
-            ],
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: AppColors.neutralLightLightest,
+                  size: 16,
+                ),
+              ],
+            ),
           ),
         ),
       ),

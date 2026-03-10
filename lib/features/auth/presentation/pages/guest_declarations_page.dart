@@ -1,9 +1,11 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../cubit/home_cubit.dart';
 import 'declaration_guide_page.dart';
 
 class GuestDeclarationsPage extends StatefulWidget {
@@ -61,7 +63,9 @@ class _DeclarationsHome extends StatelessWidget {
               color: AppColors.neutralLightLightest,
               size: 18,
             ),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              context.read<HomeCubit>().selectTab(0);
+            },
           ),
           title: Text(
             'إقراراتي',
