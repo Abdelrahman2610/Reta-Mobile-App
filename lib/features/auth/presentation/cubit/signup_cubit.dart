@@ -642,6 +642,7 @@ class SignupCubit extends Cubit<SignupState> {
         ? nameParts.last
         : state.restOfName.trim();
     final gender = state.selectedGender == GenderType.male ? '1' : '2';
+    final isForeign = state.nationalityType == NationalityType.foreign;
 
     final birthPlace = state.showManualBirthPlace
         ? state.manualBirthPlace.trim()
@@ -659,17 +660,17 @@ class SignupCubit extends Cubit<SignupState> {
       password: state.password,
       passwordConfirm: state.confirmPassword,
       nationalId: state.nationalId.trim(),
-      nationalityCode: (state.selectedNationality?.id == '1')
-          ? 'EG'
-          : 'FOREIGN',
+      nationalityCode: state.selectedNationality?.id ?? '',
       gender: gender,
       birthPlace: birthPlace,
       birthDate: birthDateStr,
+      passportNumber: isForeign ? state.passportNumber.trim() : null,
     );
 
     final result = await _authRepository.sendRegisterOtp(
       request: request,
       nationalIdFile: state.nationalIdFile,
+      isForeign: isForeign,
     );
 
     switch (result) {
@@ -733,6 +734,8 @@ class SignupCubit extends Cubit<SignupState> {
   Future<void> resendOtp() async {
     emit(state.copyWith(isLoading: true, submitError: () => null));
 
+    final isForeign = state.nationalityType == NationalityType.foreign;
+
     final request = RegisterRequest(
       firstName: state.firstName.trim(),
       lastName: state.restOfName.trim().split(' ').last,
@@ -741,19 +744,19 @@ class SignupCubit extends Cubit<SignupState> {
       password: state.password,
       passwordConfirm: state.confirmPassword,
       nationalId: state.nationalId.trim(),
-      nationalityCode: (state.selectedNationality?.id == '1')
-          ? 'EG'
-          : 'FOREIGN',
+      nationalityCode: state.selectedNationality?.id ?? '',
       gender: state.selectedGender == GenderType.male ? '1' : '2',
       birthPlace: state.showManualBirthPlace
           ? state.manualBirthPlace.trim()
           : (state.selectedBirthPlace?.id ?? ''),
       birthDate: _formatDate(state.birthDate!),
+      passportNumber: isForeign ? state.passportNumber.trim() : null,
     );
 
     final result = await _authRepository.sendRegisterOtp(
       request: request,
       nationalIdFile: state.nationalIdFile,
+      isForeign: isForeign,
     );
 
     switch (result) {

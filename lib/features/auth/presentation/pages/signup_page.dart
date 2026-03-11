@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:reta/features/auth/presentation/pages/terms_privacy_page.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../cubit/signup_cubit.dart';
@@ -378,24 +379,32 @@ class _SignupPageState extends State<SignupPage> {
                         Expanded(
                           child: Directionality(
                             textDirection: TextDirection.rtl,
-                            child: RichText(
-                              text: TextSpan(
-                                style: AppTextStyles.bodyS.copyWith(
-                                  color: AppColors.neutralDarkLight,
-                                ),
-                                children: [
-                                  const TextSpan(
-                                    text: 'أقر بأنني قرأت ووافقت على ',
+                            child: Wrap(
+                              children: [
+                                Text(
+                                  'أقر بأنني قرأت ووافقت على ',
+                                  style: AppTextStyles.bodyS.copyWith(
+                                    color: AppColors.neutralDarkLight,
                                   ),
-                                  TextSpan(
-                                    text: 'الشروط والأحكام وسياسة الخصوصية',
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const TermsPrivacyPage(),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    'الشروط والأحكام وسياسة الخصوصية',
                                     style: AppTextStyles.bodyM.copyWith(
                                       color: AppColors.highlightDarkest,
                                       decoration: TextDecoration.underline,
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
