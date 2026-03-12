@@ -353,15 +353,56 @@ class SignupCubit extends Cubit<SignupState> {
   ];
 
   Future<void> _loadNationalities() async {
-    emit(
-      state.copyWith(
-        isNationalityLoading: false,
-        nationalityOptions: const [
-          DropdownItem(id: '1', label: 'مصري'),
-          DropdownItem(id: '2', label: 'أجنبي'),
-        ],
-      ),
-    );
+    emit(state.copyWith(isNationalityLoading: true));
+    try {
+      final response = await DioClient.instance.dio.get(
+        ApiConstants.allLookups,
+      );
+      final raw = response.data as Map<String, dynamic>;
+      final data = raw['data'] as Map<String, dynamic>;
+      final nationalities = data['nationalities'] as List<dynamic>;
+
+      debugPrint(
+        '[SignupCubit] Total nationalities loaded: ${nationalities.length}',
+      );
+
+      final options = nationalities.map((n) {
+        return DropdownItem(
+          id: n['code']?.toString() ?? '',
+          label: n['name']?.toString() ?? '',
+        );
+      }).toList();
+
+      final egyptIndex = options.indexWhere((n) => n.id == 'EG');
+      if (egyptIndex != -1) {
+        final egypt = options.removeAt(egyptIndex);
+        options.insert(0, egypt);
+      }
+
+      debugPrint(
+        '[SignupCubit] Nationalities list head: ${options.take(3).map((e) => e.id).toList()}',
+      );
+
+      emit(
+        state.copyWith(
+          isNationalityLoading: false,
+          nationalityOptions: options,
+          selectedNationality: () => options.firstWhere(
+            (n) => n.id == 'EG',
+            orElse: () => options.first,
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint('[SignupCubit] _loadNationalities error: $e');
+      emit(
+        state.copyWith(
+          isNationalityLoading: false,
+          nationalityOptions: const [DropdownItem(id: 'EG', label: 'مصر')],
+          selectedNationality: () => const DropdownItem(id: 'EG', label: 'مصر'),
+        ),
+      );
+    }
   }
 
   Future<void> _loadResidences() async {
@@ -452,20 +493,20 @@ class SignupCubit extends Cubit<SignupState> {
       emit(state.copyWith(isNationalityExpanded: !state.isNationalityExpanded));
 
   void onNationalitySelected(DropdownItem item) {
-    final isEgyptian = item.id == '1';
+    debugPrint(
+      '[SignupCubit] Nationality selected: id=${item.id}, label=${item.label}',
+    );
+
     emit(
       state.copyWith(
         selectedNationality: () => item,
         isNationalityExpanded: false,
-        nationalityType: isEgyptian
+        nationalityType: item.id == 'EG'
             ? NationalityType.egyptian
             : NationalityType.foreign,
         nationalityError: () => null,
       ),
     );
-    if (!isEgyptian && state.passportIssuePlaceOptions.isEmpty) {
-      _loadPassportIssuePlaces();
-    }
   }
 
   void toggleGenderExpand() =>
@@ -631,7 +672,6 @@ class SignupCubit extends Cubit<SignupState> {
       emit(state.copyWith(isSubmitSuccess: false, submitError: () => null));
 
   // ── Submit ──────────────────────────────────────────────────────────────────
-
   Future<void> submit() async {
     if (!_validateAll()) return;
 
@@ -652,6 +692,11 @@ class SignupCubit extends Cubit<SignupState> {
     final birthDateStr =
         '${bd.year}-${bd.month.toString().padLeft(2, '0')}-${bd.day.toString().padLeft(2, '0')}';
 
+    final resolvedNationalityCode = state.selectedNationality?.id ?? 'EG';
+    debugPrint(
+      '[SignupCubit] Resolved nationality_code for API: $resolvedNationalityCode',
+    );
+
     final request = RegisterRequest(
       firstName: state.firstName.trim(),
       lastName: lastName,
@@ -660,7 +705,7 @@ class SignupCubit extends Cubit<SignupState> {
       password: state.password,
       passwordConfirm: state.confirmPassword,
       nationalId: state.nationalId.trim(),
-      nationalityCode: state.selectedNationality?.id ?? '',
+      nationalityCode: resolvedNationalityCode,
       gender: gender,
       birthPlace: birthPlace,
       birthDate: birthDateStr,
