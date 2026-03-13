@@ -120,7 +120,6 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                                   afterUpdating: () => context
                                       .read<DeclarationDetailsCubit>()
                                       .fetchDeclarationModel(),
-                                  userModel: userState.userModel,
                                   applicantOtherName:
                                       state.detailsModel?.applicantRoleOther,
                                 ),
@@ -137,15 +136,24 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                       if (declarationModel.statusId != "3")
                         AddNewPropertyButton(
                           onAdd: () {
-                            PersistentNavBarNavigator.pushNewScreen(
+                            Navigator.push(
                               context,
-                              screen: SelectApplicantTypePage(
-                                declarationId: declarationModel.id ?? -1,
+                              MaterialPageRoute(
+                                builder: (context) => SelectApplicantTypePage(
+                                  declarationId: declarationModel.id ?? -1,
+                                ),
                               ),
-                              withNavBar: true,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.slideUp,
                             );
+
+                            // PersistentNavBarNavigator.pushNewScreen(
+                            //   context,
+                            //   screen: SelectApplicantTypePage(
+                            //     declarationId: declarationModel.id ?? -1,
+                            //   ),
+                            //   withNavBar: true,
+                            //   pageTransitionAnimation:
+                            //       PageTransitionAnimation.slideUp,
+                            // );
                           },
                         ),
                       SizedBox(height: 10.h),
@@ -277,15 +285,12 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                                         );
                                       },
                                       onEdit: () async {
+                                        final cubit = context
+                                            .read<DeclarationDetailsCubit>();
+                                        cubit.fetchLookups(context);
+
                                         final lookupsCubit = context
                                             .read<DeclarationLookupsCubit>();
-
-                                        if (lookupsCubit.lookups == null) {
-                                          await lookupsCubit.fetchLookups();
-                                        }
-
-                                        if (!context.mounted) return;
-
                                         PersistentNavBarNavigator.pushNewScreen(
                                           context,
                                           screen: MultiBlocProvider(

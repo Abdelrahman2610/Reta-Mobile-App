@@ -95,6 +95,7 @@ class AppDropdownField<T> extends StatelessWidget {
                   child: Text(
                     hintText,
                     textAlign: TextAlign.right,
+                    maxLines: 2,
                     style: TextStyle(
                       color: AppColors.neutralDarkDarkest,
                       fontSize: 14.sp,
@@ -150,6 +151,8 @@ class AppDropdownField<T> extends StatelessWidget {
             decoration: InputDecoration(
               isDense: true,
               contentPadding: EdgeInsets.symmetric(horizontal: 6.w),
+              hintMaxLines: 2,
+              helperMaxLines: 2,
               prefixIcon: prefixWidget,
               prefixIconConstraints: BoxConstraints(
                 maxHeight: 48.h,

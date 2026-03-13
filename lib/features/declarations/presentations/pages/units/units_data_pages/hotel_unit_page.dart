@@ -493,46 +493,51 @@ class _HotelSubUnitCardState extends State<_HotelSubUnitCard> {
         16.hs,
 
         // ── هل تم التواصل مع الضرائب؟ (reta_contact_about_unit) ──
-        AppDropdownField<String>(
-          labelText:
-              'هل تم التواصل مع الضرائب العقارية بخصوص المنشأة محل الإقرار سابقاً؟',
-          labelRequired: true,
-          hintText: 'اختر',
-          value: widget.unit.retaContactAboutUnit,
-          items: widget.cubit.yesNoOptions
-              .map((o) => appDropDownOption(label: o))
-              .toList(),
-          onChanged: (v) =>
-              setState(() => widget.unit.retaContactAboutUnit = v),
-          validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
-        ),
-        16.hs,
+        if (widget.unit.insideOperationLicense == kYes)
+          Column(
+            children: [
+              AppDropdownField<String>(
+                labelText:
+                    'هل تم التواصل مع الضرائب العقارية بخصوص المنشأة محل الإقرار سابقاً؟',
+                labelRequired: true,
+                hintText: 'اختر',
+                value: widget.unit.retaContactAboutUnit,
+                items: widget.cubit.yesNoOptions
+                    .map((o) => appDropDownOption(label: o))
+                    .toList(),
+                onChanged: (v) =>
+                    setState(() => widget.unit.retaContactAboutUnit = v),
+                validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
+              ),
+              16.hs,
+              // ── كود حساب الوحدة (account_code) ───
+              if (widget.unit.retaContactAboutUnit == kYes)
+                AppTextFormField(
+                  labelText: 'كود حساب الوحدة',
+                  controller: widget.unit.accountCode,
+                  hintText: 'ادخل كود حساب الوحدة',
+                  keyboardType: TextInputType.number,
+                ),
+              16.hs,
 
-        // ── كود حساب الوحدة (account_code) ───
-        AppTextFormField(
-          labelText: 'كود حساب الوحدة',
-          controller: widget.unit.accountCode,
-          hintText: 'ادخل كود حساب الوحدة',
-          keyboardType: TextInputType.number,
-        ),
-        16.hs,
+              // ── القيمة السوقية (market_price) ─────
+              AppTextFormField(
+                labelText: 'القيمة السوقية',
+                controller: widget.unit.marketPrice,
+                hintText: 'ادخل القيمة السوقية للمنشأة',
+                keyboardType: TextInputType.number,
+              ),
+              16.hs,
 
-        // ── القيمة السوقية (market_price) ─────
-        AppTextFormField(
-          labelText: 'القيمة السوقية',
-          controller: widget.unit.marketPrice,
-          hintText: 'ادخل القيمة السوقية للمنشأة',
-          keyboardType: TextInputType.number,
-        ),
-        16.hs,
-
-        // ── القيمة الإيجارية السنوية (annual_rent) ──
-        AppTextFormField(
-          labelText: 'القيمة الإيجارية السنوية',
-          controller: widget.unit.annualRent,
-          hintText: 'ادخل القيمة الإيجارية السنوية',
-          keyboardType: TextInputType.number,
-        ),
+              // ── القيمة الإيجارية السنوية (annual_rent) ──
+              AppTextFormField(
+                labelText: 'القيمة الإيجارية السنوية',
+                controller: widget.unit.annualRent,
+                hintText: 'ادخل القيمة الإيجارية السنوية',
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
         16.hs,
 
         // ── زرار إضافة + حذف ──────────────────

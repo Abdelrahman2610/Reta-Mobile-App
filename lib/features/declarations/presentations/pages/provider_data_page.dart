@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/core/theme/app_colors.dart';
-import 'package:reta/features/auth/data/models/user_models.dart';
 import 'package:reta/features/components/app_bar.dart';
 import 'package:reta/features/components/app_button.dart';
 import 'package:reta/features/components/app_container.dart';
@@ -26,14 +25,12 @@ class ProviderDataPage extends StatelessWidget {
     this.existingDeclaration,
     this.afterUpdating,
     this.applicantOtherName,
-    required this.userModel,
   });
 
   final ApplicantType applicantType;
   final int declarationId;
   final DeclarationDetailsModel? existingDeclaration;
   final VoidCallback? afterUpdating;
-  final UserModel userModel;
   final String? applicantOtherName;
 
   @override

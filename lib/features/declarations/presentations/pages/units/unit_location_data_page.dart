@@ -355,7 +355,6 @@ class _UnitLocationDataPage extends StatelessWidget {
                                         controller:
                                             cubit.buildingNumberOtherController,
                                         hintText: 'ادخل رقم العقار',
-                                        keyboardType: TextInputType.number,
                                         validator: (v) => v == null || v.isEmpty
                                             ? 'هذا الحقل مطلوب'
                                             : null,

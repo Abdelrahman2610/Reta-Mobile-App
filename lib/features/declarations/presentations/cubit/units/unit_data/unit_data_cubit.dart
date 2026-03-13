@@ -1,9 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:reta/core/helpers/extensions/unit_type.dart';
-import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/core/network/api_constants.dart';
 import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
 import 'package:reta/features/declarations/data/models/declaration_model.dart';
@@ -15,7 +13,6 @@ import '../../../../../../core/network/api_result.dart';
 import '../../../../../../core/network/dio_client.dart';
 import '../../../../../../core/services/declaration_service.dart';
 import '../../../../../../core/services/upload_service.dart';
-import '../../../../../auth/presentation/pages/main_page.dart';
 import '../../../../data/models/additional_document.dart';
 import '../../../../data/models/building_info.dart';
 import '../../../../data/models/declarations_lookups.dart';
@@ -24,7 +21,6 @@ import '../../../../data/models/industrial_building.dart';
 import '../../../../data/models/petro_building.dart';
 import '../../../../data/models/production_building.dart';
 import '../../../../data/models/vacant_land_item.dart';
-import '../../../pages/properties_list_in_declaration_page.dart';
 import '../../../pages/select_types_of_properties_page.dart';
 import '../../applicant_cubit.dart';
 import '../../declaration/declaration_cubit.dart';
@@ -816,7 +812,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       ),
     );
 
-    int floorNumber = (state.buildingFloorList)
+    int floorNumber = (lookups.realEstateFloors)
         .firstWhere((floor) => floor.name == value)
         .id;
     await fetchBuildingUnitNumber(floorNumber, data: lookups.realEstateFloors);
@@ -1508,26 +1504,10 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           DeclarationModel();
 
       if (context.mounted) {
-        // Navigator.of(context).popUntil((route) => route.isFirst);
-        // Navigator.canPop(context);
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => BlocProvider(
-              lazy: false,
-              create: (_) => UserProfileCubit()..loadFromUser(null),
-              child: const MainPage(isLoggedIn: true),
-            ),
-          ),
-        );
+        Navigator.of(context).popUntil((route) => route.isFirst);
+        Navigator.canPop(context);
         await Future.delayed(const Duration(milliseconds: 200));
-        PersistentNavBarNavigator.pushNewScreen(
-          RuntimeData.getCurrentContext() ?? context,
-          screen: PropertiesListInDeclarationPage(declarationModel, () {
-            declarationCubit.fetchList();
-          }),
-          withNavBar: true,
-          pageTransitionAnimation: PageTransitionAnimation.slideUp,
-        );
+        declarationCubit.onDeclarationCardTapped(declarationModel);
       }
     }
   }
@@ -2179,7 +2159,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     return {
       'real_estate_floor_id': floorId,
       if (state.isFloorNumberOther)
-        'real_estate_floor_other': floorNumberOtherController.text.trim(),
+        'real_estate_floor_other': state.selectedFloorNumberOther,
       'unit_id': state.isUnitNumberOther ? -1 : _getUnitID(),
       if (state.isUnitNumberOther)
         'unit_other': unitNumberOtherController.text.trim(),
