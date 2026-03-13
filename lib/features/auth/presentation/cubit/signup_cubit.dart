@@ -19,8 +19,6 @@ class DropdownItem {
 
 enum NationalityType { egyptian, foreign }
 
-enum GenderType { male, female }
-
 class SignupState {
   final NationalityType nationalityType;
   final String firstName;
@@ -33,7 +31,9 @@ class SignupState {
   final bool isNationalityLoading;
   final bool isNationalityExpanded;
 
-  final GenderType? selectedGender;
+  final List<DropdownItem> genderOptions;
+  final DropdownItem? selectedGender;
+  final bool isGenderLoading;
   final bool isGenderExpanded;
 
   final String nationalId;
@@ -97,7 +97,9 @@ class SignupState {
     this.selectedNationality,
     this.isNationalityLoading = false,
     this.isNationalityExpanded = false,
+    this.genderOptions = const [],
     this.selectedGender,
+    this.isGenderLoading = false,
     this.isGenderExpanded = false,
     this.nationalId = '',
     this.hasNationalIdImage = false,
@@ -155,7 +157,9 @@ class SignupState {
     DropdownItem? Function()? selectedNationality,
     bool? isNationalityLoading,
     bool? isNationalityExpanded,
-    GenderType? Function()? selectedGender,
+    List<DropdownItem>? genderOptions,
+    DropdownItem? Function()? selectedGender,
+    bool? isGenderLoading,
     bool? isGenderExpanded,
     String? nationalId,
     bool? hasNationalIdImage,
@@ -215,9 +219,11 @@ class SignupState {
       isNationalityLoading: isNationalityLoading ?? this.isNationalityLoading,
       isNationalityExpanded:
           isNationalityExpanded ?? this.isNationalityExpanded,
+      genderOptions: genderOptions ?? this.genderOptions,
       selectedGender: selectedGender != null
           ? selectedGender()
           : this.selectedGender,
+      isGenderLoading: isGenderLoading ?? this.isGenderLoading,
       isGenderExpanded: isGenderExpanded ?? this.isGenderExpanded,
       nationalId: nationalId ?? this.nationalId,
       hasNationalIdImage: hasNationalIdImage ?? this.hasNationalIdImage,
@@ -324,6 +330,7 @@ class SignupCubit extends Cubit<SignupState> {
       super(const SignupState()) {
     _loadNationalities();
     _loadResidences();
+    _loadGenders();
   }
 
   // ── Governorates API ────────────────────────────────────────────────────────
@@ -344,7 +351,6 @@ class SignupCubit extends Cubit<SignupState> {
     }).toList();
   }
 
-  // Fallback list also uses `code` as the id to stay consistent.
   static const _fallbackGovernorates = [
     DropdownItem(id: '01', label: 'القاهرة'),
     DropdownItem(id: '02', label: 'الإسكندرية'),
@@ -352,15 +358,51 @@ class SignupCubit extends Cubit<SignupState> {
     DropdownItem(id: '-1', label: 'أخرى'),
   ];
 
+  static const _fallbackGenders = [
+    DropdownItem(id: '1', label: 'ذكر'),
+    DropdownItem(id: '2', label: 'أنثى'),
+  ];
+
+  // ── Gender API ──────────────────────────────────────────────────────────────
+
+  Future<void> _loadGenders() async {
+    emit(state.copyWith(isGenderLoading: true));
+    try {
+      final response = await PublicDioClient.dio.get(ApiConstants.genderPublic);
+      final raw = response.data as Map<String, dynamic>;
+      final list = raw['data'] as List<dynamic>;
+      final options = list
+          .map(
+            (e) => DropdownItem(
+              id: e['id'].toString(),
+              label: e['name']?.toString() ?? '',
+            ),
+          )
+          .toList();
+
+      debugPrint(
+        '[SignupCubit] Genders loaded: ${options.map((e) => '${e.id}:${e.label}').toList()}',
+      );
+
+      emit(state.copyWith(isGenderLoading: false, genderOptions: options));
+    } catch (e) {
+      debugPrint('[SignupCubit] _loadGenders error: $e');
+      emit(
+        state.copyWith(isGenderLoading: false, genderOptions: _fallbackGenders),
+      );
+    }
+  }
+
+  // ── Nationalities API ───────────────────────────────────────────────────────
+
   Future<void> _loadNationalities() async {
     emit(state.copyWith(isNationalityLoading: true));
     try {
-      final response = await DioClient.instance.dio.get(
-        ApiConstants.allLookups,
+      final response = await PublicDioClient.dio.get(
+        ApiConstants.nationalitiesPublic,
       );
       final raw = response.data as Map<String, dynamic>;
-      final data = raw['data'] as Map<String, dynamic>;
-      final nationalities = data['nationalities'] as List<dynamic>;
+      final nationalities = raw['data'] as List<dynamic>;
 
       debugPrint(
         '[SignupCubit] Total nationalities loaded: ${nationalities.length}',
@@ -496,7 +538,6 @@ class SignupCubit extends Cubit<SignupState> {
     debugPrint(
       '[SignupCubit] Nationality selected: id=${item.id}, label=${item.label}',
     );
-
     emit(
       state.copyWith(
         selectedNationality: () => item,
@@ -512,9 +553,9 @@ class SignupCubit extends Cubit<SignupState> {
   void toggleGenderExpand() =>
       emit(state.copyWith(isGenderExpanded: !state.isGenderExpanded));
 
-  void onGenderSelected(GenderType gender) => emit(
+  void onGenderSelected(DropdownItem item) => emit(
     state.copyWith(
-      selectedGender: () => gender,
+      selectedGender: () => item,
       isGenderExpanded: false,
       genderError: () => null,
     ),
@@ -672,6 +713,7 @@ class SignupCubit extends Cubit<SignupState> {
       emit(state.copyWith(isSubmitSuccess: false, submitError: () => null));
 
   // ── Submit ──────────────────────────────────────────────────────────────────
+
   Future<void> submit() async {
     if (!_validateAll()) return;
 
@@ -681,7 +723,9 @@ class SignupCubit extends Cubit<SignupState> {
     final lastName = nameParts.isNotEmpty
         ? nameParts.last
         : state.restOfName.trim();
-    final gender = state.selectedGender == GenderType.male ? '1' : '2';
+
+    final gender = state.selectedGender?.id ?? '1';
+
     final isForeign = state.nationalityType == NationalityType.foreign;
 
     final birthPlace = state.showManualBirthPlace
@@ -694,7 +738,7 @@ class SignupCubit extends Cubit<SignupState> {
 
     final resolvedNationalityCode = state.selectedNationality?.id ?? 'EG';
     debugPrint(
-      '[SignupCubit] Resolved nationality_code for API: $resolvedNationalityCode',
+      '[SignupCubit] nationality_code=$resolvedNationalityCode  gender=$gender',
     );
 
     final request = RegisterRequest(
@@ -723,7 +767,6 @@ class SignupCubit extends Cubit<SignupState> {
         _pendingOtpToken = data.token;
         _pendingUserId = data.userId;
         _pendingMobile = state.phone.trim();
-
         emit(
           state.copyWith(
             isLoading: false,
@@ -790,7 +833,7 @@ class SignupCubit extends Cubit<SignupState> {
       passwordConfirm: state.confirmPassword,
       nationalId: state.nationalId.trim(),
       nationalityCode: state.selectedNationality?.id ?? '',
-      gender: state.selectedGender == GenderType.male ? '1' : '2',
+      gender: state.selectedGender?.id ?? '1',
       birthPlace: state.showManualBirthPlace
           ? state.manualBirthPlace.trim()
           : (state.selectedBirthPlace?.id ?? ''),
@@ -835,6 +878,7 @@ class SignupCubit extends Cubit<SignupState> {
     final birthDateError = state.birthDate == null
         ? 'تاريخ الميلاد مطلوب'
         : null;
+
     String? passwordError;
     final pw = state.password;
     if (pw.isEmpty) {
@@ -848,6 +892,7 @@ class SignupCubit extends Cubit<SignupState> {
     } else if (!pw.contains(RegExp(r'[!@#\$%^&*]'))) {
       passwordError = 'يجب أن تحتوي على رمز خاص';
     }
+
     final confirmPasswordError = state.confirmPassword != state.password
         ? 'كلمتا السر غير متطابقتين'
         : null;
@@ -860,8 +905,6 @@ class SignupCubit extends Cubit<SignupState> {
     String? birthPlaceError;
     String? manualBirthPlaceError;
     String? passportNumberError;
-    String? passportExpiryError;
-    String? passportIssuePlaceError;
 
     if (state.nationalityType == NationalityType.egyptian) {
       if (state.nationalId.length != 14) {
@@ -880,12 +923,6 @@ class SignupCubit extends Cubit<SignupState> {
       if (state.passportNumber.trim().isEmpty) {
         passportNumberError = 'رقم جواز السفر مطلوب';
       }
-      // if (state.passportExpiry == null) {
-      //   passportExpiryError = 'تاريخ الانتهاء مطلوب';
-      // }
-      // if (state.selectedPassportIssuePlace == null) {
-      //   passportIssuePlaceError = 'محل الإصدار مطلوب';
-      // }
       if (state.selectedBirthPlace == null) {
         birthPlaceError = 'محل الميلاد مطلوب';
       }
@@ -909,8 +946,6 @@ class SignupCubit extends Cubit<SignupState> {
       birthPlaceError,
       manualBirthPlaceError,
       passportNumberError,
-      // passportExpiryError,
-      // passportIssuePlaceError,
     ].any((e) => e != null);
 
     if (hasError) {
@@ -930,8 +965,6 @@ class SignupCubit extends Cubit<SignupState> {
           birthPlaceError: () => birthPlaceError,
           manualBirthPlaceError: () => manualBirthPlaceError,
           passportNumberError: () => passportNumberError,
-          // passportExpiryError: () => passportExpiryError,
-          // passportIssuePlaceError: () => passportIssuePlaceError,
         ),
       );
       return false;
