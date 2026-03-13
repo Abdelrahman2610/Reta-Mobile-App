@@ -17,12 +17,6 @@ class DeclarationCubit extends Cubit<DeclarationState> {
 
   List<DeclarationModel>? get declarationList => _declarationList;
 
-  // BuildContext? _persistentNavContext;
-
-  // void saveNavContext(BuildContext context) {
-  //   _persistentNavContext = context;
-  // }
-
   Future<void> fetchList() async {
     emit(DeclarationListLoading());
 
@@ -46,14 +40,6 @@ class DeclarationCubit extends Cubit<DeclarationState> {
     DeclarationModel declarationModel, {
     BuildContext? context,
   }) {
-    // final ctx = context ?? _persistentNavContext;
-    // if (ctx == null) return;
-
-    // لو بعتلنا context جديد احفظه
-    // if (context != null) {
-    //   _persistentNavContext = context;
-    // }
-
     PersistentNavBarNavigator.pushNewScreen(
       context ?? RuntimeData.getCurrentContext()!,
       screen: PropertiesListInDeclarationPage(declarationModel, fetchList),
