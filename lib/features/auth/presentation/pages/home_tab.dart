@@ -10,9 +10,7 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../declarations/presentations/components/declarations_card_item.dart';
 import '../../data/models/user_models.dart';
 import '../cubit/home_cubit.dart';
-// import '../cubit/notifications_cubit.dart';
 import 'declaration_summary.dart';
-// import 'notifications_page.dart';
 
 class HomeTab extends StatelessWidget {
   final UserModel user;
@@ -325,6 +323,12 @@ class _DeclarationsSection extends StatelessWidget {
                           updateDeclarationList: () {
                             context.read<DeclarationCubit>().fetchList();
                           },
+                          onDeclarationCardTapped: () => context
+                              .read<DeclarationCubit>()
+                              .onDeclarationCardTapped(
+                                state.declarationList![i],
+                                context: context,
+                              ),
                         ),
                       ),
                     ],

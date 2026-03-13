@@ -71,6 +71,8 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
 
     selectNeighborhood(locationData!['neighborhood']);
     selectStreet(locationData!['street']);
+
+    await fetchBuildingNumber(state.selectedStreetId);
     selectBuildingNumber(locationData!['buildingNumber']);
 
     emit(
@@ -132,6 +134,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
     selectStreet(street?.name);
 
     await fetchBuildingNumber(street?.id);
+
     final realEstateIdString = unitData!['real_estate_id'];
     int realEstateId = -1;
     if (realEstateIdString.runtimeType == String) {

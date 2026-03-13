@@ -67,7 +67,8 @@ class UnitData extends StatelessWidget {
               ),
             );
             cubit.clearError();
-          } else if (!state.isLoading && !state.isFloorLoading) {
+          }
+          if (!state.isLoading && !state.isFloorLoading) {
             Navigator.pop(RuntimeData.getCurrentContext()!);
           }
         },

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
-import 'package:reta/features/auth/data/models/user_models.dart';
 import 'package:reta/features/declarations/presentations/pages/provider_data_page.dart';
 
 import '../../../../core/helpers/app_enum.dart';
@@ -11,7 +10,6 @@ import '../../../auth/presentation/cubit/user_profile_cubit.dart';
 import '../../../auth/presentation/cubit/user_profile_state.dart';
 import '../../../components/app_bar.dart';
 import '../../../components/app_text.dart';
-import '../../../components/circular_progress_indicator_platform_widget.dart';
 import '../components/select_applicant_type_item.dart';
 
 class SelectApplicantTypePage extends StatelessWidget {
@@ -50,9 +48,6 @@ class SelectApplicantTypePage extends StatelessWidget {
                     ),
                     child: BlocBuilder<UserProfileCubit, UserProfileState>(
                       builder: (context, state) {
-                        if (state is! UserProfileLoaded) {
-                          return const CircularProgressIndicatorPlatformWidget();
-                        }
                         return Column(
                           children: [
                             AppText(
@@ -68,7 +63,6 @@ class SelectApplicantTypePage extends StatelessWidget {
                                   "تقديم الإقرار عن جميع العقارات المملوكة لك بصفتك المالك القانوني.",
                               onPress: () => onApplicantTaped(
                                 applicantType: ApplicantType.owner,
-                                userModel: state.userModel,
                                 context: context,
                               ),
                             ),
@@ -79,7 +73,6 @@ class SelectApplicantTypePage extends StatelessWidget {
                                   "تقديم الإقرار عن عقار مملوك بالاشتراك مع شركاء أو ورثة آخرين.",
                               onPress: () => onApplicantTaped(
                                 applicantType: ApplicantType.sharedOwnership,
-                                userModel: state.userModel,
                                 context: context,
                               ),
                             ),
@@ -90,7 +83,6 @@ class SelectApplicantTypePage extends StatelessWidget {
                                   "تقديم الإقرار عن عقار لك حق الانتفاع به وفق سند أو حق قانوني.",
                               onPress: () => onApplicantTaped(
                                 applicantType: ApplicantType.beneficiary,
-                                userModel: state.userModel,
                                 context: context,
                               ),
                             ),
@@ -101,7 +93,6 @@ class SelectApplicantTypePage extends StatelessWidget {
                                   "تقديم الإقرار نيابةً عن المكلف بموجب توكيل رسمي ساري.",
                               onPress: () => onApplicantTaped(
                                 applicantType: ApplicantType.agent,
-                                userModel: state.userModel,
                                 context: context,
                               ),
                             ),
@@ -112,7 +103,6 @@ class SelectApplicantTypePage extends StatelessWidget {
                                   "تقديم الإقرار عن عقار تقوم باستغلاله أو الانتفاع به بموجب عقد أو سند قانوني.",
                               onPress: () => onApplicantTaped(
                                 applicantType: ApplicantType.exploited,
-                                userModel: state.userModel,
                                 context: context,
                               ),
                             ),
@@ -125,7 +115,6 @@ class SelectApplicantTypePage extends StatelessWidget {
                               onPress: () => onApplicantTaped(
                                 applicantType:
                                     ApplicantType.legalRepresentative,
-                                userModel: state.userModel,
                                 context: context,
                               ),
                             ),
@@ -140,7 +129,6 @@ class SelectApplicantTypePage extends StatelessWidget {
                               },
                               onPress: () => onApplicantTaped(
                                 applicantType: ApplicantType.other,
-                                userModel: state.userModel,
                                 context: context,
                                 applicantOtherName: otherTitle,
                               ),
@@ -163,7 +151,6 @@ class SelectApplicantTypePage extends StatelessWidget {
   void onApplicantTaped({
     required ApplicantType applicantType,
     required BuildContext context,
-    required UserModel userModel,
     String? applicantOtherName,
   }) {
     PersistentNavBarNavigator.pushNewScreen(
@@ -171,7 +158,6 @@ class SelectApplicantTypePage extends StatelessWidget {
       screen: ProviderDataPage(
         applicantType: applicantType,
         declarationId: declarationId,
-        userModel: userModel,
         applicantOtherName: applicantOtherName,
       ),
       withNavBar: true,

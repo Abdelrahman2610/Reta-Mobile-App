@@ -87,7 +87,6 @@ class _DeclarationsView extends StatelessWidget {
                               PersistentNavBarNavigator.pushNewScreen(
                                 context,
                                 screen: DeclarationGuidePage(user: user),
-                                // SelectApplicantTypePage(declarationId: -1),
                                 withNavBar: true,
                                 pageTransitionAnimation:
                                     PageTransitionAnimation.slideUp,
@@ -130,6 +129,12 @@ class _DeclarationsView extends StatelessWidget {
                                           .read<DeclarationCubit>()
                                           .fetchList();
                                     },
+                                    onDeclarationCardTapped: () => context
+                                        .read<DeclarationCubit>()
+                                        .onDeclarationCardTapped(
+                                          state.declarationList![index],
+                                          context: context,
+                                        ),
                                   );
                                 },
                               ),

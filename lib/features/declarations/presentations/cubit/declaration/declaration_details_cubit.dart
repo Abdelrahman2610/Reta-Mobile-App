@@ -1,9 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/network/api_constants.dart';
 import '../../../../../core/network/api_result.dart';
 import '../../../../../core/network/dio_client.dart';
 import '../../../data/models/declaration_details_model.dart';
+import '../declaration_lookups_cubit.dart';
 import 'declaration_details_states.dart';
 
 class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
@@ -223,5 +225,16 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
       units = (detailsModel?.data?[selected.key]['data'] as List)
           .cast<Map<String, dynamic>>();
     }
+  }
+
+  Future<void> fetchLookups(BuildContext context) async {
+    emit(DeclarationDetailsLoading());
+    final lookupsCubit = context.read<DeclarationLookupsCubit>();
+
+    if (lookupsCubit.lookups == null) {
+      await lookupsCubit.fetchLookups();
+    }
+
+    if (!context.mounted) return;
   }
 }

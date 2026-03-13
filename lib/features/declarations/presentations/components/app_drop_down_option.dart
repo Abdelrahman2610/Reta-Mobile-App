@@ -17,8 +17,9 @@ DropdownMenuItem<String> appDropDownOption({
         child: AppText(
           alignment: AlignmentDirectional.centerEnd,
           text: label,
+          maxLines: 2,
           fontSize: fontSize ?? 14.sp,
-          textAlign: TextAlign.left,
+          textAlign: TextAlign.right,
           fontWeight: FontWeight.w400,
           color: textColor ?? AppColors.neutralDarkDarkest,
         ),
