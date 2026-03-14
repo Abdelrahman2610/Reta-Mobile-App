@@ -6,7 +6,8 @@ import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_details_states.dart';
 import 'package:reta/features/declarations/presentations/pages/provider_data_page.dart';
-import 'package:reta/features/declarations/presentations/pages/select_applicant_type_page.dart';
+import 'package:reta/features/declarations/presentations/pages/select_types_of_properties_page.dart';
+import 'package:reta/features/declarations/presentations/pages/taxpayer_data_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/unit_location_data_page.dart';
 
 import '../../../../core/helpers/extensions/applicant_type.dart';
@@ -30,6 +31,7 @@ import '../components/show_cancel_declaration_dialog.dart';
 import '../components/show_submit_declaration_dialog.dart';
 import '../components/submit_declaration_button.dart';
 import '../components/unit_type_category_tab_widget.dart';
+import '../cubit/applicant_cubit.dart';
 import '../cubit/declaration/declaration_details_cubit.dart';
 import '../cubit/declaration_lookups_cubit.dart';
 
@@ -136,17 +138,19 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                       ),
                       if (declarationModel.statusId != "3")
                         SizedBox(height: 30.h),
-                      if (declarationModel.statusId != "3")
+                      if (declarationModel.statusId != "3" &&
+                          state.detailsModel != null)
                         AddNewPropertyButton(
                           onAdd: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => SelectApplicantTypePage(
-                                  declarationId: declarationModel.id ?? -1,
-                                ),
-                              ),
-                            );
+                            _addUnit(context, state.detailsModel!);
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder: (context) => SelectApplicantTypePage(
+                            //       declarationId: declarationModel.id ?? -1,
+                            //     ),
+                            //   ),
+                            // );
 
                             // PersistentNavBarNavigator.pushNewScreen(
                             //   context,
@@ -437,6 +441,86 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(state.message)));
+    }
+  }
+
+  _addUnit(BuildContext context, DeclarationDetailsModel detailsModel) async {
+    ApplicantType applicantType =
+        detailsModel.declarationTypeId.displayApplicant;
+    final lookupsCubit = context.read<DeclarationLookupsCubit>();
+    if (applicantType == ApplicantType.owner ||
+        applicantType == ApplicantType.beneficiary ||
+        applicantType == ApplicantType.exploited) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MultiBlocProvider(
+            // BlocProvider(
+            //     create: (_) {
+            //       final cubit = ApplicantCubit(
+            //         applicantType: applicantType,
+            //         declarationId: declarationId,
+            //         isEditMode: existingDeclaration != null,
+            //         afterUpdating: afterUpdating,
+            //         applicantOtherName: applicantOtherName,
+            //       )..initFromUser(user);
+            providers: [
+              BlocProvider.value(value: lookupsCubit),
+              BlocProvider.value(
+                value: context.read<DeclarationLookupsCubit>()..fetchLookups(),
+              ),
+              BlocProvider.value(
+                value: ApplicantCubit(
+                  applicantType: applicantType,
+                  declarationId: detailsModel.id,
+                  isEditMode: false,
+                  afterUpdating: () {
+                    context
+                        .read<DeclarationDetailsCubit>()
+                        .fetchDeclarationModel();
+                  },
+                  applicantOtherName: detailsModel.applicantRoleOther,
+                ),
+              ),
+            ],
+            child: SelectTypesOfPropertiesPage(
+              applicantType: applicantType,
+              declarationId: detailsModel.id,
+              otherName: detailsModel.applicantRoleOther,
+              locationData: detailsModel.toJson(),
+            ),
+          ),
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: lookupsCubit),
+              BlocProvider.value(
+                value: context.read<DeclarationLookupsCubit>()..fetchLookups(),
+              ),
+              BlocProvider.value(
+                value: ApplicantCubit(
+                  applicantType: applicantType,
+                  declarationId: detailsModel.id,
+                  isEditMode: false,
+                  afterUpdating: () {
+                    context
+                        .read<DeclarationDetailsCubit>()
+                        .fetchDeclarationModel();
+                  },
+                  applicantOtherName: detailsModel.applicantRoleOther,
+                ),
+              ),
+            ],
+            child: TaxpayerDataPage(),
+          ),
+          // BlocProvider.value(value: this, child: TaxpayerDataPage()),
+        ),
+      );
     }
   }
 }
