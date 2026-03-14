@@ -71,8 +71,8 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
       summaryFields: baseCategoryInfo,
     ),
     CategoryConfig(
-      deleteLabel: "vacant_land",
-      deleteID: "vacant",
+      deleteID: "vacant_land",
+      deleteLabel: "vacant",
       key: 'vacant_land',
       label: 'الأراضي الفضاء',
       summaryFields: baseCategoryInfo,

@@ -384,7 +384,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
   }
 
   String getRealEstateCode(Map<String, dynamic> data) {
-    return data['real_estate_code'] ?? "-";
+    return data['real_estate_other'] ?? data['real_estate_code'] ?? "-";
   }
 
   String getUnitTypeText(Map<String, dynamic> data) {
@@ -395,7 +395,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
   }
 
   String getUnitUnitNum(Map<String, dynamic> data) {
-    return data['unit_unit_num'] ?? "-";
+    return data['unit_other'] ?? data['unit_unit_num'] ?? "-";
   }
 
   String getRealEstateFloorText(Map<String, dynamic> data) {
