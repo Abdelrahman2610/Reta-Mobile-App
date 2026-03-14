@@ -103,7 +103,10 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                             return const SizedBox.shrink();
                           }
                           return PropertiesListInDeclarationHeader(
-                            declarationModel.declarationTypeText ?? "",
+                            state.detailsModel?.applicantRoleOther ??
+                                state.detailsModel?.applicantRoleText ??
+                                declarationModel.declarationTypeText ??
+                                "",
                             declarationModel.statusId != "3",
                             onTap: () {
                               PersistentNavBarNavigator.pushNewScreen(

@@ -33,7 +33,7 @@ class UnitTypeCategoryTabWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 30.h,
+      height: 30,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -48,7 +48,7 @@ class UnitTypeCategoryTabWidget extends StatelessWidget {
                   onIndexPressed(index);
                 },
                 label: activeCategories[index].label,
-                fontSize: 14.sp,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
                 textColor: isSelected
                     ? Colors.white
@@ -57,9 +57,9 @@ class UnitTypeCategoryTabWidget extends StatelessWidget {
                     ? AppColors.highlightLightest
                     : AppColors.mainBlueIndigoDye,
                 borderColor: AppColors.neutralDarkLightest,
-                height: 29.h,
+                height: 29,
                 borderRadius: 12,
-                width: 110.w,
+                width: 110,
               ),
             ],
           );
