@@ -69,11 +69,11 @@ class ConfirmOtpRequest {
     required this.otp,
     this.context = 'register',
   });
-
+  //
   Map<String, dynamic> toJson() => {
     'user_id': userId,
     'mobile': mobile,
-    'request_code': token,
+    'token': token,
     'otp': otp,
     'context': context,
   };

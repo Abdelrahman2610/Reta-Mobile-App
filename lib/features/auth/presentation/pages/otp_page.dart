@@ -85,6 +85,7 @@ class _OtpPageState extends State<OtpPage> {
   }
 
   void _goToInput() {
+    context.read<SignupCubit>().clearOtpError();
     context.read<SignupCubit>().resendOtp();
     setState(() => _step = _OtpStep.input);
     _startTimer();
@@ -116,6 +117,7 @@ class _OtpPageState extends State<OtpPage> {
 
   Future<void> _resend() async {
     if (!_canResend) return;
+    context.read<SignupCubit>().clearOtpError();
     _clearOtp();
     await context.read<SignupCubit>().resendOtp();
     _startTimer();
