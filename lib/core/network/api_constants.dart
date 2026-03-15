@@ -123,6 +123,13 @@ class ApiConstants {
   static const String settlementOfDebts =
       '/declaration-system/declarations/settlement-of-debts-with-the-taxpayers-knowledge';
 
+  // ─── Notifications ───────────────────────────────────────────────────────────
+  static const String notifications = '/declaration-system/notifications';
+  static const String notificationsReadAll =
+      '/declaration-system/notifications/read-all';
+  static String notificationById(int id) =>
+      '/declaration-system/notifications/$id';
+
   /// ------------------------------ Files label ---------------------------------
   static const String nationalIdLabel = 'national_id_attachment';
   static const String passportLabel = 'passport_attachment';
