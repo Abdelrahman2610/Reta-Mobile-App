@@ -64,8 +64,6 @@ class ApiConstants {
   static const String listFilterLookups = '$lookupBase/list-filter-all-lookups';
 
   static const String governoratesPublic = '/category/governorates/out';
-  static const String nationalitiesPublic = '/category/nationalities';
-  static const String genderPublic = '/category/gender';
 
   static const String governorates = '$lookupBase/governorates';
 

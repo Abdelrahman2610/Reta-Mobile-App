@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:reta/features/auth/presentation/pages/terms_privacy_page.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../cubit/signup_cubit.dart';
@@ -83,7 +82,6 @@ class _SignupPageState extends State<SignupPage> {
       child: BlocListener<SignupCubit, SignupState>(
         listener: (context, state) {
           if (state.isSubmitSuccess) {
-            context.read<SignupCubit>().resetSubmitSuccess();
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => BlocProvider.value(
@@ -186,7 +184,6 @@ class _SignupPageState extends State<SignupPage> {
                       onSelected: cubit.onNationalitySelected,
                     ),
 
-                    // ── Egyptian fields ──────────────────────────────────────
                     if (state.nationalityType == NationalityType.egyptian) ...[
                       _SectionTitle(title: 'بيانات الهوية'),
                       _Field(
@@ -249,8 +246,6 @@ class _SignupPageState extends State<SignupPage> {
                         label: 'النوع',
                         isRequired: true,
                         selectedGender: state.selectedGender,
-                        options: state.genderOptions,
-                        isLoading: state.isGenderLoading,
                         isExpanded: state.isGenderExpanded,
                         errorText: state.genderError,
                         onToggle: cubit.toggleGenderExpand,
@@ -258,7 +253,6 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ],
 
-                    // ── Foreign fields ───────────────────────────────────────
                     if (state.nationalityType == NationalityType.foreign) ...[
                       _SectionTitle(title: 'بيانات جواز السفر'),
                       _Field(
@@ -312,12 +306,22 @@ class _SignupPageState extends State<SignupPage> {
                           errorText: state.manualBirthPlaceError,
                           onChanged: cubit.onManualBirthPlaceChanged,
                         ),
+                      _InlineExpandField(
+                        label: 'محل إصدار الجواز',
+                        isRequired: true,
+                        value: state.selectedPassportIssuePlace?.label,
+                        hint: 'اختر محل الإصدار',
+                        isExpanded: state.isPassportIssuePlaceExpanded,
+                        options: state.passportIssuePlaceOptions,
+                        isLoading: state.isPassportIssuePlaceLoading,
+                        errorText: state.passportIssuePlaceError,
+                        onToggle: cubit.togglePassportIssuePlaceExpand,
+                        onSelected: cubit.onPassportIssuePlaceSelected,
+                      ),
                       _InlineExpandGenderField(
                         label: 'النوع',
                         isRequired: true,
                         selectedGender: state.selectedGender,
-                        options: state.genderOptions,
-                        isLoading: state.isGenderLoading,
                         isExpanded: state.isGenderExpanded,
                         errorText: state.genderError,
                         onToggle: cubit.toggleGenderExpand,
@@ -372,32 +376,24 @@ class _SignupPageState extends State<SignupPage> {
                         Expanded(
                           child: Directionality(
                             textDirection: TextDirection.rtl,
-                            child: Wrap(
-                              children: [
-                                Text(
-                                  'أقر بأنني قرأت ووافقت على ',
-                                  style: AppTextStyles.bodyS.copyWith(
-                                    color: AppColors.neutralDarkLight,
-                                  ),
+                            child: RichText(
+                              text: TextSpan(
+                                style: AppTextStyles.bodyS.copyWith(
+                                  color: AppColors.neutralDarkLight,
                                 ),
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            const TermsPrivacyPage(),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    'الشروط والأحكام وسياسة الخصوصية',
+                                children: [
+                                  const TextSpan(
+                                    text: 'أقر بأنني قرأت ووافقت على ',
+                                  ),
+                                  TextSpan(
+                                    text: 'الشروط والأحكام وسياسة الخصوصية',
                                     style: AppTextStyles.bodyM.copyWith(
                                       color: AppColors.highlightDarkest,
                                       decoration: TextDecoration.underline,
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -467,10 +463,6 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Private widgets
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _SectionTitle extends StatelessWidget {
   final String title;
@@ -886,20 +878,16 @@ class _InlineExpandField extends StatelessWidget {
 class _InlineExpandGenderField extends StatelessWidget {
   final String label;
   final bool isRequired;
-  final DropdownItem? selectedGender;
-  final List<DropdownItem> options;
-  final bool isLoading;
+  final GenderType? selectedGender;
   final bool isExpanded;
   final String? errorText;
   final VoidCallback onToggle;
-  final void Function(DropdownItem) onSelected;
+  final void Function(GenderType) onSelected;
 
   const _InlineExpandGenderField({
     required this.label,
     required this.isRequired,
     required this.selectedGender,
-    required this.options,
-    required this.isLoading,
     required this.isExpanded,
     required this.errorText,
     required this.onToggle,
@@ -908,7 +896,12 @@ class _InlineExpandGenderField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayValue = selectedGender?.label;
+    const genders = [(GenderType.male, 'ذكر'), (GenderType.female, 'أنثى')];
+    final displayValue = selectedGender == GenderType.male
+        ? 'ذكر'
+        : selectedGender == GenderType.female
+        ? 'أنثى'
+        : null;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -980,57 +973,47 @@ class _InlineExpandGenderField extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: AppColors.neutralLightDark),
               ),
-              child: isLoading
-                  ? const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.mainBlueIndigoDye,
-                          strokeWidth: 2,
+              child: Column(
+                children: List.generate(genders.length, (i) {
+                  final (type, genderLabel) = genders[i];
+                  final isSelected = selectedGender == type;
+                  final isLast = i == genders.length - 1;
+                  return InkWell(
+                    onTap: () => onSelected(type),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.highlightLightest
+                            : Colors.transparent,
+                        border: isLast
+                            ? null
+                            : const Border(
+                                bottom: BorderSide(
+                                  color: AppColors.neutralLightDark,
+                                ),
+                              ),
+                      ),
+                      child: Text(
+                        genderLabel,
+                        textDirection: TextDirection.rtl,
+                        style: AppTextStyles.bodyM.copyWith(
+                          color: isSelected
+                              ? AppColors.mainBlueIndigoDye
+                              : AppColors.neutralDarkDarkest,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
                         ),
                       ),
-                    )
-                  : Column(
-                      children: List.generate(options.length, (i) {
-                        final item = options[i];
-                        final isSelected = selectedGender?.id == item.id;
-                        final isLast = i == options.length - 1;
-                        return InkWell(
-                          onTap: () => onSelected(item),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppColors.highlightLightest
-                                  : Colors.transparent,
-                              border: isLast
-                                  ? null
-                                  : const Border(
-                                      bottom: BorderSide(
-                                        color: AppColors.neutralLightDark,
-                                      ),
-                                    ),
-                            ),
-                            child: Text(
-                              item.label,
-                              textDirection: TextDirection.rtl,
-                              style: AppTextStyles.bodyM.copyWith(
-                                color: isSelected
-                                    ? AppColors.mainBlueIndigoDye
-                                    : AppColors.neutralDarkDarkest,
-                                fontWeight: isSelected
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
                     ),
+                  );
+                }),
+              ),
             ),
           if (errorText != null) ...[
             const SizedBox(height: 4),

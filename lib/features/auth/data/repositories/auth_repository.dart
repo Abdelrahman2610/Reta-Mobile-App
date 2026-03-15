@@ -25,6 +25,12 @@ class AuthRepository {
     required String nationalId,
     required String password,
   }) async {
+    Map data = {
+      'login_type': 'national_id',
+      'mobile': '',
+      'name': nationalId,
+      'password': password,
+    };
     return _login(
       body: {
         'login_type': 'national_id',
@@ -55,15 +61,14 @@ class AuthRepository {
   Future<ApiResult<RegisterOtpResponse>> sendRegisterOtp({
     required RegisterRequest request,
     File? nationalIdFile,
-    bool isForeign = false,
   }) async {
     return safeApiCall(() async {
       final fields = request.toFormFields();
+
       final formMap = <String, dynamic>{...fields};
 
       if (nationalIdFile != null) {
-        final fileKey = isForeign ? 'passport_num_file' : 'national_id_file';
-        formMap[fileKey] = await MultipartFile.fromFile(
+        formMap['national_id_file'] = await MultipartFile.fromFile(
           nationalIdFile.path,
           filename: nationalIdFile.path.split('/').last,
         );
