@@ -10,10 +10,10 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../declarations/presentations/components/declarations_card_item.dart';
 import '../../data/models/user_models.dart';
 import '../cubit/home_cubit.dart';
-// import '../cubit/notifications_cubit.dart';
+import '../cubit/notifications_cubit.dart';
 import 'declaration_summary.dart';
 import 'guest_declarations_page.dart';
-// import 'notifications_page.dart';
+import 'notifications_page.dart';
 
 class HomeTab extends StatelessWidget {
   final UserModel user;
@@ -78,93 +78,96 @@ class _HomeHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // return BlocBuilder<NotificationsCubit, NotificationsState>(
-    //   builder: (context, notifState) {
-    //     final unreadCount = notifState.unreadCount;
+    return BlocBuilder<NotificationsCubit, NotificationsState>(
+      builder: (context, notifState) {
+        final unreadCount = notifState.unreadCount;
 
-    return SizedBox(
-      width: double.infinity,
-      height: 260,
-      child: Stack(
-        children: [
-          Positioned.fill(child: Container(color: AppColors.mainDarkBlue)),
-          Positioned.fill(
-            child: Image.asset('assets/images/home_bg.jpg', fit: BoxFit.cover),
-          ),
-          Positioned.fill(
-            child: Container(
-              color: AppColors.mainBlueSecondary.withOpacity(0.52),
-            ),
-          ),
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.mainBlueIndigoDye.withOpacity(0.47),
-                    Colors.transparent,
-                  ],
+        return SizedBox(
+          width: double.infinity,
+          height: 260,
+          child: Stack(
+            children: [
+              Positioned.fill(child: Container(color: AppColors.mainDarkBlue)),
+              Positioned.fill(
+                child: Image.asset(
+                  'assets/images/home_bg.jpg',
+                  fit: BoxFit.cover,
                 ),
               ),
-            ),
-          ),
-          SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 50),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+              Positioned.fill(
+                child: Container(
+                  color: AppColors.mainBlueSecondary.withOpacity(0.52),
                 ),
-                child: Row(
-                  textDirection: TextDirection.rtl,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.end,
+              ),
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.mainBlueIndigoDye.withOpacity(0.47),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 50),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      textDirection: TextDirection.rtl,
                       children: [
-                        Text(
-                          _greeting,
-                          textDirection: TextDirection.rtl,
-                          style: AppTextStyles.bodyL.copyWith(
-                            color: AppColors.highlightLightest,
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              _greeting,
+                              textDirection: TextDirection.rtl,
+                              style: AppTextStyles.bodyL.copyWith(
+                                color: AppColors.highlightLightest,
+                              ),
+                            ),
+                            Text(
+                              _displayName,
+                              textDirection: TextDirection.rtl,
+                              style: AppTextStyles.h4.copyWith(
+                                color: AppColors.highlightLightest,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          _displayName,
-                          textDirection: TextDirection.rtl,
-                          style: AppTextStyles.h4.copyWith(
-                            color: AppColors.highlightLightest,
+                        const Spacer(),
+                        _BadgeIconButton(
+                          icon: Icons.notifications_outlined,
+                          count: unreadCount,
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => BlocProvider.value(
+                                value: context.read<NotificationsCubit>(),
+                                child: const NotificationsPage(),
+                              ),
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const Spacer(),
-                    // _BadgeIconButton(
-                    //   icon: Icons.notifications_outlined,
-                    //   count: unreadCount,
-                    //   onTap: () => Navigator.of(context).push(
-                    //     MaterialPageRoute(
-                    //       builder: (_) => BlocProvider.value(
-                    //         value: context.read<NotificationsCubit>(),
-                    //         child: const NotificationsPage(),
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
-    //   },
-    // );
   }
 }
 
@@ -730,7 +733,6 @@ class _QuickActionCard extends StatelessWidget {
               textDirection: TextDirection.rtl,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Icon on the right
                 Container(
                   width: 24,
                   height: 24,
@@ -741,7 +743,6 @@ class _QuickActionCard extends StatelessWidget {
                   child: _buildIconWidget(),
                 ),
                 const SizedBox(width: 14),
-                // Title + subtitle in the middle
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -764,7 +765,6 @@ class _QuickActionCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Badge or arrow on the left — only if hasItems
                 if (hasItems) ...[
                   const SizedBox(width: 10),
                   Container(

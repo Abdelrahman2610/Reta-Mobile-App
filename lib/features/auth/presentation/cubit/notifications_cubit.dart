@@ -1,108 +1,94 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../pages/notifications_page.dart';
+import 'package:reta/core/network/api_result.dart';
+import 'package:reta/features/auth/data/models/notification_model.dart';
+import 'package:reta/features/auth/data/repositories/notifications_repository.dart';
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
-class NotificationsState extends Equatable {
-  final List<NotificationItem> notifications;
+enum NotificationsStatus { initial, loading, loaded, error }
 
-  const NotificationsState({this.notifications = const []});
+class NotificationsState extends Equatable {
+  final List<NotificationModel> notifications;
+  final NotificationsStatus status;
+  final String? errorMessage;
+
+  const NotificationsState({
+    this.notifications = const [],
+    this.status = NotificationsStatus.initial,
+    this.errorMessage,
+  });
 
   int get unreadCount => notifications.where((n) => !n.isRead).length;
 
-  NotificationsState copyWith({List<NotificationItem>? notifications}) {
+  NotificationsState copyWith({
+    List<NotificationModel>? notifications,
+    NotificationsStatus? status,
+    String? errorMessage,
+  }) {
     return NotificationsState(
       notifications: notifications ?? this.notifications,
+      status: status ?? this.status,
+      errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 
   @override
-  List<Object?> get props => [notifications];
+  List<Object?> get props => [notifications, status, errorMessage];
 }
 
 // ── Cubit ─────────────────────────────────────────────────────────────────────
 
 class NotificationsCubit extends Cubit<NotificationsState> {
-  NotificationsCubit()
-    : super(
-        const NotificationsState(
-          notifications: [
-            NotificationItem(
-              id: '1',
-              title: 'تأكيد استلام الإقرار',
-              body:
-                  'تم استلام إقرارك الضريبي بنجاح، وجار مراجعته من قبل المختصين بمصلحة الضرائب العقارية.',
-              dateTime: '١٢ مارس ٢٠٢٦ - ١٠:٣٠ صباحاً',
-            ),
-            NotificationItem(
-              id: '2',
-              title: 'إتاحة سداد مبلغ تحت الحساب',
-              body:
-                  'يمكنك الآن سداد مبلغ تحت الحساب الضريبي رقم (123456) من خلال وسائل الدفع المتاحة.',
-              dateTime: '١٢ مارس ٢٠٢٦ - ١٠:٣٠ صباحاً',
-            ),
-            NotificationItem(
-              id: '3',
-              title: 'مطلوب استيفاء بيانات',
-              body:
-                  'يرجى استكمال بعض البيانات أو المرفقات الخاصة بإقراراتك لضمان استكمال إجراءات المراجعة.',
-              dateTime: '١٢ مارس ٢٠٢٦ - ١٠:٣٠ صباحاً',
-              isRead: true,
-            ),
-            NotificationItem(
-              id: '4',
-              title: 'انتهاء فترة تقديم الإقرار',
-              body:
-                  'يوم واحد فقط على انتهاء فترة تقديم الإقرار الضريبي لهذا العام.',
-              dateTime: '١٢ مارس ٢٠٢٦ - ١٠:٣٠ صباحاً',
-              isRead: true,
-            ),
-            NotificationItem(
-              id: '5',
-              title: 'تحديث حالة الإقرار',
-              body:
-                  'تم تحديث حالة الإقرار الضريبي الخاص بك إلى "قيد المراجعة".',
-              dateTime: '١٢ مارس ٢٠٢٦ - ١٠:٣٠ صباحاً',
-              isRead: true,
-            ),
-          ],
-        ),
-      );
+  final NotificationsRepository _repository;
 
-  void markAsRead(String id) {
+  NotificationsCubit({NotificationsRepository? repository})
+    : _repository = repository ?? NotificationsRepository(),
+      super(const NotificationsState());
+
+  Future<void> fetchNotifications() async {
+    emit(state.copyWith(status: NotificationsStatus.loading));
+
+    final result = await _repository.getNotifications();
+
+    switch (result) {
+      case ApiSuccess(:final data):
+        emit(
+          state.copyWith(
+            notifications: data,
+            status: NotificationsStatus.loaded,
+          ),
+        );
+      case ApiError(:final message):
+        emit(
+          state.copyWith(
+            status: NotificationsStatus.error,
+            errorMessage: message,
+          ),
+        );
+    }
+  }
+
+  Future<void> markAsRead(String id) async {
+    // Optimistic update first
     final updated = state.notifications.map((n) {
-      return n.id == id
-          ? NotificationItem(
-              id: n.id,
-              title: n.title,
-              body: n.body,
-              dateTime: n.dateTime,
-              isRead: true,
-            )
-          : n;
+      return n.id == id ? n.copyWith(isRead: true) : n;
     }).toList();
     emit(state.copyWith(notifications: updated));
+
+    // Fire and forget — if it fails, we don't roll back (UX stays clean)
+    await _repository.markAsRead(id);
   }
 
-  void markAllAsRead() {
+  Future<void> markAllAsRead() async {
+    // Optimistic update first
     final updated = state.notifications
-        .map(
-          (n) => NotificationItem(
-            id: n.id,
-            title: n.title,
-            body: n.body,
-            dateTime: n.dateTime,
-            isRead: true,
-          ),
-        )
+        .map((n) => n.copyWith(isRead: true))
         .toList();
     emit(state.copyWith(notifications: updated));
+
+    await _repository.markAllAsRead();
   }
 
-  // TODO: replace with real API call
-  Future<void> refresh() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    // emit new notifications from API here
-  }
+  Future<void> refresh() => fetchNotifications();
 }

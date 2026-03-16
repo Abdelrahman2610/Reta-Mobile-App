@@ -47,7 +47,7 @@ class MainPage extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => HomeCubit()),
-        BlocProvider(create: (_) => NotificationsCubit()),
+        BlocProvider(create: (_) => NotificationsCubit()..fetchNotifications()),
         BlocProvider(create: (_) => UserProfileCubit()..loadFromUser(user)),
         BlocProvider(create: (_) => DeclarationCubit()..fetchList()),
       ],

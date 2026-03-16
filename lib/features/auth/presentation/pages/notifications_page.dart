@@ -1,28 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:reta/features/auth/data/models/notification_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../cubit/notifications_cubit.dart';
 
-class NotificationItem {
-  final String id;
-  final String title;
-  final String body;
-  final String dateTime;
-  final bool isRead;
+class NotificationsPage extends StatefulWidget {
+  const NotificationsPage({super.key});
 
-  const NotificationItem({
-    required this.id,
-    required this.title,
-    required this.body,
-    required this.dateTime,
-    this.isRead = false,
-  });
+  @override
+  State<NotificationsPage> createState() => _NotificationsPageState();
 }
 
-class NotificationsPage extends StatelessWidget {
-  const NotificationsPage({super.key});
+class _NotificationsPageState extends State<NotificationsPage> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<NotificationsCubit>().fetchNotifications();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,29 +29,63 @@ class NotificationsPage extends StatelessWidget {
           child: Scaffold(
             backgroundColor: AppColors.neutralLightLight,
             appBar: _buildAppBar(context),
-            body: state.notifications.isEmpty
-                ? _buildEmpty()
-                : ListView.separated(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 8.h,
-                    ),
-                    itemCount: state.notifications.length,
-                    separatorBuilder: (_, __) => SizedBox(height: 8.h),
-                    itemBuilder: (context, index) {
-                      final item = state.notifications[index];
-                      return _NotificationCard(
-                        item: item,
-                        onTap: () => context
-                            .read<NotificationsCubit>()
-                            .markAsRead(item.id),
-                      );
-                    },
-                  ),
+            body: _buildBody(context, state),
           ),
         );
       },
     );
+  }
+
+  Widget _buildBody(BuildContext context, NotificationsState state) {
+    switch (state.status) {
+      case NotificationsStatus.loading:
+        return const Center(child: CircularProgressIndicator());
+
+      case NotificationsStatus.error:
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 48.sp,
+                color: AppColors.errorDark,
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                state.errorMessage ?? 'حدث خطأ ما',
+                textDirection: TextDirection.rtl,
+                style: AppTextStyles.bodyM.copyWith(
+                  color: AppColors.neutralDarkLight,
+                ),
+              ),
+              SizedBox(height: 16.h),
+              ElevatedButton(
+                onPressed: () =>
+                    context.read<NotificationsCubit>().fetchNotifications(),
+                child: const Text('إعادة المحاولة'),
+              ),
+            ],
+          ),
+        );
+
+      case NotificationsStatus.initial:
+      case NotificationsStatus.loaded:
+        if (state.notifications.isEmpty) return _buildEmpty();
+        return ListView.separated(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+          itemCount: state.notifications.length,
+          separatorBuilder: (_, __) => SizedBox(height: 8.h),
+          itemBuilder: (context, index) {
+            final item = state.notifications[index];
+            return _NotificationCard(
+              item: item,
+              onTap: () =>
+                  context.read<NotificationsCubit>().markAsRead(item.id),
+            );
+          },
+        );
+    }
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
@@ -130,7 +160,7 @@ class NotificationsPage extends StatelessWidget {
 }
 
 class _NotificationCard extends StatelessWidget {
-  final NotificationItem item;
+  final NotificationModel item;
   final VoidCallback onTap;
 
   const _NotificationCard({required this.item, required this.onTap});
@@ -154,7 +184,7 @@ class _NotificationCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.title,
+                    item.titleAr,
                     textDirection: TextDirection.rtl,
                     style: item.isRead
                         ? AppTextStyles.actionL.copyWith(
@@ -166,20 +196,22 @@ class _NotificationCard extends StatelessWidget {
                   ),
                   SizedBox(height: 6.h),
                   Text(
-                    item.body,
+                    item.messageAr,
                     textDirection: TextDirection.rtl,
                     style: AppTextStyles.bodyM.copyWith(
                       color: AppColors.neutralDarkLight,
                     ),
                   ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    item.dateTime,
-                    textDirection: TextDirection.rtl,
-                    style: AppTextStyles.bodyXS.copyWith(
-                      color: AppColors.neutralDarkLight,
+                  if (item.readAt != null) ...[
+                    SizedBox(height: 8.h),
+                    Text(
+                      item.readAt!,
+                      textDirection: TextDirection.rtl,
+                      style: AppTextStyles.bodyXS.copyWith(
+                        color: AppColors.neutralDarkLight,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),

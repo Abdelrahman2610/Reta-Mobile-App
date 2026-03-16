@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reta/core/widgets/settings_toggle_tile.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
+import 'package:reta/features/auth/presentation/cubit/notifications_cubit.dart';
 import 'package:reta/features/auth/presentation/cubit/settings_cubit.dart';
 import 'package:reta/features/auth/presentation/cubit/home_cubit.dart';
 import 'package:reta/features/auth/presentation/pages/user_profile_page.dart';
@@ -29,10 +31,10 @@ class AuthenticatedSettingsContent extends StatefulWidget {
 
 class _AuthenticatedSettingsContentState
     extends State<AuthenticatedSettingsContent> {
-  // bool _notificationsEnabled = true;
+  bool _notificationsEnabled = true;
 
   void _pushWithCubits(BuildContext context, Widget page) {
-    // final notificationsCubit = context.read<NotificationsCubit>();
+    final notificationsCubit = context.read<NotificationsCubit>();
     final homeCubit = context.read<HomeCubit>();
     final settingsCubit = context.read<SettingsCubit>();
 
@@ -40,7 +42,7 @@ class _AuthenticatedSettingsContentState
       MaterialPageRoute(
         builder: (_) => MultiBlocProvider(
           providers: [
-            // BlocProvider.value(value: notificationsCubit),
+            BlocProvider.value(value: notificationsCubit),
             BlocProvider.value(value: homeCubit),
             BlocProvider.value(value: settingsCubit),
           ],
@@ -70,14 +72,14 @@ class _AuthenticatedSettingsContentState
               _pushWithCubits(context, UserProfilePage(user: widget.user)),
         ),
 
-        // _SectionLabel('الإعدادات العامة'),
-        // const SizedBox(height: 8),
-        // SettingsToggleTile(
-        //   icon: Icons.notifications_none_outlined,
-        //   label: 'إيقاف الإشعارات',
-        //   value: _notificationsEnabled,
-        //   onChanged: (val) => setState(() => _notificationsEnabled = val),
-        // ),
+        _SectionLabel('الإعدادات العامة'),
+        const SizedBox(height: 8),
+        SettingsToggleTile(
+          icon: Icons.notifications_none_outlined,
+          label: 'إيقاف الإشعارات',
+          value: _notificationsEnabled,
+          onChanged: (val) => setState(() => _notificationsEnabled = val),
+        ),
         const SizedBox(height: 16),
 
         _SectionLabel('الدعم والمعلومات'),
