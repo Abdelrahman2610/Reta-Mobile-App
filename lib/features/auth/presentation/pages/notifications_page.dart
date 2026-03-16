@@ -17,7 +17,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   void initState() {
     super.initState();
-    context.read<NotificationsCubit>().fetchNotifications();
+    final cubit = context.read<NotificationsCubit>();
+    if (cubit.state.notificationsEnabled) {
+      cubit.fetchNotifications();
+    }
   }
 
   @override
@@ -28,7 +31,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           textDirection: TextDirection.rtl,
           child: Scaffold(
             backgroundColor: AppColors.neutralLightLight,
-            appBar: _buildAppBar(context),
+            appBar: _buildAppBar(context, state),
             body: _buildBody(context, state),
           ),
         );
@@ -36,7 +39,100 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 
+  PreferredSizeWidget _buildAppBar(
+    BuildContext context,
+    NotificationsState state,
+  ) {
+    return AppBar(
+      backgroundColor: AppColors.neutralLightDarkest,
+      elevation: 0,
+      surfaceTintColor: AppColors.neutralLightLight,
+      automaticallyImplyLeading: false,
+      title: Stack(
+        alignment: Alignment.center,
+        children: [
+          Center(
+            child: Text(
+              'الإشعارات',
+              style: AppTextStyles.actionXL.copyWith(
+                color: AppColors.mainBlueSecondary,
+              ),
+            ),
+          ),
+          Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: BoxConstraints(minWidth: 32.w, minHeight: 32.h),
+                icon: Icon(
+                  Icons.arrow_back_ios_rounded,
+                  color: AppColors.mainBlueSecondary,
+                  size: 20.sp,
+                ),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              const Spacer(),
+              // Only show "mark all as read" when notifications are enabled
+              if (state.notificationsEnabled)
+                GestureDetector(
+                  onTap: () =>
+                      context.read<NotificationsCubit>().markAllAsRead(),
+                  child: Text(
+                    'تحديد كمقروء',
+                    style: AppTextStyles.bodyM.copyWith(
+                      color: AppColors.mainBlueSecondary,
+                    ),
+                  ),
+                ),
+              SizedBox(width: 8.w),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBody(BuildContext context, NotificationsState state) {
+    // ── Notifications disabled banner ────────────────────────────────────────
+    if (!state.notificationsEnabled) {
+      return Column(
+        children: [
+          _DisabledBanner(),
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.notifications_off_outlined,
+                    size: 64.sp,
+                    color: AppColors.neutralLightDark,
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'الإشعارات متوقفة',
+                    style: AppTextStyles.h5.copyWith(
+                      color: AppColors.neutralDarkDarkest,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'يمكنك تفعيلها من صفحة الإعدادات',
+                    textDirection: TextDirection.rtl,
+                    style: AppTextStyles.bodyM.copyWith(
+                      color: AppColors.neutralDarkLight,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // ── Normal states ────────────────────────────────────────────────────────
     switch (state.status) {
       case NotificationsStatus.loading:
         return const Center(child: CircularProgressIndicator());
@@ -88,54 +184,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      backgroundColor: AppColors.neutralLightDarkest,
-      elevation: 0,
-      surfaceTintColor: AppColors.neutralLightLight,
-      automaticallyImplyLeading: false,
-      title: Stack(
-        alignment: Alignment.center,
-        children: [
-          Center(
-            child: Text(
-              'الإشعارات',
-              style: AppTextStyles.actionXL.copyWith(
-                color: AppColors.mainBlueSecondary,
-              ),
-            ),
-          ),
-          Row(
-            textDirection: TextDirection.rtl,
-            children: [
-              IconButton(
-                padding: EdgeInsets.zero,
-                constraints: BoxConstraints(minWidth: 32.w, minHeight: 32.h),
-                icon: Icon(
-                  Icons.arrow_back_ios_rounded,
-                  color: AppColors.mainBlueSecondary,
-                  size: 20.sp,
-                ),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              const Spacer(),
-              GestureDetector(
-                onTap: () => context.read<NotificationsCubit>().markAllAsRead(),
-                child: Text(
-                  'تحديد كمقروء',
-                  style: AppTextStyles.bodyM.copyWith(
-                    color: AppColors.mainBlueSecondary,
-                  ),
-                ),
-              ),
-              SizedBox(width: 8.w),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildEmpty() {
     return Center(
       child: Column(
@@ -158,6 +206,52 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 }
+
+// ── Disabled Banner ───────────────────────────────────────────────────────────
+
+class _DisabledBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      color: AppColors.warningDark.withOpacity(0.12),
+      child: Row(
+        textDirection: TextDirection.rtl,
+        children: [
+          Icon(
+            Icons.info_outline_rounded,
+            color: AppColors.warningDark,
+            size: 20,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'الإشعارات متوقفة حالياً. يمكنك تفعيلها من',
+              textDirection: TextDirection.rtl,
+              style: AppTextStyles.bodyS.copyWith(color: AppColors.warningDark),
+            ),
+          ),
+          const SizedBox(width: 4),
+          GestureDetector(
+            onTap: () => Navigator.of(context).pop(), // go back to settings
+            child: Text(
+              'الإعدادات',
+              style: AppTextStyles.bodyS.copyWith(
+                color: AppColors.warningDark,
+                fontWeight: FontWeight.w700,
+                decoration: TextDecoration.underline,
+                decorationColor: AppColors.warningDark,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Notification Card ─────────────────────────────────────────────────────────
 
 class _NotificationCard extends StatelessWidget {
   final NotificationModel item;
