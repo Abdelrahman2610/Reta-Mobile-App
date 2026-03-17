@@ -190,23 +190,16 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     await fetchBuildingUnitNumber(buildingNumber);
     final floorText = unitData!['real_estate_floor_text'];
     final floorOther = unitData!['real_estate_floor_other'];
-    bool isFloorOther = false;
+    bool isFloorOther = floorOther != null;
     if (unitType == UnitType.hotelFacility) {
       isFloorOther =
           unitData!['real_estate_floor_id'] == -1 ||
           (floorText != null && !floorNumbers.contains(floorText));
-    } else {
-      isFloorOther =
-          unitData!['real_estate_floor_id'] == -1 ||
-          (floorText != null &&
-              !(state.buildingFloorList
-                  .map((e) => e.name)
-                  .contains(floorText)));
     }
 
     final unitId = int.parse(unitData!['unit_id']?.toString() ?? '-1');
     final unitOther = unitData!['unit_other'];
-    final isUnitOther = unitData!['unit_id'] == -1;
+    final isUnitOther = unitOther != null;
 
     unitCodeController.text = unitData!['account_code'] ?? '';
 
@@ -679,25 +672,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           final currentFloor = unitData!['real_estate_floor_text'];
           final floorExists =
               currentFloor == null || data.any((f) => f.name == currentFloor);
-          final unitId = int.parse(unitData!['unit_id']?.toString() ?? '-1');
-          unitNumberOtherController.text = unitData!['unit_other'] ?? '';
-          bool isUnitOther = false;
-          if (currentFloor != null) {
-            isUnitOther =
-                unitData!['unit_id'] == -1 ||
-                (!state.buildingUnitList.map((e) => e.id).contains(unitId));
-          }
-
-          final unitNumber = state.buildingUnitList
-              .firstWhere((element) => element.id == unitId)
-              .name;
           emit(
             state.copyWith(
               buildingFloorList: data,
               isFloorLoading: false,
               selectedFloorNumber: floorExists ? currentFloor : null,
-              selectedUnitNumber: unitNumber,
-              isUnitNumberOther: isUnitOther,
             ),
           );
         } else {
