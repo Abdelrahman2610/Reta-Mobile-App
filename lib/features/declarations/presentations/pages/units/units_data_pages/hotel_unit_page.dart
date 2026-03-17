@@ -100,7 +100,7 @@ class _HotelFacilityView extends StatelessWidget {
                   context: context,
                   initialDate: DateTime.now(),
                   firstDate: DateTime(1990),
-                  lastDate: DateTime(2100),
+                  lastDate: DateTime.now(),
                 );
                 if (picked != null) {
                   cubit.operatingLicenseDateController.text =
@@ -302,7 +302,7 @@ class _HotelFacilityView extends StatelessWidget {
             16.hs,
 
             // ── مستندات داعمة أخرى (supporting_documents) ──────────
-            const AdditionalDocumentsSection(title: 'مستندات داعمة أخرى'),
+            const AdditionalDocumentsSection(),
             16.hs,
 
             // ── هل توجد وحدات تابعة؟ (has_sub_units) ───────────────

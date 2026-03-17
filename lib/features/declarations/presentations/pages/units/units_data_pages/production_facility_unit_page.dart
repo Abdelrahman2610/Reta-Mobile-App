@@ -283,7 +283,7 @@ class _ProductionFacilityUnitView extends StatelessWidget {
             16.hs,
 
             // ── مستندات داعمة أخرى (supporting_documents) ──────────
-            const AdditionalDocumentsSection(title: 'مستندات داعمة أخرى'),
+            const AdditionalDocumentsSection(),
             16.hs,
           ],
         ),
