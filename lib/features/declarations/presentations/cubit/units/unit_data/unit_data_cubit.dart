@@ -1,11 +1,8 @@
-import 'dart:developer';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/helpers/extensions/unit_type.dart';
 import 'package:reta/core/network/api_constants.dart';
-import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
 import 'package:reta/features/declarations/data/models/declaration_model.dart';
 import 'package:uuid/uuid.dart';
 
@@ -46,6 +43,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     required this.buildingNumber,
   }) : super(UnitDataState(vacantLandItems: [VacantLandItem()])) {
     fetchBuildingFloorNumber(buildingNumber);
+    fetchBuildingUnitNumber(buildingNumber);
     initUnitData();
   }
 
@@ -188,8 +186,10 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   Future<void> _initBaseUnitData() async {
+    await fetchBuildingFloorNumber(buildingNumber);
+    await fetchBuildingUnitNumber(buildingNumber);
     final floorText = unitData!['real_estate_floor_text'];
-    final floorOther = unitData!['real_estate_floor_other_text'];
+    final floorOther = unitData!['real_estate_floor_other'];
     bool isFloorOther = false;
     if (unitType == UnitType.hotelFacility) {
       isFloorOther =
@@ -204,13 +204,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
                   .contains(floorText)));
     }
 
-    await fetchBuildingUnitNumber(
-      unitData!['real_estate_floor_id'],
-      loading: false,
-    );
-
-    final unitNum = unitData!['unit_unit_num']?.toString();
-
+    final unitId = int.parse(unitData!['unit_id']?.toString() ?? '-1');
     final unitOther = unitData!['unit_other'];
     final isUnitOther = unitData!['unit_id'] == -1;
 
@@ -224,18 +218,35 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
     final ownershipDeed = unitData!['ownership_deed'];
 
+    String selectedFloorNumberOther = lookups.realEstateFloors.first.name;
+
+    if (isFloorOther) {
+      selectedFloorNumberOther = lookups.realEstateFloors
+          .firstWhere(
+            (real) =>
+                real.id ==
+                (floorOther.runtimeType == String
+                    ? int.parse(floorOther)
+                    : floorOther),
+            orElse: () => DeclarationLookup(id: 0, name: ''),
+          )
+          .name;
+      emit(state.copyWith(selectedFloorNumberOther: selectedFloorNumberOther));
+    }
+
+    final unitNumber = state.buildingUnitList
+        .firstWhere((element) => element.id == unitId)
+        .name;
+
     emit(
       state.copyWith(
         selectedFloorNumber: isFloorOther ? 'أخرى' : floorText,
         isFloorNumberOther: isFloorOther,
-
-        selectedUnitNumber: isUnitOther ? 'أخرى' : unitNum,
+        selectedUnitNumber: isUnitOther ? 'أخرى' : unitNumber,
         isUnitNumberOther: isUnitOther,
         contactedTaxAuthority: retaContact == 1 ? true : false,
-
         hasAdditionalDocuments:
             unitData!['submit_other_supporting_documents'] == 1,
-
         ownershipDeedFilePath: ownershipDeed?['url'],
         ownershipDeedOriginalName: ownershipDeed?['original_file_name'],
         ownershipDeedFullUrl: ownershipDeed?['full_url'],
@@ -262,11 +273,20 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         .where((name) => name.isNotEmpty)
         .toList();
 
+    final accountCode = (unitData!['account_code'] ?? '').toString();
+    unitCodeController.text = accountCode;
+    final contactTaxAuthority = unitData!['reta_contact_about_unit'] == 1
+        ? true
+        : false;
+    marketValueController.text = (unitData!['market_value'] ?? '').toString();
+    areaController.text = (unitData!['area'] ?? '').toString();
+
     emit(
       state.copyWith(
         isExempt: unitData!['exempted_as_residence'],
         selectedUnitSubType: unitTypeText,
         selectedAmenities: selectedAmenityNames,
+        contactedTaxAuthority: contactTaxAuthority,
       ),
     );
   }
@@ -313,12 +333,17 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   void _initFixedInstallationsData() {
+    final installationId = unitData!['installation_type_id'];
     final installationType = lookups.installationTypes.firstWhere(
-      (t) => t.id == unitData!['installation_type_id'],
+      (t) =>
+          t.id ==
+          ((installationId.runtimeType == String)
+              ? int.parse(installationId)
+              : installationId),
       orElse: () => DeclarationLookup(id: 0, name: ''),
     );
-
-    installationOwnerController.text = unitData!['installation_owner'] ?? '';
+    installationOwnerController.text =
+        unitData!['installation_owner_name'] ?? '';
     contractStartDateController.text = unitData!['contract_start'] ?? '';
     contractEndDateController.text = unitData!['contract_end'] ?? '';
     annualRentalValueController.text =
@@ -326,14 +351,16 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     otherInstallationTypeController.text =
         unitData!['installation_type_other'] ?? '';
 
+    bool isTaxpayerOwner = unitData!['is_taxpayer_owner_of_installation'] == 1
+        ? true
+        : false;
+
     emit(
       state.copyWith(
+        isTaxpayerOwner: isTaxpayerOwner,
         selectedInstallationType: installationType.name.isNotEmpty
             ? installationType.name
             : null,
-        isTaxpayerOwner: unitData!['is_taxpayer_owner_of_installation'] == 1
-            ? true
-            : false,
       ),
     );
   }
@@ -652,28 +679,24 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           final currentFloor = unitData!['real_estate_floor_text'];
           final floorExists =
               currentFloor == null || data.any((f) => f.name == currentFloor);
-          final unitNum = unitData!['unit_id']?.toString();
+          final unitId = int.parse(unitData!['unit_id']?.toString() ?? '-1');
           unitNumberOtherController.text = unitData!['unit_other'] ?? '';
           bool isUnitOther = false;
           if (currentFloor != null) {
-            int floorNumber = (data)
-                .firstWhere((floor) => floor.name == currentFloor)
-                .id;
-            fetchBuildingUnitNumber(floorNumber, data: data);
             isUnitOther =
                 unitData!['unit_id'] == -1 ||
-                (unitNum != null &&
-                    !state.buildingUnitList
-                        .map((e) => e.name)
-                        .contains(unitNum));
+                (!state.buildingUnitList.map((e) => e.id).contains(unitId));
           }
+
+          final unitNumber = state.buildingUnitList
+              .firstWhere((element) => element.id == unitId)
+              .name;
           emit(
             state.copyWith(
               buildingFloorList: data,
               isFloorLoading: false,
               selectedFloorNumber: floorExists ? currentFloor : null,
-              isFloorNumberOther: !floorExists,
-              selectedUnitNumber: unitNum,
+              selectedUnitNumber: unitNumber,
               isUnitNumberOther: isUnitOther,
             ),
           );
@@ -686,17 +709,17 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   Future<void> fetchBuildingUnitNumber(
-    dynamic floorNumber, {
-    List<DeclarationLookup>? data,
+    dynamic buildingNumber, {
     bool loading = true,
   }) async {
+    await Future.delayed(const Duration(milliseconds: 100));
     if (loading) {
       emit(state.copyWith(isFloorLoading: true));
     }
 
     final result = await safeApiCall(() async {
       final response = await DioClient.instance.dio.get(
-        ApiConstants.unitsByRealEstate(floorNumber),
+        ApiConstants.unitsByRealEstate(buildingNumber),
       );
       final list = response.data['data'] as List;
       return list.map((e) => DeclarationLookup.fromJson(e)).toList();
@@ -791,18 +814,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       ),
     );
     if (!isOther) floorNumberOtherController.clear();
-    if (isOther) {
-      emit(
-        state.copyWith(
-          buildingUnitList: [DeclarationLookup(id: -1, name: kOther)],
-        ),
-      );
-    } else {
-      int floorNumber = (state.buildingFloorList)
-          .firstWhere((floor) => floor.name == value)
-          .id;
-      fetchBuildingUnitNumber(floorNumber);
-    }
+
+    fetchBuildingUnitNumber(buildingNumber);
   }
 
   Future<void> selectFloorNumberOther(String? value) async {
@@ -813,11 +826,9 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         isUnitNumberOther: false,
       ),
     );
-
-    int floorNumber = (lookups.realEstateFloors)
-        .firstWhere((floor) => floor.name == value)
-        .id;
-    await fetchBuildingUnitNumber(floorNumber, data: lookups.realEstateFloors);
+    // await fetchBuildingUnitNumber(
+    //   buildingNumber
+    // );
   }
 
   void selectUnitNumber(String? value) {
@@ -848,8 +859,18 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   void setIsTaxpayerOwner(bool? value, BuildContext context) {
     if (value ?? false) {
-      final user = context.read<UserProfileCubit>().userModel;
-      installationOwnerController.text = '${user?.firstname} ${user?.lastname}';
+      if (unitData == null) {
+        final applicantCubit = context.read<ApplicantCubit>();
+        if (applicantCubit.taxpayerTypes == 'طبيعي') {
+          installationOwnerController.text =
+              '${applicantCubit.taxpayerFirstNameController.text.trim()} ${applicantCubit.taxpayerLastNameController.text.trim()}';
+        } else {
+          installationOwnerController.text = applicantCubit
+              .taxpayerNameController
+              .text
+              .trim();
+        }
+      }
     }
     emit(state.copyWith(isTaxpayerOwner: value));
   }
@@ -1612,7 +1633,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           ..._buildUnitPayload(unitType, lookups),
         },
       };
-      log("payload: ${payload.toString()}");
+
       final result = isEdit
           ? await DeclarationService.instance.updateDeclaration(
               payload,
@@ -1790,9 +1811,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     return {
       ..._buildBaseUnitPayload(),
       'installation_type_id': installationTypeId,
-      'installation_type_other': (installationTypeId == -1)
-          ? otherInstallationTypeController.text.trim()
-          : null,
+      'installation_type_other': otherInstallationTypeController.text.trim(),
       'is_taxpayer_owner_of_installation': (state.isTaxpayerOwner ?? false)
           ? 1
           : 2,
@@ -2161,7 +2180,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     return {
       'real_estate_floor_id': floorId,
       if (state.isFloorNumberOther)
-        'real_estate_floor_other': state.selectedFloorNumberOther,
+        'real_estate_floor_other': _getFloorOtherId(),
       'unit_id': state.isUnitNumberOther ? -1 : _getUnitID(),
       if (state.isUnitNumberOther)
         'unit_other': unitNumberOtherController.text.trim(),
@@ -2181,7 +2200,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         .map(
           (d) => {
             'name': d.nameController.text.trim(),
-            'path': d.filePath,
+            'file_id': d.filePath,
             'original_file_name':
                 d.originalFileName ?? d.nameController.text.trim(),
             'full_url': d.fullUrl,
@@ -2196,6 +2215,16 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     int floorId = lookups.realEstateFloors
         .firstWhere(
           (a) => a.name == state.selectedFloorNumber,
+          orElse: () => DeclarationLookup(id: 0, name: ''),
+        )
+        .id;
+    return floorId;
+  }
+
+  int _getFloorOtherId() {
+    int floorId = lookups.realEstateFloors
+        .firstWhere(
+          (a) => a.name == state.selectedFloorNumberOther,
           orElse: () => DeclarationLookup(id: 0, name: ''),
         )
         .id;

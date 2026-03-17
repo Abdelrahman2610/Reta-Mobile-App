@@ -92,7 +92,7 @@ class SharedConventionalForm extends StatelessWidget {
               curr.taxpayerOtherAttachmentFullUrl),
           builder: (context, state) {
             return FileUploadField(
-              labelText: 'مرفق السجل التجاري',
+              labelText: 'مرفق آخر',
               filePath: cubit.taxpayerOtherAttachmentUrl,
               labelRequired: true,
               onFilePicked: () async {

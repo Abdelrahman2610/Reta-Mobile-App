@@ -289,7 +289,7 @@ class _IndustrialFacilityView extends StatelessWidget {
             ),
             16.hs,
 
-            const AdditionalDocumentsSection(title: 'مستندات داعمة أخرى'),
+            const AdditionalDocumentsSection(),
           ],
         ),
       ),

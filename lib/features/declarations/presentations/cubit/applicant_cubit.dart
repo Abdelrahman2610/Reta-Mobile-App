@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -69,10 +67,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     if (applicantNationality == Nationality.egyptian) {
       applicantNationalIdController.text = user.nationalId ?? '';
       final nationalIdFiles = user.nationalIdFiles as List?;
-      log('NationalIds: ${user.nationalIdFiles}');
       if (nationalIdFiles != null && nationalIdFiles.isNotEmpty) {
         applicantNationalIdFilePath = nationalIdFiles.first['full_url'];
-        log('SetNationalFiles: $applicantNationalIdFilePath');
       }
     } else {
       applicantPassportNumberController.text = user.passportNumber ?? '';
@@ -216,7 +212,6 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayerNationalIdFilePath = data.path;
         taxpayerNationalIdOriginalName = data.originalFileName;
         taxpayerNationalIdUrl = data.fullUrl;
-        log('TaxpayerFullUrl: $taxpayerNationalIdUrl');
         emit(state.copyWith(isLoading: false));
       case ApiError<UploadedFileModel>(:final message):
         emit(state.copyWith(isLoading: false, errorMessage: message));
@@ -564,11 +559,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     emit(state.copyWith(isLoading: true));
 
     try {
-      // TODO:Call API
       final payload = buildPayload(context);
       debugPrint('Payload: $payload');
-
-      // await repository.submitApplicant(payload);
 
       emit(state.copyWith(isLoading: false, successMessage: 'تم الحفظ بنجاح'));
     } catch (e) {
@@ -580,7 +572,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     final applicantRoleId = applicantType.id;
 
     final Map<String, dynamic> payload = {
-      'declaration_type_id': 1, // TODO: Need to change this
+      'declaration_type_id': 1,
       'applicant_role_id': applicantRoleId,
     };
 
@@ -594,7 +586,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         applicantType == ApplicantType.other) {
       if (taxpayerAuthorizationFilePath != null) {
         payload['power_of_attorney'] = {
-          'path': taxpayerAuthorizationFilePath,
+          'file_id': taxpayerAuthorizationFilePath,
           'original_file_name': taxpayerAuthorizationOriginName,
           'full_url': taxpayerAuthorizationUrl,
         };
@@ -605,7 +597,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     if (applicantType == ApplicantType.sharedOwnership) {
       if (ownershipProofDocumentPath != null) {
         payload['joint_ownership_document'] = {
-          'path': ownershipProofDocumentPath,
+          'file_id': ownershipProofDocumentPath,
           'original_file_name': ownershipProofDocumentOriginalName,
           'full_url': ownershipProofDocumentUrl,
         };
@@ -662,7 +654,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayer['national_id'] = taxpayerNationalIdController.text.trim();
         if (taxpayerNationalIdFilePath != null) {
           taxpayer['national_id_attachment'] = {
-            'path': taxpayerNationalIdFilePath,
+            'file_id': taxpayerNationalIdFilePath,
             'original_file_name': taxpayerNationalIdOriginalName,
             'full_url': taxpayerNationalIdUrl,
           };
@@ -672,7 +664,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
             .trim();
         if (taxpayerPassportFilePath != null) {
           taxpayer['passport_attachment'] = {
-            'path': taxpayerPassportFilePath,
+            'file_id': taxpayerPassportFilePath,
             'original_file_name': taxpayerPassportOriginalName,
             'full_url': taxpayerPassportUrl,
           };
@@ -685,7 +677,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayer['national_id'] = taxpayerNationalIdController.text.trim();
         if (taxpayerNationalIdFilePath != null) {
           taxpayer['national_id_attachment'] = {
-            'path': taxpayerNationalIdFilePath,
+            'file_id': taxpayerNationalIdFilePath,
             'original_file_name': taxpayerNationalIdOriginalName,
             'full_url': taxpayerNationalIdUrl,
           };
@@ -695,7 +687,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
             .trim();
         if (taxpayerPassportFilePath != null) {
           taxpayer['passport_attachment'] = {
-            'path': taxpayerPassportFilePath,
+            'file_id': taxpayerPassportFilePath,
             'original_file_name': taxpayerPassportOriginalName,
             'full_url': taxpayerPassportUrl,
           };
@@ -709,14 +701,14 @@ class ApplicantCubit extends Cubit<ApplicantState> {
           .trim();
       if (taxpayerTaxCardFilePath != null) {
         taxpayer['tax_card_attachment'] = {
-          'path': taxpayerTaxCardFilePath,
+          'file_id': taxpayerTaxCardFilePath,
           'original_file_name': taxpayerTaxCardOriginalName,
           'full_url': taxpayerTaxCardUrl,
         };
       }
       if (taxpayerCommercialRegisterFilePath != null) {
         taxpayer['commercial_register_attachment'] = {
-          'path': taxpayerCommercialRegisterFilePath,
+          'file_id': taxpayerCommercialRegisterFilePath,
           'original_file_name': taxpayerCommercialRegisterOriginalName,
           'full_url': taxpayerCommercialRegisterUrl,
         };
@@ -727,7 +719,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       }
       if (taxpayerOtherAttachmentFilePath != null) {
         taxpayer['other_attachment'] = {
-          'path': taxpayerOtherAttachmentFilePath,
+          'file_id': taxpayerOtherAttachmentFilePath,
           'original_file_name': taxpayerOtherAttachmentOriginalName,
           'full_url': taxpayerOtherAttachmentUrl,
         };
@@ -797,7 +789,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     // ── سند التوكيل ──────────────────────────
     if (taxpayerAuthorizationFilePath != null) {
       payload['power_of_attorney'] = {
-        'path': taxpayerAuthorizationFilePath,
+        'file_id': taxpayerAuthorizationFilePath,
         'original_file_name': taxpayerAuthorizationOriginName,
         'full_url': taxpayerAuthorizationUrl,
       };
@@ -806,7 +798,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     // ── سند الملكية على الشيوع ───────────────
     if (ownershipProofDocumentPath != null) {
       payload['joint_ownership_document'] = {
-        'path': ownershipProofDocumentPath,
+        'file_id': ownershipProofDocumentPath,
         'original_file_name': ownershipProofDocumentOriginalName,
         'full_url': ownershipProofDocumentUrl,
       };
@@ -826,7 +818,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayer['national_id'] = taxpayerNationalIdController.text.trim();
         if (taxpayerNationalIdFilePath != null) {
           taxpayer['national_id_attachment'] = {
-            'path': taxpayerNationalIdFilePath,
+            'file_id': taxpayerNationalIdFilePath,
             'original_file_name': taxpayerNationalIdOriginalName,
             'full_url': taxpayerNationalIdUrl,
           };
@@ -836,7 +828,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
             .trim();
         if (taxpayerPassportFilePath != null) {
           taxpayer['passport_attachment'] = {
-            'path': taxpayerPassportFilePath,
+            'file_id': taxpayerPassportFilePath,
             'original_file_name': taxpayerPassportOriginalName,
             'full_url': taxpayerPassportUrl,
           };
@@ -852,14 +844,14 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
       if (taxpayerTaxCardFilePath != null) {
         taxpayer['tax_card_attachment'] = {
-          'path': taxpayerTaxCardFilePath,
+          'file_id': taxpayerTaxCardFilePath,
           'original_file_name': taxpayerTaxCardOriginalName,
           'full_url': taxpayerTaxCardUrl,
         };
       }
       if (taxpayerCommercialRegisterFilePath != null) {
         taxpayer['commercial_register_attachment'] = {
-          'path': taxpayerCommercialRegisterFilePath,
+          'file_id': taxpayerCommercialRegisterFilePath,
           'original_file_name': taxpayerCommercialRegisterOriginalName,
           'full_url': taxpayerCommercialRegisterUrl,
         };
@@ -869,7 +861,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
             taxpayerOtherAttachmentNameController.text.trim();
         if (taxpayerOtherAttachmentFilePath != null) {
           taxpayer['other_attachment'] = {
-            'path': taxpayerOtherAttachmentFilePath,
+            'file_id': taxpayerOtherAttachmentFilePath,
             'original_file_name': taxpayerOtherAttachmentOriginalName,
             'full_url': taxpayerOtherAttachmentUrl,
           };
@@ -892,7 +884,6 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     }
 
     payload['taxpayer'] = taxpayer;
-    log("payload: $payload");
     final result = await safeApiCall(() async {
       final response = await DioClient.instance.dio.put(
         ApiConstants.declarationById(declarationId.toString()),
