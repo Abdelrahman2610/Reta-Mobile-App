@@ -302,6 +302,7 @@ class _BuildingItemState extends State<_BuildingItem> {
             labelText: 'التكلفة الدفترية للمبنى',
             labelRequired: false,
             controller: widget.building.bookCostBuilding,
+            keyboardType: TextInputType.number,
             hintText: 'إدخل التكلفة الدفترية للمبنى',
           ),
           15.hs,
