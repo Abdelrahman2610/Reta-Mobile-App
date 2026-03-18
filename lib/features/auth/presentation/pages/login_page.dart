@@ -286,7 +286,12 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildLoginButton(LoginState state, LoginCubit cubit) {
-    final bool enabled = state.isFormValid && !state.isLoading;
+    final bool enabled =
+        (state.isFormValid ||
+            state.credentialError == null &&
+                state.phone.isNotEmpty &&
+                state.password.isNotEmpty) &&
+        !state.isLoading;
     return SizedBox(
       height: 52,
       child: ElevatedButton(
