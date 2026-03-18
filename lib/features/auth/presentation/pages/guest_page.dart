@@ -353,11 +353,10 @@ class _HomeTab extends StatelessWidget {
                           onPressed: () =>
                               Navigator.of(
                                 RuntimeData.getCurrentContext()!,
-                              ).pushAndRemoveUntil(
+                              ).push(
                                 MaterialPageRoute(
                                   builder: (_) => const SignupPage(),
                                 ),
-                                (route) => false,
                               ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.highlightDarkest,

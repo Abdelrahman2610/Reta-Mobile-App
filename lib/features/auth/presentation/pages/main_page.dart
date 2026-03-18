@@ -456,13 +456,10 @@ class _MainViewState extends State<_MainView> {
                         height: 44,
                         child: OutlinedButton(
                           onPressed: () {
-                            Navigator.of(
-                              RuntimeData.getCurrentContext()!,
-                            ).pushAndRemoveUntil(
+                            Navigator.of(RuntimeData.getCurrentContext()!).push(
                               MaterialPageRoute(
                                 builder: (_) => const SignupPage(),
                               ),
-                              (route) => false,
                             );
                           },
                           style: OutlinedButton.styleFrom(

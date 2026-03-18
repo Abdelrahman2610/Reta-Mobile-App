@@ -120,10 +120,7 @@ class AuthGateSheet extends StatelessWidget {
                 Navigator.of(context).pop();
                 Navigator.of(
                   RuntimeData.getCurrentContext()!,
-                ).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const SignupPage()),
-                  (route) => false,
-                );
+                ).push(MaterialPageRoute(builder: (_) => const SignupPage()));
               },
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.highlightDarkest,
