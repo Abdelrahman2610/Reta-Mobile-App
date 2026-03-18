@@ -712,6 +712,8 @@ class SignupCubit extends Cubit<SignupState> {
   void resetSubmitSuccess() =>
       emit(state.copyWith(isSubmitSuccess: false, submitError: () => null));
 
+  void clearOtpError() => emit(state.copyWith(submitError: () => null));
+
   // ── Submit ──────────────────────────────────────────────────────────────────
 
   Future<void> submit() async {

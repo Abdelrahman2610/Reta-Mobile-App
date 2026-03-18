@@ -1,108 +1,137 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../pages/notifications_page.dart';
+import 'package:reta/core/network/api_result.dart';
+import 'package:reta/core/widgets/notification_preferences_service.dart';
+import 'package:reta/features/auth/data/models/notification_model.dart';
+import 'package:reta/features/auth/data/repositories/notifications_repository.dart';
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
+enum NotificationsStatus { initial, loading, loaded, error }
+
 class NotificationsState extends Equatable {
-  final List<NotificationItem> notifications;
+  final List<NotificationModel> notifications;
+  final NotificationsStatus status;
+  final String? errorMessage;
+  final bool notificationsEnabled;
 
-  const NotificationsState({this.notifications = const []});
+  const NotificationsState({
+    this.notifications = const [],
+    this.status = NotificationsStatus.initial,
+    this.errorMessage,
+    this.notificationsEnabled = true,
+  });
 
-  int get unreadCount => notifications.where((n) => !n.isRead).length;
+  /// Badge count is 0 when notifications are disabled
+  int get unreadCount =>
+      notificationsEnabled ? notifications.where((n) => !n.isRead).length : 0;
 
-  NotificationsState copyWith({List<NotificationItem>? notifications}) {
+  NotificationsState copyWith({
+    List<NotificationModel>? notifications,
+    NotificationsStatus? status,
+    String? errorMessage,
+    bool? notificationsEnabled,
+  }) {
     return NotificationsState(
       notifications: notifications ?? this.notifications,
+      status: status ?? this.status,
+      errorMessage: errorMessage ?? this.errorMessage,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
     );
   }
 
   @override
-  List<Object?> get props => [notifications];
+  List<Object?> get props => [
+    notifications,
+    status,
+    errorMessage,
+    notificationsEnabled,
+  ];
 }
 
 // ── Cubit ─────────────────────────────────────────────────────────────────────
 
 class NotificationsCubit extends Cubit<NotificationsState> {
-  NotificationsCubit()
-    : super(
-        const NotificationsState(
-          notifications: [
-            NotificationItem(
-              id: '1',
-              title: 'تأكيد استلام الإقرار',
-              body:
-                  'تم استلام إقرارك الضريبي بنجاح، وجار مراجعته من قبل المختصين بمصلحة الضرائب العقارية.',
-              dateTime: '١٢ مارس ٢٠٢٦ - ١٠:٣٠ صباحاً',
-            ),
-            NotificationItem(
-              id: '2',
-              title: 'إتاحة سداد مبلغ تحت الحساب',
-              body:
-                  'يمكنك الآن سداد مبلغ تحت الحساب الضريبي رقم (123456) من خلال وسائل الدفع المتاحة.',
-              dateTime: '١٢ مارس ٢٠٢٦ - ١٠:٣٠ صباحاً',
-            ),
-            NotificationItem(
-              id: '3',
-              title: 'مطلوب استيفاء بيانات',
-              body:
-                  'يرجى استكمال بعض البيانات أو المرفقات الخاصة بإقراراتك لضمان استكمال إجراءات المراجعة.',
-              dateTime: '١٢ مارس ٢٠٢٦ - ١٠:٣٠ صباحاً',
-              isRead: true,
-            ),
-            NotificationItem(
-              id: '4',
-              title: 'انتهاء فترة تقديم الإقرار',
-              body:
-                  'يوم واحد فقط على انتهاء فترة تقديم الإقرار الضريبي لهذا العام.',
-              dateTime: '١٢ مارس ٢٠٢٦ - ١٠:٣٠ صباحاً',
-              isRead: true,
-            ),
-            NotificationItem(
-              id: '5',
-              title: 'تحديث حالة الإقرار',
-              body:
-                  'تم تحديث حالة الإقرار الضريبي الخاص بك إلى "قيد المراجعة".',
-              dateTime: '١٢ مارس ٢٠٢٦ - ١٠:٣٠ صباحاً',
-              isRead: true,
-            ),
-          ],
-        ),
-      );
+  final NotificationsRepository _repository;
+  final NotificationPreferencesService _prefsService;
 
-  void markAsRead(String id) {
-    final updated = state.notifications.map((n) {
-      return n.id == id
-          ? NotificationItem(
-              id: n.id,
-              title: n.title,
-              body: n.body,
-              dateTime: n.dateTime,
-              isRead: true,
-            )
-          : n;
-    }).toList();
-    emit(state.copyWith(notifications: updated));
+  NotificationsCubit({
+    NotificationsRepository? repository,
+    NotificationPreferencesService? prefsService,
+  }) : _repository = repository ?? NotificationsRepository(),
+       _prefsService = prefsService ?? NotificationPreferencesService(),
+       super(const NotificationsState());
+
+  /// Called on app start — loads saved preference, then fetches if enabled
+  Future<void> fetchNotifications() async {
+    final enabled = await _prefsService.isEnabled();
+    emit(state.copyWith(notificationsEnabled: enabled));
+
+    if (!enabled) return;
+
+    emit(state.copyWith(status: NotificationsStatus.loading));
+    final result = await _repository.getNotifications();
+
+    switch (result) {
+      case ApiSuccess(:final data):
+        emit(
+          state.copyWith(
+            notifications: data,
+            status: NotificationsStatus.loaded,
+          ),
+        );
+      case ApiError(:final message):
+        emit(
+          state.copyWith(
+            status: NotificationsStatus.error,
+            errorMessage: message,
+          ),
+        );
+    }
   }
 
-  void markAllAsRead() {
+  /// Toggle from Settings — persists preference and refreshes if re-enabled
+  Future<void> setNotificationsEnabled(bool enabled) async {
+    await _prefsService.setEnabled(enabled);
+    emit(state.copyWith(notificationsEnabled: enabled));
+
+    if (enabled) {
+      emit(state.copyWith(status: NotificationsStatus.loading));
+      final result = await _repository.getNotifications();
+      switch (result) {
+        case ApiSuccess(:final data):
+          emit(
+            state.copyWith(
+              notifications: data,
+              status: NotificationsStatus.loaded,
+            ),
+          );
+        case ApiError(:final message):
+          emit(
+            state.copyWith(
+              status: NotificationsStatus.error,
+              errorMessage: message,
+            ),
+          );
+      }
+    }
+  }
+
+  Future<void> markAsRead(String id) async {
     final updated = state.notifications
-        .map(
-          (n) => NotificationItem(
-            id: n.id,
-            title: n.title,
-            body: n.body,
-            dateTime: n.dateTime,
-            isRead: true,
-          ),
-        )
+        .map((n) => n.id == id ? n.copyWith(isRead: true) : n)
         .toList();
     emit(state.copyWith(notifications: updated));
+    await _repository.markAsRead(id);
   }
 
-  // TODO: replace with real API call
-  Future<void> refresh() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    // emit new notifications from API here
+  Future<void> markAllAsRead() async {
+    final updated = state.notifications
+        .map((n) => n.copyWith(isRead: true))
+        .toList();
+    emit(state.copyWith(notifications: updated));
+    await _repository.markAllAsRead();
   }
+
+  Future<void> refresh() => fetchNotifications();
 }
