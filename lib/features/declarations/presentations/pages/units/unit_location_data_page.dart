@@ -319,12 +319,7 @@ class _UnitLocationDataPage extends StatelessWidget {
                                       labelText: 'رقم العقار',
                                       labelRequired: true,
                                       hintText: 'اختر رقم العقار',
-                                      value: _safeValue(
-                                        state.selectedBuildingNumber,
-                                        (state.buildingList ?? [])
-                                            .map((v) => v.name)
-                                            .toList(),
-                                      ),
+                                      value: state.selectedBuildingNumber,
                                       enabled:
                                           state.selectedStreet != null &&
                                           (!state.isStreetOther ||
@@ -360,7 +355,6 @@ class _UnitLocationDataPage extends StatelessWidget {
                                         controller:
                                             cubit.buildingNumberOtherController,
                                         hintText: 'ادخل رقم العقار',
-                                        keyboardType: TextInputType.number,
                                         validator: (v) => v == null || v.isEmpty
                                             ? 'هذا الحقل مطلوب'
                                             : null,

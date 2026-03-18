@@ -236,7 +236,7 @@ class _ProductionFacilityUnitView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.constructionLicenseFilePath,
+                filePath: state.constructionLicenseFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setConstructionLicenseFile(path);
@@ -254,7 +254,7 @@ class _ProductionFacilityUnitView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.operationLicenseFilePath,
+                filePath: state.operatingLicenseFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setOperationLicenseFile(path);
@@ -272,7 +272,7 @@ class _ProductionFacilityUnitView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.allocationContractFilePath,
+                filePath: state.allocationContractFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setAllocationContractFile(path);
@@ -283,7 +283,7 @@ class _ProductionFacilityUnitView extends StatelessWidget {
             16.hs,
 
             // ── مستندات داعمة أخرى (supporting_documents) ──────────
-            const AdditionalDocumentsSection(title: 'مستندات داعمة أخرى'),
+            const AdditionalDocumentsSection(),
             16.hs,
           ],
         ),
@@ -366,12 +366,14 @@ class _BuildingItemState extends State<_BuildingItem> {
             labelText: 'المساحة الإجمالية للمبنى',
             labelRequired: true,
             controller: widget.building.totalArea,
+            keyboardType: TextInputType.number,
             hintText: 'إدخل المساحة الإجمالية للمبنى',
             validator: (v) => v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
           ),
           15.hs,
           AppTextFormField(
             labelText: 'القيمة السوقية للمبنى',
+            keyboardType: TextInputType.number,
             labelRequired: false,
             controller: widget.building.marketValue,
             hintText: 'القيمة السوقية للمبنى',

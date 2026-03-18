@@ -1,9 +1,13 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/helpers/runtime_data.dart';
 import '../../../../../core/network/api_constants.dart';
 import '../../../../../core/network/api_result.dart';
 import '../../../../../core/network/dio_client.dart';
 import '../../../data/models/declaration_details_model.dart';
+import '../declaration_lookups_cubit.dart';
+import 'declaration_cubit.dart';
 import 'declaration_details_states.dart';
 
 class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
@@ -29,6 +33,8 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
     'unit_id',
     'unit_type_text',
     'usage_type',
+    'installation_type_text',
+    'installation_type_other',
   ];
   final List<CategoryConfig> allCategories = [
     CategoryConfig(
@@ -67,8 +73,8 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
       summaryFields: baseCategoryInfo,
     ),
     CategoryConfig(
-      deleteLabel: "vacant_land",
-      deleteID: "vacant",
+      deleteID: "vacant_land",
+      deleteLabel: "vacant",
       key: 'vacant_land',
       label: 'الأراضي الفضاء',
       summaryFields: baseCategoryInfo,
@@ -88,7 +94,7 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
       summaryFields: baseCategoryInfo,
     ),
     CategoryConfig(
-      key: 'petroleum_facility',
+      key: 'production_facility',
       deleteLabel: "production",
       deleteID: "production_facility",
       label: 'منشآت بترولية',
@@ -145,6 +151,7 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
       final response = await DioClient.instance.dio.post(
         ApiConstants.cancelDeclarationById(declarationId),
       );
+      RuntimeData.getCurrentContext()!.read<DeclarationCubit>().fetchList();
       return true;
     });
 
@@ -221,5 +228,16 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
       units = (detailsModel?.data?[selected.key]['data'] as List)
           .cast<Map<String, dynamic>>();
     }
+  }
+
+  Future<void> fetchLookups(BuildContext context) async {
+    emit(DeclarationDetailsLoading());
+    final lookupsCubit = context.read<DeclarationLookupsCubit>();
+
+    if (lookupsCubit.lookups == null) {
+      await lookupsCubit.fetchLookups();
+    }
+
+    if (!context.mounted) return;
   }
 }

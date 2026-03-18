@@ -148,7 +148,6 @@ class ExemptionSection extends StatelessWidget {
                   labelRequired: true,
                   controller: cubit.lawNumberController,
                   hintText: 'إدخل رقم القانون',
-                  keyboardType: TextInputType.number,
                   validator: (v) =>
                       v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
                 ),
@@ -158,7 +157,6 @@ class ExemptionSection extends StatelessWidget {
                   labelRequired: true,
                   controller: cubit.lawYearController,
                   hintText: 'إدخل سنة القانون',
-                  keyboardType: TextInputType.number,
                   validator: (v) =>
                       v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
                 ),

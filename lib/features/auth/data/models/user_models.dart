@@ -71,7 +71,16 @@ class UserModel {
     final data = json['data'] as Map<String, dynamic>;
     final profile = data['profile'] as Map<String, dynamic>? ?? {};
     final nationality = profile['nationality'] as Map<String, dynamic>?;
-    return UserModel(
+
+    List<Map<String, dynamic>>? parseFiles(dynamic raw) {
+      if (raw == null) return null;
+      if (raw is List) {
+        return raw.whereType<Map<String, dynamic>>().toList();
+      }
+      return null;
+    }
+
+    UserModel userModel = UserModel(
       id: data['id']?.toString(),
       firstname: profile['first_name']?.toString(),
       lastname: profile['last_name']?.toString(),
@@ -87,8 +96,12 @@ class UserModel {
       emailVerified: data['email_verified_at'] != null,
       phoneVerified: profile['mobile_verified_at'] != null,
       nationalIdVerified: profile['ocr_verified'] == 1,
+      nationalIdFiles: parseFiles(profile['national_id_file']),
+      passportFiles: parseFiles(profile['passport_num_file']),
       userType: UserType.authenticated,
     );
+
+    return userModel;
   }
 
   bool get isGuest => userType == UserType.guest;

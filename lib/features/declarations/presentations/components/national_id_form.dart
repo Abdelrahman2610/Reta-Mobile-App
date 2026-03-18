@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/helpers/extensions/dimensions.dart';
-import '../../../../core/helpers/fixed_assets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_text_form_field.dart';
-import '../../../components/image_svg_custom_widget.dart';
-import 'app_attachment_item.dart';
+import '../pages/units/units_data_pages/components/file_upload_field.dart';
 
 class NationalIDForm extends StatelessWidget {
   const NationalIDForm({
@@ -17,11 +15,13 @@ class NationalIDForm extends StatelessWidget {
     this.enabled = true,
     this.labelRequired = true,
     this.containFile = true,
+    this.isUserInfo = false,
     this.attachmentIconColor,
     this.controller,
-    this.onFilePicked,
+    required this.onFilePicked,
     this.filePath,
     required this.displayFile,
+    required this.onFileRemoved,
   });
 
   final double? fontSize;
@@ -32,9 +32,11 @@ class NationalIDForm extends StatelessWidget {
   final bool containFile;
   final Color? attachmentIconColor;
   final TextEditingController? controller;
-  final VoidCallback? onFilePicked;
+  final VoidCallback onFilePicked;
+  final VoidCallback onFileRemoved;
   final String? filePath;
   final bool displayFile;
+  final bool isUserInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -56,29 +58,13 @@ class NationalIDForm extends StatelessWidget {
           keyboardType: TextInputType.number,
         ),
         16.hs,
-        AppTextFormField(
+        FileUploadField(
           labelText: 'مرفق الرقم القومي',
+          filePath: filePath,
           labelRequired: labelRequired,
-          labelFontSize: fontSize ?? 14.sp,
-          labelColor: textColor ?? AppColors.neutralDarkDark,
-          readOnly: true,
-          suffixWidget: ImageSvgCustomWidget(
-            imgPath: FixedAssets.instance.attachmentWhiteIC,
-            width: 16.w,
-            height: 16.h,
-            color: displayFile
-                ? filePath != null
-                      ? AppColors.highlightDarkest
-                      : attachmentIconColor
-                : attachmentIconColor,
-          ),
-          prefixWidget: AppAttachmentItem(
-            onTap: onFilePicked,
-            containFile: displayFile ? filePath != null : false,
-          ),
-          infoText: 'ملف بصيغة Jpg أو pdf لا يتجاوز حجمه 5 ميجا بايت',
-          enabled: enabled,
-          filledColor: filledColor,
+          onFilePicked: onFilePicked,
+          onFileRemoved: onFileRemoved,
+          isUserInfo: isUserInfo,
         ),
       ],
     );

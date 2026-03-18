@@ -18,7 +18,7 @@ class UploadedFileModel {
   factory UploadedFileModel.fromJson(Map<String, dynamic> json) {
     return UploadedFileModel(
       originalFileName: json['original_file_name'],
-      path: json['path'],
+      path: json['file_id'],
       fullUrl: json['full_url'],
     );
   }

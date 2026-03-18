@@ -3,13 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/helpers/extensions/dimensions.dart';
-import '../../../../core/helpers/fixed_assets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_text_form_field.dart';
-import '../../../components/image_svg_custom_widget.dart';
 import '../cubit/applicant_cubit.dart';
 import '../cubit/applicant_states.dart';
-import 'app_attachment_item.dart';
+import '../pages/units/units_data_pages/components/file_upload_field.dart';
 
 class SharedConventionalForm extends StatelessWidget {
   const SharedConventionalForm({super.key, required this.cubit});
@@ -39,32 +37,17 @@ class SharedConventionalForm extends StatelessWidget {
         16.hs,
         BlocBuilder<ApplicantCubit, ApplicantState>(
           buildWhen: (prev, curr) =>
-              (prev.taxpayerTaxCardFilePath != curr.taxpayerTaxCardFilePath),
+              (prev.taxpayerTaxCardFullUrl != curr.taxpayerTaxCardFullUrl),
           builder: (context, state) {
-            return AppTextFormField(
+            return FileUploadField(
               labelText: 'مرفق البطاقة الضريبة',
+              filePath: cubit.taxpayerTaxCardUrl,
               labelRequired: true,
-              labelFontSize: 14.sp,
-              labelColor: AppColors.neutralDarkDark,
-              readOnly: true,
-              suffixWidget: ImageSvgCustomWidget(
-                imgPath: FixedAssets.instance.attachmentWhiteIC,
-                width: 16.w,
-                height: 16.h,
-                color: AppColors.highlightDarkest,
-              ),
-              prefixWidget: AppAttachmentItem(
-                onTap: () async {
-                  if (cubit.taxpayerTaxCardFilePath == null) {
-                    final path = await cubit.pickFile();
-                    if (path != null) cubit.setTaxCardFile(path);
-                  } else {
-                    cubit.removeTaxCardFile.call();
-                  }
-                },
-                containFile: cubit.taxpayerTaxCardFilePath != null,
-              ),
-              infoText: 'ملف بصيغة Jpg أو pdf لا يتجاوز حجمه 5 ميجا بايت',
+              onFilePicked: () async {
+                final path = await cubit.pickFile();
+                if (path != null) cubit.setTaxCardFile(path);
+              },
+              onFileRemoved: () => cubit.removeTaxCardFile.call(),
             );
           },
         ),
@@ -79,33 +62,18 @@ class SharedConventionalForm extends StatelessWidget {
         16.hs,
         BlocBuilder<ApplicantCubit, ApplicantState>(
           buildWhen: (prev, curr) =>
-              (prev.taxpayerCommercialRegisterFilePath !=
-              curr.taxpayerCommercialRegisterFilePath),
+              (prev.taxpayerCommercialRegisterFullUrl !=
+              curr.taxpayerCommercialRegisterFullUrl),
           builder: (context, state) {
-            return AppTextFormField(
+            return FileUploadField(
               labelText: 'مرفق السجل التجاري',
+              filePath: cubit.taxpayerCommercialRegisterUrl,
               labelRequired: true,
-              labelFontSize: 14.sp,
-              labelColor: AppColors.neutralDarkDark,
-              readOnly: true,
-              suffixWidget: ImageSvgCustomWidget(
-                imgPath: FixedAssets.instance.attachmentWhiteIC,
-                width: 16.w,
-                height: 16.h,
-                color: AppColors.highlightDarkest,
-              ),
-              prefixWidget: AppAttachmentItem(
-                onTap: () async {
-                  if (cubit.taxpayerCommercialRegisterFilePath == null) {
-                    final path = await cubit.pickFile();
-                    if (path != null) cubit.setCommercialRegisterFile(path);
-                  } else {
-                    cubit.removeCommercialRegisterFile.call();
-                  }
-                },
-                containFile: cubit.taxpayerCommercialRegisterFilePath != null,
-              ),
-              infoText: 'ملف بصيغة Jpg أو pdf لا يتجاوز حجمه 5 ميجا بايت',
+              onFilePicked: () async {
+                final path = await cubit.pickFile();
+                if (path != null) cubit.setCommercialRegisterFile(path);
+              },
+              onFileRemoved: () => cubit.removeCommercialRegisterFile.call(),
             );
           },
         ),
@@ -120,33 +88,18 @@ class SharedConventionalForm extends StatelessWidget {
         16.hs,
         BlocBuilder<ApplicantCubit, ApplicantState>(
           buildWhen: (prev, curr) =>
-              (prev.taxpayerOtherAttachmentFilePath !=
-              curr.taxpayerOtherAttachmentFilePath),
+              (prev.taxpayerOtherAttachmentFullUrl !=
+              curr.taxpayerOtherAttachmentFullUrl),
           builder: (context, state) {
-            return AppTextFormField(
+            return FileUploadField(
               labelText: 'مرفق آخر',
+              filePath: cubit.taxpayerOtherAttachmentUrl,
               labelRequired: true,
-              labelFontSize: 14.sp,
-              labelColor: AppColors.neutralDarkDark,
-              readOnly: true,
-              suffixWidget: ImageSvgCustomWidget(
-                imgPath: FixedAssets.instance.attachmentWhiteIC,
-                width: 16.w,
-                height: 16.h,
-                color: AppColors.highlightDarkest,
-              ),
-              prefixWidget: AppAttachmentItem(
-                onTap: () async {
-                  if (cubit.taxpayerOtherAttachmentFilePath == null) {
-                    final path = await cubit.pickFile();
-                    if (path != null) cubit.setOtherAttachmentFile(path);
-                  } else {
-                    cubit.removeOtherAttachmentFile.call();
-                  }
-                },
-                containFile: cubit.taxpayerOtherAttachmentFilePath != null,
-              ),
-              infoText: 'ملف بصيغة Jpg أو pdf لا يتجاوز حجمه 5 ميجا بايت',
+              onFilePicked: () async {
+                final path = await cubit.pickFile();
+                if (path != null) cubit.setOtherAttachmentFile(path);
+              },
+              onFileRemoved: () => cubit.removeOtherAttachmentFile.call(),
             );
           },
         ),

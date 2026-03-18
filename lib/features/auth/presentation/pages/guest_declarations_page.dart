@@ -8,6 +8,7 @@ import 'declaration_guide_page.dart';
 
 class GuestDeclarationsPage extends StatefulWidget {
   final UserModel? user;
+
   const GuestDeclarationsPage({super.key, this.user});
 
   @override
@@ -61,7 +62,9 @@ class _DeclarationsHome extends StatelessWidget {
               color: AppColors.neutralLightLightest,
               size: 18,
             ),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
           ),
           title: Text(
             'إقراراتي',

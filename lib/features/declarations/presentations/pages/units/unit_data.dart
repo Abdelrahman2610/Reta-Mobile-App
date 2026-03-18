@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/core/helpers/extensions/unit_type.dart';
-import 'package:reta/features/components/app_text.dart';
 import 'package:reta/features/declarations/presentations/cubit/units/unit_data/unit_data_cubit.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/administrative_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/commercial_unit_page.dart';
@@ -26,6 +25,7 @@ import '../../../../../core/helpers/runtime_data.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../components/app_bar.dart';
 import '../../../../components/app_container.dart';
+import '../../../../components/app_text.dart';
 import '../../components/declaration_data_tab.dart';
 import '../../components/units/unit_title.dart';
 import '../../cubit/units/unit_data/unit_data_state.dart';
@@ -55,10 +55,7 @@ class UnitData extends StatelessWidget {
         listener: (context, state) {
           if (state.isLoading || state.isFloorLoading) {
             loadingPopup(RuntimeData.getCurrentContext()!);
-          } else if (!state.isLoading && !state.isFloorLoading) {
-            Navigator.pop(RuntimeData.getCurrentContext()!);
-          }
-          if (state.errorMessage != null) {
+          } else if (state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: AppText(
@@ -70,6 +67,9 @@ class UnitData extends StatelessWidget {
               ),
             );
             cubit.clearError();
+          }
+          if (!state.isLoading && !state.isFloorLoading) {
+            Navigator.pop(RuntimeData.getCurrentContext()!);
           }
         },
         buildWhen: (prev, curr) => prev.isLoading != curr.isLoading,

@@ -15,6 +15,7 @@ class AppAttachmentItem extends StatelessWidget {
     this.text,
     this.backgroundColor,
     this.textColor,
+    this.isUserInfo = false,
   });
 
   final VoidCallback? onTap;
@@ -22,6 +23,7 @@ class AppAttachmentItem extends StatelessWidget {
   final String? text;
   final Color? backgroundColor;
   final Color? textColor;
+  final bool isUserInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +33,9 @@ class AppAttachmentItem extends StatelessWidget {
         width: 152.w,
         margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: containFile
+          color: isUserInfo
+              ? AppColors.neutralLightDarkest
+              : containFile
               ? AppColors.errorDark
               : backgroundColor ?? AppColors.neutralLightDarkest,
           borderRadius: BorderRadius.circular(12.r),
@@ -40,16 +44,24 @@ class AppAttachmentItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AppText(
-              text: containFile ? 'حذف الصورة' : text ?? 'JPG',
+              text: isUserInfo
+                  ? 'JPG'
+                  : containFile
+                  ? 'حذف الصورة'
+                  : text ?? 'JPG',
               fontWeight: FontWeight.w600,
               fontSize: 12.sp,
-              color: containFile
+              color: isUserInfo
+                  ? AppColors.neutralDarkLightest
+                  : containFile
                   ? AppColors.white
                   : textColor ?? AppColors.neutralDarkLightest,
             ),
             8.ws,
             ImageSvgCustomWidget(
-              imgPath: containFile || textColor == AppColors.white
+              imgPath: isUserInfo
+                  ? FixedAssets.instance.attachmentIC
+                  : containFile || textColor == AppColors.white
                   ? FixedAssets.instance.attachmentWhiteIC
                   : FixedAssets.instance.attachmentIC,
               width: 12.w,

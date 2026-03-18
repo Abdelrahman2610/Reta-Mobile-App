@@ -6,7 +6,8 @@ import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_details_states.dart';
 import 'package:reta/features/declarations/presentations/pages/provider_data_page.dart';
-import 'package:reta/features/declarations/presentations/pages/select_applicant_type_page.dart';
+import 'package:reta/features/declarations/presentations/pages/select_types_of_properties_page.dart';
+import 'package:reta/features/declarations/presentations/pages/taxpayer_data_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/unit_location_data_page.dart';
 
 import '../../../../core/helpers/extensions/applicant_type.dart';
@@ -16,6 +17,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/cubit/user_profile_cubit.dart';
 import '../../../auth/presentation/cubit/user_profile_state.dart';
 import '../../../components/app_bar.dart';
+import '../../../components/app_text.dart';
 import '../../../components/circular_progress_indicator_platform_widget.dart';
 import '../../../components/show_confirmation_dialog.dart';
 import '../../data/models/declaration_details_model.dart';
@@ -29,6 +31,7 @@ import '../components/show_cancel_declaration_dialog.dart';
 import '../components/show_submit_declaration_dialog.dart';
 import '../components/submit_declaration_button.dart';
 import '../components/unit_type_category_tab_widget.dart';
+import '../cubit/applicant_cubit.dart';
 import '../cubit/declaration/declaration_details_cubit.dart';
 import '../cubit/declaration_lookups_cubit.dart';
 
@@ -99,10 +102,13 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                       BlocBuilder<UserProfileCubit, UserProfileState>(
                         builder: (context, userState) {
                           if (userState is! UserProfileLoaded) {
-                            return const CircularProgressIndicatorPlatformWidget();
+                            return const SizedBox.shrink();
                           }
                           return PropertiesListInDeclarationHeader(
-                            declarationModel.declarationTypeText ?? "",
+                            state.detailsModel?.applicantRoleOther ??
+                                state.detailsModel?.applicantRoleText ??
+                                declarationModel.declarationTypeText ??
+                                "",
                             declarationModel.statusId != "3",
                             onTap: () {
                               PersistentNavBarNavigator.pushNewScreen(
@@ -119,7 +125,6 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                                   afterUpdating: () => context
                                       .read<DeclarationDetailsCubit>()
                                       .fetchDeclarationModel(),
-                                  userModel: userState.userModel,
                                   applicantOtherName:
                                       state.detailsModel?.applicantRoleOther,
                                 ),
@@ -133,18 +138,29 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                       ),
                       if (declarationModel.statusId != "3")
                         SizedBox(height: 30.h),
-                      if (declarationModel.statusId != "3")
+                      if (declarationModel.statusId != "3" &&
+                          state.detailsModel != null)
                         AddNewPropertyButton(
                           onAdd: () {
-                            PersistentNavBarNavigator.pushNewScreen(
-                              context,
-                              screen: SelectApplicantTypePage(
-                                declarationId: declarationModel.id ?? -1,
-                              ),
-                              withNavBar: true,
-                              pageTransitionAnimation:
-                                  PageTransitionAnimation.slideUp,
-                            );
+                            _addUnit(context, state.detailsModel!);
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder: (context) => SelectApplicantTypePage(
+                            //       declarationId: declarationModel.id ?? -1,
+                            //     ),
+                            //   ),
+                            // );
+
+                            // PersistentNavBarNavigator.pushNewScreen(
+                            //   context,
+                            //   screen: SelectApplicantTypePage(
+                            //     declarationId: declarationModel.id ?? -1,
+                            //   ),
+                            //   withNavBar: true,
+                            //   pageTransitionAnimation:
+                            //       PageTransitionAnimation.slideUp,
+                            // );
                           },
                         ),
                       SizedBox(height: 10.h),
@@ -157,15 +173,20 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                               flex: 5,
                               child: SubmitDeclarationButton(
                                 onSubmit: () {
-                                  showSubmitDeclarationDialog(
-                                    RuntimeData.getCurrentContext()!,
-                                    () {
-                                      context
-                                          .read<DeclarationDetailsCubit>()
-                                          .submitDeclaration();
-                                    },
-                                  );
+                                  if (state.detailsModel?.unitsCount.total !=
+                                      0) {
+                                    showSubmitDeclarationDialog(
+                                      RuntimeData.getCurrentContext()!,
+                                      () {
+                                        context
+                                            .read<DeclarationDetailsCubit>()
+                                            .submitDeclaration();
+                                      },
+                                    );
+                                  }
                                 },
+                                isEnabled:
+                                    state.detailsModel?.unitsCount.total != 0,
                               ),
                             ),
                             SizedBox(width: 10.w),
@@ -173,14 +194,29 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                               flex: 3,
                               child: CancelDeclarationButton(
                                 onCancel: () {
-                                  showCancelDeclarationDialog(
-                                    RuntimeData.getCurrentContext()!,
-                                    () {
-                                      context
-                                          .read<DeclarationDetailsCubit>()
-                                          .deleteDeclarationModel();
-                                    },
-                                  );
+                                  if (state.detailsModel?.statusId == "2" &&
+                                      state.detailsModel?.unitsCount.total !=
+                                          0) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: AppText(
+                                          text: "يجب مسح كل العقارات اولا.",
+                                          maxLines: 3,
+                                          color: AppColors.white,
+                                        ),
+                                        backgroundColor: AppColors.errorDark,
+                                      ),
+                                    );
+                                  } else {
+                                    showCancelDeclarationDialog(
+                                      RuntimeData.getCurrentContext()!,
+                                      () {
+                                        context
+                                            .read<DeclarationDetailsCubit>()
+                                            .deleteDeclarationModel();
+                                      },
+                                    );
+                                  }
                                 },
                               ),
                             ),
@@ -256,15 +292,12 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                                         );
                                       },
                                       onEdit: () async {
+                                        final cubit = context
+                                            .read<DeclarationDetailsCubit>();
+                                        cubit.fetchLookups(context);
+
                                         final lookupsCubit = context
                                             .read<DeclarationLookupsCubit>();
-
-                                        if (lookupsCubit.lookups == null) {
-                                          await lookupsCubit.fetchLookups();
-                                        }
-
-                                        if (!context.mounted) return;
-
                                         PersistentNavBarNavigator.pushNewScreen(
                                           context,
                                           screen: MultiBlocProvider(
@@ -342,7 +375,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
   }
 
   String getPropertyTypeText(Map<String, dynamic> data) {
-    return data['usage_type'] ?? "-";
+    return data['usage_type'] ?? data['property_type_text'] ?? "-";
   }
 
   String getGovernorateText(Map<String, dynamic> data) {
@@ -358,15 +391,18 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
   }
 
   String getRealEstateCode(Map<String, dynamic> data) {
-    return data['real_estate_code'] ?? "-";
+    return data['real_estate_other'] ?? data['real_estate_code'] ?? "-";
   }
 
   String getUnitTypeText(Map<String, dynamic> data) {
-    return data['unit_type_text'] ?? "-";
+    return data['unit_type_text'] ??
+        data['installation_type_text'] ??
+        data['installation_type_other'] ??
+        "-";
   }
 
   String getUnitUnitNum(Map<String, dynamic> data) {
-    return data['unit_unit_num'] ?? "-";
+    return data['unit_other'] ?? data['unit_unit_num'] ?? "-";
   }
 
   String getRealEstateFloorText(Map<String, dynamic> data) {
@@ -405,6 +441,86 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(state.message)));
+    }
+  }
+
+  _addUnit(BuildContext context, DeclarationDetailsModel detailsModel) async {
+    ApplicantType applicantType =
+        detailsModel.declarationTypeId.displayApplicant;
+    final lookupsCubit = context.read<DeclarationLookupsCubit>();
+    if (applicantType == ApplicantType.owner ||
+        applicantType == ApplicantType.beneficiary ||
+        applicantType == ApplicantType.exploited) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MultiBlocProvider(
+            // BlocProvider(
+            //     create: (_) {
+            //       final cubit = ApplicantCubit(
+            //         applicantType: applicantType,
+            //         declarationId: declarationId,
+            //         isEditMode: existingDeclaration != null,
+            //         afterUpdating: afterUpdating,
+            //         applicantOtherName: applicantOtherName,
+            //       )..initFromUser(user);
+            providers: [
+              BlocProvider.value(value: lookupsCubit),
+              BlocProvider.value(
+                value: context.read<DeclarationLookupsCubit>()..fetchLookups(),
+              ),
+              BlocProvider.value(
+                value: ApplicantCubit(
+                  applicantType: applicantType,
+                  declarationId: detailsModel.id,
+                  isEditMode: false,
+                  afterUpdating: () {
+                    context
+                        .read<DeclarationDetailsCubit>()
+                        .fetchDeclarationModel();
+                  },
+                  applicantOtherName: detailsModel.applicantRoleOther,
+                ),
+              ),
+            ],
+            child: SelectTypesOfPropertiesPage(
+              applicantType: applicantType,
+              declarationId: detailsModel.id,
+              otherName: detailsModel.applicantRoleOther,
+              locationData: detailsModel.toJson(),
+            ),
+          ),
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: lookupsCubit),
+              BlocProvider.value(
+                value: context.read<DeclarationLookupsCubit>()..fetchLookups(),
+              ),
+              BlocProvider.value(
+                value: ApplicantCubit(
+                  applicantType: applicantType,
+                  declarationId: detailsModel.id,
+                  isEditMode: false,
+                  afterUpdating: () {
+                    context
+                        .read<DeclarationDetailsCubit>()
+                        .fetchDeclarationModel();
+                  },
+                  applicantOtherName: detailsModel.applicantRoleOther,
+                ),
+              ),
+            ],
+            child: TaxpayerDataPage(),
+          ),
+          // BlocProvider.value(value: this, child: TaxpayerDataPage()),
+        ),
+      );
     }
   }
 }

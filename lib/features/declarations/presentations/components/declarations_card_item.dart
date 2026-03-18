@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:reta/features/components/inkwell_transparent.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_text.dart';
 import '../../../components/title_with_value_text.dart';
 import '../../data/models/declaration_model.dart';
-import '../pages/properties_list_in_declaration_page.dart';
 
 class DeclarationsCardItem extends StatelessWidget {
   final DeclarationModel item;
   final Function updateDeclarationList;
+  final VoidCallback onDeclarationCardTapped;
 
   const DeclarationsCardItem({
     super.key,
     required this.item,
     required this.updateDeclarationList,
+    required this.onDeclarationCardTapped,
   });
 
   @override
@@ -24,17 +24,7 @@ class DeclarationsCardItem extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: 15.h),
       child: InkwellTransparent(
-        onTap: () {
-          PersistentNavBarNavigator.pushNewScreen(
-            context,
-            screen: PropertiesListInDeclarationPage(
-              item,
-              updateDeclarationList,
-            ),
-            withNavBar: true,
-            pageTransitionAnimation: PageTransitionAnimation.slideUp,
-          );
-        },
+        onTap: onDeclarationCardTapped,
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(

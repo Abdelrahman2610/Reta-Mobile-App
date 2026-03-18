@@ -59,7 +59,7 @@ class _ResidentialUnitView extends StatelessWidget {
               color: AppColors.mainBlueIndigoDye,
             ),
             24.hs,
-            if (applicantType == ApplicantType.owner)
+            if (applicantType != ApplicantType.sharedOwnership)
               BlocBuilder<UnitDataCubit, UnitDataState>(
                 buildWhen: (prev, curr) => prev.isExempt != curr.isExempt,
                 builder: (context, state) {
@@ -224,14 +224,14 @@ class _ResidentialUnitView extends StatelessWidget {
 
             BlocBuilder<UnitDataCubit, UnitDataState>(
               buildWhen: (prev, curr) =>
-                  prev.ownershipDeedFilePath != curr.ownershipDeedFilePath,
+                  prev.ownershipDeedFullUrl != curr.ownershipDeedFullUrl,
               builder: (context, state) {
                 return FileUploadField(
                   labelText: 'سند تمليك الوحدة',
                   text: 'حمل ملف',
                   backgroundColor: AppColors.highlightDarkest,
                   textColor: AppColors.white,
-                  filePath: state.ownershipDeedFilePath,
+                  filePath: state.ownershipDeedFullUrl,
                   onFilePicked: () async {
                     final path = await cubit.pickFile();
                     if (path != null) {
@@ -246,11 +246,11 @@ class _ResidentialUnitView extends StatelessWidget {
 
             BlocBuilder<UnitDataCubit, UnitDataState>(
               buildWhen: (prev, curr) =>
-                  prev.leaseContractFilePath != curr.leaseContractFilePath,
+                  prev.leaseContractFullUrl != curr.leaseContractFullUrl,
               builder: (context, state) {
                 return FileUploadField(
                   labelText: 'عقد الإيجار (إن وجد)',
-                  filePath: state.leaseContractFilePath,
+                  filePath: state.leaseContractFullUrl,
                   text: 'حمل ملف',
                   backgroundColor: AppColors.highlightDarkest,
                   textColor: AppColors.white,

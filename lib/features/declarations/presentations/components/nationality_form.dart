@@ -20,12 +20,15 @@ class NationalityForm extends StatelessWidget {
     this.labelRequired = true,
     this.attachmentIconColor,
     this.nationalIdController,
-    this.onNationalIdFilePicked,
+    required this.onNationalIdFilePicked,
     this.nationalIdFilePath,
     this.passportController,
-    this.onPassportFilePicked,
+    required this.onPassportFilePicked,
     this.passportFilePath,
     this.displayFile = true,
+    this.isUserInfo = false,
+    required this.onNationalIdFileRemoved,
+    required this.onPassportFileRemoved,
   });
 
   final Nationality nationality;
@@ -37,12 +40,15 @@ class NationalityForm extends StatelessWidget {
   final bool labelRequired;
   final Color? attachmentIconColor;
   final TextEditingController? nationalIdController;
-  final VoidCallback? onNationalIdFilePicked;
+  final VoidCallback onNationalIdFilePicked;
+  final VoidCallback onNationalIdFileRemoved;
   final String? nationalIdFilePath;
   final TextEditingController? passportController;
-  final VoidCallback? onPassportFilePicked;
+  final VoidCallback onPassportFilePicked;
+  final VoidCallback onPassportFileRemoved;
   final String? passportFilePath;
   final bool displayFile;
+  final bool isUserInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -83,6 +89,8 @@ class NationalityForm extends StatelessWidget {
             onFilePicked: onNationalIdFilePicked,
             filePath: nationalIdFilePath,
             displayFile: displayFile,
+            onFileRemoved: onNationalIdFileRemoved,
+            isUserInfo: isUserInfo,
           ),
         if (nationality == Nationality.foreign)
           PassportForm(
@@ -96,6 +104,8 @@ class NationalityForm extends StatelessWidget {
             onFilePicked: onPassportFilePicked,
             filePath: passportFilePath,
             displayFile: displayFile,
+            onFileRemoved: onPassportFileRemoved,
+            isUserInfo: isUserInfo,
           ),
       ],
     );

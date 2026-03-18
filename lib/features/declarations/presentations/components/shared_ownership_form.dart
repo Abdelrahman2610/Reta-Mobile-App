@@ -3,15 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/helpers/extensions/dimensions.dart';
-import '../../../../core/helpers/fixed_assets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_container.dart';
 import '../../../components/app_text.dart';
 import '../../../components/app_text_form_field.dart';
-import '../../../components/image_svg_custom_widget.dart';
 import '../cubit/applicant_cubit.dart';
 import '../cubit/applicant_states.dart';
-import 'app_attachment_item.dart';
+import '../pages/units/units_data_pages/components/file_upload_field.dart';
 import 'nationality_form.dart';
 
 class SharedOwnershipForm extends StatelessWidget {
@@ -71,22 +69,21 @@ class SharedOwnershipForm extends StatelessWidget {
                   if (cubit.taxpayerNationalIdFilePath == null) {
                     final path = await cubit.pickFile();
                     if (path != null) cubit.setNationalIdFile(path);
-                  } else {
-                    cubit.removeNationalIdFile.call();
                   }
                 },
-                nationalIdFilePath: cubit.taxpayerNationalIdFilePath,
+                nationalIdFilePath: cubit.taxpayerNationalIdUrl,
                 passportController: cubit.taxpayerPassportNumberController,
                 onPassportFilePicked: () async {
                   if (cubit.taxpayerPassportFilePath == null) {
                     final path = await cubit.pickFile();
                     if (path != null) cubit.setPassportFile(path);
-                  } else {
-                    cubit.removePassportFile.call();
                   }
                 },
-                passportFilePath: cubit.taxpayerPassportFilePath,
+                passportFilePath: cubit.taxpayerPassportUrl,
                 attachmentIconColor: AppColors.neutralDarkLightest,
+                onNationalIdFileRemoved: () =>
+                    cubit.removeNationalIdFile.call(),
+                onPassportFileRemoved: () => cubit.removePassportFile.call(),
               );
             },
           ),
@@ -97,33 +94,16 @@ class SharedOwnershipForm extends StatelessWidget {
                 prev.ownershipProofDocumentPath !=
                 curr.ownershipProofDocumentPath,
             builder: (context, state) {
-              return AppTextFormField(
+              return FileUploadField(
                 labelText: 'رفع سند الملكية على الشيوع/ إعلام الوراثة',
+                filePath: state.ownershipProofDocumentPath,
                 labelRequired: true,
-                labelColor: AppColors.neutralDarkDark,
-                labelFontSize: 14.sp,
-                suffixWidget: ImageSvgCustomWidget(
-                  imgPath: FixedAssets.instance.attachmentWhiteIC,
-                  width: 16.w,
-                  height: 16.h,
-                  color: cubit.ownershipProofDocumentPath != null
-                      ? AppColors.highlightDarkest
-                      : AppColors.neutralDarkLightest,
-                ),
-                prefixWidget: AppAttachmentItem(
-                  onTap: () async {
-                    if (cubit.ownershipProofDocumentPath == null) {
-                      final path = await cubit.pickFile();
-                      if (path != null) {
-                        cubit.setOwnershipProofDocumentFile(path);
-                      }
-                    } else {
-                      cubit.removeOwnershipProofDocumentFile.call();
-                    }
-                  },
-                  containFile: state.ownershipProofDocumentPath != null,
-                ),
-                infoText: 'ملف بصيغة Jpg أو pdf لا يتجاوز حجمه 5 ميجا بايت',
+                onFilePicked: () async {
+                  final path = await cubit.pickFile();
+                  if (path != null) cubit.setOwnershipProofDocumentFile(path);
+                },
+                onFileRemoved: () =>
+                    cubit.removeOwnershipProofDocumentFile.call(),
               );
             },
           ),

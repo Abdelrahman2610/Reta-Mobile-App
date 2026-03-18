@@ -48,7 +48,7 @@ class UnitTypeCategoryTabWidget extends StatelessWidget {
                   onIndexPressed(index);
                 },
                 label: activeCategories[index].label,
-                fontSize: 14.sp,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
                 textColor: isSelected
                     ? Colors.white
@@ -57,9 +57,9 @@ class UnitTypeCategoryTabWidget extends StatelessWidget {
                     ? AppColors.highlightLightest
                     : AppColors.mainBlueIndigoDye,
                 borderColor: AppColors.neutralDarkLightest,
-                height: 29.h,
+                height: 29,
                 borderRadius: 12,
-                width: 110.w,
+                width: 110,
               ),
             ],
           );

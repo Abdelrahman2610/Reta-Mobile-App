@@ -130,7 +130,7 @@ class _ServiceUnitView extends StatelessWidget {
                   backgroundColor: AppColors.highlightDarkest,
                   textColor: AppColors.white,
                   infoText: 'عقد مسجل/عقد ابتدائي/حكم قضائي',
-                  filePath: state.ownershipDeedFilePath,
+                  filePath: state.ownershipDeedFullUrl,
                   onFilePicked: () async {
                     final path = await cubit.pickFile();
                     if (path != null) cubit.setOwnershipDeedFile(path);
@@ -150,7 +150,7 @@ class _ServiceUnitView extends StatelessWidget {
                   text: 'حمل ملف',
                   backgroundColor: AppColors.highlightDarkest,
                   textColor: AppColors.white,
-                  filePath: state.leaseContractFilePath,
+                  filePath: state.leaseContractFullUrl,
                   onFilePicked: () async {
                     final path = await cubit.pickFile();
                     if (path != null) cubit.setLeaseContractFile(path);
@@ -170,7 +170,7 @@ class _ServiceUnitView extends StatelessWidget {
                   text: 'حمل ملف',
                   backgroundColor: AppColors.highlightDarkest,
                   textColor: AppColors.white,
-                  filePath: state.permitPhotoFilePath,
+                  filePath: state.permitPhotoFullUrl,
                   onFilePicked: () async {
                     final path = await cubit.pickFile();
                     if (path != null) cubit.setPermitPhotoFile(path);

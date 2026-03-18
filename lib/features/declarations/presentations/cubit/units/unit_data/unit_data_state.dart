@@ -6,6 +6,7 @@ import '../../../../data/models/vacant_land_item.dart';
 
 class UnitDataState {
   final String? selectedFloorNumber;
+  final String? selectedFloorNumberOther;
   final bool isFloorNumberOther;
   final String? selectedUnitNumber;
   final bool isUnitNumberOther;
@@ -17,10 +18,13 @@ class UnitDataState {
   final List<AdditionalDocument>? additionalDocuments;
   final String? ownershipDeedFilePath; // سند التمليك
   final String? ownershipDeedOriginalName;
+  final String? ownershipDeedFullUrl;
   final String? leaseContractFilePath; // عقد الإيجار
   final String? leaseContractOriginalName;
+  final String? leaseContractFullUrl;
   final String? permitPhotoFilePath; // صورة الرخصة/الترخيص
   final String? permitPhotoOriginalName;
+  final String? permitPhotoFullUrl;
   final String? selectedUnitSubType; // نوع الوحدة (شقة، فيلا...)
   final List<String>? selectedAmenities; // ملحق بالوحدة
   ///------------------------ وحدة خدمية فقط -----------------------------
@@ -46,20 +50,27 @@ class UnitDataState {
   // ── file paths ───────────────────────────
   final String? constructionLicenseFilePath;
   final String? constructionLicenseOriginalName;
+  final String? constructionLicenseFullUrl;
   final String? operatingLicenseFilePath;
   final String? operatingLicenseOriginalName;
+  final String? operatingLicenseFullUrl;
   final String? starCertificateFilePath;
   final String? starCertificateOriginalName;
+  final String? starCertificateFullUrl;
   final String? constructionPermitFilePath;
   final String? constructionPermitOriginalName;
   final String? allAssetsBalanceSheetFilePath;
   final String? allAssetsBalanceSheetOriginalName;
+  final String? allAssetsBalanceSheetFullUrl;
   final String? openingBudgetFilePath;
   final String? openingBudgetOriginalName;
+  final String? openingBudgetFullUrl;
   final String? allBookBValueFilePath;
   final String? allBookBValueOriginalName;
+  final String? allBookBValueFullUrl;
   final String? operationLicenseFilePath;
   final String? operationLicenseOriginalName;
+  final String? operationLicenseFullUrl;
 
   // ── loading / error ──────────────────────
   final bool isLoading;
@@ -77,6 +88,7 @@ class UnitDataState {
   final String? selectedMineQuarryMaterialsValue;
   final String? allocationContractFilePath;
   final String? allocationContractOriginalName;
+  final String? allocationContractFullUrl;
   final int industrialBuildingsCount;
   final int petroBuildingsCount;
   final int productionBuildingsCount;
@@ -86,6 +98,7 @@ class UnitDataState {
 
   const UnitDataState({
     this.selectedFloorNumber,
+    this.selectedFloorNumberOther,
     this.isFloorNumberOther = false,
     this.selectedUnitNumber,
     this.isUnitNumberOther = false,
@@ -97,10 +110,13 @@ class UnitDataState {
     this.additionalDocuments,
     this.ownershipDeedFilePath,
     this.ownershipDeedOriginalName,
+    this.ownershipDeedFullUrl,
     this.leaseContractFilePath,
     this.leaseContractOriginalName,
+    this.leaseContractFullUrl,
     this.permitPhotoFilePath,
     this.permitPhotoOriginalName,
+    this.permitPhotoFullUrl,
     this.isServiceUnitExempt,
     this.selectedServiceExemptionReason,
     this.isTaxpayerOwner,
@@ -113,14 +129,18 @@ class UnitDataState {
     this.hasSubUnits,
     this.constructionLicenseFilePath,
     this.constructionLicenseOriginalName,
+    this.constructionLicenseFullUrl,
     this.operatingLicenseFilePath,
     this.operatingLicenseOriginalName,
+    this.operatingLicenseFullUrl,
     this.starCertificateFilePath,
     this.starCertificateOriginalName,
+    this.starCertificateFullUrl,
     this.constructionPermitFilePath,
     this.constructionPermitOriginalName,
     this.allAssetsBalanceSheetFilePath,
     this.allAssetsBalanceSheetOriginalName,
+    this.allAssetsBalanceSheetFullUrl,
     this.isLoading = false,
     this.errorMessage,
     this.successMessage,
@@ -135,14 +155,18 @@ class UnitDataState {
     this.selectedBurdenActivity,
     this.allocationContractFilePath,
     this.allocationContractOriginalName,
+    this.allocationContractFullUrl,
     this.openingBudgetFilePath,
     this.openingBudgetOriginalName,
+    this.openingBudgetFullUrl,
     this.allBookBValueFilePath,
     this.allBookBValueOriginalName,
+    this.allBookBValueFullUrl,
     this.operationLicenseFilePath,
     this.selectedMineQuarryFacilityTypesValue,
     this.selectedMineQuarryMaterialsValue,
     this.operationLicenseOriginalName,
+    this.operationLicenseFullUrl,
     this.industrialBuildingsCount = 1,
     this.petroBuildingsCount = 1,
     this.productionBuildingsCount = 1,
@@ -155,6 +179,7 @@ class UnitDataState {
 
   UnitDataState copyWith({
     Object? selectedFloorNumber = _undefined,
+    Object? selectedFloorNumberOther = _undefined,
     bool? isFloorNumberOther,
     Object? selectedUnitNumber = _undefined,
     Object? isUnitNumberOther = _undefined,
@@ -166,10 +191,13 @@ class UnitDataState {
     int? additionalUpdateCount,
     Object? ownershipDeedFilePath = _undefined,
     Object? ownershipDeedOriginalName = _undefined,
+    Object? ownershipDeedFullUrl = _undefined,
     Object? leaseContractFilePath = _undefined,
     Object? leaseContractOriginalName = _undefined,
+    Object? leaseContractFullUrl = _undefined,
     Object? permitPhotoFilePath = _undefined,
     Object? permitPhotoOriginalName = _undefined,
+    Object? permitPhotoFullUrl = _undefined,
     bool? isServiceUnitExempt,
     String? selectedServiceExemptionReason,
     bool? isTaxpayerOwner,
@@ -182,20 +210,27 @@ class UnitDataState {
     bool? hasSubUnits,
     Object? constructionLicenseFilePath = _undefined,
     Object? constructionLicenseOriginalName = _undefined,
+    Object? constructionLicenseFullUrl = _undefined,
     Object? operatingLicenseFilePath = _undefined,
     Object? operatingLicenseOriginalName = _undefined,
+    Object? operatingLicenseFullUrl = _undefined,
     Object? starCertificateFilePath = _undefined,
     Object? starCertificateOriginalName = _undefined,
+    Object? starCertificateFullUrl = _undefined,
     Object? constructionPermitFilePath = _undefined,
     Object? constructionPermitOriginalName = _undefined,
     Object? allAssetsBalanceSheetFilePath = _undefined,
     Object? allAssetsBalanceSheetOriginalName = _undefined,
+    Object? allAssetsBalanceSheetFullUrl = _undefined,
     Object? openingBudgetFilePath = _undefined,
     Object? openingBudgetOriginalName = _undefined,
+    Object? openingBudgetFullUrl = _undefined,
     Object? allBookBValueFilePath = _undefined,
     Object? allBookBValueOriginalName = _undefined,
+    Object? allBookBValueFullUrl = _undefined,
     Object? operationLicenseFilePath = _undefined,
     Object? operationLicenseOriginalName = _undefined,
+    Object? operationLicenseFullUrl = _undefined,
     bool? isLoading,
     String? errorMessage,
     String? successMessage,
@@ -210,6 +245,7 @@ class UnitDataState {
     String? selectedBurdenActivity,
     Object? allocationContractFilePath = _undefined,
     Object? allocationContractOriginalName = _undefined,
+    Object? allocationContractFullUrl = _undefined,
     int? industrialBuildingsCount,
     int? petroBuildingsCount,
     int? productionBuildingsCount,
@@ -223,6 +259,9 @@ class UnitDataState {
       selectedFloorNumber: selectedFloorNumber == _undefined
           ? this.selectedFloorNumber
           : selectedFloorNumber as String?,
+      selectedFloorNumberOther: selectedFloorNumberOther == _undefined
+          ? this.selectedFloorNumberOther
+          : selectedFloorNumberOther as String?,
       isFloorNumberOther: isFloorNumberOther ?? this.isFloorNumberOther,
       selectedUnitNumber: selectedUnitNumber == _undefined
           ? this.selectedUnitNumber
@@ -246,21 +285,33 @@ class UnitDataState {
       ownershipDeedOriginalName: ownershipDeedOriginalName == _undefined
           ? this.ownershipDeedOriginalName
           : ownershipDeedOriginalName as String?,
+      ownershipDeedFullUrl: ownershipDeedFullUrl == _undefined
+          ? this.ownershipDeedFullUrl
+          : ownershipDeedFullUrl as String?,
       leaseContractFilePath: leaseContractFilePath == _undefined
           ? this.leaseContractFilePath
           : leaseContractFilePath as String?,
       leaseContractOriginalName: leaseContractOriginalName == _undefined
           ? this.leaseContractOriginalName
           : leaseContractOriginalName as String?,
+      leaseContractFullUrl: leaseContractFullUrl == _undefined
+          ? this.leaseContractFullUrl
+          : leaseContractFullUrl as String?,
       permitPhotoFilePath: permitPhotoFilePath == _undefined
           ? this.permitPhotoFilePath
           : permitPhotoFilePath as String?,
       permitPhotoOriginalName: permitPhotoOriginalName == _undefined
           ? this.permitPhotoOriginalName
           : permitPhotoOriginalName as String?,
+      permitPhotoFullUrl: permitPhotoFullUrl == _undefined
+          ? this.permitPhotoFullUrl
+          : permitPhotoFullUrl as String?,
       operationLicenseOriginalName: operationLicenseOriginalName == _undefined
           ? this.operationLicenseOriginalName
           : operationLicenseOriginalName as String?,
+      operationLicenseFullUrl: operationLicenseFullUrl == _undefined
+          ? this.operationLicenseFullUrl
+          : operationLicenseFullUrl as String?,
       operationLicenseFilePath: operationLicenseFilePath == _undefined
           ? this.operationLicenseFilePath
           : operationLicenseFilePath as String?,
@@ -285,18 +336,27 @@ class UnitDataState {
           constructionLicenseOriginalName == _undefined
           ? this.constructionLicenseOriginalName
           : constructionLicenseOriginalName as String?,
+      constructionLicenseFullUrl: constructionLicenseFullUrl == _undefined
+          ? this.constructionLicenseFullUrl
+          : constructionLicenseFullUrl as String?,
       operatingLicenseFilePath: operatingLicenseFilePath == _undefined
           ? this.operatingLicenseFilePath
           : operatingLicenseFilePath as String?,
       operatingLicenseOriginalName: operatingLicenseOriginalName == _undefined
           ? this.operatingLicenseOriginalName
           : operatingLicenseOriginalName as String?,
+      operatingLicenseFullUrl: operatingLicenseFullUrl == _undefined
+          ? this.operatingLicenseFullUrl
+          : operatingLicenseFullUrl as String?,
       starCertificateFilePath: starCertificateFilePath == _undefined
           ? this.starCertificateFilePath
           : starCertificateFilePath as String?,
       starCertificateOriginalName: starCertificateOriginalName == _undefined
           ? this.starCertificateOriginalName
           : starCertificateOriginalName as String?,
+      starCertificateFullUrl: starCertificateFullUrl == _undefined
+          ? this.starCertificateFullUrl
+          : starCertificateFullUrl as String?,
       constructionPermitFilePath: constructionPermitFilePath == _undefined
           ? this.constructionPermitFilePath
           : constructionPermitFilePath as String?,
@@ -311,15 +371,24 @@ class UnitDataState {
           allAssetsBalanceSheetOriginalName == _undefined
           ? this.allAssetsBalanceSheetOriginalName
           : allAssetsBalanceSheetOriginalName as String?,
+      allAssetsBalanceSheetFullUrl: allAssetsBalanceSheetFullUrl == _undefined
+          ? this.allAssetsBalanceSheetFullUrl
+          : allAssetsBalanceSheetFullUrl as String?,
       openingBudgetFilePath: openingBudgetFilePath == _undefined
           ? this.openingBudgetFilePath
           : openingBudgetFilePath as String?,
       openingBudgetOriginalName: openingBudgetOriginalName == _undefined
           ? this.openingBudgetOriginalName
           : openingBudgetOriginalName as String?,
+      openingBudgetFullUrl: openingBudgetFullUrl == _undefined
+          ? this.openingBudgetFullUrl
+          : openingBudgetFullUrl as String?,
       allBookBValueOriginalName: allBookBValueOriginalName == _undefined
           ? this.allBookBValueOriginalName
           : allBookBValueOriginalName as String?,
+      allBookBValueFullUrl: allBookBValueFullUrl == _undefined
+          ? this.allBookBValueFullUrl
+          : allBookBValueFullUrl as String?,
       allBookBValueFilePath: allBookBValueFilePath == _undefined
           ? this.allBookBValueFilePath
           : allBookBValueFilePath as String?,
@@ -344,6 +413,9 @@ class UnitDataState {
           allocationContractOriginalName == _undefined
           ? this.allocationContractOriginalName
           : allocationContractOriginalName as String?,
+      allocationContractFullUrl: allocationContractFullUrl == _undefined
+          ? this.allocationContractFullUrl
+          : allocationContractFullUrl as String?,
       industrialBuildingsCount:
           industrialBuildingsCount ?? this.industrialBuildingsCount,
       petroBuildingsCount: petroBuildingsCount ?? this.petroBuildingsCount,

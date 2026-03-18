@@ -50,22 +50,20 @@ class SharedNaturalForm extends StatelessWidget {
             if (cubit.taxpayerNationalIdFilePath == null) {
               final path = await cubit.pickFile();
               if (path != null) cubit.setNationalIdFile(path);
-            } else {
-              cubit.removeNationalIdFile.call();
             }
           },
-          nationalIdFilePath: cubit.taxpayerNationalIdFilePath,
+          nationalIdFilePath: cubit.taxpayerNationalIdUrl,
           passportController: cubit.taxpayerPassportNumberController,
           onPassportFilePicked: () async {
             if (cubit.taxpayerPassportFilePath == null) {
               final path = await cubit.pickFile();
               if (path != null) cubit.setPassportFile(path);
-            } else {
-              cubit.removePassportFile.call();
             }
           },
-          passportFilePath: cubit.taxpayerPassportFilePath,
+          passportFilePath: cubit.taxpayerPassportUrl,
           attachmentIconColor: AppColors.neutralDarkLightest,
+          onNationalIdFileRemoved: () => cubit.removeNationalIdFile.call(),
+          onPassportFileRemoved: () => cubit.removePassportFile.call(),
         ),
       ],
     );

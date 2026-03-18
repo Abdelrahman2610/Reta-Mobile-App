@@ -72,6 +72,9 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
     selectNeighborhood(locationData!['neighborhood']);
     selectStreet(locationData!['street']);
 
+    await fetchBuildingNumber(state.selectedStreetId);
+    selectBuildingNumber(locationData!['buildingNumber']);
+
     emit(
       state.copyWith(
         selectedGovernorate: locationData!['governorate'],
@@ -130,7 +133,21 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
     );
     selectStreet(street?.name);
 
-    final realEstateId = unitData!['real_estate_id']?.toString();
+    await fetchBuildingNumber(street?.id);
+
+    final realEstateIdString = unitData!['real_estate_id'];
+    int realEstateId = -1;
+    if (realEstateIdString.runtimeType == String) {
+      realEstateId = int.parse(realEstateIdString);
+    } else {
+      realEstateId = realEstateIdString;
+    }
+    final building = state.buildingList?.firstWhere(
+      (s) => s.id == realEstateId,
+      orElse: () => DeclarationLookup(id: 0, name: ''),
+    );
+
+    selectBuildingNumber(building?.name);
 
     emit(
       state.copyWith(
@@ -143,7 +160,8 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
         isNeighborhoodOther: unitData!['village_other'] != null,
         selectedStreet: street?.name,
         isStreetOther: unitData!['region_other'] != null,
-        selectedBuildingNumber: realEstateId,
+        selectedBuildingNumberId: realEstateId,
+        selectedBuildingNumber: building?.name,
         isBuildingNumberOther: unitData!['real_estate_other'] != null,
       ),
     );
@@ -342,8 +360,8 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
         selectedNeighborhood: value,
         isNeighborhoodOther: isOther,
         selectedVillageId: selectedVillage?.id,
-        selectedStreet: null,
-        selectedBuildingNumber: null,
+        selectedStreet: 'null',
+        selectedBuildingNumber: 'null',
         isStreetOther: false,
         isBuildingNumberOther: false,
         streetsList: streetsWithOther,
@@ -365,19 +383,25 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
         selectedStreet: value,
         selectedStreetId: selected?.id,
         isStreetOther: isOther,
-        selectedBuildingNumber: null,
+        selectedBuildingNumber: 'null',
         isBuildingNumberOther: false,
       ),
     );
     if (!isOther) streetOtherController.clear();
-    if (!isOther && selected?.id != 0) fetchBuildingNumber(selected?.id);
+    fetchBuildingNumber(selected?.id);
   }
 
   void selectBuildingNumber(String? value) {
-    final isOther = value == kOther;
+    final selected = state.buildingList?.firstWhere(
+      (g) => g.name == value,
+      orElse: () => DeclarationLookup(id: 0, name: ''),
+    );
+
+    final isOther = value == kOther || selected?.id == -1;
 
     emit(
       state.copyWith(
+        selectedBuildingNumberId: selected?.id,
         selectedBuildingNumber: value,
         isBuildingNumberOther: isOther,
       ),
@@ -386,25 +410,6 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   }
 
   /// ---------------------------- Build Payload ----------------------------
-
-  Map<String, dynamic> buildPayload() {
-    return {
-      'governorate': state.selectedGovernorate,
-      'district': state.isDistrictOther
-          ? districtOtherController.text.trim()
-          : state.selectedDistrict,
-      'neighborhood': state.isNeighborhoodOther
-          ? neighborhoodOtherController.text.trim()
-          : state.selectedNeighborhood,
-      'neighborhoodName': neighborhoodNameController.text.trim(),
-      'street': state.isStreetOther
-          ? streetOtherController.text.trim()
-          : state.selectedStreet,
-      'buildingNumber': state.isBuildingNumberOther
-          ? buildingNumberOtherController.text.trim()
-          : state.selectedBuildingNumber,
-    };
-  }
 
   Map<String, dynamic> buildLocationPayload() {
     return {
@@ -422,7 +427,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
         'region_other': streetOtherController.text.trim(),
 
       // رقم العقار
-      'real_estate_id': state.selectedBuildingNumber,
+      'real_estate_id': state.selectedBuildingNumberId,
       if (state.isBuildingNumberOther)
         'real_estate_other': buildingNumberOtherController.text.trim(),
     };
