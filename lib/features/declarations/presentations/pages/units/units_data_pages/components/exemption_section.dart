@@ -6,6 +6,7 @@ import 'package:reta/features/components/image_svg_custom_widget.dart';
 
 import '../../../../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../../../../core/theme/app_colors.dart';
+import '../../../../../../components/app_info_dialog.dart';
 import '../../../../../../components/app_text.dart';
 import '../../../../../../components/app_text_form_field.dart';
 import '../../../../components/app_drop_down.dart';
@@ -65,59 +66,11 @@ class ExemptionSection extends StatelessWidget {
                   GestureDetector(
                     onTap: () => showDialog(
                       context: context,
-                      builder: (dialogContext) => Directionality(
-                        textDirection: TextDirection.rtl,
-                        child: Dialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.all(20.w),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                ImageSvgCustomWidget(
-                                  imgPath: FixedAssets.instance.infoIC,
-                                ),
-                                12.ws,
-                                Expanded(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      AppText(
-                                        text: 'قواعد إعفاء الوحدة الخدمية',
-                                        fontSize: 16.sp,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.neutralDarkDark,
-                                        textAlign: TextAlign.center,
-                                      ),
-
-                                      AppText(
-                                        text:
-                                            'الدليل الإرشادي يوضح قواعد إعفاء الوحدة الخدمية',
-                                        fontSize: 14.sp,
-                                        color: AppColors.neutralDarkDark,
-                                        maxLines: 2,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                12.ws,
-                                GestureDetector(
-                                  onTap: () => Navigator.pop(dialogContext),
-                                  child: Icon(
-                                    Icons.close,
-                                    color: AppColors.neutralDarkDark,
-                                    size: 20.sp,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                      builder: (dialogContext) => AppInfoDialog(
+                        title: 'قواعد إعفاء الوحدة الخدمية',
+                        content:
+                            'الدليل الإرشادي يوضح قواعد إعفاء الوحدة الخدمية',
+                        context: dialogContext,
                       ),
                     ),
                     child: ImageSvgCustomWidget(

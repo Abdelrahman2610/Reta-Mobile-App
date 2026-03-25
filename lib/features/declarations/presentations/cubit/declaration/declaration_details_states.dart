@@ -38,7 +38,10 @@ class DeclarationDeleteError extends DeclarationDetailsStates {
 
 class DeclarationSubmitLoading extends DeclarationDetailsStates {}
 
-class DeclarationSubmitSuccess extends DeclarationDetailsStates {}
+class DeclarationSubmitSuccess extends DeclarationDetailsStates {
+  final String declarationId;
+  DeclarationSubmitSuccess(this.declarationId);
+}
 
 class DeclarationDeleteUnitSuccess extends DeclarationDetailsStates {}
 

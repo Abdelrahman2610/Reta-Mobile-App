@@ -20,6 +20,7 @@ import '../../../components/app_bar.dart';
 import '../../../components/app_text.dart';
 import '../../../components/circular_progress_indicator_platform_widget.dart';
 import '../../../components/show_confirmation_dialog.dart';
+import '../../../payment/presentations/pages/payment_info_page.dart';
 import '../../data/models/declaration_details_model.dart';
 import '../../data/models/declaration_model.dart';
 import '../components/add_new_property_button.dart';
@@ -422,11 +423,18 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
     if (state is DeclarationDeleteLoading ||
         state is DeclarationSubmitLoading) {
       loadingPopup(RuntimeData.getCurrentContext()!);
-    } else if (state is DeclarationDeleteSuccess ||
-        state is DeclarationSubmitSuccess) {
+    } else if (state is DeclarationDeleteSuccess) {
       updateDeclarationList();
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
       Navigator.of(context).pop();
+    } else if (state is DeclarationSubmitSuccess) {
+      Navigator.of(RuntimeData.getCurrentContext()!).pop();
+      PersistentNavBarNavigator.pushNewScreen(
+        context,
+        screen: PaymentInfoPage(declarationId: state.declarationId),
+        withNavBar: true,
+        pageTransitionAnimation: PageTransitionAnimation.slideUp,
+      );
     } else if (state is DeclarationDeleteUnitSuccess) {
       context.read<DeclarationDetailsCubit>().fetchDeclarationModel();
       updateDeclarationList();

@@ -10,11 +10,13 @@ class AppContainer extends StatelessWidget {
     this.height,
     this.padding,
     required this.child,
+    this.boxShadow,
   });
 
   final double? height;
   final EdgeInsets? padding;
   final Widget child;
+  final List<BoxShadow>? boxShadow;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,7 @@ class AppContainer extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(10.r),
-        boxShadow: AppBoxShadow.instance.cardShadow,
+        boxShadow: boxShadow ?? AppBoxShadow.instance.cardShadow,
       ),
       child: child,
     );

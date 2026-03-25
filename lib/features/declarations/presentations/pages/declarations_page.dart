@@ -6,6 +6,7 @@ import 'package:reta/core/helpers/fixed_assets.dart';
 import 'package:reta/features/components/app_text.dart';
 import 'package:reta/features/components/image_svg_custom_widget.dart';
 import 'package:reta/features/declarations/presentations/components/empty_data_widget.dart';
+import 'package:reta/features/payment/presentations/cubit/claim_status_lookup/claim_status_lookup_cubit.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/data/models/user_models.dart';
@@ -27,13 +28,13 @@ class DeclarationsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        // BlocProvider(
-        //   lazy: false,
-        //   create: (_) => DeclarationCubit()..fetchList(),
-        // ),
         BlocProvider(
           lazy: false,
           create: (_) => DeclarationLookupsCubit()..fetchLookups(),
+        ),
+        BlocProvider(
+          lazy: false,
+          create: (_) => ClaimStatusLookupCubit()..fetchClaimStatuses(),
         ),
       ],
       child: _DeclarationsView(user: user),

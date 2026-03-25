@@ -194,7 +194,7 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
 
     switch (result) {
       case ApiSuccess(:final data):
-        emit(DeclarationSubmitSuccess());
+        emit(DeclarationSubmitSuccess(declarationId));
       case ApiError(:final message):
         emit(DeclarationSubmitError(message));
     }

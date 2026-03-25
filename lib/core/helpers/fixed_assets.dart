@@ -41,4 +41,15 @@ class FixedAssets {
   String calendarIC = "${svg}calendar_ic.svg";
   String deleteIC = "${svg}delete_ic.svg";
   String infoIC = "${svg}info_ic.svg";
+  String settlementIC = "${svg}settlement_ic.svg";
+  String paymentRequestsIC = "${svg}payment_requests_ic.svg";
+  String paymentUnderAccountIC = "${svg}payment_under_account_ic.svg";
+  String successIC = "${svg}success_ic.svg";
+  String paymentSuccessIC = "${svg}payment_success_ic.svg";
+  String paymentFailIC = "${svg}payment_fail_ic.svg";
+  String filterIC = "${svg}filter_ic.svg";
+  String shareIC = "${svg}share_ic.svg";
+  String previewIC = "${svg}preview_ic.svg";
+  String printIC = "${svg}print_ic.svg";
+  String deleteICGrey = "${svg}delete_ic_grey.svg";
 }

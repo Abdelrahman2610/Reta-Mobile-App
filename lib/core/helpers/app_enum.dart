@@ -16,6 +16,8 @@ enum DeclarationsDataType {
   compositionData,
   landData,
   establishmentData,
+  payInfo,
+  paymentRequests,
 }
 
 enum Nationality { egyptian, foreign }
@@ -38,3 +40,7 @@ enum UnitType {
 }
 
 enum UserType { guest, authenticated }
+
+enum TransactionStatus { withdraw, deposit }
+
+enum PaymentRequestStatus { pending, inProgress, paid, cancelled, failedOnHold }

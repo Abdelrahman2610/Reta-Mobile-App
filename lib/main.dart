@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:reta/features/auth/presentation/cubit/notifications_cubit.dart';
 import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_cubit.dart';
@@ -10,7 +11,8 @@ import 'package:reta/features/splash/presentation/pages/splash.dart';
 import 'core/helpers/runtime_data.dart';
 import 'core/theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
+  await initializeDateFormatting('ar');
   runApp(const MainApp());
 }
 
