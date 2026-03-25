@@ -10,11 +10,13 @@ class AppScaffold extends StatelessWidget {
     this.title,
     this.onBackTapped,
     required this.child,
+    this.padding,
   });
 
   final String? title;
   final VoidCallback? onBackTapped;
   final Widget child;
+  final EdgeInsets? padding;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +32,8 @@ class AppScaffold extends StatelessWidget {
           titleTextStyle: TextStyle(color: Colors.white, fontSize: 16.sp),
         ),
         body: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 25.w, vertical: 25.h),
+          padding:
+              padding ?? EdgeInsets.symmetric(horizontal: 25.w, vertical: 25.h),
           child: child,
         ),
       ),

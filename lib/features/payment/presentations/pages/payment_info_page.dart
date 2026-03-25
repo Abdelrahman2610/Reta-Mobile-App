@@ -1,96 +1,411 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:reta/core/helpers/fixed_assets.dart';
-import 'package:reta/core/theme/app_colors.dart';
-import 'package:reta/features/components/app_text.dart';
-import 'package:reta/features/components/image_svg_custom_widget.dart';
-import 'package:reta/features/payment/data/models/payment_unit_item.dart';
-import 'package:reta/features/payment/presentations/components/payment_button.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:reta/features/payment/presentations/components/payment_selected_box.dart';
+import 'package:reta/features/payment/presentations/pages/payment_request_page.dart';
 
 import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/helpers/extensions/dimensions.dart';
+import '../../../../core/helpers/fixed_assets.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_container.dart';
 import '../../../components/app_scaffold.dart';
+import '../../../components/app_text.dart';
+import '../../../components/circular_progress_indicator_platform_widget.dart';
+import '../../../components/image_svg_custom_widget.dart';
 import '../../../declarations/presentations/components/declaration_data_tab.dart';
-import '../components/settlement_account_bottom_sheet.dart';
+import '../../data/models/payment_unit_item.dart';
+import '../components/payment_button.dart';
+import '../cubit/payment_info/payment_info_cubit.dart';
 
-class PaymentInfoPage extends StatefulWidget {
-  const PaymentInfoPage({super.key});
+class PaymentInfoPage extends StatelessWidget {
+  final String declarationId;
 
-  @override
-  State<PaymentInfoPage> createState() => _PaymentInfoPageState();
-}
-
-class _PaymentInfoPageState extends State<PaymentInfoPage> {
-  final List<PaymentUnitItemModel> _units = [
-    PaymentUnitItemModel(
-      unitType: 'وحدة سكنية',
-      location: 'القاهرة - وحدة 8',
-      amount: 200.00,
-      useSettlementAccount: true,
-      isSelected: true,
-    ),
-    PaymentUnitItemModel(
-      unitType: 'وحدة تجارية',
-      location: 'القاهرة - وحدة 12 - عطارة الأمل - محل عطارة',
-      amount: 1500.00,
-      useSettlementAccount: false,
-      isSelected: true,
-    ),
-  ];
-
-  double get _total => _units
-      .where((u) => u.isSelected)
-      .fold(0, (sum, u) => sum + (u.amount ?? 0));
+  const PaymentInfoPage({super.key, required this.declarationId});
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => PaymentInfoCubit()..fetchUnits(declarationId),
+      child: _PaymentInfoView(declarationId: declarationId),
+    );
+  }
+}
+
+class _PaymentInfoView extends StatelessWidget {
+  final String declarationId;
+
+  const _PaymentInfoView({super.key, required this.declarationId});
+  @override
+  Widget build(BuildContext context) {
     return AppScaffold(
+      padding: EdgeInsets.zero,
       title: 'طلبات السداد',
-      child: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: BlocListener<PaymentInfoCubit, PaymentInfoState>(
+        listener: (context, state) {
+          if (state is PaymentInfoClaimSuccess) {
+            PersistentNavBarNavigator.pushNewScreen(
+              context,
+              screen: PaymentRequestsPage(declarationId: declarationId),
+              withNavBar: true,
+              pageTransitionAnimation: PageTransitionAnimation.slideUp,
+            );
+          }
+          if (state is PaymentInfoError) {}
+        },
+        child: BlocBuilder<PaymentInfoCubit, PaymentInfoState>(
+          builder: (context, state) {
+            if (state is PaymentInfoLoading) {
+              return const CircularProgressIndicatorPlatformWidget();
+            }
+            if (state is PaymentInfoError) {
+              return Center(child: AppText(text: state.message));
+            }
+            if (state is PaymentInfoSuccess) {
+              return _PaymentInfoContent(
+                data: state.data,
+                declarationId: declarationId,
+              );
+            }
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _PaymentInfoContent extends StatelessWidget {
+  final PaymentInfoResponse data;
+  final String declarationId;
+
+  const _PaymentInfoContent({required this.data, required this.declarationId});
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = context.read<PaymentInfoCubit>();
+
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: EdgeInsetsDirectional.only(
+                    start: 20.w,
+                    end: 20.w,
+                    top: 31.h,
+                  ),
+                  child: Column(
+                    children: [
+                      _StepIndicator(),
+                      20.hs,
+                      _SuccessBanner(),
+                      20.hs,
+                      AppContainer(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10.w,
+                          vertical: 20.h,
+                        ),
+                        child: Column(
+                          children: [
+                            // Header
+                            AppText(
+                              text: 'طلب سداد',
+                              fontSize: 20.sp,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.neutralDarkDarkest,
+                              alignment: AlignmentDirectional.center,
+                            ),
+                            6.hs,
+                            AppText(
+                              text: 'مراجعة البيانات قبل الإصدار',
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.neutralDarkMedium,
+                              alignment: AlignmentDirectional.center,
+                            ),
+                            24.hs,
+                            AppText(
+                              text:
+                                  'الوحدات التي سيتم إصدار طلب/طلبات السداد عنها',
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.neutralDarkDarkest,
+                              alignment: AlignmentDirectional.center,
+                            ),
+                            24.hs,
+                            // Info banner
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 16.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.highlightLightest,
+                                borderRadius: BorderRadius.circular(16.r),
+                              ),
+                              child: Row(
+                                children: [
+                                  ImageSvgCustomWidget(
+                                    imgPath: FixedAssets.instance.infoIC,
+                                  ),
+                                  16.ws,
+                                  Expanded(
+                                    child: AppText(
+                                      text:
+                                          'يمكنك اختيار جميع الوحدات أو بعضها لإصدار طلب السداد.',
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.neutralDarkDarkest,
+                                      maxLines: 3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            24.hs,
+                            // Units list
+                            ListView.separated(
+                              padding: EdgeInsets.zero,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: data.units.length,
+                              separatorBuilder: (_, __) => 16.hs,
+                              itemBuilder: (context, index) {
+                                final unit = data.units[index];
+                                return _UnitCard(
+                                  unit: unit,
+                                  onToggleSelect: () => cubit.toggleUnit(index),
+                                  onToggleWallet: (v) =>
+                                      cubit.toggleWallet(index, v),
+                                );
+                              },
+                            ),
+                            12.hs,
+                          ],
+                        ),
+                      ),
+                      44.hs,
+                    ],
+                  ),
+                ),
+                // Total
+                AppContainer(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 40.w,
+                    vertical: 24.h,
+                  ),
+                  child: Column(
+                    children: [
+                      _AmountRow(
+                        label: 'المبلغ المطلوب سداده',
+                        amount: cubit.totalRequired.toStringAsFixed(2),
+                      ),
+                      10.hs,
+                      PaymentButton(
+                        label: 'إصدار طلب السداد',
+                        onTap: () => context
+                            .read<PaymentInfoCubit>()
+                            .createClaim(declarationId),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _UnitCard extends StatelessWidget {
+  final PaymentUnitItemModel unit;
+  final VoidCallback onToggleSelect;
+  final ValueChanged<bool> onToggleWallet;
+
+  const _UnitCard({
+    required this.unit,
+    required this.onToggleSelect,
+    required this.onToggleWallet,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: unit.isChecked ? 0.7 : 1,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+        decoration: BoxDecoration(
+          color: unit.isChecked
+              ? AppColors.neutralLightLightest
+              : unit.isSelected
+              ? AppColors.highlightLightest
+              : AppColors.neutralLightLight,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: AppColors.neutralLightDarkest, width: 0.5),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // Unit header row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                PaymentSelectedBox(
+                  isSelected: unit.isSelected,
+                  onTap: unit.isChecked ? () {} : onToggleSelect,
+                  isChecked: unit.isChecked,
+                ),
+                10.ws,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(
+                        children: [
+                          AppText(
+                            text: unit.propertyType,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.mainBlueIndigoDye,
+                            textAlign: TextAlign.right,
+                          ),
+                          6.ws,
+                          AppText(
+                            text: '— ${unit.propertyName}',
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.neutralDarkDark,
+                            textAlign: TextAlign.right,
+                          ),
+                          6.ws,
+                        ],
+                      ),
+                      6.hs,
+                      AppText(
+                        text: '${unit.governorate} - ${unit.propertyNumber}',
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.neutralDarkMedium,
+                        textAlign: TextAlign.right,
+                        maxLines: 2,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            12.hs,
+            Divider(color: AppColors.neutralLightDarkest),
+            6.hs,
+            _AmountRow(
+              label: 'المبلغ المطلوب سداده',
+              amount: unit.amountUnderPayment.toStringAsFixed(2),
+            ),
+            15.hs,
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.neutralLightDarkest),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Row(
                 children: [
-                  _StepIndicator(),
-                  20.hs,
-                  _SuccessBanner(),
-                  20.hs,
-                  _PaymentCard(
-                    units: _units,
-                    total: _total,
-                    onSelectionChanged: (index, value) =>
-                        setState(() => _units[index].isSelected = value),
-                    onSettlementToggled: (index, value) => setState(
-                      () => _units[index].useSettlementAccount = value,
+                  Expanded(
+                    child: _AmountRow(
+                      label: 'المبلغ الجاري سداده',
+                      amount: unit.requiredAmount?.toStringAsFixed(2),
+                      backgroundColor: AppColors.neutralLightMedium,
+                    ),
+                  ),
+                  12.ws,
+                  Expanded(
+                    child: _AmountRow(
+                      label: 'المبلغ المسدد',
+                      amount: unit.paidAmount?.toStringAsFixed(2),
+                      backgroundColor: AppColors.neutralLightMedium,
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-            color: Colors.transparent,
-            child: PaymentButton(
-              label: 'إصدار طلب السداد',
-              onTap: () async {
-                final confirmed = await showSettlementAccountBottomSheet(
-                  context: context,
-                  settlementBalance: 500.00,
-                  requiredAmount: 900.00,
-                );
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-                if (confirmed == true) {
-                  // The user agreed, start the settlement process
-                }
-              },
+class _AmountRow extends StatelessWidget {
+  final String label;
+  final String? amount;
+  final Color? backgroundColor;
+
+  const _AmountRow({required this.label, this.amount, this.backgroundColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        AppText(
+          text: label,
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w700,
+          color: AppColors.mainBlueIndigoDye,
+          textAlign: TextAlign.center,
+          alignment: AlignmentDirectional.center,
+        ),
+        6.hs,
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+          decoration: BoxDecoration(
+            color: backgroundColor ?? Colors.transparent,
+            borderRadius: BorderRadius.circular(10.r),
+            border: Border.all(
+              color: AppColors.neutralLightDarkest,
+              width: 0.5,
             ),
           ),
-        ],
-      ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: AppText(
+                      text: amount ?? '00.00',
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.neutralDarkMedium,
+                      alignment: AlignmentDirectional.center,
+                    ),
+                  ),
+                  10.ws,
+                  Container(
+                    width: 0.5.w,
+                    height: 25.h,
+                    color: AppColors.neutralLightDarkest,
+                  ),
+                  10.ws,
+                  AppText(
+                    text: 'ج.م',
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.neutralDarkMedium,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -101,7 +416,6 @@ class _StepIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppContainer(
-      height: 93,
       boxShadow: [],
       child: Column(
         children: [
@@ -118,14 +432,6 @@ class _StepIndicator extends StatelessWidget {
                 isFinished: false,
               ),
             ],
-          ),
-          8.hs,
-          Container(
-            height: 8.h,
-            decoration: BoxDecoration(
-              color: AppColors.highlightDarkest,
-              borderRadius: BorderRadius.circular(8.r),
-            ),
           ),
         ],
       ),
@@ -154,280 +460,6 @@ class _SuccessBanner extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _PaymentCard extends StatelessWidget {
-  const _PaymentCard({
-    required this.units,
-    required this.total,
-    required this.onSelectionChanged,
-    required this.onSettlementToggled,
-  });
-
-  final List<PaymentUnitItemModel> units;
-  final double total;
-  final void Function(int, bool) onSelectionChanged;
-  final void Function(int, bool) onSettlementToggled;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 26.h),
-            child: Column(
-              children: [
-                AppText(
-                  text: 'طلب سداد',
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.neutralDarkDarkest,
-                  alignment: AlignmentDirectional.center,
-                ),
-                11.hs,
-                AppText(
-                  text: 'مراجعة البيانات قبل الإصدار',
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.neutralDarkMedium,
-                  alignment: AlignmentDirectional.center,
-                ),
-              ],
-            ),
-          ),
-
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                AppText(
-                  text: 'الوحدات التي سيتم إصدار طلب/طلبات السداد عنها',
-                  alignment: AlignmentDirectional.center,
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.neutralDarkDarkest,
-                ),
-                12.hs,
-
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8.r),
-                  child: Table(
-                    columnWidths: const {
-                      0: FlexColumnWidth(3),
-                      1: FlexColumnWidth(2),
-                    },
-                    border: TableBorder.all(
-                      color: AppColors.neutralLightDarkest,
-                      width: 1,
-                    ),
-                    children: [
-                      TableRow(
-                        decoration: BoxDecoration(
-                          color: AppColors.neutralLightDarkest,
-                        ),
-                        children: [
-                          _tableHeader('نوع العقار'),
-                          _tableHeader('مبلغ تحت الحساب'),
-                        ],
-                      ),
-
-                      ...units.asMap().entries.map(
-                        (e) => _buildUnitRow(
-                          e.key,
-                          e.value,
-                          onSelectionChanged,
-                          onSettlementToggled,
-                        ),
-                      ),
-
-                      TableRow(
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 12.w,
-                              vertical: 14.h,
-                            ),
-                            child: AppText(
-                              text: 'الإجمالي',
-                              alignment: AlignmentDirectional.centerEnd,
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.neutralDarkLight,
-                            ),
-                          ),
-                          Container(
-                            color: AppColors.neutralDarkLight,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 12.w,
-                                vertical: 14.h,
-                              ),
-                              child: AppText(
-                                text: total.toStringAsFixed(2),
-                                textAlign: TextAlign.center,
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                24.hs,
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _tableHeader(String text) => Padding(
-    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-    child: Text(
-      text,
-      textAlign: TextAlign.right,
-      style: TextStyle(
-        fontSize: 12.sp,
-        fontWeight: FontWeight.w600,
-        color: const Color(0xFF374151),
-      ),
-    ),
-  );
-
-  TableRow _buildUnitRow(
-    int index,
-    PaymentUnitItemModel item,
-    void Function(int, bool) onSelect,
-    void Function(int, bool) onToggle,
-  ) {
-    return TableRow(
-      decoration: BoxDecoration(color: AppColors.highlightLightest),
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  GestureDetector(
-                    onTap: () => onSelect(index, !item.isSelected),
-                    child: Container(
-                      width: 22.w,
-                      height: 22.w,
-                      decoration: BoxDecoration(
-                        color: item.isSelected
-                            ? const Color(0xFF1A56DB)
-                            : Colors.white,
-                        borderRadius: BorderRadius.circular(6.r),
-                        border: Border.all(
-                          color: item.isSelected
-                              ? AppColors.highlightDarkest
-                              : AppColors.mainNeutral,
-                        ),
-                      ),
-                      child: item.isSelected
-                          ? Icon(Icons.check, color: Colors.white, size: 14.sp)
-                          : null,
-                    ),
-                  ),
-                  14.ws,
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        AppText(
-                          text: item.unitType ?? '',
-                          textAlign: TextAlign.right,
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.neutralDarkMedium,
-                        ),
-                        5.hs,
-                        AppText(
-                          text: item.location ?? '',
-                          textAlign: TextAlign.right,
-                          maxLines: 2,
-                          fontSize: 10.sp,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.neutralDarkMedium,
-                        ),
-                        8.hs,
-                        Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.transparent,
-                            border: Border.all(
-                              color: item.useSettlementAccount
-                                  ? AppColors.successMedium
-                                  : AppColors.neutralLightDarkest,
-                            ),
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Transform.scale(
-                                scale: 0.85,
-                                child: Switch(
-                                  value: item.useSettlementAccount,
-                                  onChanged: (v) => onToggle(index, v),
-                                  activeColor: Colors.white,
-                                  activeTrackColor: AppColors.successMedium,
-                                  inactiveThumbColor: Colors.white,
-                                  inactiveTrackColor:
-                                      AppColors.neutralLightDark,
-                                  trackOutlineColor: WidgetStateProperty.all(
-                                    Colors.transparent,
-                                  ),
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                              ),
-                              4.ws,
-                              AppText(
-                                text: 'السداد من حساب\nالتسويات',
-                                textAlign: TextAlign.right,
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.neutralDarkMedium,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-          child: AppText(
-            text: item.amount?.toStringAsFixed(2) ?? '-',
-            textAlign: TextAlign.center,
-
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-            color: AppColors.neutralDarkMedium,
-          ),
-        ),
-      ],
     );
   }
 }

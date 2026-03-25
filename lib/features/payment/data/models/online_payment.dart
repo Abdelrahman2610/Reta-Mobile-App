@@ -1,7 +1,7 @@
 import '../../../../core/helpers/extensions/payment_status.dart';
 
 class OnlinePaymentModel {
-  final PaymentStatus status;
+  final OnlinePaymentTransactionStatus status;
   final String? amount;
   final String? operationNumber;
 
@@ -12,7 +12,7 @@ class OnlinePaymentModel {
   });
 
   OnlinePaymentModel copyWith({
-    PaymentStatus? status,
+    OnlinePaymentTransactionStatus? status,
     String? amount,
     String? operationNumber,
   }) {
