@@ -29,8 +29,8 @@ class PaymentInfoCubit extends Cubit<PaymentInfoState> {
   void calculateTotalAmount() {
     totalRequired =
         _data?.units
-            .where((u) => u.isSelected)
-            .fold(0.0, (sum, u) => (sum ?? 0) + (u.amountUnderPayment)) ??
+            .where((unit) => (unit.isSelected && !unit.isChecked))
+            .fold(0.0, (sum, unit) => (sum ?? 0) + (unit.amountUnderPayment)) ??
         0;
   }
 
