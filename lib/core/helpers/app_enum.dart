@@ -44,3 +44,7 @@ enum UserType { guest, authenticated }
 enum TransactionStatus { withdraw, deposit }
 
 enum PaymentRequestStatus { pending, inProgress, paid, cancelled, failedOnHold }
+
+enum PaymentRequestInfoStatus { completed, partiallyCompleted, allAvailable }
+
+enum ClaimsSource { declaration, underDebt }

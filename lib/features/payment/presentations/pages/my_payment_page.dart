@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/core/helpers/fixed_assets.dart';
 import 'package:reta/features/components/app_scaffold.dart';
 import 'package:reta/features/payment/presentations/pages/payment_request_page.dart';
-import 'package:reta/features/payment/presentations/pages/payment_transaction_page.dart';
+import 'package:reta/features/payment/presentations/pages/payment_under_account_page.dart';
 
 import '../../../../core/helpers/extensions/dimensions.dart';
 import '../components/my_payment_card.dart';
@@ -42,7 +43,10 @@ class _MyPaymentPage extends StatelessWidget {
             onTap: () {
               PersistentNavBarNavigator.pushNewScreen(
                 context,
-                screen: PaymentRequestsPage(declarationId: '434'),
+                screen: PaymentRequestsPage(
+                  declarationId: '434',
+                  claimsSource: ClaimsSource.underDebt,
+                ),
                 withNavBar: true,
                 pageTransitionAnimation: PageTransitionAnimation.slideUp,
               );
@@ -57,7 +61,7 @@ class _MyPaymentPage extends StatelessWidget {
             onTap: () {
               PersistentNavBarNavigator.pushNewScreen(
                 context,
-                screen: PaymentsTransactionsPage(),
+                screen: PaymentUnderAccountPage(),
                 withNavBar: true,
                 pageTransitionAnimation: PageTransitionAnimation.slideUp,
               );

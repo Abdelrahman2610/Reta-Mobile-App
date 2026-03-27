@@ -37,6 +37,10 @@ class ApiConstants {
   // ─── File Upload ─────────────────────────────────────────────────────────────
   static const String uploadAttachment =
       '/declaration-system/declarations/upload-attachments';
+  static const String uploadDebtSupportingDocument =
+      '/declaration-system/declarations/upload-debt-supporting-document';
+  static const String deleteTempFiles =
+      '/declaration-system/declarations/declarations/delete-temp-files';
 
   // ─── Declarations ────────────────────────────────────────────────────────────
   static const String declarations = '/declaration-system/declarations';
@@ -104,8 +108,12 @@ class ApiConstants {
   // ─── Claims ──────────────────────────────────────────────────────────────────
   static const String storeClaim =
       '/declaration-system/declarations/user/claim';
+  static const String taxpayersKnowledgeClaim =
+      '/declaration-system/declarations/taxpayers-knowledge/claim';
   static String claimsList(int declarationId) =>
       '/declaration-system/declarations/user/declaration/claims-list/$declarationId';
+  static String underDebtClaimsList(int declarationId) =>
+      '/declaration-system/declarations/claims-list/under-debt/$declarationId';
   static String claimDetail(int claimId) =>
       '/declaration-system/declarations/user/claims/$claimId';
   static String cancelClaim(int claimId) =>
@@ -120,6 +128,8 @@ class ApiConstants {
       '/declaration-system/initial-payment/$claimId';
   static String underDeclarationProperties(int declarationId) =>
       '/declaration-system/UnderDeclarationProperties/list/$declarationId';
+  static String underDebtProperties(int declarationId) =>
+      '/declaration-system/under-debt-properties/list/$declarationId';
   static const String settlementOfDebts =
       '/declaration-system/declarations/settlement-of-debts-with-the-taxpayers-knowledge';
 

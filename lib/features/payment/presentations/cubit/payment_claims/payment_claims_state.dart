@@ -16,3 +16,5 @@ final class PaymentClaimsError extends PaymentClaimsState {
   final String message;
   PaymentClaimsError(this.message);
 }
+
+final class PaymentClaimsDeleteSuccess extends PaymentClaimsState {}

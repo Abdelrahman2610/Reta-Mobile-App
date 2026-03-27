@@ -24,6 +24,8 @@ class FileUploadField extends StatelessWidget {
     this.labelFontSize,
     this.description,
     this.isUserInfo = false,
+    this.loadingWidget,
+    this.deleteFileText,
   });
 
   final String labelText;
@@ -38,6 +40,8 @@ class FileUploadField extends StatelessWidget {
   final double? labelFontSize;
   final String? description;
   final bool isUserInfo;
+  final Widget? loadingWidget;
+  final String? deleteFileText;
 
   @override
   Widget build(BuildContext context) {
@@ -61,14 +65,17 @@ class FileUploadField extends StatelessWidget {
           color: hasFile ? AppColors.errorDark : AppColors.neutralDarkLightest,
         ),
       ),
-      prefixWidget: AppAttachmentItem(
-        onTap: hasFile ? onFileRemoved : onFilePicked,
-        text: text,
-        backgroundColor: backgroundColor,
-        textColor: textColor,
-        containFile: hasFile,
-        isUserInfo: isUserInfo,
-      ),
+      prefixWidget:
+          loadingWidget ??
+          AppAttachmentItem(
+            onTap: hasFile ? onFileRemoved : onFilePicked,
+            text: text,
+            backgroundColor: backgroundColor,
+            textColor: textColor,
+            containFile: hasFile,
+            isUserInfo: isUserInfo,
+            deleteFileText: deleteFileText,
+          ),
       infoText: infoText,
     );
   }

@@ -431,7 +431,11 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
       PersistentNavBarNavigator.pushNewScreen(
         context,
-        screen: PaymentInfoPage(declarationId: state.declarationId),
+        screen: PaymentInfoPage(
+          declarationId: state.declarationId,
+          fromDeclarationConfirmation: true,
+          claimsSource: ClaimsSource.declaration,
+        ),
         withNavBar: true,
         pageTransitionAnimation: PageTransitionAnimation.slideUp,
       );

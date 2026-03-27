@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
-import 'package:reta/features/payment/presentations/components/payment_selected_box.dart';
 import 'package:reta/features/payment/presentations/pages/payment_request_page.dart';
 
 import '../../../../core/helpers/app_enum.dart';
@@ -14,31 +13,60 @@ import '../../../components/app_scaffold.dart';
 import '../../../components/app_text.dart';
 import '../../../components/circular_progress_indicator_platform_widget.dart';
 import '../../../components/image_svg_custom_widget.dart';
-import '../../../declarations/presentations/components/declaration_data_tab.dart';
 import '../../data/models/payment_unit_item.dart';
+import '../components/amount_row.dart';
 import '../components/payment_button.dart';
+import '../components/request_unit_card.dart';
+import '../components/step_indicator.dart';
+import '../components/success_banner.dart';
 import '../cubit/payment_info/payment_info_cubit.dart';
 
 class PaymentInfoPage extends StatelessWidget {
   final String declarationId;
+  final bool fromDeclarationConfirmation;
+  final ClaimsSource claimsSource;
 
-  const PaymentInfoPage({super.key, required this.declarationId});
+  const PaymentInfoPage({
+    super.key,
+    required this.declarationId,
+    required this.fromDeclarationConfirmation,
+    required this.claimsSource,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => PaymentInfoCubit()..fetchUnits(declarationId),
-      child: _PaymentInfoView(declarationId: declarationId),
+      child: _PaymentInfoView(
+        declarationId: declarationId,
+        fromDeclarationConfirmation: fromDeclarationConfirmation,
+        claimsSource: claimsSource,
+      ),
     );
   }
 }
 
 class _PaymentInfoView extends StatelessWidget {
   final String declarationId;
+  final bool fromDeclarationConfirmation;
+  final ClaimsSource claimsSource;
 
-  const _PaymentInfoView({super.key, required this.declarationId});
+  const _PaymentInfoView({
+    required this.declarationId,
+    required this.fromDeclarationConfirmation,
+    required this.claimsSource,
+  });
   @override
   Widget build(BuildContext context) {
+    PaymentRequestInfoStatus checkInfoStatus(List<PaymentUnitItemModel> units) {
+      final total = units.length;
+      final checked = units.where((u) => u.isChecked).length;
+
+      if (checked == total) return PaymentRequestInfoStatus.completed;
+      if (checked == 0) return PaymentRequestInfoStatus.allAvailable;
+      return PaymentRequestInfoStatus.partiallyCompleted;
+    }
+
     return AppScaffold(
       padding: EdgeInsets.zero,
       title: 'طلبات السداد',
@@ -47,7 +75,10 @@ class _PaymentInfoView extends StatelessWidget {
           if (state is PaymentInfoClaimSuccess) {
             PersistentNavBarNavigator.pushNewScreen(
               context,
-              screen: PaymentRequestsPage(declarationId: declarationId),
+              screen: PaymentRequestsPage(
+                declarationId: declarationId,
+                claimsSource: claimsSource,
+              ),
               withNavBar: true,
               pageTransitionAnimation: PageTransitionAnimation.slideUp,
             );
@@ -63,9 +94,14 @@ class _PaymentInfoView extends StatelessWidget {
               return Center(child: AppText(text: state.message));
             }
             if (state is PaymentInfoSuccess) {
+              final PaymentRequestInfoStatus infoStatus = checkInfoStatus(
+                state.data.units,
+              );
               return _PaymentInfoContent(
                 data: state.data,
                 declarationId: declarationId,
+                fromDeclarationConfirmation: fromDeclarationConfirmation,
+                infoStatus: infoStatus,
               );
             }
             return const SizedBox();
@@ -79,8 +115,15 @@ class _PaymentInfoView extends StatelessWidget {
 class _PaymentInfoContent extends StatelessWidget {
   final PaymentInfoResponse data;
   final String declarationId;
+  final bool fromDeclarationConfirmation;
+  final PaymentRequestInfoStatus infoStatus;
 
-  const _PaymentInfoContent({required this.data, required this.declarationId});
+  const _PaymentInfoContent({
+    required this.data,
+    required this.declarationId,
+    required this.fromDeclarationConfirmation,
+    required this.infoStatus,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -101,13 +144,28 @@ class _PaymentInfoContent extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      _StepIndicator(),
+                      StepIndicator(
+                        onSecondStepTapped: () {
+                          PersistentNavBarNavigator.pushNewScreen(
+                            context,
+                            screen: PaymentRequestsPage(
+                              declarationId: declarationId,
+                              claimsSource: ClaimsSource.declaration,
+                            ),
+                            withNavBar: true,
+                            pageTransitionAnimation:
+                                PageTransitionAnimation.slideUp,
+                          );
+                        },
+                      ),
                       20.hs,
-                      _SuccessBanner(),
-                      20.hs,
+                      if (fromDeclarationConfirmation) ...[
+                        SuccessBanner(),
+                        20.hs,
+                      ],
                       AppContainer(
                         padding: EdgeInsets.symmetric(
-                          horizontal: 10.w,
+                          horizontal: 20.w,
                           vertical: 20.h,
                         ),
                         child: Column(
@@ -139,34 +197,7 @@ class _PaymentInfoContent extends StatelessWidget {
                             ),
                             24.hs,
                             // Info banner
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16.w,
-                                vertical: 16.h,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.highlightLightest,
-                                borderRadius: BorderRadius.circular(16.r),
-                              ),
-                              child: Row(
-                                children: [
-                                  ImageSvgCustomWidget(
-                                    imgPath: FixedAssets.instance.infoIC,
-                                  ),
-                                  16.ws,
-                                  Expanded(
-                                    child: AppText(
-                                      text:
-                                          'يمكنك اختيار جميع الوحدات أو بعضها لإصدار طلب السداد.',
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.neutralDarkDarkest,
-                                      maxLines: 3,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            _InfoBanner(infoStatus: infoStatus),
                             24.hs,
                             // Units list
                             ListView.separated(
@@ -177,7 +208,7 @@ class _PaymentInfoContent extends StatelessWidget {
                               separatorBuilder: (_, __) => 16.hs,
                               itemBuilder: (context, index) {
                                 final unit = data.units[index];
-                                return _UnitCard(
+                                return RequestUnitCard(
                                   unit: unit,
                                   onToggleSelect: () => cubit.toggleUnit(index),
                                   onToggleWallet: (v) =>
@@ -193,214 +224,33 @@ class _PaymentInfoContent extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Total
-                AppContainer(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 40.w,
-                    vertical: 24.h,
-                  ),
-                  child: Column(
-                    children: [
-                      _AmountRow(
-                        label: 'المبلغ المطلوب سداده',
-                        amount: cubit.totalRequired.toStringAsFixed(2),
-                      ),
-                      10.hs,
-                      PaymentButton(
-                        label: 'إصدار طلب السداد',
-                        onTap: () => context
-                            .read<PaymentInfoCubit>()
-                            .createClaim(declarationId),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
           ),
         ),
-      ],
-    );
-  }
-}
-
-class _UnitCard extends StatelessWidget {
-  final PaymentUnitItemModel unit;
-  final VoidCallback onToggleSelect;
-  final ValueChanged<bool> onToggleWallet;
-
-  const _UnitCard({
-    required this.unit,
-    required this.onToggleSelect,
-    required this.onToggleWallet,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Opacity(
-      opacity: unit.isChecked ? 0.7 : 1,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        decoration: BoxDecoration(
-          color: unit.isChecked
-              ? AppColors.neutralLightLightest
-              : unit.isSelected
-              ? AppColors.highlightLightest
-              : AppColors.neutralLightLight,
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: AppColors.neutralLightDarkest, width: 0.5),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            // Unit header row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                PaymentSelectedBox(
-                  isSelected: unit.isSelected,
-                  onTap: unit.isChecked ? () {} : onToggleSelect,
-                  isChecked: unit.isChecked,
-                ),
-                10.ws,
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Row(
-                        children: [
-                          AppText(
-                            text: unit.propertyType,
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.mainBlueIndigoDye,
-                            textAlign: TextAlign.right,
-                          ),
-                          6.ws,
-                          AppText(
-                            text: '— ${unit.propertyName}',
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.neutralDarkDark,
-                            textAlign: TextAlign.right,
-                          ),
-                          6.ws,
-                        ],
-                      ),
-                      6.hs,
-                      AppText(
-                        text: '${unit.governorate} - ${unit.propertyNumber}',
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.neutralDarkMedium,
-                        textAlign: TextAlign.right,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            12.hs,
-            Divider(color: AppColors.neutralLightDarkest),
-            6.hs,
-            _AmountRow(
-              label: 'المبلغ المطلوب سداده',
-              amount: unit.amountUnderPayment.toStringAsFixed(2),
-            ),
-            15.hs,
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.neutralLightDarkest),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _AmountRow(
-                      label: 'المبلغ الجاري سداده',
-                      amount: unit.requiredAmount?.toStringAsFixed(2),
-                      backgroundColor: AppColors.neutralLightMedium,
-                    ),
-                  ),
-                  12.ws,
-                  Expanded(
-                    child: _AmountRow(
-                      label: 'المبلغ المسدد',
-                      amount: unit.paidAmount?.toStringAsFixed(2),
-                      backgroundColor: AppColors.neutralLightMedium,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AmountRow extends StatelessWidget {
-  final String label;
-  final String? amount;
-  final Color? backgroundColor;
-
-  const _AmountRow({required this.label, this.amount, this.backgroundColor});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        AppText(
-          text: label,
-          fontSize: 12.sp,
-          fontWeight: FontWeight.w700,
-          color: AppColors.mainBlueIndigoDye,
-          textAlign: TextAlign.center,
-          alignment: AlignmentDirectional.center,
-        ),
-        6.hs,
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-          decoration: BoxDecoration(
-            color: backgroundColor ?? Colors.transparent,
-            borderRadius: BorderRadius.circular(10.r),
-            border: Border.all(
-              color: AppColors.neutralLightDarkest,
-              width: 0.5,
-            ),
-          ),
+        // Total
+        AppContainer(
+          padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 24.h),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: AppText(
-                      text: amount ?? '00.00',
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.neutralDarkMedium,
-                      alignment: AlignmentDirectional.center,
-                    ),
-                  ),
-                  10.ws,
-                  Container(
-                    width: 0.5.w,
-                    height: 25.h,
-                    color: AppColors.neutralLightDarkest,
-                  ),
-                  10.ws,
-                  AppText(
-                    text: 'ج.م',
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.neutralDarkMedium,
-                  ),
-                ],
+              if (infoStatus != PaymentRequestInfoStatus.completed)
+                AmountRow(
+                  label: 'المبلغ المطلوب سداده',
+                  amount: cubit.totalRequired.toStringAsFixed(2),
+                ),
+              10.hs,
+              PaymentButton(
+                label: 'إصدار طلب السداد',
+                textColor: infoStatus == PaymentRequestInfoStatus.completed
+                    ? AppColors.neutralDarkLight
+                    : null,
+                onTap: infoStatus == PaymentRequestInfoStatus.completed
+                    ? null
+                    : () {
+                        context.read<PaymentInfoCubit>().createClaim(
+                          declarationId,
+                        );
+                      },
               ),
             ],
           ),
@@ -410,53 +260,43 @@ class _AmountRow extends StatelessWidget {
   }
 }
 
-class _StepIndicator extends StatelessWidget {
-  const _StepIndicator({super.key});
+class _InfoBanner extends StatelessWidget {
+  const _InfoBanner({required this.infoStatus});
 
-  @override
-  Widget build(BuildContext context) {
-    return AppContainer(
-      boxShadow: [],
-      child: Column(
-        children: [
-          Row(
-            children: [
-              DeclarationDataTab(
-                declarationsType: DeclarationsDataType.payInfo,
-                isSelected: true,
-                isFinished: false,
-              ),
-              DeclarationDataTab(
-                declarationsType: DeclarationsDataType.paymentRequests,
-                isSelected: false,
-                isFinished: false,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
+  final PaymentRequestInfoStatus infoStatus;
 
-class _SuccessBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       decoration: BoxDecoration(
-        color: AppColors.successLight,
-        borderRadius: BorderRadius.circular(10.r),
+        color: infoStatus == PaymentRequestInfoStatus.completed
+            ? AppColors.successLight
+            : AppColors.highlightLightest,
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Row(
         children: [
-          ImageSvgCustomWidget(imgPath: FixedAssets.instance.successIC),
+          ImageSvgCustomWidget(
+            imgPath: infoStatus == PaymentRequestInfoStatus.completed
+                ? FixedAssets.instance.successIC
+                : FixedAssets.instance.infoIC,
+          ),
           16.ws,
-          AppText(
-            text: 'تم تقديم الإقرار بنجاح',
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-            color: AppColors.neutralDarkDarkest,
+          Expanded(
+            child: AppText(
+              text: infoStatus == PaymentRequestInfoStatus.allAvailable
+                  ? 'يمكنك اختيار جميع الوحدات أو بعضها لإصدار طلب السداد.'
+                  : infoStatus == PaymentRequestInfoStatus.partiallyCompleted
+                  ? 'اختر الوحدات المتاحة لإصدار طلب سداد. الوحدات غير القابلة للاختيار تم إصدار طلبات سداد لها مسبقًا.'
+                  : infoStatus == PaymentRequestInfoStatus.completed
+                  ? 'تم إصدار جميع طلبات السداد لهذا الإقرار. يمكنك متابعة حالة السداد من خلال “طلبات السداد”.'
+                  : '',
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              color: AppColors.neutralDarkDarkest,
+              maxLines: 3,
+            ),
           ),
         ],
       ),

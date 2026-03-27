@@ -37,7 +37,10 @@ class PaymentInfoBox extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(6.r),
-        border: Border.all(color: borderColor ?? AppColors.neutralLightDark),
+        border: Border.all(
+          color: borderColor ?? AppColors.neutralLightDark,
+          width: 0.5,
+        ),
       ),
       child: Column(
         crossAxisAlignment: crossAxisAlignment ?? CrossAxisAlignment.center,
@@ -56,7 +59,7 @@ class PaymentInfoBox extends StatelessWidget {
                 TextSpan(
                   text: value,
                   style: TextStyle(
-                    fontSize: valueFontSize ?? 12.sp,
+                    fontSize: valueFontSize ?? 13.sp,
                     fontWeight: FontWeight.w600,
                     color: valueColor ?? AppColors.neutralDarkMedium,
                   ),
