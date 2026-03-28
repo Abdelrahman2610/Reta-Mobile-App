@@ -6,18 +6,16 @@ import 'package:reta/core/theme/app_colors.dart';
 import 'package:reta/features/components/app_scaffold.dart';
 import 'package:reta/features/components/app_text.dart';
 import 'package:reta/features/components/circular_progress_indicator_platform_widget.dart';
-import 'package:reta/features/declarations/data/models/declaration_model.dart';
 import 'package:reta/features/declarations/presentations/components/empty_data_widget.dart';
 import 'package:reta/features/payment/presentations/components/app_status_badge.dart';
 import 'package:reta/features/payment/presentations/components/payment_text_form_field.dart';
 import 'package:reta/features/payment/presentations/cubit/payment_under_account/payment_under_account_cubit.dart';
 import 'package:reta/features/payment/presentations/pages/payment_info_page.dart';
-import 'package:reta/features/payment/presentations/pages/payment_info_under_debt_page.dart';
 
 import '../../../../core/helpers/app_enum.dart';
-import '../../../../core/helpers/extensions/date_time.dart';
 import '../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../core/helpers/extensions/my_debts_status.dart';
+import '../../data/models/payment_under_account_model.dart';
 
 class PaymentUnderAccountPage extends StatelessWidget {
   const PaymentUnderAccountPage({super.key});
@@ -64,7 +62,7 @@ class _PaymentUnderAccountView extends StatelessWidget {
 
 class _PaymentUnderAccountList extends StatelessWidget {
   const _PaymentUnderAccountList({required this.declarations});
-  final List<DeclarationModel> declarations;
+  final List<PaymentUnderAccountModel> declarations;
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +97,7 @@ class _PaymentUnderAccountList extends StatelessWidget {
 
 class _PaymentUnderAccountCard extends StatelessWidget {
   const _PaymentUnderAccountCard({required this.item});
-  final DeclarationModel item;
+  final PaymentUnderAccountModel item;
 
   bool get isDraft => item.statusId == '1';
 
@@ -170,7 +168,7 @@ class _PaymentUnderAccountCard extends StatelessWidget {
               Expanded(
                 child: PaymentInfoBox(
                   label: 'عدد العقارات داخل الإقرار',
-                  value: item.unitsCount?.total.toString() ?? '0',
+                  value: item.unitsCount.toString(),
                   valueColor: AppColors.mainOrange,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   alignment: AlignmentDirectional.centerStart,
@@ -179,8 +177,8 @@ class _PaymentUnderAccountCard extends StatelessWidget {
               12.ws,
               Expanded(
                 child: PaymentInfoBox(
-                  label: 'تاريخ التقديم',
-                  value: item.submittionDate?.toArabicDate() ?? '-',
+                  label: 'عدد العقارات غير المسددة',
+                  value: item.unpaidPropertyCount.toString(),
                   crossAxisAlignment: CrossAxisAlignment.start,
                   alignment: AlignmentDirectional.centerStart,
                 ),
@@ -193,22 +191,27 @@ class _PaymentUnderAccountCard extends StatelessWidget {
             children: [
               Expanded(
                 child: PaymentInfoBox(
-                  label: 'تاريخ إنشاء الإقرار',
-                  value: item.creationDate?.toArabicDate() ?? '-',
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  alignment: AlignmentDirectional.centerStart,
+                  label: 'إجمالي المبلغ تحت الحساب',
+                  value:
+                      '${item.totalAmountUnderAccount.toStringAsFixed(2)} ج.م ',
+                  valueColor: AppColors.errorDark,
                 ),
               ),
               12.ws,
               Expanded(
                 child: PaymentInfoBox(
-                  label: 'المكلف بأداء الضريبة',
-                  value: item.taxpayer ?? '-',
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  alignment: AlignmentDirectional.centerStart,
+                  label: 'إجمالي المبلغ المسدد',
+                  value: '${item.totalPaidAmount.toStringAsFixed(2)} ج.م ',
+                  valueColor: AppColors.successDark,
                 ),
               ),
             ],
+          ),
+          8.hs,
+          PaymentInfoBox(
+            label: 'إجمالي المبلغ المستحق سداده',
+            value: '${item.totalAmountDue.toStringAsFixed(2)} ج.م ',
+            valueColor: AppColors.highlightDarkest,
           ),
           // زرار الدفع — بس لو مش مسودة
           if (!isDraft) ...[
@@ -220,7 +223,9 @@ class _PaymentUnderAccountCard extends StatelessWidget {
                   PersistentNavBarNavigator.pushNewScreen(
                     context,
                     screen: PaymentInfoPage(
-                      declarationId: item.id.toString(), fromDeclarationConfirmation: false, claimsSource: ClaimsSource.declaration,
+                      declarationId: item.id.toString(),
+                      fromDeclarationConfirmation: false,
+                      claimsSource: ClaimsSource.declaration,
                     ),
                     withNavBar: true,
                     pageTransitionAnimation: PageTransitionAnimation.slideUp,

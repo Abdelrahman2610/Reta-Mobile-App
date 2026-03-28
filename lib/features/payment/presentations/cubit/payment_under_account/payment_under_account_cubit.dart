@@ -2,7 +2,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/network/api_constants.dart';
 import 'package:reta/core/network/api_result.dart';
 import 'package:reta/core/network/dio_client.dart';
-import 'package:reta/features/declarations/data/models/declaration_model.dart';
+
+import '../../../data/models/payment_under_account_model.dart';
 
 part 'payment_under_account_state.dart';
 
@@ -14,9 +15,10 @@ class PaymentUnderAccountCubit extends Cubit<PaymentUnderAccountState> {
 
     final result = await safeApiCall(() async {
       final response = await DioClient.instance.dio.get(
-        ApiConstants.declarations,
+        ApiConstants.paymentUnderAccountList,
       );
-      return declarationListFromJson(response.data['data']);
+      final list = response.data as List;
+      return list.map((e) => PaymentUnderAccountModel.fromJson(e)).toList();
     });
 
     switch (result) {

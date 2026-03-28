@@ -73,6 +73,7 @@ class _PaymentInfoView extends StatelessWidget {
       child: BlocListener<PaymentInfoCubit, PaymentInfoState>(
         listener: (context, state) {
           if (state is PaymentInfoClaimSuccess) {
+            context.read<PaymentInfoCubit>().fetchUnits(declarationId);
             PersistentNavBarNavigator.pushNewScreen(
               context,
               screen: PaymentRequestsPage(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/features/components/app_button.dart';
 import 'package:reta/features/payment/presentations/components/filter_chip.dart';
@@ -16,20 +17,22 @@ import '../../../components/image_svg_custom_widget.dart';
 import '../../../declarations/presentations/components/empty_data_widget.dart';
 import '../../data/models/payment_filter.dart';
 import '../../data/models/payment_lookups.dart';
+import '../components/claim_receipt_bottom_sheet.dart';
 import '../components/payment_filter_bottom_sheet.dart';
 import '../components/payment_request_card.dart';
 import '../components/step_indicator.dart';
 import '../cubit/claim_status_lookup/claim_status_lookup_cubit.dart';
 import '../cubit/claim_status_lookup/claim_status_lookup_state.dart';
 import '../cubit/payment_claims/payment_claims_cubit.dart';
+import 'electronic_payment_page.dart';
 
 class PaymentRequestsPage extends StatelessWidget {
   const PaymentRequestsPage({
     super.key,
-    required this.declarationId,
+    this.declarationId,
     required this.claimsSource,
   });
-  final String declarationId;
+  final String? declarationId;
   final ClaimsSource claimsSource;
 
   @override
@@ -37,23 +40,26 @@ class PaymentRequestsPage extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) =>
-              PaymentClaimsCubit()
-                ..fetchClaims(declarationId, source: claimsSource),
+          create: (_) => PaymentClaimsCubit()
+            ..fetchClaims(declarationId: declarationId, source: claimsSource),
         ),
         BlocProvider(
           lazy: false,
           create: (_) => ClaimStatusLookupCubit()..fetchClaimStatuses(),
         ),
       ],
-      child: _PaymentRequestsView(declarationId: declarationId),
+      child: _PaymentRequestsView(
+        declarationId: declarationId,
+        source: claimsSource,
+      ),
     );
   }
 }
 
 class _PaymentRequestsView extends StatefulWidget {
-  const _PaymentRequestsView({required this.declarationId});
-  final String declarationId;
+  const _PaymentRequestsView({this.declarationId, required this.source});
+  final String? declarationId;
+  final ClaimsSource source;
 
   @override
   State<_PaymentRequestsView> createState() => _PaymentRequestsViewState();
@@ -140,7 +146,7 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                               onApply: (filter) {
                                 setState(() => _filterData = filter);
                                 context.read<PaymentClaimsCubit>().fetchClaims(
-                                  widget.declarationId,
+                                  declarationId: widget.declarationId,
                                   filter: filter,
                                 );
                               },
@@ -159,9 +165,29 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                         return PaymentClaimCard(
                           claim: claim,
                           onPayElectronically: claim.canPayElectronically
-                              ? () {}
+                              ? () {
+                                  PersistentNavBarNavigator.pushNewScreen(
+                                    context,
+                                    screen: ElectronicPaymentPage(
+                                      claimId: claim.id,
+                                      declarationId: widget.declarationId,
+                                      source: widget.source,
+                                    ),
+                                    withNavBar: true,
+                                    pageTransitionAnimation:
+                                        PageTransitionAnimation.slideUp,
+                                  );
+                                }
                               : null,
-                          onShare: () {},
+                          onShare: claim.canShare
+                              ? claim.claimDetails != null
+                                    ? () => showClaimReceiptSheet(
+                                        context,
+                                        title: 'تفاصيل طلب السداد',
+                                        pdfUrl: claim.claimDetails!,
+                                      )
+                                    : null
+                              : null,
                           onDelete: claim.canDelete
                               ? () async {
                                   final confirmed = await showDialog<bool>(
@@ -254,8 +280,20 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                                   }
                                 }
                               : null,
-                          onPrint: claim.canPrint ? () {} : null,
-                          onViewReceipt: claim.isPaid ? () {} : null,
+                          onPrint: claim.claimReceipt != null
+                              ? () => showClaimReceiptSheet(
+                                  context,
+                                  title: 'إيصال سداد مبلغ تحت الحساب',
+                                  pdfUrl: claim.claimReceipt!,
+                                )
+                              : null,
+                          onViewReceipt: claim.claimDetails != null
+                              ? () => showClaimReceiptSheet(
+                                  context,
+                                  title: 'تفاصيل طلب السداد',
+                                  pdfUrl: claim.claimDetails!,
+                                )
+                              : null,
                         );
                       },
                     ),

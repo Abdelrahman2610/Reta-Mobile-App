@@ -61,6 +61,7 @@ class PaymentInfoBox extends StatelessWidget {
                   style: TextStyle(
                     fontSize: valueFontSize ?? 13.sp,
                     fontWeight: FontWeight.w600,
+                    fontFamily: 'NotoSansArabic',
                     color: valueColor ?? AppColors.neutralDarkMedium,
                   ),
                 ),
@@ -70,6 +71,7 @@ class PaymentInfoBox extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w500,
+                      fontFamily: 'NotoSansArabic',
                       color: valueColor ?? AppColors.neutralDarkMedium,
                     ),
                   ),

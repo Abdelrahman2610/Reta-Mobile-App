@@ -7,7 +7,7 @@ final class PaymentUnderAccountInitial extends PaymentUnderAccountState {}
 final class PaymentUnderAccountLoading extends PaymentUnderAccountState {}
 
 final class PaymentUnderAccountSuccess extends PaymentUnderAccountState {
-  final List<DeclarationModel> declarations;
+  final List<PaymentUnderAccountModel> declarations;
   PaymentUnderAccountSuccess(this.declarations);
 }
 

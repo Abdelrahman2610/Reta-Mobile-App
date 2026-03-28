@@ -110,6 +110,10 @@ class ApiConstants {
       '/declaration-system/declarations/user/claim';
   static const String taxpayersKnowledgeClaim =
       '/declaration-system/declarations/taxpayers-knowledge/claim';
+  static String paymentUnderAccountList =
+      '/declaration-system/declarations/mobile/index';
+  static String allClaimsList =
+      '/declaration-system/declarations/user/claims-list/all';
   static String claimsList(int declarationId) =>
       '/declaration-system/declarations/user/declaration/claims-list/$declarationId';
   static String underDebtClaimsList(int declarationId) =>

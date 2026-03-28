@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:reta/core/helpers/url_launcher.dart';
 
 import '../../../../../../../core/helpers/fixed_assets.dart';
 import '../../../../../../../core/theme/app_colors.dart';
 import '../../../../../../components/app_text_form_field.dart';
 import '../../../../../../components/image_svg_custom_widget.dart';
+import '../../../../../../payment/presentations/components/claim_receipt_bottom_sheet.dart';
 import '../../../../components/app_attachment_item.dart';
 
 class FileUploadField extends StatelessWidget {
@@ -54,8 +54,8 @@ class FileUploadField extends StatelessWidget {
       readOnly: true,
       suffixWidget: GestureDetector(
         onTap: () {
-          if (filePath != null) {
-            urlLauncher(filePath);
+          if (filePath != null && filePath!.isNotEmpty) {
+            showClaimReceiptSheet(context, title: labelText, pdfUrl: filePath!);
           }
         },
         child: ImageSvgCustomWidget(

@@ -44,8 +44,7 @@ class _MyPaymentPage extends StatelessWidget {
               PersistentNavBarNavigator.pushNewScreen(
                 context,
                 screen: PaymentRequestsPage(
-                  declarationId: '434',
-                  claimsSource: ClaimsSource.underDebt,
+                  claimsSource: ClaimsSource.declaration,
                 ),
                 withNavBar: true,
                 pageTransitionAnimation: PageTransitionAnimation.slideUp,

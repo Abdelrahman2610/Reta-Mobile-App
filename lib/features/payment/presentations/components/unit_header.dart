@@ -30,28 +30,33 @@ class UnitHeader extends StatelessWidget {
         10.ws,
         Expanded(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  AppText(
-                    text: unit.propertyType,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.mainBlueIndigoDye,
-                    textAlign: TextAlign.right,
-                  ),
-                  6.ws,
-                  AppText(
-                    text: '— ${unit.propertyName}',
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.neutralDarkDark,
-                    textAlign: TextAlign.right,
-                  ),
-                  6.ws,
-                ],
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: unit.propertyType,
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'NotoSansArabic',
+                        color: AppColors.mainBlueIndigoDye,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '    — ${unit.propertyName}',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'NotoSansArabic',
+                        color: AppColors.neutralDarkDark,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+
               6.hs,
               AppText(
                 text: '${unit.governorate} - ${unit.propertyNumber}',
