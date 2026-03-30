@@ -183,4 +183,11 @@ class AuthRepository {
       );
     });
   }
+
+  Future<ApiResult<Map<String, dynamic>>> deleteAccount() async {
+    return safeApiCall(() async {
+      final response = await _dio.post('/delete-account');
+      return response.data as Map<String, dynamic>;
+    });
+  }
 }
