@@ -186,7 +186,7 @@ class LoginCubit extends Cubit<LoginState> {
       ),
     );
 
-    ApiResult result;
+    final ApiResult<LoginResponse> result;
 
     if (state.selectedTab == LoginTab.mobile) {
       result = await _authRepository.loginWithMobile(
@@ -221,8 +221,6 @@ class LoginCubit extends Cubit<LoginState> {
         emit(
           state.copyWith(
             isLoading: false,
-            phoneError: () => '',
-            passwordError: () => '',
             credentialError: () => 'رقم الموبايل أو كلمة المرور غير صحيحة',
           ),
         );
@@ -230,9 +228,6 @@ class LoginCubit extends Cubit<LoginState> {
         emit(
           state.copyWith(
             isLoading: false,
-            nationalIdError: () => '',
-            passportError: () => '',
-            passwordError: () => '',
             credentialError: () => 'البيانات المدخلة غير صحيحة',
           ),
         );
