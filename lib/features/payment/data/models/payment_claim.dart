@@ -62,5 +62,6 @@ class PaymentClaimModel {
   bool get canView => statusId == 2;
   bool get isPaid => statusId == 2;
   bool get canDelete => statusId == 1;
+  bool get isShareButton => statusId == 2 || statusId == 4;
   bool get canShare => statusId != 2 && statusId != 4;
 }

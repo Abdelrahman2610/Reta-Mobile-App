@@ -213,7 +213,7 @@ class _PaymentUnderAccountCard extends StatelessWidget {
             value: '${item.totalAmountDue.toStringAsFixed(2)} ج.م ',
             valueColor: AppColors.highlightDarkest,
           ),
-          // زرار الدفع — بس لو مش مسودة
+
           if (!isDraft) ...[
             16.hs,
             SizedBox(

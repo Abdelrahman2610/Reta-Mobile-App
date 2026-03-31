@@ -66,9 +66,6 @@ class DebtDocumentsCubit extends Cubit<DebtDocumentsState> {
     _emitUpdated();
   }
 
-  // في DebtDocumentsCubit
-
-  // Method 1: Upload file only (called on "حمل ملف" tap)
   Future<void> pickAndUploadFile(String documentId) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,

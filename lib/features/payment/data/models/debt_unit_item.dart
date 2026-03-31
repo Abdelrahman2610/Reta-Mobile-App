@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/cupertino.dart';
 
 class PendingDebtDocument {
@@ -81,12 +79,6 @@ class DebtUnitItemModel {
   });
 
   factory DebtUnitItemModel.fromJson(Map<String, dynamic> json) {
-    log(
-      'FromJson: required_amount: ${double.tryParse(json['required_amount'].toString())}',
-    );
-    log(
-      'FromJson: paid_amount: ${double.tryParse(json['paid_amount'].toString())}',
-    );
     final unit = DebtUnitItemModel(
       id: json['id'],
       declarationId: json['declaration_id'].toString(),

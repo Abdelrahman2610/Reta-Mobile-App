@@ -17,19 +17,16 @@ extension ArabicDateFormat on String? {
   String toArabicDate() {
     if (this == null || this!.isEmpty) return '-';
 
-    // يدعم format: dd/MM/yyyy أو yyyy-MM-dd
     try {
       final parts = this!.contains('/') ? this!.split('/') : this!.split('-');
 
       late int day, month, year;
 
       if (this!.contains('/')) {
-        // dd/MM/yyyy
         day = int.parse(parts[0]);
         month = int.parse(parts[1]);
         year = int.parse(parts[2]);
       } else {
-        // yyyy-MM-dd
         year = int.parse(parts[0]);
         month = int.parse(parts[1]);
         day = int.parse(parts[2]);

@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -16,7 +15,6 @@ void showClaimReceiptSheet(
   required String title,
   required String pdfUrl,
 }) {
-  log('PdfUrl: $pdfUrl');
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,

@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -211,7 +210,6 @@ class _PaymentWebViewState extends State<_PaymentWebView> {
           },
           onNavigationRequest: (request) {
             final url = request.url;
-            log('onNavigationRequest: ${request.url}');
 
             if (_hasNavigated) return NavigationDecision.prevent;
 

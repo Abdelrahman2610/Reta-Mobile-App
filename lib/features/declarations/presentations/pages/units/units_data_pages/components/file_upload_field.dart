@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/app_enum.dart';
@@ -63,7 +61,6 @@ class FileUploadField extends StatelessWidget {
       suffixWidget: GestureDetector(
         onTap: () {
           if (filePath != null && filePath!.isNotEmpty) {
-            log('userID: $userId, attachmentType: $attachmentType');
             if (userId != null) {
               String url = ApiConstants.showUserNationalIdFile(
                 int.parse(userId!),

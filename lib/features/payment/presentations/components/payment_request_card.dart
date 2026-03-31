@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
@@ -202,10 +204,11 @@ class _PaymentClaimCardState extends State<PaymentClaimCard>
                   child: _MainBtn(
                     claim: claim,
                     onTap: widget.onPayElectronically,
+                    onShareTapped: widget.onShare,
                   ),
                 ),
                 // Share
-                if (widget.onShare != null) ...[
+                if (widget.claim.canShare) ...[
                   8.ws,
                   GestureDetector(
                     onTap: widget.onShare,
@@ -325,32 +328,47 @@ class _DetailCell extends StatelessWidget {
 // ─────────────────────────────────────────
 
 class _MainBtn extends StatelessWidget {
-  const _MainBtn({required this.claim, this.onTap});
+  const _MainBtn({required this.claim, this.onTap, this.onShareTapped});
   final PaymentClaimModel claim;
   final VoidCallback? onTap;
+  final VoidCallback? onShareTapped;
 
   @override
   Widget build(BuildContext context) {
     final bool isActive = claim.canPayElectronically;
-    final bool isShare = claim.canShare;
-    final bool isEnabled = isActive || isShare;
+    final bool isShare = claim.isShareButton;
+    final bool isEnabled = isActive;
 
+    log('isShare: $isShare, ${claim.statusId}');
+    log(
+      'onTap: =${isEnabled
+          ? 'onTap'
+          : isShare
+          ? '$onShareTapped'
+          : 'null'}',
+    );
     return GestureDetector(
-      onTap: isEnabled ? onTap : null,
+      onTap: isEnabled
+          ? onTap
+          : isShare
+          ? onShareTapped
+          : null,
       child: Container(
         height: 48.h,
         decoration: BoxDecoration(
-          color: isEnabled
+          color: isEnabled || isShare
               ? AppColors.highlightDarkest
               : AppColors.neutralLightDarkest,
           borderRadius: BorderRadius.circular(12.r),
         ),
         alignment: Alignment.center,
         child: AppText(
-          text: 'الدفع الإلكتروني',
+          text: isShare ? 'شارك طلب السداد' : 'الدفع الإلكتروني',
           fontSize: 14.sp,
           fontWeight: FontWeight.w600,
-          color: isEnabled ? Colors.white : AppColors.neutralDarkLightest,
+          color: isEnabled || isShare
+              ? Colors.white
+              : AppColors.neutralDarkLightest,
           alignment: AlignmentDirectional.center,
         ),
       ),

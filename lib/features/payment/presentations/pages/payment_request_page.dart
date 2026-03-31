@@ -162,14 +162,12 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                                   );
                                 }
                               : null,
-                          onShare: claim.canShare
-                              ? claim.claimDetails != null
-                                    ? () => showClaimReceiptSheet(
-                                        context,
-                                        title: 'تفاصيل طلب السداد',
-                                        pdfUrl: claim.claimDetails!,
-                                      )
-                                    : null
+                          onShare: claim.claimDetails != null
+                              ? () => showClaimReceiptSheet(
+                                  context,
+                                  title: 'تفاصيل طلب السداد',
+                                  pdfUrl: claim.claimDetails!,
+                                )
                               : null,
                           onDelete: claim.canDelete
                               ? () async {

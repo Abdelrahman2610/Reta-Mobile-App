@@ -144,7 +144,6 @@ class PaymentClaimsCubit extends Cubit<PaymentClaimsState> {
     switch (result) {
       case ApiSuccess():
         emit(PaymentClaimsDeleteSuccess());
-        // refresh الـ list
         await fetchClaims(declarationId: _declarationId!, source: _source);
       case ApiError(:final message):
         emit(PaymentClaimsError(message));
