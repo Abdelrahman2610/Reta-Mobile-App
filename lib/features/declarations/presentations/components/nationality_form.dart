@@ -29,6 +29,7 @@ class NationalityForm extends StatelessWidget {
     this.isUserInfo = false,
     required this.onNationalIdFileRemoved,
     required this.onPassportFileRemoved,
+    this.userId,
   });
 
   final Nationality nationality;
@@ -49,6 +50,7 @@ class NationalityForm extends StatelessWidget {
   final String? passportFilePath;
   final bool displayFile;
   final bool isUserInfo;
+  final String? userId;
 
   @override
   Widget build(BuildContext context) {
@@ -91,6 +93,7 @@ class NationalityForm extends StatelessWidget {
             displayFile: displayFile,
             onFileRemoved: onNationalIdFileRemoved,
             isUserInfo: isUserInfo,
+            userId: userId,
           ),
         if (nationality == Nationality.foreign)
           PassportForm(
@@ -106,6 +109,7 @@ class NationalityForm extends StatelessWidget {
             displayFile: displayFile,
             onFileRemoved: onPassportFileRemoved,
             isUserInfo: isUserInfo,
+            userId: userId,
           ),
       ],
     );

@@ -31,6 +31,7 @@ class UserProfileCubit extends Cubit<UserProfileState> {
 
   void _emitFromModel(UserModel user) {
     UserModel userModel = UserModel(
+      id: user.id,
       firstname: (user.firstname ?? '').trim(),
       lastname: (user.lastname ?? '').trim(),
       email: user.email ?? '',

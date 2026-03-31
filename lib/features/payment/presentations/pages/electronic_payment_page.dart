@@ -1,7 +1,9 @@
+import 'dart:developer';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:reta/core/theme/app_colors.dart';
 import 'package:reta/features/components/app_text.dart';
 import 'package:reta/features/components/circular_progress_indicator_platform_widget.dart';
@@ -11,8 +13,9 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/helpers/extensions/dimensions.dart';
+import '../../../../core/network/dio_client.dart';
 import '../../../components/app_bar.dart';
-import '../pages/payment_request_page.dart';
+import '../../data/models/payment_electronic_data.dart';
 
 class ElectronicPaymentPage extends StatelessWidget {
   final int claimId;
@@ -78,38 +81,61 @@ class _ElectronicPaymentView extends StatelessWidget {
           }
           if (state is PaymentElectronicError) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  AppText(
-                    text: 'حدث خطأ أثناء بدء عملية الدفع',
-                    fontSize: 14.sp,
-                    color: AppColors.neutralDarkMedium,
-                  ),
-                  16.hs,
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const AppText(text: 'رجوع'),
-                  ),
-                ],
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 18.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AppText(
+                      text: 'حدث خطأ أثناء بدء عملية الدفع',
+                      fontSize: 14.sp,
+                      color: AppColors.neutralDarkMedium,
+                      alignment: AlignmentDirectional.center,
+                    ),
+                    16.hs,
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const AppText(
+                        text: 'رجوع',
+                        alignment: AlignmentDirectional.center,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
           if (state is PaymentElectronicSuccess) {
             return _PaymentWebView(
-              url: state.paymentUrl,
+              paymentData: state.data,
               claimId: claimId,
               declarationId: declarationId ?? '',
               source: source,
-              onPaymentComplete: () {
-                PersistentNavBarNavigator.pushNewScreen(
+              onPaymentSuccess: () {
+                Navigator.pushReplacement(
                   context,
-                  screen: PaymentRequestsPage(
-                    declarationId: declarationId ?? '',
-                    claimsSource: source,
+                  MaterialPageRoute(
+                    builder: (_) => PaymentResultPage(
+                      isSuccess: true,
+                      claimId: claimId,
+                      declarationId: declarationId,
+                      source: source,
+                    ),
                   ),
-                  withNavBar: true,
-                  pageTransitionAnimation: PageTransitionAnimation.slideUp,
+                );
+              },
+              onPaymentFail: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PaymentResultPage(
+                      isSuccess: false,
+                      declarationId: declarationId,
+                      source: source,
+                      claimId: claimId,
+                    ),
+                  ),
                 );
               },
             );
@@ -122,18 +148,20 @@ class _ElectronicPaymentView extends StatelessWidget {
 }
 
 class _PaymentWebView extends StatefulWidget {
-  final String url;
+  final PaymentElectronicData paymentData;
   final int claimId;
-  final String declarationId; // ← أضف
-  final ClaimsSource source; // ← أضف
-  final VoidCallback onPaymentComplete;
+  final String declarationId;
+  final ClaimsSource source;
+  final VoidCallback onPaymentSuccess;
+  final VoidCallback onPaymentFail;
 
   const _PaymentWebView({
-    required this.url,
+    required this.paymentData,
     required this.claimId,
     required this.declarationId,
     required this.source,
-    required this.onPaymentComplete,
+    required this.onPaymentSuccess,
+    required this.onPaymentFail,
   });
 
   @override
@@ -143,6 +171,30 @@ class _PaymentWebView extends StatefulWidget {
 class _PaymentWebViewState extends State<_PaymentWebView> {
   late final WebViewController _controller;
   bool _isLoading = true;
+  bool _hasNavigated = false;
+
+  Future<void> _checkPaymentStatus(String claimId) async {
+    if (mounted) setState(() => _isLoading = true);
+
+    try {
+      final response = await DioClient.instance.dio.get(
+        '/declaration-system/declarations/user/claims/$claimId',
+      );
+
+      final isPaid = response.data['data']['paid'] == true;
+
+      if (!mounted) return;
+
+      if (isPaid) {
+        widget.onPaymentSuccess();
+      } else {
+        widget.onPaymentFail();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      widget.onPaymentFail();
+    }
+  }
 
   @override
   void initState() {
@@ -151,83 +203,44 @@ class _PaymentWebViewState extends State<_PaymentWebView> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageStarted: (_) => setState(() => _isLoading = true),
-          onPageFinished: (url) {
-            setState(() => _isLoading = false);
-
-            if (url.contains('/eKhales/Success') || url.contains('success')) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => PaymentResultPage(
-                    isSuccess: true,
-                    onBackToPaymentList: () {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                      PersistentNavBarNavigator.pushNewScreen(
-                        context,
-                        screen: PaymentRequestsPage(
-                          declarationId: widget.declarationId,
-                          claimsSource: widget.source,
-                        ),
-                        withNavBar: true,
-                        pageTransitionAnimation:
-                            PageTransitionAnimation.slideUp,
-                      );
-                    },
-                    onViewDeclarationDetails: () {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                      // navigate to declaration details
-                    },
-                    onBackToDeclarations: () {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    },
-                  ),
-                ),
-              );
-            } else if (url.contains('/eKhales/Fail') || url.contains('fail')) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => PaymentResultPage(
-                    isSuccess: false,
-                    onRetry: () {
-                      Navigator.pop(context);
-                      // إعادة المحاولة — ارجع للـ WebView بنفس الـ URL
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ElectronicPaymentPage(
-                            claimId: widget.claimId,
-                            declarationId: widget.declarationId,
-                            source: widget.source,
-                          ),
-                        ),
-                      );
-                    },
-                    onBackToPaymentList: () {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                      PersistentNavBarNavigator.pushNewScreen(
-                        context,
-                        screen: PaymentRequestsPage(
-                          declarationId: widget.declarationId,
-                          claimsSource: widget.source,
-                        ),
-                        withNavBar: true,
-                        pageTransitionAnimation:
-                            PageTransitionAnimation.slideUp,
-                      );
-                    },
-                  ),
-                ),
-              );
-            }
+          onPageStarted: (_) {
+            if (mounted) setState(() => _isLoading = true);
+          },
+          onPageFinished: (_) {
+            if (mounted) setState(() => _isLoading = false);
           },
           onNavigationRequest: (request) {
+            final url = request.url;
+            log('onNavigationRequest: ${request.url}');
+
+            if (_hasNavigated) return NavigationDecision.prevent;
+
+            if (url.contains(
+              'tst-rta-services.etax.com.eg/tax-declaration/payment/',
+            )) {
+              _hasNavigated = true;
+              final uri = Uri.parse(url);
+              final claimId = uri.pathSegments.last;
+              _checkPaymentStatus(claimId);
+              return NavigationDecision.prevent;
+            }
+
             return NavigationDecision.navigate;
           },
         ),
       )
-      ..loadRequest(Uri.parse(widget.url));
+      ..loadRequest(
+        Uri.parse(widget.paymentData.paymentUrl),
+        method: LoadRequestMethod.post,
+        body: Uint8List.fromList(
+          'SenderID=${Uri.encodeComponent(widget.paymentData.senderID)}'
+                  '&RandomSecret=${Uri.encodeComponent(widget.paymentData.randomSecret)}'
+                  '&RequestObject=${Uri.encodeComponent(widget.paymentData.requestObject)}'
+                  '&HashedRequestObject=${Uri.encodeComponent(widget.paymentData.hashedRequestObject)}'
+              .codeUnits,
+        ),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      );
   }
 
   @override

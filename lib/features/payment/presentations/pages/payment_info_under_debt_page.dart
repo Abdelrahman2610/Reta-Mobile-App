@@ -240,7 +240,6 @@ class _DebtUnitCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // Header
           UnitHeader(
             unit: unit,
             onToggleSelect: onToggleSelect,
@@ -260,14 +259,14 @@ class _DebtUnitCard extends StatelessWidget {
               Expanded(
                 child: AmountRow(
                   label: 'المبلغ الجاري سداده',
-                  amount: unit.requiredAmount.toStringAsFixed(2),
+                  amount: unit.requiredAmount,
                 ),
               ),
               12.ws,
               Expanded(
                 child: AmountRow(
                   label: 'المبلغ المسدد',
-                  amount: unit.paidAmount.toStringAsFixed(2),
+                  amount: unit.paidAmount,
                 ),
               ),
             ],
@@ -283,7 +282,6 @@ class _DebtUnitCard extends StatelessWidget {
                     unit: unit,
                     declarationId: declarationId,
                     onSaved: () {
-                      // refresh الـ cubit بعد الحفظ
                       context.read<PaymentInfoUnderDebtsCubit>().fetchUnits(
                         declarationId,
                       );
@@ -318,23 +316,19 @@ class _AttachmentRow extends StatelessWidget {
             color: AppColors.neutralDarkMedium,
           ),
           12.ws,
-          GestureDetector(
-            onTap: () {
-              // pick file
-            },
-            child: Container(
-              width: 70.w,
-              height: 44.w,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: AppColors.highlightDarkest),
-              ),
-              child: Icon(
-                Icons.add,
-                color: AppColors.highlightDarkest,
-                size: 20.sp,
-              ),
+
+          Container(
+            width: 70.w,
+            height: 44.w,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: AppColors.highlightDarkest),
+            ),
+            child: Icon(
+              Icons.add,
+              color: AppColors.highlightDarkest,
+              size: 20.sp,
             ),
           ),
         ],

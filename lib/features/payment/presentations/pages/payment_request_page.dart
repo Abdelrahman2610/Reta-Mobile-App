@@ -96,8 +96,26 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
 
           if (state is PaymentClaimsSuccess) {
             if (state.claims.isEmpty) {
-              return const EmptyDataWidget(
-                title: 'لا توجد طلبات سداد مُصدرة حاليًا',
+              return Column(
+                children: [
+                  26.hs,
+                  if (widget.declarationId != null) ...[
+                    StepIndicator(
+                      currentStep: 2,
+                      onFirstStepTapped: () => Navigator.pop(context),
+                    ),
+                    24.hs,
+                  ],
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: FilterHeader(context),
+                  ),
+                  Expanded(
+                    child: const EmptyDataWidget(
+                      title: 'لا توجد طلبات سداد مُصدرة حاليًا',
+                    ),
+                  ),
+                ],
               );
             }
 
@@ -107,54 +125,19 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                 child: Column(
                   children: [
                     45.hs,
-                    StepIndicator(
-                      currentStep: 2,
-                      onFirstStepTapped: () => Navigator.pop(context),
-                    ),
-                    24.hs,
+                    if (widget.declarationId != null) ...[
+                      StepIndicator(
+                        currentStep: 2,
+                        onFirstStepTapped: () => Navigator.pop(context),
+                      ),
+                      24.hs,
+                    ],
+
                     _BankDepositBanner(),
                     15.hs,
                     const Divider(),
                     20.hs,
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: AppText(
-                            text: 'طلبات السداد الخاصة بجميع إقراراتك',
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.mainBlueIndigoDye,
-                            textAlign: TextAlign.right,
-                          ),
-                        ),
-                        PaymentFilterChip(
-                          count: _filterData.activeCount,
-                          onTap: () {
-                            final lookupState = context
-                                .read<ClaimStatusLookupCubit>()
-                                .state;
-                            final statuses =
-                                lookupState is ClaimStatusLookupSuccess
-                                ? lookupState.statuses
-                                : <PaymentStatusLookup>[];
-
-                            showPaymentFilterSheet(
-                              context,
-                              initialFilter: _filterData,
-                              statuses: statuses,
-                              onApply: (filter) {
-                                setState(() => _filterData = filter);
-                                context.read<PaymentClaimsCubit>().fetchClaims(
-                                  declarationId: widget.declarationId,
-                                  filter: filter,
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                    FilterHeader(context),
                     20.hs,
                     ListView.builder(
                       physics: const NeverScrollableScrollPhysics(),
@@ -306,6 +289,48 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
           return const SizedBox();
         },
       ),
+    );
+  }
+
+  Row FilterHeader(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: AppText(
+            text: widget.declarationId == null
+                ? 'طلبات السداد الخاصة بجميع إقراراتك'
+                : 'طلبات السداد الصادرة عن الإقرار محل التقديم',
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w700,
+            color: AppColors.mainBlueIndigoDye,
+            textAlign: TextAlign.right,
+            maxLines: 2,
+          ),
+        ),
+        PaymentFilterChip(
+          count: _filterData.activeCount,
+          onTap: () {
+            final lookupState = context.read<ClaimStatusLookupCubit>().state;
+            final statuses = lookupState is ClaimStatusLookupSuccess
+                ? lookupState.statuses
+                : <PaymentStatusLookup>[];
+
+            showPaymentFilterSheet(
+              context,
+              initialFilter: _filterData,
+              statuses: statuses,
+              onApply: (filter) {
+                setState(() => _filterData = filter);
+                context.read<PaymentClaimsCubit>().fetchClaims(
+                  declarationId: widget.declarationId,
+                  filter: filter,
+                );
+              },
+            );
+          },
+        ),
+      ],
     );
   }
 }

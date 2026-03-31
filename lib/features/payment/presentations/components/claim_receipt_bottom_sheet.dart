@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -8,12 +9,14 @@ import 'package:reta/core/network/dio_client.dart';
 import 'package:reta/core/theme/app_colors.dart';
 import 'package:reta/features/components/app_text.dart';
 import 'package:reta/features/components/circular_progress_indicator_platform_widget.dart';
+import 'package:share_plus/share_plus.dart' show Share, XFile;
 
 void showClaimReceiptSheet(
   BuildContext context, {
   required String title,
   required String pdfUrl,
 }) {
+  log('PdfUrl: $pdfUrl');
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -34,13 +37,18 @@ class _ClaimReceiptSheet extends StatefulWidget {
 
 class _ClaimReceiptSheetState extends State<_ClaimReceiptSheet> {
   Uint8List? _pdfBytes;
+  Uint8List? _imageBytes;
   bool _isLoading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _fetchPdf();
+    if (_isPdf) {
+      _fetchPdf();
+    } else {
+      _fetchImage();
+    }
   }
 
   Future<void> _fetchPdf() async {
@@ -61,14 +69,45 @@ class _ClaimReceiptSheetState extends State<_ClaimReceiptSheet> {
     }
   }
 
+  Future<void> _fetchImage() async {
+    try {
+      final response = await DioClient.instance.dio.get(
+        widget.pdfUrl,
+        options: Options(responseType: ResponseType.bytes),
+      );
+      setState(() {
+        _imageBytes = Uint8List.fromList(response.data);
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
   Future<void> _print() async {
     if (_pdfBytes == null) return;
     await Printing.layoutPdf(onLayout: (_) => _pdfBytes!);
   }
 
   Future<void> _share() async {
-    if (_pdfBytes == null) return;
-    await Printing.sharePdf(bytes: _pdfBytes!, filename: '${widget.title}.pdf');
+    if (_isPdf) {
+      if (_pdfBytes == null) return;
+      await Printing.sharePdf(
+        bytes: _pdfBytes!,
+        filename: '${widget.title}.pdf',
+      );
+    } else {
+      if (_imageBytes == null) return;
+      final xFile = XFile.fromData(
+        _imageBytes!,
+        name: '${widget.title}.jpg',
+        mimeType: 'image/jpeg',
+      );
+      await Share.shareXFiles([xFile]);
+    }
   }
 
   bool get _isPdf =>
@@ -148,23 +187,17 @@ class _ClaimReceiptSheetState extends State<_ClaimReceiptSheet> {
                     allowSharing: false,
                     pdfFileName: '${widget.title}.pdf',
                   )
-                : InteractiveViewer(
+                : _imageBytes != null
+                ? InteractiveViewer(
                     child: Center(
-                      child: Image.network(
-                        widget.pdfUrl,
-                        fit: BoxFit.contain,
-                        loadingBuilder: (_, child, progress) {
-                          if (progress == null) return child;
-                          return const CircularProgressIndicatorPlatformWidget();
-                        },
-                        errorBuilder: (_, __, ___) => AppText(
-                          text: 'حدث خطأ أثناء تحميل الصورة',
-                          fontSize: 14.sp,
-                          color: AppColors.neutralDarkMedium,
-                          alignment: AlignmentDirectional.center,
-                        ),
-                      ),
+                      child: Image.memory(_imageBytes!, fit: BoxFit.contain),
                     ),
+                  )
+                : AppText(
+                    text: 'حدث خطأ أثناء تحميل الصورة',
+                    fontSize: 14.sp,
+                    color: AppColors.neutralDarkMedium,
+                    alignment: AlignmentDirectional.center,
                   ),
           ),
           // Bottom actions

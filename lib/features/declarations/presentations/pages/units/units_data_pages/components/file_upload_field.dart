@@ -1,5 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:reta/core/helpers/app_enum.dart';
+import 'package:reta/core/network/api_constants.dart';
 
 import '../../../../../../../core/helpers/fixed_assets.dart';
 import '../../../../../../../core/theme/app_colors.dart';
@@ -26,6 +30,8 @@ class FileUploadField extends StatelessWidget {
     this.isUserInfo = false,
     this.loadingWidget,
     this.deleteFileText,
+    this.userId,
+    this.attachmentType,
   });
 
   final String labelText;
@@ -42,6 +48,8 @@ class FileUploadField extends StatelessWidget {
   final bool isUserInfo;
   final Widget? loadingWidget;
   final String? deleteFileText;
+  final String? userId;
+  final UserAttachmentTypes? attachmentType;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +63,24 @@ class FileUploadField extends StatelessWidget {
       suffixWidget: GestureDetector(
         onTap: () {
           if (filePath != null && filePath!.isNotEmpty) {
-            showClaimReceiptSheet(context, title: labelText, pdfUrl: filePath!);
+            log('userID: $userId, attachmentType: $attachmentType');
+            if (userId != null) {
+              String url = ApiConstants.showUserNationalIdFile(
+                int.parse(userId!),
+              );
+              if (attachmentType == UserAttachmentTypes.nationalId) {
+                url = ApiConstants.showUserNationalIdFile(int.parse(userId!));
+              } else if (attachmentType == UserAttachmentTypes.passport) {
+                url = ApiConstants.showUserPassportFile(int.parse(userId!));
+              }
+              showClaimReceiptSheet(context, title: labelText, pdfUrl: url);
+            } else {
+              showClaimReceiptSheet(
+                context,
+                title: labelText,
+                pdfUrl: filePath!,
+              );
+            }
           }
         },
         child: ImageSvgCustomWidget(

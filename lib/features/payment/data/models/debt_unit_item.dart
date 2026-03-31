@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 
 class PendingDebtDocument {
@@ -53,8 +55,8 @@ class DebtUnitItemModel {
   final String activityType;
   final String governorate;
   final String type;
-  final double requiredAmount;
-  final double paidAmount;
+  final String requiredAmount;
+  final String paidAmount;
   final double amount;
   final List<DebtSupportingDocument> debtSupportingDocuments;
   bool isSelected;
@@ -79,6 +81,12 @@ class DebtUnitItemModel {
   });
 
   factory DebtUnitItemModel.fromJson(Map<String, dynamic> json) {
+    log(
+      'FromJson: required_amount: ${double.tryParse(json['required_amount'].toString())}',
+    );
+    log(
+      'FromJson: paid_amount: ${double.tryParse(json['paid_amount'].toString())}',
+    );
     final unit = DebtUnitItemModel(
       id: json['id'],
       declarationId: json['declaration_id'].toString(),
@@ -89,8 +97,8 @@ class DebtUnitItemModel {
       activityType: json['activity_type'] ?? '',
       governorate: json['governorate'] ?? '',
       type: json['type'] ?? '',
-      requiredAmount: double.tryParse(json['required_amount'].toString()) ?? 0,
-      paidAmount: double.tryParse(json['paid_amount'].toString()) ?? 0,
+      requiredAmount: json['required_amount'].toString(),
+      paidAmount: json['paid_amount'].toString(),
       amount: double.tryParse(json['amount'].toString()) ?? 0,
       debtSupportingDocuments: (json['debt_supporting_document'] as List)
           .map((e) => DebtSupportingDocument.fromJson(e))

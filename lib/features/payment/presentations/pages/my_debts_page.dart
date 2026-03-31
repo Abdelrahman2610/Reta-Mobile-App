@@ -14,6 +14,7 @@ import 'package:reta/features/payment/presentations/pages/payment_info_under_deb
 import '../../../../core/helpers/extensions/date_time.dart';
 import '../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../core/helpers/extensions/my_debts_status.dart';
+import '../../../auth/presentation/cubit/home_cubit.dart';
 import '../../../components/app_bar.dart';
 import '../../data/models/debts_filter.dart';
 import '../../data/models/my_debts_declaration_model.dart';
@@ -60,6 +61,7 @@ class _MyDebtsViewState extends State<_MyDebtsView> {
       backgroundColor: AppColors.neutralLightMedium,
       appBar: MainAppBar(
         title: 'مديونياتي',
+        backButtonAction: () => context.read<HomeCubit>().selectTab(0),
         backgroundColor: AppColors.mainBlueIndigoDye,
         backButtonIconColor: Colors.white,
         titleTextStyle: TextStyle(
@@ -95,14 +97,33 @@ class _MyDebtsViewState extends State<_MyDebtsView> {
                             textAlign: TextAlign.center,
                           ),
                           12.hs,
-                          AppText(
-                            text:
-                                'في حال تقديم إقرار ، سيظهر هنا لتمكينك من إصدار طلب سداد واستكمال إجراءات الدفع.',
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.neutralDarkDark,
-                            alignment: AlignmentDirectional.centerStart,
-                            maxLines: 4,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: AppText(
+                                  text:
+                                      'في حال تقديم إقرار ، سيظهر هنا لتمكينك من إصدار طلب سداد واستكمال إجراءات الدفع.',
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.neutralDarkDark,
+                                  alignment: AlignmentDirectional.centerStart,
+                                  maxLines: 4,
+                                ),
+                              ),
+                              PaymentFilterChip(
+                                onTap: () => showDebtsFilterSheet(
+                                  context,
+                                  initialFilter: _filter,
+                                  onApply: (filter) {
+                                    setState(() => _filter = filter);
+                                    context
+                                        .read<MyDebtsCubit>()
+                                        .fetchDeclarations(filter: filter);
+                                  },
+                                ),
+                                count: _filter.activeCount,
+                              ),
+                            ],
                           ),
                         ],
                       ),

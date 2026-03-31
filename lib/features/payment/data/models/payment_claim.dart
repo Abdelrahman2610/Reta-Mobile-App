@@ -13,7 +13,10 @@ class PaymentClaimModel {
   final bool fromWallet;
   final String? procedureType;
   final String? declarationNumber;
-  final String? declarationId;
+  final int? declarationId;
+  final int? unitCount;
+  final String? methodTypeId;
+  final String? paymentMethod;
 
   const PaymentClaimModel({
     required this.id,
@@ -28,6 +31,9 @@ class PaymentClaimModel {
     this.procedureType,
     this.declarationNumber,
     this.declarationId,
+    this.unitCount,
+    this.methodTypeId,
+    this.paymentMethod,
   });
 
   factory PaymentClaimModel.fromJson(Map<String, dynamic> json) {
@@ -44,6 +50,9 @@ class PaymentClaimModel {
       procedureType: json['procedure_type'],
       declarationNumber: json['declaration_number'],
       declarationId: json['declaration_id'],
+      unitCount: json['units_count'] ?? json['unit_count'],
+      methodTypeId: json['method_type_id'],
+      paymentMethod: json['payment_method'],
     );
   }
 

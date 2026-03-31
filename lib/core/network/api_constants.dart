@@ -33,6 +33,10 @@ class ApiConstants {
   // ─── Profile Edit ────────────────────────────────────────────────────────────
   static const String editProfile = '/edit-profile';
   static const String editPassword = '/edit-password';
+  static String showUserNationalIdFile(int id) =>
+      '$baseUrl/category/files/preview/nationalIdFile?id=$id';
+  static String showUserPassportFile(int id) =>
+      '$baseUrl/category/files/preview/passportNumFile?id=$id';
 
   // ─── File Upload ─────────────────────────────────────────────────────────────
   static const String uploadAttachment =

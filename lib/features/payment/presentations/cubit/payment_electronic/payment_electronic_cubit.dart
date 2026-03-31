@@ -3,6 +3,8 @@ import 'package:reta/core/network/api_constants.dart';
 import 'package:reta/core/network/api_result.dart';
 import 'package:reta/core/network/dio_client.dart';
 
+import '../../../data/models/payment_electronic_data.dart';
+
 part 'payment_electronic_state.dart';
 
 class PaymentElectronicCubit extends Cubit<PaymentElectronicState> {
@@ -15,7 +17,7 @@ class PaymentElectronicCubit extends Cubit<PaymentElectronicState> {
       final response = await DioClient.instance.dio.post(
         ApiConstants.initialPayment(claimId),
       );
-      return response.data['data']['payment_gateway_url'] as String;
+      return PaymentElectronicData.fromJson(response.data['data']);
     });
 
     switch (result) {

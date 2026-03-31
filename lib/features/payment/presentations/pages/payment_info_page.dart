@@ -256,6 +256,7 @@ class _PaymentInfoContent extends StatelessWidget {
             ],
           ),
         ),
+        if (fromDeclarationConfirmation) 30.hs,
       ],
     );
   }

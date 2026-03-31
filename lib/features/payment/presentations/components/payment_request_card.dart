@@ -7,6 +7,7 @@ import 'package:reta/features/components/app_button.dart';
 import 'package:reta/features/components/image_svg_custom_widget.dart';
 import 'package:reta/features/payment/presentations/components/app_status_badge.dart';
 import 'package:reta/features/payment/presentations/components/expand_toggle.dart';
+import 'package:reta/features/payment/presentations/components/payment_text_form_field.dart';
 import 'package:reta/features/payment/presentations/pages/payment_transaction_page.dart';
 
 import '../../../../../core/helpers/extensions/dimensions.dart';
@@ -124,12 +125,35 @@ class _PaymentClaimCardState extends State<PaymentClaimCard>
               padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
               child: Column(
                 children: [
-                  if (claim.statusId == 2)
-                  //TODO: We need to change this static data when available
-                  ...[
+                  const Divider(),
+                  12.hs,
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: PaymentInfoBox(
+                          label: 'إسم الاجراء',
+                          value: claim.procedureType,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          alignment: AlignmentDirectional.centerStart,
+                        ),
+                      ),
+                      12.ws,
+                      Expanded(
+                        child: PaymentInfoBox(
+                          label: 'رقم الاجراء',
+                          value: claim.declarationNumber,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          alignment: AlignmentDirectional.centerStart,
+                        ),
+                      ),
+                    ],
+                  ),
+                  12.hs,
+                  if (claim.statusId == 2) ...[
                     _DetailCell(
                       label: 'وسيلة الدفع',
-                      value: claim.fromWallet ? 'المحفظة' : 'بنكي',
+                      value: claim.paymentMethod ?? '',
                       onButtonTap: () {
                         PersistentNavBarNavigator.pushNewScreen(
                           context,
@@ -142,9 +166,26 @@ class _PaymentClaimCardState extends State<PaymentClaimCard>
                     ),
                     12.hs,
                   ],
-                  _DetailCell(
-                    label: 'تاريخ طلب السداد',
-                    value: claim.claimDate,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: PaymentInfoBox(
+                          label: 'عدد العقارات',
+                          value: claim.unitCount.toString(),
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          alignment: AlignmentDirectional.centerStart,
+                        ),
+                      ),
+                      12.ws,
+                      Expanded(
+                        child: PaymentInfoBox(
+                          label: 'تاريخ طلب السداد',
+                          value: claim.claimDate,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          alignment: AlignmentDirectional.centerStart,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

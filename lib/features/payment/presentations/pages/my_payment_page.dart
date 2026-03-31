@@ -9,6 +9,7 @@ import 'package:reta/features/payment/presentations/pages/payment_request_page.d
 import 'package:reta/features/payment/presentations/pages/payment_under_account_page.dart';
 
 import '../../../../core/helpers/extensions/dimensions.dart';
+import '../../../auth/presentation/cubit/home_cubit.dart';
 import '../components/my_payment_card.dart';
 import '../cubit/claim_status_lookup/claim_status_lookup_cubit.dart';
 
@@ -32,6 +33,7 @@ class _MyPaymentPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScaffold(
       title: 'مدفوعاتي',
+      onBackTapped: () => context.read<HomeCubit>().selectTab(0),
       child: ListView(
         padding: EdgeInsets.only(top: 35.h),
         children: [
