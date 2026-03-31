@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
@@ -338,15 +336,6 @@ class _MainBtn extends StatelessWidget {
     final bool isActive = claim.canPayElectronically;
     final bool isShare = claim.isShareButton;
     final bool isEnabled = isActive;
-
-    log('isShare: $isShare, ${claim.statusId}');
-    log(
-      'onTap: =${isEnabled
-          ? 'onTap'
-          : isShare
-          ? '$onShareTapped'
-          : 'null'}',
-    );
     return GestureDetector(
       onTap: isEnabled
           ? onTap
