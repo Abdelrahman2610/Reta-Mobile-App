@@ -9,6 +9,7 @@ import 'package:reta/core/widgets/coming_soon_bottom_sheet.dart';
 import 'package:reta/features/auth/presentation/pages/settings_page.dart';
 import 'package:reta/features/components/app_text.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_cubit.dart';
+import 'package:reta/features/payment/presentations/pages/my_debts_page.dart';
 import 'package:reta/features/payment/presentations/pages/my_payment_page.dart';
 
 import '../../../../core/helpers/fixed_assets.dart';
@@ -84,7 +85,7 @@ class _MainViewState extends State<_MainView> {
                 HomeTab(user: widget.user),
 
                 // index 1 — مديونياتي
-                const SizedBox(),
+                MyDebtsPage(),
 
                 // index 2 — إقراراتي
                 DeclarationsPage(user: widget.user),
@@ -132,7 +133,7 @@ class _MainViewState extends State<_MainView> {
         FixedAssets.instance.selectedDebt,
         "مديونياتي",
         checkIsNavBarSelected(1, selectedIndex),
-        isLocked: true,
+        isLocked: false,
       ),
       item(
         FixedAssets.instance.declaration,

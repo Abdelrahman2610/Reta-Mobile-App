@@ -3,7 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/theme/app_colors.dart';
 import 'package:reta/features/components/app_text.dart';
 import 'package:reta/features/components/app_text_form_field.dart';
+import 'package:reta/features/payment/presentations/components/build_date_section.dart';
+import 'package:reta/features/payment/presentations/components/filter_actions.dart';
 import 'package:reta/features/payment/presentations/components/filter_app_container.dart';
+import 'package:reta/features/payment/presentations/components/filtration_title.dart';
 
 import '../../../../core/helpers/extensions/dimensions.dart';
 import '../../data/models/payment_filter.dart';
@@ -98,11 +101,6 @@ class _PaymentFilterSheetState extends State<_PaymentFilterSheet> {
     });
   }
 
-  String _formatDate(DateTime? d) {
-    if (d == null) return '';
-    return '${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}';
-  }
-
   String get _selectedStatusLabel {
     if (_filter.statusId == null) return 'الكل';
     return widget.statuses
@@ -180,34 +178,9 @@ class _PaymentFilterSheetState extends State<_PaymentFilterSheet> {
                       ),
                     ),
                     6.hs,
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const SizedBox(width: 36),
-                        AppText(
-                          text: 'تصفية طلبات السداد',
-                          fontSize: 17.sp,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.bottomSheetTitle,
-                        ),
-                        GestureDetector(
-                          onTap: _reset,
-                          child: Container(
-                            width: 40.w,
-                            height: 44.w,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[300],
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.close,
-                              size: 18,
-                              color: AppColors.bottomSheetContent,
-                            ),
-                          ),
-                        ),
-                      ],
+                    FiltrationTitle(
+                      title: 'تصفية طلبات السداد',
+                      onResetTapped: _reset,
                     ),
                     10.hs,
                   ],
@@ -223,78 +196,12 @@ class _PaymentFilterSheetState extends State<_PaymentFilterSheet> {
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Column(
                   children: [
-                    FilterAppContainer(
-                      paddingVertical: 24.h,
-                      child: Row(
-                        children: [
-                          12.ws,
-                          Expanded(
-                            flex: 2,
-                            child: ElevatedButton(
-                              onPressed: _apply,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.highlightDarkest,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12.r),
-                                ),
-                                padding: EdgeInsets.symmetric(vertical: 14.h),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  AppText(
-                                    text: 'تطبيق',
-                                    fontSize: 15.sp,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                  8.ws,
-                                  if (count > 0)
-                                    Container(
-                                      width: 22.w,
-                                      height: 22.w,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.25),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: AppText(
-                                        text: '$count',
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
-                                        alignment: AlignmentDirectional.center,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          12.ws,
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: _reset,
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                  color: AppColors.mainBlueIndigoDye,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12.r),
-                                ),
-                                padding: EdgeInsets.symmetric(vertical: 14.h),
-                              ),
-                              child: AppText(
-                                text: 'إلغاء',
-                                fontSize: 15.sp,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.mainBlueIndigoDye,
-                                alignment: AlignmentDirectional.center,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    FilterActions(
+                      count: count,
+                      onApplyTapped: _apply,
+                      onCancelTapped: _reset,
                     ),
+
                     10.hs,
                     // Scrollable content
                     Expanded(
@@ -319,7 +226,17 @@ class _PaymentFilterSheetState extends State<_PaymentFilterSheet> {
                             ),
                           ),
                           10.hs,
-                          _buildDateSection(),
+
+                          BuildDateSection(
+                            onResetTapped: () => setState(
+                              () =>
+                                  _filter = _filter.copyWith(clearDates: true),
+                            ),
+                            durations: _durations,
+                            filter: _filter,
+                            applyDuration: _applyDuration,
+                            pickDate: (bool p1) => _pickDate(isFrom: p1),
+                          ),
                           10.hs,
                           _buildStatusSection(),
                         ],
@@ -369,181 +286,6 @@ class _PaymentFilterSheetState extends State<_PaymentFilterSheet> {
           hintText: hint,
           labelText: '',
           hideLabel: true,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDateSection() {
-    return FilterAppContainer(
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              AppText(
-                text: 'فترة زمنية',
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-                color: AppColors.neutralDarkDark,
-              ),
-              GestureDetector(
-                onTap: () => setState(
-                  () => _filter = _filter.copyWith(clearDates: true),
-                ),
-                child: AppText(
-                  text: 'إعادة تعيين',
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.highlightDarkest,
-                ),
-              ),
-            ],
-          ),
-          12.hs,
-          // Date pickers row
-          Row(
-            children: [
-              Expanded(child: _buildDatePicker(isFrom: true, label: 'من')),
-              12.ws,
-              Expanded(child: _buildDatePicker(isFrom: false, label: 'إلى')),
-            ],
-          ),
-          10.hs,
-          // Duration chips
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: _durations.map((d) {
-              final isSelected =
-                  _filter.dateFrom != null &&
-                      _filter.dateTo != null &&
-                      (_filter.dateTo
-                                      ?.difference(_filter.dateFrom!)
-                                      .inDays
-                                      .abs() ??
-                                  0) ~/
-                              30 ==
-                          d.months ||
-                  (_filter.dateTo?.difference(_filter.dateFrom!).inDays.abs() ??
-                              0) ~/
-                          28 ==
-                      d.months ||
-                  (_filter.dateTo?.difference(_filter.dateFrom!).inDays.abs() ??
-                              0) ~/
-                          31 ==
-                      d.months;
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(right: 10.w),
-                  child: GestureDetector(
-                    onTap: () => _applyDuration(d.months),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 14.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: isSelected
-                              ? AppColors.highlightDarkest
-                              : AppColors.neutralDarkLightest,
-                          width: 1.5,
-                        ),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          AppText(
-                            text: d.label,
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w600,
-                            color: isSelected
-                                ? AppColors.highlightDarkest
-                                : AppColors.neutralDarkLightest,
-                            alignment: AlignmentDirectional.center,
-                          ),
-                          if (isSelected) ...[
-                            4.ws,
-                            Icon(
-                              Icons.check,
-                              size: 14.sp,
-                              color: AppColors.highlightDarkest,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDatePicker({required bool isFrom, required String label}) {
-    final date = isFrom ? _filter.dateFrom : _filter.dateTo;
-    final hasValue = date != null;
-    return Column(
-      children: [
-        AppText(
-          text: label,
-          fontSize: 10.sp,
-          fontWeight: FontWeight.w600,
-          color: AppColors.lighterText,
-        ),
-        10.hs,
-        GestureDetector(
-          onTap: () => _pickDate(isFrom: isFrom),
-          child: Container(
-            padding: EdgeInsetsDirectional.only(
-              end: 5.w,
-              start: 13.w,
-              top: 5.h,
-              bottom: 5.h,
-            ),
-            decoration: BoxDecoration(
-              border: Border.all(color: AppColors.borderColor, width: 1.5),
-              borderRadius: BorderRadius.circular(12.r),
-              color: AppColors.bgColor,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: AppText(
-                    text: hasValue ? _formatDate(date) : label,
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                    color: hasValue
-                        ? AppColors.highlightDarkest
-                        : Colors.grey[500]!,
-                    textAlign: TextAlign.right,
-                  ),
-                ),
-                8.ws,
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 12.w,
-                    vertical: 12.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.iconBgColor,
-                    borderRadius: BorderRadius.circular(7.r),
-                  ),
-                  child: Icon(
-                    Icons.calendar_today_outlined,
-                    size: 16.sp,
-                    color: Colors.grey[500],
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
       ],
     );

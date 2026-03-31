@@ -11,6 +11,12 @@ class PaymentClaimModel {
   final String? claimReceipt;
   final String? claimDetails;
   final bool fromWallet;
+  final String? procedureType;
+  final String? declarationNumber;
+  final int? declarationId;
+  final int? unitCount;
+  final String? methodTypeId;
+  final String? paymentMethod;
 
   const PaymentClaimModel({
     required this.id,
@@ -22,6 +28,12 @@ class PaymentClaimModel {
     this.claimReceipt,
     this.claimDetails,
     required this.fromWallet,
+    this.procedureType,
+    this.declarationNumber,
+    this.declarationId,
+    this.unitCount,
+    this.methodTypeId,
+    this.paymentMethod,
   });
 
   factory PaymentClaimModel.fromJson(Map<String, dynamic> json) {
@@ -35,6 +47,12 @@ class PaymentClaimModel {
       claimReceipt: json['claim_receipt'],
       claimDetails: json['claim_details'],
       fromWallet: json['from_wallet'] ?? false,
+      procedureType: json['procedure_type'],
+      declarationNumber: json['declaration_number'],
+      declarationId: json['declaration_id'],
+      unitCount: json['units_count'] ?? json['unit_count'],
+      methodTypeId: json['method_type_id'],
+      paymentMethod: json['payment_method'],
     );
   }
 
@@ -44,5 +62,6 @@ class PaymentClaimModel {
   bool get canView => statusId == 2;
   bool get isPaid => statusId == 2;
   bool get canDelete => statusId == 1;
+  bool get isShareButton => statusId == 2 || statusId == 4;
   bool get canShare => statusId != 2 && statusId != 4;
 }

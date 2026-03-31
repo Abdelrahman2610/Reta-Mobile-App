@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_text_form_field.dart';
@@ -21,6 +22,7 @@ class PassportForm extends StatelessWidget {
     this.filePath,
     required this.displayFile,
     required this.onFileRemoved,
+    this.userId,
   });
 
   final double? fontSize;
@@ -35,6 +37,7 @@ class PassportForm extends StatelessWidget {
   final String? filePath;
   final bool displayFile;
   final bool isUserInfo;
+  final String? userId;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +62,8 @@ class PassportForm extends StatelessWidget {
           onFilePicked: onFilePicked,
           onFileRemoved: onFileRemoved,
           isUserInfo: isUserInfo,
+          userId: userId,
+          attachmentType: UserAttachmentTypes.passport,
         ),
       ],
     );

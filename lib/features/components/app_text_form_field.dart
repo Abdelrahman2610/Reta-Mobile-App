@@ -33,6 +33,8 @@ class AppTextFormField extends StatelessWidget {
   final double? labelFontSize;
   final Color? labelColor;
   final String? description;
+  final bool hideBorder;
+  final TextAlign? textAlign;
 
   const AppTextFormField({
     super.key,
@@ -62,6 +64,8 @@ class AppTextFormField extends StatelessWidget {
     this.labelColor,
     this.description,
     this.hideLabel = false,
+    this.hideBorder = false,
+    this.textAlign,
   });
 
   @override
@@ -69,7 +73,7 @@ class AppTextFormField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (!hideLabel)
+        if (!hideLabel) ...[
           RichText(
             softWrap: true,
             overflow: TextOverflow.visible,
@@ -78,6 +82,7 @@ class AppTextFormField extends StatelessWidget {
                 TextSpan(
                   text: labelText,
                   style: TextStyle(
+                    fontFamily: 'NotoSansArabic',
                     fontSize: labelFontSize ?? 14.sp,
                     fontWeight: FontWeight.w700,
                     color: labelColor ?? AppColors.neutralDarkDark,
@@ -95,7 +100,9 @@ class AppTextFormField extends StatelessWidget {
               ],
             ),
           ),
-        if (description != null)
+          if (description == null) 8.hs,
+        ],
+        if (description != null) ...[
           AppText(
             text: description,
             fontSize: 13.sp,
@@ -103,7 +110,9 @@ class AppTextFormField extends StatelessWidget {
             color: AppColors.neutralDarkLight,
             maxLines: 2,
           ),
-        8.hs,
+          8.hs,
+        ],
+
         TextFormField(
           controller: controller,
           obscureText: obscureText,
@@ -119,6 +128,7 @@ class AppTextFormField extends StatelessWidget {
           inputFormatters: inputFormatters,
           textInputAction: textInputAction,
           textDirection: textDirection,
+          textAlign: textAlign ?? TextAlign.start,
           style: TextStyle(
             fontSize: 14.0.sp,
             color: enabled
@@ -135,7 +145,6 @@ class AppTextFormField extends StatelessWidget {
               horizontal: 16.w,
               vertical: 14.h,
             ),
-
             prefixIcon: prefixWidget,
             suffixIcon: suffixWidget,
             prefixIconConstraints: BoxConstraints(
@@ -156,23 +165,41 @@ class AppTextFormField extends StatelessWidget {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: AppColors.neutralLightDarkest),
+              borderSide: BorderSide(
+                color: hideBorder
+                    ? Colors.transparent
+                    : AppColors.neutralLightDarkest,
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: AppColors.neutralLightDarkest),
+              borderSide: BorderSide(
+                color: hideBorder
+                    ? Colors.transparent
+                    : AppColors.neutralLightDarkest,
+              ),
             ),
             disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: AppColors.neutralLightDarkest),
+              borderSide: BorderSide(
+                color: hideBorder
+                    ? Colors.transparent
+                    : AppColors.neutralLightDarkest,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: AppColors.highlightDarkest),
+              borderSide: BorderSide(
+                color: hideBorder
+                    ? Colors.transparent
+                    : AppColors.highlightDarkest,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(color: AppColors.errorDark),
+              borderSide: BorderSide(
+                color: hideBorder ? Colors.transparent : AppColors.errorDark,
+              ),
             ),
           ),
         ),

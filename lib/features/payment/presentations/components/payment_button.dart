@@ -5,10 +5,18 @@ import 'package:reta/core/theme/app_colors.dart';
 import '../../../components/app_text.dart';
 
 class PaymentButton extends StatelessWidget {
-  const PaymentButton({super.key, this.onTap, this.label});
+  const PaymentButton({
+    super.key,
+    this.onTap,
+    this.label,
+    this.backgroundColor,
+    this.textColor,
+  });
 
   final VoidCallback? onTap;
   final String? label;
+  final Color? backgroundColor;
+  final Color? textColor;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +25,8 @@ class PaymentButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.highlightDarkest,
+          backgroundColor: backgroundColor ?? AppColors.highlightDarkest,
+          disabledBackgroundColor: AppColors.neutralLightDarkest,
           padding: EdgeInsets.symmetric(vertical: 16.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
@@ -28,7 +37,7 @@ class PaymentButton extends StatelessWidget {
           text: label,
           fontSize: 12.sp,
           fontWeight: FontWeight.w600,
-          color: Colors.white,
+          color: textColor ?? Colors.white,
           alignment: AlignmentDirectional.center,
         ),
       ),

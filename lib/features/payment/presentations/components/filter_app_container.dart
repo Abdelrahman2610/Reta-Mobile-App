@@ -22,7 +22,6 @@ class FilterAppContainer extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: AppColors.white,
-        // color: Colors.red,
         borderRadius: BorderRadius.circular(10.r),
       ),
       child: child,

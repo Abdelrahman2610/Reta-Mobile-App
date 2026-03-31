@@ -52,4 +52,6 @@ class FixedAssets {
   String previewIC = "${svg}preview_ic.svg";
   String printIC = "${svg}print_ic.svg";
   String deleteICGrey = "${svg}delete_ic_grey.svg";
+  String dateIC = "${svg}date_ic.svg";
+  String warningIC = "${svg}warning_ic.svg";
 }

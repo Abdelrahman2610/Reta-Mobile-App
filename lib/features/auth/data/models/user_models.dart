@@ -81,7 +81,7 @@ class UserModel {
     }
 
     UserModel userModel = UserModel(
-      id: data['id']?.toString(),
+      id: profile['id']?.toString(),
       firstname: profile['first_name']?.toString(),
       lastname: profile['last_name']?.toString(),
       email: data['email']?.toString(),

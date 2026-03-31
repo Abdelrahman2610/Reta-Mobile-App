@@ -33,7 +33,7 @@ class SettlementAccountPage extends StatelessWidget {
               onTap: () {
                 PersistentNavBarNavigator.pushNewScreen(
                   context,
-                  screen: PaymentsTransactionsPage(),
+                  screen: PaymentTransactionsPage(claimId: 1),
                   withNavBar: true,
                   pageTransitionAnimation: PageTransitionAnimation.slideUp,
                 );

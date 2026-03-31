@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:reta/core/helpers/extensions/payment_request_status.dart';
 import 'package:reta/core/helpers/fixed_assets.dart';
+import 'package:reta/features/components/app_button.dart';
 import 'package:reta/features/components/image_svg_custom_widget.dart';
 import 'package:reta/features/payment/presentations/components/app_status_badge.dart';
 import 'package:reta/features/payment/presentations/components/expand_toggle.dart';
+import 'package:reta/features/payment/presentations/components/payment_text_form_field.dart';
+import 'package:reta/features/payment/presentations/pages/payment_transaction_page.dart';
 
 import '../../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -119,20 +123,69 @@ class _PaymentClaimCardState extends State<PaymentClaimCard>
             sizeFactor: _expandAnimation,
             child: Padding(
               padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
-              child: Row(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: _DetailCell(
-                      label: 'تاريخ طلب السداد',
-                      value: claim.claimDate,
-                    ),
+                  const Divider(),
+                  12.hs,
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: PaymentInfoBox(
+                          label: 'إسم الاجراء',
+                          value: claim.procedureType,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          alignment: AlignmentDirectional.centerStart,
+                        ),
+                      ),
+                      12.ws,
+                      Expanded(
+                        child: PaymentInfoBox(
+                          label: 'رقم الاجراء',
+                          value: claim.declarationNumber,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          alignment: AlignmentDirectional.centerStart,
+                        ),
+                      ),
+                    ],
                   ),
-                  8.ws,
-                  Expanded(
-                    child: _DetailCell(
-                      label: 'طريقة السداد',
-                      value: claim.fromWallet ? 'المحفظة' : 'بنكي',
+                  12.hs,
+                  if (claim.statusId == 2) ...[
+                    _DetailCell(
+                      label: 'وسيلة الدفع',
+                      value: claim.paymentMethod ?? '',
+                      onButtonTap: () {
+                        PersistentNavBarNavigator.pushNewScreen(
+                          context,
+                          screen: PaymentTransactionsPage(claimId: claim.id),
+                          withNavBar: true,
+                          pageTransitionAnimation:
+                              PageTransitionAnimation.slideUp,
+                        );
+                      },
                     ),
+                    12.hs,
+                  ],
+                  Row(
+                    children: [
+                      Expanded(
+                        child: PaymentInfoBox(
+                          label: 'عدد العقارات',
+                          value: claim.unitCount.toString(),
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          alignment: AlignmentDirectional.centerStart,
+                        ),
+                      ),
+                      12.ws,
+                      Expanded(
+                        child: PaymentInfoBox(
+                          label: 'تاريخ طلب السداد',
+                          value: claim.claimDate,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          alignment: AlignmentDirectional.centerStart,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -149,10 +202,11 @@ class _PaymentClaimCardState extends State<PaymentClaimCard>
                   child: _MainBtn(
                     claim: claim,
                     onTap: widget.onPayElectronically,
+                    onShareTapped: widget.onShare,
                   ),
                 ),
                 // Share
-                if (widget.onShare != null) ...[
+                if (widget.claim.canShare) ...[
                   8.ws,
                   GestureDetector(
                     onTap: widget.onShare,
@@ -208,9 +262,14 @@ class _PaymentClaimCardState extends State<PaymentClaimCard>
 // ─────────────────────────────────────────
 
 class _DetailCell extends StatelessWidget {
-  const _DetailCell({required this.label, required this.value});
+  const _DetailCell({
+    required this.label,
+    required this.value,
+    this.onButtonTap,
+  });
   final String label;
   final String value;
+  final VoidCallback? onButtonTap;
 
   @override
   Widget build(BuildContext context) {
@@ -220,22 +279,42 @@ class _DetailCell extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(10.r),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Row(
         children: [
-          AppText(
-            text: label,
-            fontSize: 11.sp,
-            fontWeight: FontWeight.w400,
-            color: AppColors.neutralDarkLightest,
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                AppText(
+                  text: label,
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.neutralDarkLightest,
+                ),
+                4.hs,
+                AppText(
+                  text: value,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.neutralDarkDark,
+                ),
+              ],
+            ),
           ),
-          4.hs,
-          AppText(
-            text: value,
-            fontSize: 13.sp,
-            fontWeight: FontWeight.w700,
-            color: AppColors.neutralDarkDark,
-          ),
+          if (onButtonTap != null)
+            Expanded(
+              flex: 2,
+              child: AppButton(
+                label: 'تفاصيل المعاملة',
+                borderColor: AppColors.highlightDarkest,
+                textColor: AppColors.highlightDarkest,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+                borderWidth: 1.5.w,
+                onTap: onButtonTap,
+              ),
+            ),
         ],
       ),
     );
@@ -247,32 +326,38 @@ class _DetailCell extends StatelessWidget {
 // ─────────────────────────────────────────
 
 class _MainBtn extends StatelessWidget {
-  const _MainBtn({required this.claim, this.onTap});
+  const _MainBtn({required this.claim, this.onTap, this.onShareTapped});
   final PaymentClaimModel claim;
   final VoidCallback? onTap;
+  final VoidCallback? onShareTapped;
 
   @override
   Widget build(BuildContext context) {
     final bool isActive = claim.canPayElectronically;
-    final bool isShare = claim.canShare;
-    final bool isEnabled = isActive || isShare;
-
+    final bool isShare = claim.isShareButton;
+    final bool isEnabled = isActive;
     return GestureDetector(
-      onTap: isEnabled ? onTap : null,
+      onTap: isEnabled
+          ? onTap
+          : isShare
+          ? onShareTapped
+          : null,
       child: Container(
         height: 48.h,
         decoration: BoxDecoration(
-          color: isEnabled
+          color: isEnabled || isShare
               ? AppColors.highlightDarkest
               : AppColors.neutralLightDarkest,
           borderRadius: BorderRadius.circular(12.r),
         ),
         alignment: Alignment.center,
         child: AppText(
-          text: 'الدفع الإلكتروني',
+          text: isShare ? 'شارك طلب السداد' : 'الدفع الإلكتروني',
           fontSize: 14.sp,
           fontWeight: FontWeight.w600,
-          color: isEnabled ? Colors.white : AppColors.neutralDarkLightest,
+          color: isEnabled || isShare
+              ? Colors.white
+              : AppColors.neutralDarkLightest,
           alignment: AlignmentDirectional.center,
         ),
       ),
