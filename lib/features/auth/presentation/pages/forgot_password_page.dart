@@ -93,6 +93,8 @@ class _ForgotPasswordShell extends StatelessWidget {
         Navigator.pop(context);
       case ForgotStep.otp:
         cubit.goBackToInput();
+      case ForgotStep.otpSuccess:
+        cubit.goBackToInput();
       case ForgotStep.newPassword:
         cubit.goBackToInput();
       default:

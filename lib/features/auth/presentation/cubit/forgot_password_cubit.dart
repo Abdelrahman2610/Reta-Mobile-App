@@ -169,6 +169,17 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
     switch (result) {
       case ApiSuccess(:final data):
+        final ok = data['ok'];
+        if (ok == false) {
+          final errorMap = data['error'];
+          String message = data['message']?.toString() ?? 'حدث خطأ غير متوقع';
+          if (errorMap is Map) {
+            message = errorMap['message']?.toString() ?? message;
+          }
+          emit(state.copyWith(isLoading: false, requestError: () => message));
+          return;
+        }
+
         emit(
           state.copyWith(
             isLoading: false,
@@ -177,9 +188,10 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
             otpError: () => null,
             userId: () => data['user_id']?.toString(),
             otpToken: () => data['request_code']?.toString(),
+            resendCooldown: data['wait_seconds'] as int? ?? 60,
           ),
         );
-        _startResendCooldown();
+        _startResendCooldown(data['wait_seconds'] as int? ?? 60);
 
       case ApiError(:final message):
         emit(state.copyWith(isLoading: false, requestError: () => message));
@@ -193,6 +205,17 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
     switch (result) {
       case ApiSuccess(:final data):
+        final ok = data['ok'];
+        if (ok == false) {
+          final errorMap = data['error'];
+          String message = data['message']?.toString() ?? 'حدث خطأ غير متوقع';
+          if (errorMap is Map) {
+            message = errorMap['message']?.toString() ?? message;
+          }
+          emit(state.copyWith(isLoading: false, requestError: () => message));
+          return;
+        }
+
         emit(state.copyWith(isLoading: false, step: ForgotStep.emailSent));
 
       case ApiError(:final message):
@@ -233,12 +256,10 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
   Future<void> _generateResetToken() async {
     final result = await _authRepository.generateResetToken(
-      userId: state._userId!,
-      token: state._otpToken!,
+      mobile: state.mobile.trim(),
     );
 
     switch (result) {
-      case ApiSuccess(:final data):
       case ApiSuccess(:final data):
         emit(
           state.copyWith(
@@ -294,6 +315,9 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
       state.newPassword.isNotEmpty &&
       state.confirmPassword.isNotEmpty &&
       state.newPassword == state.confirmPassword &&
+      state.newPassword.length >= 8 &&
+      state.newPassword.length <= 10 &&
+      !state.newPassword.contains(' ') &&
       _validatePassword(state.newPassword) == null;
 
   Future<void> submitNewPassword() async {
@@ -310,10 +334,11 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
       );
       return;
     }
-    if (state._resetToken == null) {
+    if (state._resetToken == null || state._resetToken!.isEmpty) {
       emit(
         state.copyWith(
-          resetError: () => 'رمز إعادة التعيين غير صالح، أعد المحاولة',
+          resetError: () =>
+              'رمز إعادة التعيين غير صالح، أعد المحاولة من البداية',
         ),
       );
       return;
@@ -325,6 +350,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
       token: state._resetToken!,
       password: state.newPassword,
       passwordConfirmation: state.confirmPassword,
+      email: state.email.trim(),
     );
 
     switch (result) {
@@ -382,17 +408,15 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
   String? _validatePassword(String v) {
     if (v.isEmpty) return null;
     if (v.length < 8) return 'يجب أن تكون 8 أحرف على الأقل';
+    if (v.length > 10) return 'يجب ألا تتجاوز 10 أحرف';
     if (!v.contains(RegExp(r'[A-Z]'))) return 'يجب أن تحتوي على حرف كبير';
     if (!v.contains(RegExp(r'[0-9]'))) return 'يجب أن تحتوي على رقم';
-    if (!v.contains(RegExp(r'[!@#\$%^&*]'))) {
-      return 'يجب أن تحتوي على رمز خاص';
-    }
+    if (v.contains(' ')) return 'لا يُسمح باستخدام المسافات';
     return null;
   }
 
-  void _startResendCooldown() {
-    const cooldownSeconds = 60;
-    emit(state.copyWith(resendCooldown: cooldownSeconds));
+  void _startResendCooldown([int seconds = 60]) {
+    emit(state.copyWith(resendCooldown: seconds));
     _resendTimer?.cancel();
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (isClosed) {

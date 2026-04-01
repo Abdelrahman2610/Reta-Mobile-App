@@ -53,8 +53,14 @@ class SettingsCubit extends Cubit<SettingsState> {
 
   Future<void> deleteAccount() async {
     try {
-      await DioClient.clearToken();
-      emit(const SettingsAccountDeleted());
+      final result = await _repository.deleteAccount();
+      switch (result) {
+        case ApiSuccess():
+          await DioClient.clearToken();
+          emit(const SettingsAccountDeleted());
+        case ApiError(:final message):
+          emit(SettingsError(message));
+      }
     } catch (e) {
       emit(SettingsError(e.toString()));
     }

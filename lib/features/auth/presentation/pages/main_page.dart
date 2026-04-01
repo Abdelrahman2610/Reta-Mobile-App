@@ -12,6 +12,8 @@ import 'package:reta/features/declarations/presentations/cubit/declaration/decla
 import 'package:reta/features/payment/presentations/pages/my_debts_page.dart';
 import 'package:reta/features/payment/presentations/pages/my_payment_page.dart';
 
+import 'package:reta/core/services/inactivity_service.dart';
+
 import '../../../../core/helpers/fixed_assets.dart';
 import '../../../../core/helpers/runtime_data.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -68,6 +70,24 @@ class _MainView extends StatefulWidget {
 }
 
 class _MainViewState extends State<_MainView> {
+  @override
+  void initState() {
+    super.initState();
+    InactivityService().init(() {
+      InactivityService().stop();
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const MainPage(isLoggedIn: false)),
+        (route) => false,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    InactivityService().stop();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(

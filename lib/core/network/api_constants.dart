@@ -28,11 +28,13 @@ class ApiConstants {
   static const String validateEmail = '/validateEmail';
   static const String validateIdentity = '/validateIdentity';
   static const String userVerifications = '/user/verifications';
-  static const String checkEmailVerified = '/check-email-verified';
 
   // ─── Profile Edit ────────────────────────────────────────────────────────────
   static const String editProfile = '/edit-profile';
-  static const String editPassword = '/edit-password';
+  static const String updateprofileConfirmOtp = '/validatePhone/confirmOtp';
+  static const String editpassword = '/edit-password';
+
+  // ─── Profile Files ───────────────────────────────────────────────────────────
   static String showUserNationalIdFile(int id) =>
       '$baseUrl/category/files/preview/nationalIdFile?id=$id';
   static String showUserPassportFile(int id) =>

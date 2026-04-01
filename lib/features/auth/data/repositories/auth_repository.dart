@@ -4,6 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:reta/core/network/api_constants.dart';
 import 'package:reta/core/network/api_result.dart';
 import 'package:reta/core/network/dio_client.dart';
+import 'package:reta/features/auth/data/models/edit_password_response.dart';
+import 'package:reta/features/auth/data/models/edit_profile_response.dart';
 import 'package:reta/features/auth/data/models/login_response.dart';
 import 'package:reta/features/auth/data/models/otp_response.dart';
 import 'package:reta/features/auth/data/models/register_request.dart';
@@ -116,10 +118,11 @@ class AuthRepository {
       final response = await _dio.post(
         ApiConstants.resetPasswordOtp,
         data: {
-          'user_id': userId,
-          'mobile': mobile,
-          'request_code': token,
+          'token': token,
           'otp': otp,
+          'mobile': mobile,
+          'user_id': userId,
+          'context': 'forgot_password',
         },
       );
       return response.data as Map<String, dynamic>;
@@ -127,13 +130,12 @@ class AuthRepository {
   }
 
   Future<ApiResult<Map<String, dynamic>>> generateResetToken({
-    required String userId,
-    required String token,
+    required String mobile,
   }) async {
     return safeApiCall(() async {
       final response = await _dio.post(
         ApiConstants.generateTokenForOtp,
-        data: {'user_id': userId, 'request_code': token},
+        data: {'mobile': mobile},
       );
       return response.data as Map<String, dynamic>;
     });
@@ -143,6 +145,7 @@ class AuthRepository {
     required String token,
     required String password,
     required String passwordConfirmation,
+    required String email,
   }) async {
     return safeApiCall(() async {
       final response = await _dio.post(
@@ -151,6 +154,7 @@ class AuthRepository {
           'token': token,
           'password': password,
           'password_confirmation': passwordConfirmation,
+          'email': email,
         },
       );
       return response.data as Map<String, dynamic>;
@@ -179,6 +183,91 @@ class AuthRepository {
     return safeApiCall(() async {
       final response = await _dio.get(ApiConstants.userProfile);
       return UserModel.fromProfileResponse(
+        response.data as Map<String, dynamic>,
+      );
+    });
+  }
+
+  Future<ApiResult<Map<String, dynamic>>> deleteAccount() async {
+    return safeApiCall(() async {
+      final response = await _dio.post('/delete-account');
+      return response.data as Map<String, dynamic>;
+    });
+  }
+
+  Future<ApiResult<EditProfileResponse>> editProfile({
+    String? mobile,
+    String? email,
+    String? nationalId,
+    String? passportNum,
+    required String nationalityCode,
+    File? idFile,
+    bool isEgyptian = true,
+  }) async {
+    return safeApiCall(() async {
+      final body = <String, dynamic>{
+        'nationality_code': nationalityCode,
+        if (mobile != null) 'mobile': mobile,
+        if (email != null) 'email': email,
+        if (nationalId != null) 'national_id': nationalId,
+        if (passportNum != null) 'passport_num': passportNum,
+        if (idFile != null)
+          (isEgyptian
+              ? 'national_id_file'
+              : 'passport_num_file'): await MultipartFile.fromFile(
+            idFile.path,
+            filename: idFile.path.split('/').last,
+          ),
+      };
+
+      final response = await _dio.post(
+        ApiConstants.editProfile,
+        data: FormData.fromMap(body),
+      );
+
+      return EditProfileResponse.fromJson(
+        response.data as Map<String, dynamic>,
+      );
+    });
+  }
+
+  Future<ApiResult<Map<String, dynamic>>> confirmPhoneUpdate({
+    required String token,
+    required String otp,
+    required String mobile,
+    required String userId,
+    String context = 'update_user_data',
+  }) async {
+    return safeApiCall(() async {
+      final response = await _dio.post(
+        ApiConstants.validatePhoneConfirmOtp,
+        data: FormData.fromMap({
+          'token': token,
+          'otp': otp,
+          'mobile': mobile,
+          'user_id': userId,
+          'context': context,
+        }),
+      );
+      return response.data as Map<String, dynamic>;
+    });
+  }
+
+  Future<ApiResult<EditPasswordResponse>> editPassword({
+    required String currentPassword,
+    required String password,
+    required String passwordConfirm,
+  }) async {
+    return safeApiCall(() async {
+      final response = await _dio.post(
+        ApiConstants.editpassword,
+        data: {
+          'current_password': currentPassword,
+          'password': password,
+          'password_confirm': passwordConfirm,
+        },
+      );
+      return EditPasswordResponse.fromJson(
         response.data as Map<String, dynamic>,
       );
     });
