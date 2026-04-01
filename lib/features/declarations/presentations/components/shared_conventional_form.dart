@@ -22,7 +22,9 @@ class SharedConventionalForm extends StatelessWidget {
           labelText: 'إسم المكلف بأداء الضريبة',
           labelRequired: true,
           labelColor: AppColors.neutralDarkDark,
-          validator: (value) => value == null ? 'هذا الحقل مطلوب' : null,
+          validator: (value) {
+            return (value == null || value.isEmpty) ? 'هذا الحقل مطلوب' : null;
+          },
           labelFontSize: 14.sp,
           controller: cubit.taxpayerNameController,
         ),
@@ -30,6 +32,7 @@ class SharedConventionalForm extends StatelessWidget {
         AppTextFormField(
           labelText: 'رقم البطاقة الضريبة',
           labelColor: AppColors.neutralDarkDark,
+          labelRequired: cubit.taxpayerTaxCardUrl != null,
           validator: (value) => value == null ? 'هذا الحقل مطلوب' : null,
           labelFontSize: 14.sp,
           controller: cubit.taxpayerTaxCardNumberController,
@@ -42,7 +45,11 @@ class SharedConventionalForm extends StatelessWidget {
             return FileUploadField(
               labelText: 'مرفق البطاقة الضريبة',
               filePath: cubit.taxpayerTaxCardUrl,
-              labelRequired: true,
+              labelRequired:
+                  cubit.taxpayerTaxCardNumberController.text
+                      .trim()
+                      .isNotEmpty ||
+                  cubit.taxpayerTaxCardUrl != null,
               onFilePicked: () async {
                 final path = await cubit.pickFile();
                 if (path != null) cubit.setTaxCardFile(path);
@@ -56,6 +63,7 @@ class SharedConventionalForm extends StatelessWidget {
           labelText: 'رقم السجل التجاري',
           labelColor: AppColors.neutralDarkDark,
           validator: (value) => value == null ? 'هذا الحقل مطلوب' : null,
+          labelRequired: cubit.taxpayerCommercialRegisterUrl != null,
           labelFontSize: 14.sp,
           controller: cubit.taxpayerCommercialRegisterController,
         ),
@@ -68,7 +76,11 @@ class SharedConventionalForm extends StatelessWidget {
             return FileUploadField(
               labelText: 'مرفق السجل التجاري',
               filePath: cubit.taxpayerCommercialRegisterUrl,
-              labelRequired: true,
+              labelRequired:
+                  cubit.taxpayerCommercialRegisterController.text
+                      .trim()
+                      .isNotEmpty ||
+                  cubit.taxpayerCommercialRegisterUrl != null,
               onFilePicked: () async {
                 final path = await cubit.pickFile();
                 if (path != null) cubit.setCommercialRegisterFile(path);
@@ -81,7 +93,12 @@ class SharedConventionalForm extends StatelessWidget {
         AppTextFormField(
           labelText: 'إسم مرفق آخر',
           labelColor: AppColors.neutralDarkDark,
-          validator: (value) => value == null ? 'هذا الحقل مطلوب' : null,
+          labelRequired: cubit.taxpayerOtherAttachmentUrl != null,
+          validator: (value) {
+            return (value == null && cubit.taxpayerOtherAttachmentUrl != null)
+                ? 'هذا الحقل مطلوب'
+                : null;
+          },
           labelFontSize: 14.sp,
           controller: cubit.taxpayerOtherAttachmentNameController,
         ),
@@ -94,7 +111,11 @@ class SharedConventionalForm extends StatelessWidget {
             return FileUploadField(
               labelText: 'مرفق آخر',
               filePath: cubit.taxpayerOtherAttachmentUrl,
-              labelRequired: true,
+              labelRequired:
+                  cubit.taxpayerOtherAttachmentNameController.text
+                      .trim()
+                      .isNotEmpty ||
+                  cubit.taxpayerOtherAttachmentUrl != null,
               onFilePicked: () async {
                 final path = await cubit.pickFile();
                 if (path != null) cubit.setOtherAttachmentFile(path);

@@ -324,6 +324,7 @@ class _InfoGrid extends StatelessWidget {
                 valueColor: AppColors.neutralDarkMedium,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 alignment: AlignmentDirectional.centerStart,
+                textDirection: TextDirection.ltr,
               ),
             ),
             12.ws,

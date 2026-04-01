@@ -17,6 +17,7 @@ class PaymentInfoBox extends StatelessWidget {
     this.valueFontSize,
     this.padding,
     this.borderColor,
+    this.textDirection,
   });
 
   final String? value;
@@ -28,6 +29,7 @@ class PaymentInfoBox extends StatelessWidget {
   final double? valueFontSize;
   final EdgeInsets? padding;
   final Color? borderColor;
+  final TextDirection? textDirection;
 
   @override
   Widget build(BuildContext context) {
@@ -53,29 +55,32 @@ class PaymentInfoBox extends StatelessWidget {
             alignment: alignment ?? AlignmentDirectional.center,
           ),
           4.hs,
-          RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: value,
-                  style: TextStyle(
-                    fontSize: valueFontSize ?? 13.sp,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'NotoSansArabic',
-                    color: valueColor ?? AppColors.neutralDarkMedium,
-                  ),
-                ),
-                if (suffix != null)
+          Directionality(
+            textDirection: textDirection ?? TextDirection.rtl,
+            child: RichText(
+              text: TextSpan(
+                children: [
                   TextSpan(
-                    text: suffix,
+                    text: value,
                     style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w500,
+                      fontSize: valueFontSize ?? 13.sp,
+                      fontWeight: FontWeight.w600,
                       fontFamily: 'NotoSansArabic',
                       color: valueColor ?? AppColors.neutralDarkMedium,
                     ),
                   ),
-              ],
+                  if (suffix != null)
+                    TextSpan(
+                      text: suffix,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'NotoSansArabic',
+                        color: valueColor ?? AppColors.neutralDarkMedium,
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ],

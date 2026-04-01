@@ -11,6 +11,7 @@ class EditableAmountField extends StatelessWidget {
   final ValueChanged<String> onChanged;
   final String label;
   final Color? backgroundColor;
+  final bool enabled;
 
   const EditableAmountField({
     super.key,
@@ -18,6 +19,7 @@ class EditableAmountField extends StatelessWidget {
     required this.onChanged,
     required this.label,
     this.backgroundColor,
+    this.enabled = true,
   });
 
   @override
@@ -57,6 +59,7 @@ class EditableAmountField extends StatelessWidget {
                   hideLabel: true,
                   hideBorder: true,
                   textAlign: TextAlign.center,
+                  enabled: enabled,
                 ),
               ),
               10.ws,

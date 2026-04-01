@@ -31,9 +31,11 @@ class PaymentRequestsPage extends StatelessWidget {
     super.key,
     this.declarationId,
     required this.claimsSource,
+    this.onClaimDeleted,
   });
   final String? declarationId;
   final ClaimsSource claimsSource;
+  final VoidCallback? onClaimDeleted;
 
   @override
   Widget build(BuildContext context) {
@@ -51,15 +53,21 @@ class PaymentRequestsPage extends StatelessWidget {
       child: _PaymentRequestsView(
         declarationId: declarationId,
         source: claimsSource,
+        onClaimDeleted: onClaimDeleted,
       ),
     );
   }
 }
 
 class _PaymentRequestsView extends StatefulWidget {
-  const _PaymentRequestsView({this.declarationId, required this.source});
+  const _PaymentRequestsView({
+    this.declarationId,
+    required this.source,
+    this.onClaimDeleted,
+  });
   final String? declarationId;
   final ClaimsSource source;
+  final VoidCallback? onClaimDeleted;
 
   @override
   State<_PaymentRequestsView> createState() => _PaymentRequestsViewState();
@@ -84,7 +92,12 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
     return AppScaffold(
       padding: EdgeInsets.zero,
       title: 'طلبات السداد',
-      child: BlocBuilder<PaymentClaimsCubit, PaymentClaimsState>(
+      child: BlocConsumer<PaymentClaimsCubit, PaymentClaimsState>(
+        listener: (context, state) {
+          if (state is PaymentClaimsDeleteSuccess) {
+            widget.onClaimDeleted?.call();
+          }
+        },
         builder: (context, state) {
           if (state is PaymentClaimsLoading) {
             return const CircularProgressIndicatorPlatformWidget();
@@ -128,7 +141,9 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                     if (widget.declarationId != null) ...[
                       StepIndicator(
                         currentStep: 2,
-                        onFirstStepTapped: () => Navigator.pop(context),
+                        onFirstStepTapped: () {
+                          Navigator.pop(context);
+                        },
                       ),
                       24.hs,
                     ],
@@ -257,7 +272,12 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                                   if (confirmed == true) {
                                     context
                                         .read<PaymentClaimsCubit>()
-                                        .deleteClaim(claim.id);
+                                        .deleteClaim(
+                                          claim.id,
+                                          widget.declarationId!,
+                                          context,
+                                        );
+                                    widget.onClaimDeleted?.call();
                                   }
                                 }
                               : null,

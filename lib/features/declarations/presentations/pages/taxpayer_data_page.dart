@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:reta/core/helpers/loading_popup.dart';
+import 'package:reta/features/components/app_loading.dart';
 import 'package:reta/features/declarations/presentations/components/shared_ownership_form.dart';
 import 'package:reta/features/declarations/presentations/cubit/applicant_states.dart';
 
 import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/helpers/extensions/dimensions.dart';
-import '../../../../core/helpers/runtime_data.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_bar.dart';
 import '../../../components/app_button.dart';
@@ -35,7 +34,11 @@ class TaxpayerDataPage extends StatelessWidget {
             if (state.errorMessage != null) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: AppText(text: state.errorMessage!),
+                  content: AppText(
+                    text: state.errorMessage!,
+                    color: Colors.white,
+                    alignment: AlignmentDirectional.center,
+                  ),
                   backgroundColor: AppColors.errorDark,
                 ),
               );
@@ -45,15 +48,14 @@ class TaxpayerDataPage extends StatelessWidget {
           child: BlocConsumer<ApplicantCubit, ApplicantState>(
             listenWhen: (prev, curr) => prev.isLoading != curr.isLoading,
             listener: (context, state) {
-              if (state.isLoading) {
-                loadingPopup(RuntimeData.getCurrentContext()!);
-              } else if (!state.isLoading) {
-                Navigator.pop(RuntimeData.getCurrentContext()!);
-              }
               if (state.errorMessage != null) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: AppText(text: state.errorMessage!),
+                    content: AppText(
+                      text: state.errorMessage!,
+                      color: Colors.white,
+                      alignment: AlignmentDirectional.center,
+                    ),
                     backgroundColor: AppColors.errorDark,
                   ),
                 );
@@ -62,86 +64,92 @@ class TaxpayerDataPage extends StatelessWidget {
             },
             buildWhen: (prev, curr) => prev.isLoading != curr.isLoading,
             builder: (context, state) {
-              return SingleChildScrollView(
-                child: Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: Column(
-                    children: [
-                      MainAppBar(
-                        title: 'بيانات الإقرار',
-                        backgroundColor: AppColors.white,
-                        backButtonIconColor: AppColors.neutralDarkDark,
-                        titleTextStyle: TextStyle(
-                          color: AppColors.neutralDarkDark,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
+              return AppLoadingOverlay(
+                isLoading: state.isLoading,
+                child: SingleChildScrollView(
+                  child: Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: Column(
+                      children: [
+                        MainAppBar(
+                          title: 'بيانات الإقرار',
+                          backgroundColor: AppColors.white,
+                          backButtonIconColor: AppColors.neutralDarkDark,
+                          titleTextStyle: TextStyle(
+                            color: AppColors.neutralDarkDark,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          onCancel: cubit.isEditMode
+                              ? () {
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                }
+                              : null,
+                          onSave: cubit.isEditMode
+                              ? () => cubit.saveTaxpayerEdit(context)
+                              : null,
                         ),
-                        onCancel: cubit.isEditMode
-                            ? () {
-                                Navigator.pop(context);
-                                Navigator.pop(context);
-                              }
-                            : null,
-                        onSave: cubit.isEditMode
-                            ? () => cubit.saveTaxpayerEdit(context)
-                            : null,
-                      ),
-                      15.hs,
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20.w),
-                        child: Column(
-                          children: [
-                            DeclarationTabs(applicantType: cubit.applicantType),
-                            10.hs,
-                            switch (cubit.applicantType) {
-                              ApplicantType.owner => SizedBox.shrink(),
-                              ApplicantType.sharedOwnership =>
-                                SharedOwnershipForm(),
-                              ApplicantType.beneficiary => SizedBox.shrink(),
-                              ApplicantType.exploited => SizedBox.shrink(),
-                              ApplicantType.agent => SharedForm(
-                                uploadDocumentTitle:
-                                    'رفع سند إثبات صفة الوكيل (التوكيل الرسمي)',
-                                uploadDocumentDescription:
-                                    'يجب أن يكون التوكيل ساريًا ومخوّلًا بتقديم الإقرار الضريبي.',
+                        15.hs,
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          child: Column(
+                            children: [
+                              DeclarationTabs(
+                                applicantType: cubit.applicantType,
                               ),
-                              ApplicantType.legalRepresentative => SharedForm(
-                                uploadDocumentTitle: 'رفع سند التمثيل القانوني',
-                                uploadDocumentDescription:
-                                    '(قرار تعيين/تفويض رسمي/حكم قضائي/أي مستند رسمي يثبت صفة التمثيل القانوني)',
-                              ),
-                              ApplicantType.other => SharedForm(
-                                uploadDocumentTitle:
-                                    'رفع سند يوضح سبب التقديم بهذه الصفة',
-                                uploadDocumentDescription:
-                                    'تفويض/قرار إداري/خطاب رسمي/أي مستند رسمي يوضح العلاقة بين مقدم الطلب والمكلّف بأداء الضريبة',
-                              ),
-                            },
-                            10.hs,
-                            if (!cubit.isEditMode)
-                              AppContainer(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 24.w,
-                                  vertical: 24.h,
+                              10.hs,
+                              switch (cubit.applicantType) {
+                                ApplicantType.owner => SizedBox.shrink(),
+                                ApplicantType.sharedOwnership =>
+                                  SharedOwnershipForm(),
+                                ApplicantType.beneficiary => SizedBox.shrink(),
+                                ApplicantType.exploited => SizedBox.shrink(),
+                                ApplicantType.agent => SharedForm(
+                                  uploadDocumentTitle:
+                                      'رفع سند إثبات صفة الوكيل (التوكيل الرسمي)',
+                                  uploadDocumentDescription:
+                                      'يجب أن يكون التوكيل ساريًا ومخوّلًا بتقديم الإقرار الضريبي.',
                                 ),
-                                child: AppButton(
-                                  label: 'التالي',
-                                  backgroundColor: AppColors.highlightDarkest,
-                                  textColor: AppColors.white,
-                                  fontSize: 12.sp,
-                                  alignment: Alignment.center,
-                                  onTap: () {
-                                    if (cubit.validate()) {
-                                      cubit.onTaxpayerNextTapped(context);
-                                    }
-                                  },
+                                ApplicantType.legalRepresentative => SharedForm(
+                                  uploadDocumentTitle:
+                                      'رفع سند التمثيل القانوني',
+                                  uploadDocumentDescription:
+                                      '(قرار تعيين/تفويض رسمي/حكم قضائي/أي مستند رسمي يثبت صفة التمثيل القانوني)',
                                 ),
-                              ),
-                            26.hs,
-                          ],
+                                ApplicantType.other => SharedForm(
+                                  uploadDocumentTitle:
+                                      'رفع سند يوضح سبب التقديم بهذه الصفة',
+                                  uploadDocumentDescription:
+                                      'تفويض/قرار إداري/خطاب رسمي/أي مستند رسمي يوضح العلاقة بين مقدم الطلب والمكلّف بأداء الضريبة',
+                                ),
+                              },
+                              10.hs,
+                              if (!cubit.isEditMode)
+                                AppContainer(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 24.w,
+                                    vertical: 24.h,
+                                  ),
+                                  child: AppButton(
+                                    label: 'التالي',
+                                    backgroundColor: AppColors.highlightDarkest,
+                                    textColor: AppColors.white,
+                                    fontSize: 12.sp,
+                                    alignment: Alignment.center,
+                                    onTap: () {
+                                      if (cubit.validate()) {
+                                        cubit.onTaxpayerNextTapped(context);
+                                      }
+                                    },
+                                  ),
+                                ),
+                              26.hs,
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );
