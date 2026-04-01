@@ -12,7 +12,6 @@ import '../../data/models/user_models.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/notifications_cubit.dart';
 import 'declaration_summary.dart';
-import 'guest_declarations_page.dart';
 import 'notifications_page.dart';
 
 class HomeTab extends StatelessWidget {

@@ -202,6 +202,16 @@ class LoginCubit extends Cubit<LoginState> {
 
     switch (result) {
       case ApiSuccess(:final data):
+        if (!data.phoneVerified) {
+          emit(
+            state.copyWith(
+              isLoading: false,
+              credentialError: () =>
+                  'رقم الموبايل غير مفعل، يرجى التحقق من رقمك أولاً',
+            ),
+          );
+          return;
+        }
         emit(
           state.copyWith(
             isLoading: false,
@@ -251,7 +261,7 @@ class LoginCubit extends Cubit<LoginState> {
 
     if (phone.isEmpty) {
       phoneError = 'هذا الحقل مطلوب';
-    } else if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(phone)) {
+    } else if (!RegExp(r'^01[0125][0-9]{8}$').hasMatch(phone)) {
       phoneError = 'رقم الموبايل غير صحيح';
     }
 

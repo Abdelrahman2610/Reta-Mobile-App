@@ -184,6 +184,10 @@ class _LoginPageState extends State<LoginPage> {
           autofillHints: const [AutofillHints.telephoneNumber],
           errorText: state.phoneError,
           onChanged: cubit.onPhoneChanged,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(11),
+          ],
         ),
         const SizedBox(height: 16),
         _buildTextField(
@@ -210,12 +214,16 @@ class _LoginPageState extends State<LoginPage> {
           context: context,
           controller: _nationalIdController,
           focusNode: _nationalIdFocus,
-          nextFocus: _passportFocus,
+          nextFocus: _idPasswordFocus,
           hint: 'الرقم القومي/جواز السفر',
           keyboardType: TextInputType.text,
           textInputAction: TextInputAction.next,
           errorText: state.nationalIdError,
           onChanged: cubit.onNationalIdChanged,
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+            LengthLimitingTextInputFormatter(24),
+          ],
         ),
         const SizedBox(height: 16),
         _buildTextField(
@@ -286,12 +294,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildLoginButton(LoginState state, LoginCubit cubit) {
-    final bool enabled =
-        (state.isFormValid ||
-            state.credentialError == null &&
-                state.phone.isNotEmpty &&
-                state.password.isNotEmpty) &&
-        !state.isLoading;
+    final bool enabled = state.isFormValid && !state.isLoading;
     return SizedBox(
       height: 52,
       child: ElevatedButton(
@@ -495,6 +498,7 @@ class _LoginPageState extends State<LoginPage> {
     Iterable<String>? autofillHints,
     Widget? eyeToggle,
     ValueChanged<String>? onSubmitted,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     final bool hasError = errorText != null;
 
@@ -518,6 +522,7 @@ class _LoginPageState extends State<LoginPage> {
       textDirection: TextDirection.rtl,
       textAlign: TextAlign.right,
       autofillHints: autofillHints,
+      inputFormatters: inputFormatters,
       onChanged: onChanged,
       onSubmitted:
           onSubmitted ??

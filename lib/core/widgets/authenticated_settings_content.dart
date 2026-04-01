@@ -14,7 +14,7 @@ import 'user_profile_header.dart';
 import 'settings_tile.dart';
 import 'confirmation_dialog.dart';
 
-class AuthenticatedSettingsContent extends StatefulWidget {
+class AuthenticatedSettingsContent extends StatelessWidget {
   final UserModel user;
   final String currentLanguage;
 
@@ -23,15 +23,6 @@ class AuthenticatedSettingsContent extends StatefulWidget {
     required this.user,
     required this.currentLanguage,
   });
-
-  @override
-  State<AuthenticatedSettingsContent> createState() =>
-      _AuthenticatedSettingsContentState();
-}
-
-class _AuthenticatedSettingsContentState
-    extends State<AuthenticatedSettingsContent> {
-  bool _notificationsEnabled = true;
 
   void _pushWithCubits(BuildContext context, Widget page) {
     final notificationsCubit = context.read<NotificationsCubit>();
@@ -56,64 +47,70 @@ class _AuthenticatedSettingsContentState
   Widget build(BuildContext context) {
     final cubit = context.read<SettingsCubit>();
 
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      children: [
-        const SizedBox(height: 16),
+    return BlocBuilder<NotificationsCubit, NotificationsState>(
+      builder: (context, notifState) {
+        return ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          children: [
+            const SizedBox(height: 16),
 
-        UserProfileHeader(user: widget.user),
+            UserProfileHeader(user: user),
 
-        const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-        SettingsTile(
-          icon: Icons.person_outline,
-          label: 'بيانات المستخدم',
-          onTap: () =>
-              _pushWithCubits(context, UserProfilePage(user: widget.user)),
-        ),
+            SettingsTile(
+              icon: Icons.person_outline,
+              label: 'بيانات المستخدم',
+              onTap: () =>
+                  _pushWithCubits(context, UserProfilePage(user: user)),
+            ),
 
-        _SectionLabel('الإعدادات العامة'),
-        const SizedBox(height: 8),
-        SettingsToggleTile(
-          icon: Icons.notifications_none_outlined,
-          label: 'إيقاف الإشعارات',
-          value: _notificationsEnabled,
-          onChanged: (val) => setState(() => _notificationsEnabled = val),
-        ),
-        const SizedBox(height: 16),
+            _SectionLabel('الإعدادات العامة'),
+            const SizedBox(height: 8),
+            SettingsToggleTile(
+              icon: Icons.notifications_none_outlined,
+              label: 'تفعيل الإشعارات',
+              value: notifState.notificationsEnabled, // ✅ reads from cubit
+              onChanged: (val) => context
+                  .read<NotificationsCubit>()
+                  .setNotificationsEnabled(val), // ✅ writes to cubit
+            ),
+            const SizedBox(height: 16),
 
-        _SectionLabel('الدعم والمعلومات'),
-        const SizedBox(height: 8),
-        SettingsTile(
-          icon: Icons.help_outline,
-          label: 'المساعدة والدعم',
-          onTap: () => _pushWithCubits(context, const HelpSupportPage()),
-        ),
-        SettingsTile(
-          icon: Icons.privacy_tip_outlined,
-          label: 'الشروط والخصوصية',
-          onTap: () => _pushWithCubits(context, const TermsPrivacyPage()),
-        ),
+            _SectionLabel('الدعم والمعلومات'),
+            const SizedBox(height: 8),
+            SettingsTile(
+              icon: Icons.help_outline,
+              label: 'المساعدة والدعم',
+              onTap: () => _pushWithCubits(context, const HelpSupportPage()),
+            ),
+            SettingsTile(
+              icon: Icons.privacy_tip_outlined,
+              label: 'الشروط والخصوصية',
+              onTap: () => _pushWithCubits(context, const TermsPrivacyPage()),
+            ),
 
-        const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-        _SectionLabel('إجراءات الحساب'),
-        const SizedBox(height: 8),
-        SettingsTile(
-          icon: Icons.logout_outlined,
-          label: 'تسجيل الخروج',
-          isDestructive: false,
-          onTap: () => _handleLogout(context, cubit),
-        ),
-        SettingsTile(
-          icon: Icons.delete_outline,
-          label: 'حذف الحساب',
-          isDestructive: true,
-          onTap: () => _handleDeleteAccount(context, cubit),
-        ),
+            _SectionLabel('إجراءات الحساب'),
+            const SizedBox(height: 8),
+            SettingsTile(
+              icon: Icons.logout_outlined,
+              label: 'تسجيل الخروج',
+              isDestructive: false,
+              onTap: () => _handleLogout(context, cubit),
+            ),
+            SettingsTile(
+              icon: Icons.delete_outline,
+              label: 'حذف الحساب',
+              isDestructive: true,
+              onTap: () => _handleDeleteAccount(context, cubit),
+            ),
 
-        const SizedBox(height: 32),
-      ],
+            const SizedBox(height: 32),
+          ],
+        );
+      },
     );
   }
 

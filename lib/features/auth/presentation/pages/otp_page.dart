@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/features/auth/presentation/pages/main_page.dart';
 
 import '../../../../core/theme/app_colors.dart';
