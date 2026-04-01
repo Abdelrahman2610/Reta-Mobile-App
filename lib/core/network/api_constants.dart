@@ -38,6 +38,7 @@ class ApiConstants {
       '$baseUrl/category/files/preview/nationalIdFile?id=$id';
   static String showUserPassportFile(int id) =>
       '$baseUrl/category/files/preview/passportNumFile?id=$id';
+
   // ─── File Upload ─────────────────────────────────────────────────────────────
   static const String uploadAttachment =
       '/declaration-system/declarations/upload-attachments';
