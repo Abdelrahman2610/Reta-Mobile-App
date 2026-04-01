@@ -457,8 +457,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
   }
 
   _addUnit(BuildContext context, DeclarationDetailsModel detailsModel) async {
-    ApplicantType applicantType =
-        detailsModel.declarationTypeId.displayApplicant;
+    ApplicantType applicantType = detailsModel.applicantRoleId.displayApplicant;
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
     if (applicantType == ApplicantType.owner ||
         applicantType == ApplicantType.beneficiary ||

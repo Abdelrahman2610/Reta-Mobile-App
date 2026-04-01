@@ -2,8 +2,12 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../../features/auth/presentation/pages/help_support_page.dart';
+import '../../features/auth/presentation/pages/main_page.dart';
+import '../helpers/runtime_data.dart';
 import 'api_constants.dart';
 
 class DioClient {
@@ -87,7 +91,7 @@ class _AuthInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.response?.statusCode == 401) {
-      _storage.delete(key: _tokenKey);
+      // _storage.delete(key: _tokenKey);
     }
     handler.next(err);
   }
@@ -109,10 +113,33 @@ class _LoggingInterceptor extends Interceptor {
   }
 
   @override
-  void onError(DioException err, ErrorInterceptorHandler handler) {
+  Future<void> onError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
     log('✗ [${err.response?.statusCode}] ${err.requestOptions.uri}');
     log('Error body: ${err.response?.data}');
-    handler.next(err);
+
+    if (err.response?.statusCode == 401) {
+      if (await DioClient.isLoggedIn()) {
+        await DioClient.clearToken();
+        Navigator.of(
+          RuntimeData.getCurrentContext()!,
+          rootNavigator: true,
+        ).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const MainPage(isLoggedIn: false)),
+          (route) => false,
+        );
+        showError(
+          RuntimeData.getCurrentContext()!,
+          "قم بتسجيل الدخول لحسابك وحاول مرة أخرى",
+        );
+      } else {
+        handler.next(err);
+      }
+    } else {
+      handler.next(err);
+    }
   }
 }
 
