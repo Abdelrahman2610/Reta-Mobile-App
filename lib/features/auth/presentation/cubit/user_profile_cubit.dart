@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/network/api_result.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
@@ -70,8 +72,34 @@ class UserProfileCubit extends Cubit<UserProfileState> {
             emailVerificationSent: data.sendNewMailVerification,
           ),
         );
-        await loadFromUser(null);
+        if (data.otpResponse == null || !data.otpResponse!.ok) {
+          await loadFromUser(null);
+        }
 
+      case ApiError(:final message):
+        emit(UserProfileError(message));
+        _emitFromModel(current.userModel);
+    }
+  }
+
+  Future<void> editProfileWithFile({
+    required File file,
+    required bool isEgyptian,
+  }) async {
+    final current = state;
+    if (current is! UserProfileLoaded) return;
+
+    emit(const UserProfileUpdating());
+
+    final result = await _repository.editProfile(
+      nationalityCode: current.userModel.nationalityCode ?? 'EG',
+      idFile: file,
+      isEgyptian: isEgyptian,
+    );
+
+    switch (result) {
+      case ApiSuccess(:final data):
+        await loadFromUser(null);
       case ApiError(:final message):
         emit(UserProfileError(message));
         _emitFromModel(current.userModel);
@@ -105,6 +133,34 @@ class UserProfileCubit extends Cubit<UserProfileState> {
       case ApiError(:final message):
         emit(UserProfileError(message));
         if (current is UserProfileLoaded) _emitFromModel(current.userModel);
+    }
+  }
+
+  Future<void> editPassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    emit(const UserProfileUpdating());
+
+    final result = await _repository.editPassword(
+      currentPassword: currentPassword,
+      password: newPassword,
+      passwordConfirm: confirmPassword,
+    );
+
+    switch (result) {
+      case ApiSuccess(:final data):
+        emit(
+          UserProfilePasswordChanged(
+            message: data.message ?? 'تم تغيير كلمة المرور بنجاح',
+          ),
+        );
+        await loadFromUser(null);
+
+      case ApiError(:final message):
+        emit(UserProfileError(message));
+        await loadFromUser(null);
     }
   }
 

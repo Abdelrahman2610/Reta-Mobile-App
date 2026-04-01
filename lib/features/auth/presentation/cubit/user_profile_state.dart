@@ -61,4 +61,12 @@ class UserProfilePhoneConfirmed extends UserProfileState {
   const UserProfilePhoneConfirmed();
 }
 
+class UserProfilePasswordChanged extends UserProfileState {
+  final String message;
+  const UserProfilePasswordChanged({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
 enum ProfileEditField { phone, email, nationalId, passport }

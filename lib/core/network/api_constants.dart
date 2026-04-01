@@ -32,6 +32,7 @@ class ApiConstants {
   // ─── Profile Edit ────────────────────────────────────────────────────────────
   static const String editProfile = '/edit-profile';
   static const String updateprofileConfirmOtp = '/validatePhone/confirmOtp';
+  static const String editpassword = '/edit-password';
 
   // ─── File Upload ─────────────────────────────────────────────────────────────
   static const String uploadAttachment =

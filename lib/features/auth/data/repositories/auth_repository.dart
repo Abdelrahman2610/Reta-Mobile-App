@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:reta/core/network/api_constants.dart';
 import 'package:reta/core/network/api_result.dart';
 import 'package:reta/core/network/dio_client.dart';
+import 'package:reta/features/auth/data/models/edit_password_response.dart';
 import 'package:reta/features/auth/data/models/edit_profile_response.dart';
 import 'package:reta/features/auth/data/models/login_response.dart';
 import 'package:reta/features/auth/data/models/otp_response.dart';
@@ -200,6 +201,8 @@ class AuthRepository {
     String? nationalId,
     String? passportNum,
     required String nationalityCode,
+    File? idFile,
+    bool isEgyptian = true,
   }) async {
     return safeApiCall(() async {
       final body = <String, dynamic>{
@@ -208,6 +211,13 @@ class AuthRepository {
         if (email != null) 'email': email,
         if (nationalId != null) 'national_id': nationalId,
         if (passportNum != null) 'passport_num': passportNum,
+        if (idFile != null)
+          (isEgyptian
+              ? 'national_id_file'
+              : 'passport_num_file'): await MultipartFile.fromFile(
+            idFile.path,
+            filename: idFile.path.split('/').last,
+          ),
       };
 
       final response = await _dio.post(
@@ -240,6 +250,26 @@ class AuthRepository {
         }),
       );
       return response.data as Map<String, dynamic>;
+    });
+  }
+
+  Future<ApiResult<EditPasswordResponse>> editPassword({
+    required String currentPassword,
+    required String password,
+    required String passwordConfirm,
+  }) async {
+    return safeApiCall(() async {
+      final response = await _dio.post(
+        ApiConstants.editpassword,
+        data: {
+          'current_password': currentPassword,
+          'password': password,
+          'password_confirm': passwordConfirm,
+        },
+      );
+      return EditPasswordResponse.fromJson(
+        response.data as Map<String, dynamic>,
+      );
     });
   }
 }

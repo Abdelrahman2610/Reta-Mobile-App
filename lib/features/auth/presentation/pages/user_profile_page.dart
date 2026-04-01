@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -55,6 +57,19 @@ class _UserProfileView extends StatelessWidget {
                     textDirection: TextDirection.rtl,
                   ),
                   backgroundColor: AppColors.errorDark,
+                ),
+              );
+            }
+
+            // ── Password changed ─────────────────────────────────────────────
+            if (state is UserProfilePasswordChanged) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    state.message,
+                    textDirection: TextDirection.rtl,
+                  ),
+                  backgroundColor: AppColors.successMedium,
                 ),
               );
             }
@@ -328,6 +343,7 @@ class _ProfileBodyState extends State<_ProfileBody> {
                 isEditing: _editingField == 'nationalId',
                 isVerified: u.nationalIdVerified ?? false,
                 showVerifyButton: !(u.nationalIdVerified ?? false),
+                hideEditWhenVerified: true,
                 controller: _controllerFor('nationalId', u.nationalId ?? ''),
                 onEditTap: () => _startEditing('nationalId'),
                 onSave: () => _saveField(context, 'nationalId'),
@@ -343,6 +359,7 @@ class _ProfileBodyState extends State<_ProfileBody> {
                 isEditing: _editingField == 'passport',
                 isVerified: u.nationalIdVerified ?? false,
                 showVerifyButton: !(u.nationalIdVerified ?? false),
+                hideEditWhenVerified: true,
                 controller: _controllerFor('passport', u.passportNumber ?? ''),
                 onEditTap: () => _startEditing('passport'),
                 onSave: () => _saveField(context, 'passport'),
@@ -352,11 +369,13 @@ class _ProfileBodyState extends State<_ProfileBody> {
             ],
             const _Divider(),
 
+            // ── Attachment ────────────────────────────────────────────────
             _AttachmentField(
               label: 'مرفق الرقم القومي/جواز السفر',
               files: u.isEgyptian
                   ? (u.nationalIdFiles ?? [])
                   : (u.passportFiles ?? []),
+              isEgyptian: u.isEgyptian,
             ),
             const _Divider(),
 
@@ -433,8 +452,11 @@ class _ProfileBodyState extends State<_ProfileBody> {
                 final current = currentCtrl.text.trim();
                 final newPass = newCtrl.text.trim();
                 final confirm = confirmCtrl.text.trim();
-                if (current.isEmpty || newPass.isEmpty || confirm.isEmpty)
+
+                if (current.isEmpty || newPass.isEmpty || confirm.isEmpty) {
                   return;
+                }
+
                 if (newPass != confirm) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -447,7 +469,14 @@ class _ProfileBodyState extends State<_ProfileBody> {
                   );
                   return;
                 }
+
                 Navigator.of(ctx).pop();
+
+                context.read<UserProfileCubit>().editPassword(
+                  currentPassword: current,
+                  newPassword: newPass,
+                  confirmPassword: confirm,
+                );
               },
               child: const Text('حفظ'),
             ),
@@ -473,6 +502,7 @@ class _EditableField extends StatelessWidget {
   final VoidCallback onSave;
   final VoidCallback onCancel;
   final VoidCallback? onVerifyTap;
+  final bool hideEditWhenVerified;
 
   const _EditableField({
     required this.label,
@@ -487,6 +517,7 @@ class _EditableField extends StatelessWidget {
     required this.onSave,
     required this.onCancel,
     required this.onVerifyTap,
+    this.hideEditWhenVerified = false,
   });
 
   @override
@@ -521,7 +552,8 @@ class _EditableField extends StatelessWidget {
                       ),
                       SizedBox(width: 8.w),
                     ],
-                    _EditLink(onTap: onEditTap),
+                    if (!(isVerified && hideEditWhenVerified))
+                      _EditLink(onTap: onEditTap),
                   ],
                 ),
             ],
@@ -733,11 +765,44 @@ class _VerifyButton extends StatelessWidget {
 
 // ─── Attachment field ─────────────────────────────────────────────────────────
 
-class _AttachmentField extends StatelessWidget {
+class _AttachmentField extends StatefulWidget {
   final String label;
   final List<Map<String, dynamic>> files;
+  final bool isEgyptian;
 
-  const _AttachmentField({required this.label, required this.files});
+  const _AttachmentField({
+    required this.label,
+    required this.files,
+    required this.isEgyptian,
+  });
+
+  @override
+  State<_AttachmentField> createState() => _AttachmentFieldState();
+}
+
+class _AttachmentFieldState extends State<_AttachmentField> {
+  bool _uploading = false;
+
+  Future<void> _pickAndUpload() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+    );
+
+    if (result == null || result.files.single.path == null) return;
+
+    final file = File(result.files.single.path!);
+
+    setState(() => _uploading = true);
+
+    if (!mounted) return;
+    await context.read<UserProfileCubit>().editProfileWithFile(
+      file: file,
+      isEgyptian: widget.isEgyptian,
+    );
+
+    if (mounted) setState(() => _uploading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -751,27 +816,27 @@ class _AttachmentField extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                label,
+                widget.label,
                 textDirection: TextDirection.rtl,
                 style: AppTextStyles.h6.copyWith(
                   color: AppColors.neutralDarkDarkest,
                 ),
               ),
-              _EditLink(
-                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'رفع المرفقات قيد التطوير',
-                      textDirection: TextDirection.rtl,
-                    ),
-                  ),
-                ),
-              ),
+              _uploading
+                  ? SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.highlightDarkest,
+                      ),
+                    )
+                  : _EditLink(onTap: _pickAndUpload),
             ],
           ),
           SizedBox(height: 8.h),
 
-          if (files.isEmpty)
+          if (widget.files.isEmpty)
             Align(
               alignment: Alignment.centerRight,
               child: Text(
@@ -784,7 +849,7 @@ class _AttachmentField extends StatelessWidget {
             )
           else
             Column(
-              children: files.asMap().entries.map((entry) {
+              children: widget.files.asMap().entries.map((entry) {
                 final index = entry.key;
                 final file = entry.value;
                 final rawPath = file['url']?.toString() ?? '';
@@ -803,6 +868,8 @@ class _AttachmentField extends StatelessWidget {
     );
   }
 }
+
+// ─── Attachment row ───────────────────────────────────────────────────────────
 
 class _AttachmentRow extends StatefulWidget {
   final String url;
