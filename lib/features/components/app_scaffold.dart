@@ -25,7 +25,7 @@ class AppScaffold extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.neutralLightLight,
         appBar: MainAppBar(
-          backButtonAction: () => Navigator.pop(context),
+          backButtonAction: onBackTapped ?? () => Navigator.pop(context),
           title: title ?? '',
           backgroundColor: AppColors.mainBlueIndigoDye,
           backButtonIconColor: Colors.white,

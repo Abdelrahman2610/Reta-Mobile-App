@@ -170,13 +170,14 @@ class UserProfileCubit extends Cubit<UserProfileState> {
     emit(
       UserProfileLoaded(
         userModel: UserModel(
+          id: user.id,
           firstname: (user.firstname ?? '').trim(),
           lastname: (user.lastname ?? '').trim(),
           email: user.email ?? '',
           emailVerified: user.emailVerified ?? false,
           phone: user.phone ?? '',
           phoneVerified: user.phoneVerified ?? false,
-          nationality: user.nationality ?? '',
+          nationality: user.nationality ?? 'مصري',
           nationalityCode: user.nationalityCode,
           nationalId: user.nationalId ?? '',
           nationalIdVerified: user.nationalIdVerified ?? false,

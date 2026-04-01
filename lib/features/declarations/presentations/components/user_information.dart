@@ -78,6 +78,7 @@ class UserInformation extends StatelessWidget {
             onNationalIdFileRemoved: () {},
             onPassportFileRemoved: () {},
             isUserInfo: true,
+            userId: cubit.userId,
           ),
 
           16.hs,

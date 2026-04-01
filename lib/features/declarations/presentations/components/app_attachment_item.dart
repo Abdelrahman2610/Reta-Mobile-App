@@ -16,6 +16,7 @@ class AppAttachmentItem extends StatelessWidget {
     this.backgroundColor,
     this.textColor,
     this.isUserInfo = false,
+    this.deleteFileText,
   });
 
   final VoidCallback? onTap;
@@ -24,6 +25,7 @@ class AppAttachmentItem extends StatelessWidget {
   final Color? backgroundColor;
   final Color? textColor;
   final bool isUserInfo;
+  final String? deleteFileText;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +49,7 @@ class AppAttachmentItem extends StatelessWidget {
               text: isUserInfo
                   ? 'JPG'
                   : containFile
-                  ? 'حذف الصورة'
+                  ? deleteFileText ?? 'حذف الصورة'
                   : text ?? 'JPG',
               fontWeight: FontWeight.w600,
               fontSize: 12.sp,

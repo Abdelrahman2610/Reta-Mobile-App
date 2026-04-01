@@ -12,3 +12,45 @@ extension DateTimeFormat on DateTime {
     return '$date - $hour:$minute $period';
   }
 }
+
+extension ArabicDateFormat on String? {
+  String toArabicDate() {
+    if (this == null || this!.isEmpty) return '-';
+
+    try {
+      final parts = this!.contains('/') ? this!.split('/') : this!.split('-');
+
+      late int day, month, year;
+
+      if (this!.contains('/')) {
+        day = int.parse(parts[0]);
+        month = int.parse(parts[1]);
+        year = int.parse(parts[2]);
+      } else {
+        year = int.parse(parts[0]);
+        month = int.parse(parts[1]);
+        day = int.parse(parts[2]);
+      }
+
+      const months = [
+        '',
+        'يناير',
+        'فبراير',
+        'مارس',
+        'إبريل',
+        'مايو',
+        'يونيو',
+        'يوليو',
+        'أغسطس',
+        'سبتمبر',
+        'أكتوبر',
+        'نوفمبر',
+        'ديسمبر',
+      ];
+
+      return '$day ${months[month]} $year';
+    } catch (_) {
+      return this ?? '-';
+    }
+  }
+}
