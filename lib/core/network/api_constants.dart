@@ -34,6 +34,10 @@ class ApiConstants {
   static const String updateprofileConfirmOtp = '/validatePhone/confirmOtp';
   static const String editpassword = '/edit-password';
 
+  static String showUserNationalIdFile(int id) =>
+      '$baseUrl/category/files/preview/nationalIdFile?id=$id';
+  static String showUserPassportFile(int id) =>
+      '$baseUrl/category/files/preview/passportNumFile?id=$id';
   // ─── File Upload ─────────────────────────────────────────────────────────────
   static const String uploadAttachment =
       '/declaration-system/declarations/upload-attachments';
