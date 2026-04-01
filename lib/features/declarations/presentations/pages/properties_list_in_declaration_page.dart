@@ -431,7 +431,11 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
       PersistentNavBarNavigator.pushNewScreen(
         context,
-        screen: PaymentInfoPage(declarationId: state.declarationId),
+        screen: PaymentInfoPage(
+          declarationId: state.declarationId,
+          fromDeclarationConfirmation: true,
+          claimsSource: ClaimsSource.declaration,
+        ),
         withNavBar: true,
         pageTransitionAnimation: PageTransitionAnimation.slideUp,
       );
@@ -453,8 +457,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
   }
 
   _addUnit(BuildContext context, DeclarationDetailsModel detailsModel) async {
-    ApplicantType applicantType =
-        detailsModel.declarationTypeId.displayApplicant;
+    ApplicantType applicantType = detailsModel.applicantRoleId.displayApplicant;
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
     if (applicantType == ApplicantType.owner ||
         applicantType == ApplicantType.beneficiary ||

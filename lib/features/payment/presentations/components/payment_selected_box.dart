@@ -4,15 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class PaymentSelectedBox extends StatelessWidget {
-  const PaymentSelectedBox({
-    super.key,
-    required this.isSelected,
-    this.onTap,
-    this.isChecked,
-  });
+  const PaymentSelectedBox({super.key, required this.isSelected, this.onTap});
 
   final bool isSelected;
-  final bool? isChecked;
   final VoidCallback? onTap;
 
   @override

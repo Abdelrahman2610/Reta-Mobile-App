@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -1612,7 +1614,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           ..._buildUnitPayload(unitType, lookups),
         },
       };
-
+      log("submit unit payload: ${payload.toString()}");
       final result = isEdit
           ? await DeclarationService.instance.updateDeclaration(
               payload,

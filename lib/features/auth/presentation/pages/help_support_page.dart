@@ -103,25 +103,25 @@ class HelpSupportPage extends StatelessWidget {
   Future<void> _launchEmail(BuildContext context) async {
     final uri = Uri(scheme: 'mailto', path: _email);
     if (!await launchUrl(uri)) {
-      _showError(context, 'تعذر فتح تطبيق البريد الإلكتروني');
+      showError(context, 'تعذر فتح تطبيق البريد الإلكتروني');
     }
   }
 
   Future<void> _launchPhone(BuildContext context) async {
     final uri = Uri(scheme: 'tel', path: _phone);
     if (!await launchUrl(uri)) {
-      _showError(context, 'تعذر فتح تطبيق الهاتف');
+      showError(context, 'تعذر فتح تطبيق الهاتف');
     }
   }
+}
 
-  void _showError(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, textDirection: TextDirection.rtl),
-        backgroundColor: AppColors.errorDark,
-      ),
-    );
-  }
+void showError(BuildContext context, String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message, textDirection: TextDirection.rtl),
+      backgroundColor: AppColors.errorDark,
+    ),
+  );
 }
 
 class _ContactCard extends StatelessWidget {

@@ -1,30 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:reta/core/helpers/fixed_assets.dart';
 import 'package:reta/core/theme/app_colors.dart';
 import 'package:reta/features/components/app_text.dart';
 import 'package:reta/features/components/image_svg_custom_widget.dart';
 import 'package:reta/features/payment/presentations/components/payment_button.dart';
+import 'package:reta/features/payment/presentations/pages/payment_request_page.dart';
 
+import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/helpers/extensions/dimensions.dart';
+import '../../../auth/presentation/cubit/home_cubit.dart';
 import '../../../components/app_scaffold.dart';
+import '../../../declarations/data/models/declaration_model.dart';
+import '../../../declarations/presentations/cubit/declaration/declaration_cubit.dart';
+import '../../../declarations/presentations/pages/properties_list_in_declaration_page.dart';
+import 'electronic_payment_page.dart';
 
 class PaymentResultPage extends StatelessWidget {
   const PaymentResultPage({
     super.key,
     required this.isSuccess,
-    this.onBackToPaymentList,
-    this.onViewDeclarationDetails,
-    this.onBackToDeclarations,
-    this.onRetry,
+    this.declarationId,
+    required this.source,
+    required this.claimId,
   });
 
   final bool isSuccess;
 
-  final VoidCallback? onBackToPaymentList;
-  final VoidCallback? onViewDeclarationDetails;
-  final VoidCallback? onBackToDeclarations;
-  final VoidCallback? onRetry;
+  final String? declarationId;
+  final ClaimsSource source;
+  final int claimId;
 
   @override
   Widget build(BuildContext context) {
@@ -40,14 +47,11 @@ class PaymentResultPage extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.r),
         ),
         child: isSuccess
-            ? _SuccessContent(
-                onBackToPaymentList: onBackToPaymentList,
-                onViewDeclarationDetails: onViewDeclarationDetails,
-                onBackToDeclarations: onBackToDeclarations,
-              )
+            ? _SuccessContent(source: source, declarationId: declarationId)
             : _FailureContent(
-                onRetry: onRetry,
-                onBackToPaymentList: onBackToPaymentList,
+                declarationId: declarationId,
+                source: source,
+                claimId: claimId,
               ),
       ),
     );
@@ -55,15 +59,10 @@ class PaymentResultPage extends StatelessWidget {
 }
 
 class _SuccessContent extends StatelessWidget {
-  const _SuccessContent({
-    this.onBackToPaymentList,
-    this.onViewDeclarationDetails,
-    this.onBackToDeclarations,
-  });
+  const _SuccessContent({this.declarationId, required this.source});
 
-  final VoidCallback? onBackToPaymentList;
-  final VoidCallback? onViewDeclarationDetails;
-  final VoidCallback? onBackToDeclarations;
+  final String? declarationId;
+  final ClaimsSource source;
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +93,18 @@ class _SuccessContent extends StatelessWidget {
 
         PaymentButton(
           label: 'العودة إلى قائمة طلبات السداد',
-          onTap: onBackToPaymentList,
+          onTap: () {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            PersistentNavBarNavigator.pushNewScreen(
+              context,
+              screen: PaymentRequestsPage(
+                declarationId: declarationId ?? '',
+                claimsSource: source,
+              ),
+              withNavBar: true,
+              pageTransitionAnimation: PageTransitionAnimation.slideUp,
+            );
+          },
         ),
         10.hs,
 
@@ -103,14 +113,39 @@ class _SuccessContent extends StatelessWidget {
             Expanded(
               child: _OutlinedButton(
                 label: 'إستعراض تفاصيل الإقرار',
-                onTap: onViewDeclarationDetails,
+                onTap: () {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  if (declarationId != null) {
+                    final declarationCubit = context.read<DeclarationCubit>();
+                    final declaration = declarationCubit.declarationList
+                        ?.firstWhere(
+                          (d) => d.id.toString() == declarationId,
+                          orElse: () => DeclarationModel(),
+                        );
+                    if (declaration != null && declaration.id != null) {
+                      PersistentNavBarNavigator.pushNewScreen(
+                        context,
+                        screen: PropertiesListInDeclarationPage(
+                          declaration,
+                          () => declarationCubit.fetchList(),
+                        ),
+                        withNavBar: true,
+                        pageTransitionAnimation:
+                            PageTransitionAnimation.slideUp,
+                      );
+                    }
+                  }
+                },
               ),
             ),
             12.ws,
             Expanded(
               child: _OutlinedButton(
                 label: 'العودة إلى إقراراتي',
-                onTap: onBackToDeclarations,
+                onTap: () {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  context.read<HomeCubit>().selectTab(2);
+                },
               ),
             ),
           ],
@@ -121,10 +156,15 @@ class _SuccessContent extends StatelessWidget {
 }
 
 class _FailureContent extends StatelessWidget {
-  const _FailureContent({this.onRetry, this.onBackToPaymentList});
+  const _FailureContent({
+    this.declarationId,
+    required this.source,
+    required this.claimId,
+  });
 
-  final VoidCallback? onRetry;
-  final VoidCallback? onBackToPaymentList;
+  final String? declarationId;
+  final ClaimsSource source;
+  final int claimId;
 
   @override
   Widget build(BuildContext context) {
@@ -165,11 +205,37 @@ class _FailureContent extends StatelessWidget {
         ),
         40.hs,
 
-        PaymentButton(label: 'إعادة محاولة سداد المبلغ', onTap: onRetry),
+        PaymentButton(
+          label: 'إعادة محاولة سداد المبلغ',
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ElectronicPaymentPage(
+                  claimId: claimId,
+                  declarationId: declarationId,
+                  source: source,
+                ),
+              ),
+            );
+          },
+        ),
         20.hs,
 
         GestureDetector(
-          onTap: onBackToPaymentList,
+          onTap: () {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            PersistentNavBarNavigator.pushNewScreen(
+              context,
+              screen: PaymentRequestsPage(
+                declarationId: declarationId ?? '',
+                claimsSource: source,
+              ),
+              withNavBar: true,
+              pageTransitionAnimation: PageTransitionAnimation.slideUp,
+            );
+          },
           child: AppText(
             text: 'العودة إلى قائمة طلب السداد',
             fontSize: 12.sp,

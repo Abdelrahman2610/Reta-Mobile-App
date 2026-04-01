@@ -56,7 +56,7 @@ class PaymentUnitItemModel {
     required this.isPaidByWalletDisabled,
     required this.isExistInClaim,
     required this.type,
-    this.isSelected = false,
+    this.isSelected = true,
   });
 
   factory PaymentUnitItemModel.fromJson(Map<String, dynamic> json) {

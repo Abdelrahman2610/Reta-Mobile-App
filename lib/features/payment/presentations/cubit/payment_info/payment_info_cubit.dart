@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/network/api_constants.dart';
 import 'package:reta/core/network/api_result.dart';
@@ -31,8 +29,8 @@ class PaymentInfoCubit extends Cubit<PaymentInfoState> {
   void calculateTotalAmount() {
     totalRequired =
         _data?.units
-            .where((u) => u.isSelected)
-            .fold(0.0, (sum, u) => (sum ?? 0) + (u.amountUnderPayment)) ??
+            .where((unit) => (unit.isSelected && !unit.isChecked))
+            .fold(0.0, (sum, unit) => (sum ?? 0) + (unit.amountUnderPayment)) ??
         0;
   }
 
@@ -49,6 +47,7 @@ class PaymentInfoCubit extends Cubit<PaymentInfoState> {
     switch (result) {
       case ApiSuccess(:final data):
         _data = data;
+        calculateTotalAmount();
         emit(PaymentInfoSuccess(data));
       case ApiError(:final message):
         emit(PaymentInfoError(message));
@@ -61,8 +60,9 @@ class PaymentInfoCubit extends Cubit<PaymentInfoState> {
 
     emit(PaymentInfoLoading());
 
-    final selectedUnits = _data!.units.where((u) => u.isSelected).toList();
-    log('selectedUnits: $selectedUnits');
+    final selectedUnits = _data!.units
+        .where((u) => (u.isSelected && !u.isChecked))
+        .toList();
 
     final result = await safeApiCall(() async {
       final response = await DioClient.instance.dio.post(

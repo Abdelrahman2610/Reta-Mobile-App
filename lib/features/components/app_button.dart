@@ -19,6 +19,7 @@ class AppButton extends StatelessWidget {
     this.borderColor,
     this.maxLines,
     this.alignment,
+    this.borderWidth,
   });
 
   final String? label;
@@ -38,6 +39,7 @@ class AppButton extends StatelessWidget {
   final Color? borderColor;
   final int? maxLines;
   final Alignment? alignment;
+  final double? borderWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +52,7 @@ class AppButton extends StatelessWidget {
         borderRadius: radius,
         border: Border.all(
           color: borderColor ?? Colors.white,
-          width: withBorder ? 1.w : 0,
+          width: withBorder ? borderWidth ?? 1.w : 0,
         ),
         color: backgroundColor,
       ),

@@ -49,9 +49,11 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   final applicantPassportNumberController = TextEditingController();
   String? applicantPassportFilePath;
   String? applicantPassportOriginalName;
+  String? userId;
 
   void initFromUser(UserModel? user) {
     if (user == null) return;
+    userId = user.id;
     applicantFirstNameController.text = user.firstname ?? '';
     applicantLastNameController.text = user.lastname ?? ''.trim();
     applicantPhoneController.text = user.phone ?? '';
