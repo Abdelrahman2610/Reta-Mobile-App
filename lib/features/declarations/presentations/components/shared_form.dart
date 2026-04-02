@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/features/declarations/presentations/components/shared_conventional_form.dart';
 import 'package:reta/features/declarations/presentations/components/shared_natural_form.dart';
+import 'package:reta/features/declarations/presentations/cubit/declarations_lookups_states.dart';
 
 import '../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -29,7 +30,7 @@ class SharedForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<ApplicantCubit>();
-    final lookups = context.read<DeclarationLookupsCubit>().lookups;
+
     return AppContainer(
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
       child: Column(
@@ -41,54 +42,71 @@ class SharedForm extends StatelessWidget {
             color: AppColors.mainBlueIndigoDye,
           ),
           24.hs,
-          BlocBuilder<ApplicantCubit, ApplicantState>(
-            buildWhen: (prev, curr) =>
-                (prev.taxpayerNationality != curr.taxpayerNationality) ||
-                (prev.taxpayerTypes != curr.taxpayerTypes) ||
-                (prev.taxpayerNationalIdFilePath !=
-                    curr.taxpayerNationalIdFilePath) ||
-                (prev.taxpayerPassportFilePath !=
-                    curr.taxpayerPassportFilePath),
+          BlocBuilder<DeclarationLookupsCubit, DeclarationLookupsState>(
             builder: (context, state) {
-              return Column(
-                children: [
-                  AppDropdownField<String>(
-                    labelText: 'نوع المكلف بأداء الضريبة',
-                    labelRequired: true,
-                    hintText: 'اختر نوع المكلف',
-                    value: cubit.taxpayerTypes,
-                    items:
-                        lookups?.taxpayerTypes
-                            .map((t) => appDropDownOption(label: t.name))
-                            .toList() ??
-                        [],
-                    onChanged: cubit.changeTaxpayerType,
-                    validator: (value) =>
-                        value == null ? 'هذا الحقل مطلوب' : null,
-                  ),
-                  16.hs,
-                  if (cubit.taxpayerTypes == 'طبيعي')
-                    SharedNaturalForm(
-                      nationality: cubit.taxpayerNationality,
-                      onNationalityChanged: cubit.changeNationality,
-                      cubit: cubit,
-                    ),
-                  if (cubit.taxpayerTypes == 'اعتباري')
-                    SharedConventionalForm(cubit: cubit),
-                ],
+              final lookups = context.read<DeclarationLookupsCubit>().lookups;
+              return BlocBuilder<ApplicantCubit, ApplicantState>(
+                buildWhen: (prev, curr) =>
+                    (prev.taxpayerNationality != curr.taxpayerNationality) ||
+                    (prev.taxpayerTypes != curr.taxpayerTypes) ||
+                    (prev.taxpayerNationalIdFilePath !=
+                        curr.taxpayerNationalIdFilePath) ||
+                    (prev.taxpayerPassportFilePath !=
+                        curr.taxpayerPassportFilePath),
+                builder: (context, state) {
+                  return Column(
+                    children: [
+                      AppDropdownField<String>(
+                        labelText: 'نوع المكلف بأداء الضريبة',
+                        labelRequired: true,
+                        hintText: 'اختر نوع المكلف',
+                        value: cubit.taxpayerTypes,
+                        items:
+                            lookups?.taxpayerTypes
+                                .map((t) => appDropDownOption(label: t.name))
+                                .toList() ??
+                            [],
+                        onChanged: cubit.changeTaxpayerType,
+                        validator: (value) =>
+                            value == null ? 'هذا الحقل مطلوب' : null,
+                      ),
+                      16.hs,
+                      if (cubit.taxpayerTypes == 'طبيعي')
+                        SharedNaturalForm(
+                          nationality: cubit.taxpayerNationality,
+                          onNationalityChanged: cubit.changeNationality,
+                          cubit: cubit,
+                        ),
+                      if (cubit.taxpayerTypes == 'اعتباري')
+                        SharedConventionalForm(cubit: cubit),
+
+                      16.hs,
+                      AppTextFormField(
+                        labelText: 'رقم الهاتف المحمول',
+                        labelRequired: cubit.taxpayerTypes == 'اعتباري'
+                            ? false
+                            : true,
+                        labelColor: AppColors.neutralDarkDark,
+                        validator: (value) {
+                          if ((value == null || value.isEmpty) &&
+                              cubit.taxpayerTypes == 'طبيعي') {
+                            return 'هذا الحقل مطلوب';
+                          }
+                          if ((value?.length ?? 0) > 0 && value?.length != 11) {
+                            return 'رقم الهاتف يجب ان يكون ١١ رقم';
+                          }
+                          return null;
+                        },
+                        labelFontSize: 14.sp,
+                        controller: cubit.taxpayerPhoneController,
+                      ),
+                    ],
+                  );
+                },
               );
             },
           ),
 
-          16.hs,
-          AppTextFormField(
-            labelText: 'رقم الهاتف المحمول',
-            labelRequired: true,
-            labelColor: AppColors.neutralDarkDark,
-            validator: (value) => value == null ? 'هذا الحقل مطلوب' : null,
-            labelFontSize: 14.sp,
-            controller: cubit.taxpayerPhoneController,
-          ),
           16.hs,
           AppTextFormField(
             labelText: 'البريد الإلكتروني',

@@ -28,7 +28,9 @@ class SharedNaturalForm extends StatelessWidget {
           labelText: 'الإسم الأول للمكلف بأداء الضريبة',
           labelRequired: true,
           labelColor: AppColors.neutralDarkDark,
-          validator: (value) => value == null ? 'هذا الحقل مطلوب' : null,
+          validator: (value) {
+            return (value == null || value.isEmpty) ? 'هذا الحقل مطلوب' : null;
+          },
           labelFontSize: 14.sp,
           controller: cubit.taxpayerFirstNameController,
         ),
@@ -37,7 +39,9 @@ class SharedNaturalForm extends StatelessWidget {
           labelText: 'باقي الإسم للمكلف بأداء الضريبة',
           labelRequired: true,
           labelColor: AppColors.neutralDarkDark,
-          validator: (value) => value == null ? 'هذا الحقل مطلوب' : null,
+          validator: (value) {
+            return (value == null || value.isEmpty) ? 'هذا الحقل مطلوب' : null;
+          },
           labelFontSize: 14.sp,
           controller: cubit.taxpayerLastNameController,
         ),

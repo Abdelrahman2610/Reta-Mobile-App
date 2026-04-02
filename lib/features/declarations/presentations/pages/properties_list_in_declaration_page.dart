@@ -48,16 +48,31 @@ class PropertiesListInDeclarationPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      lazy: false,
-      create: (_) =>
-          DeclarationDetailsCubit(declarationModel.id.toString())
-            ..fetchDeclarationModel(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => DeclarationLookupsCubit()..fetchLookups()),
+        BlocProvider(
+          lazy: false,
+          create: (_) =>
+              DeclarationDetailsCubit(declarationModel.id.toString())
+                ..fetchDeclarationModel(),
+        ),
+      ],
       child: _PropertiesListInDeclarationView(
         declarationModel: declarationModel,
         updateDeclarationList: updateDeclarationList,
       ),
     );
+    // return BlocProvider(
+    //   lazy: false,
+    //   create: (_) =>
+    //       DeclarationDetailsCubit(declarationModel.id.toString())
+    //         ..fetchDeclarationModel(),
+    //   child: _PropertiesListInDeclarationView(
+    //     declarationModel: declarationModel,
+    //     updateDeclarationList: updateDeclarationList,
+    //   ),
+    // );
   }
 }
 
@@ -144,24 +159,6 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                         AddNewPropertyButton(
                           onAdd: () {
                             _addUnit(context, state.detailsModel!);
-                            // Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //     builder: (context) => SelectApplicantTypePage(
-                            //       declarationId: declarationModel.id ?? -1,
-                            //     ),
-                            //   ),
-                            // );
-
-                            // PersistentNavBarNavigator.pushNewScreen(
-                            //   context,
-                            //   screen: SelectApplicantTypePage(
-                            //     declarationId: declarationModel.id ?? -1,
-                            //   ),
-                            //   withNavBar: true,
-                            //   pageTransitionAnimation:
-                            //       PageTransitionAnimation.slideUp,
-                            // );
                           },
                         ),
                       SizedBox(height: 10.h),
@@ -459,6 +456,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
   _addUnit(BuildContext context, DeclarationDetailsModel detailsModel) async {
     ApplicantType applicantType = detailsModel.applicantRoleId.displayApplicant;
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
+
     if (applicantType == ApplicantType.owner ||
         applicantType == ApplicantType.beneficiary ||
         applicantType == ApplicantType.exploited) {
@@ -466,15 +464,6 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
         context,
         MaterialPageRoute(
           builder: (context) => MultiBlocProvider(
-            // BlocProvider(
-            //     create: (_) {
-            //       final cubit = ApplicantCubit(
-            //         applicantType: applicantType,
-            //         declarationId: declarationId,
-            //         isEditMode: existingDeclaration != null,
-            //         afterUpdating: afterUpdating,
-            //         applicantOtherName: applicantOtherName,
-            //       )..initFromUser(user);
             providers: [
               BlocProvider.value(value: lookupsCubit),
               BlocProvider.value(

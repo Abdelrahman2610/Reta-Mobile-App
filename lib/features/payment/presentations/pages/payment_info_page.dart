@@ -56,6 +56,7 @@ class _PaymentInfoView extends StatelessWidget {
     required this.fromDeclarationConfirmation,
     required this.claimsSource,
   });
+
   @override
   Widget build(BuildContext context) {
     PaymentRequestInfoStatus checkInfoStatus(List<PaymentUnitItemModel> units) {
@@ -73,12 +74,17 @@ class _PaymentInfoView extends StatelessWidget {
       child: BlocListener<PaymentInfoCubit, PaymentInfoState>(
         listener: (context, state) {
           if (state is PaymentInfoClaimSuccess) {
-            context.read<PaymentInfoCubit>().fetchUnits(declarationId);
+            final cubit = context.read<PaymentInfoCubit>();
+            cubit.fetchUnits(declarationId);
+
             PersistentNavBarNavigator.pushNewScreen(
               context,
               screen: PaymentRequestsPage(
                 declarationId: declarationId,
                 claimsSource: claimsSource,
+                onClaimDeleted: () {
+                  cubit.fetchUnits(declarationId);
+                },
               ),
               withNavBar: true,
               pageTransitionAnimation: PageTransitionAnimation.slideUp,
@@ -103,6 +109,21 @@ class _PaymentInfoView extends StatelessWidget {
                 declarationId: declarationId,
                 fromDeclarationConfirmation: fromDeclarationConfirmation,
                 infoStatus: infoStatus,
+                onNavigateToRequests: () {
+                  final paymentInfoCubit = context.read<PaymentInfoCubit>();
+                  PersistentNavBarNavigator.pushNewScreen(
+                    context,
+                    screen: PaymentRequestsPage(
+                      declarationId: declarationId,
+                      claimsSource: claimsSource,
+                      onClaimDeleted: () {
+                        paymentInfoCubit.fetchUnits(declarationId);
+                      },
+                    ),
+                    withNavBar: true,
+                    pageTransitionAnimation: PageTransitionAnimation.slideUp,
+                  );
+                },
               );
             }
             return const SizedBox();
@@ -118,18 +139,19 @@ class _PaymentInfoContent extends StatelessWidget {
   final String declarationId;
   final bool fromDeclarationConfirmation;
   final PaymentRequestInfoStatus infoStatus;
+  final VoidCallback onNavigateToRequests;
 
   const _PaymentInfoContent({
     required this.data,
     required this.declarationId,
     required this.fromDeclarationConfirmation,
     required this.infoStatus,
+    required this.onNavigateToRequests,
   });
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<PaymentInfoCubit>();
-
     return Column(
       children: [
         Expanded(
@@ -145,20 +167,7 @@ class _PaymentInfoContent extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      StepIndicator(
-                        onSecondStepTapped: () {
-                          PersistentNavBarNavigator.pushNewScreen(
-                            context,
-                            screen: PaymentRequestsPage(
-                              declarationId: declarationId,
-                              claimsSource: ClaimsSource.declaration,
-                            ),
-                            withNavBar: true,
-                            pageTransitionAnimation:
-                                PageTransitionAnimation.slideUp,
-                          );
-                        },
-                      ),
+                      StepIndicator(onSecondStepTapped: onNavigateToRequests),
                       20.hs,
                       if (fromDeclarationConfirmation) ...[
                         SuccessBanner(),

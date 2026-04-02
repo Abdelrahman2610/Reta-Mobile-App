@@ -222,6 +222,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       state.copyWith(
         taxpayerNationalIdFilePath: taxpayerNationalIdFilePath,
         taxpayerNationalIdFileUrl: taxpayerNationalIdUrl,
+        isLoading: false,
       ),
     );
   }
@@ -529,30 +530,81 @@ class ApplicantCubit extends Cubit<ApplicantState> {
             ],
             child: TaxpayerDataPage(),
           ),
-          // BlocProvider.value(value: this, child: TaxpayerDataPage()),
         ),
       );
     }
   }
 
+  bool validateFiles() {
+    if (taxpayerTypes == 'اعتباري') {
+      if ((taxpayerTaxCardUrl == null) &&
+          (taxpayerCommercialRegisterUrl == null) &&
+          (taxpayerOtherAttachmentUrl == null)) {
+        emit(state.copyWith(errorMessage: 'يجب رفع ملف واحد على الأفل'));
+        return false;
+      }
+
+      if (taxpayerTaxCardUrl != null &&
+          taxpayerTaxCardNumberController.text.trim().isEmpty) {
+        emit(state.copyWith(errorMessage: 'رقم البطاقه الضريبيه مطلوب'));
+        return false;
+      }
+
+      if (taxpayerTaxCardUrl == null &&
+          taxpayerTaxCardNumberController.text.trim().isNotEmpty) {
+        emit(state.copyWith(errorMessage: 'مرفق البطاقه الضريبيه مطلوب'));
+        return false;
+      }
+
+      if (taxpayerCommercialRegisterUrl != null &&
+          taxpayerCommercialRegisterController.text.trim().isEmpty) {
+        emit(state.copyWith(errorMessage: 'رقم السجل التجاري مطلوب'));
+        return false;
+      }
+
+      if (taxpayerCommercialRegisterUrl == null &&
+          taxpayerCommercialRegisterController.text.trim().isNotEmpty) {
+        emit(state.copyWith(errorMessage: 'مرفق السجل التجاري مطلوب'));
+        return false;
+      }
+
+      if (taxpayerOtherAttachmentUrl != null &&
+          taxpayerOtherAttachmentNameController.text.trim().isEmpty) {
+        emit(state.copyWith(errorMessage: 'إسم المرفق الآخر مطلوب'));
+        return false;
+      }
+
+      if (taxpayerOtherAttachmentUrl == null &&
+          taxpayerOtherAttachmentNameController.text.trim().isNotEmpty) {
+        emit(state.copyWith(errorMessage: 'المرفق الآخر مطلوب'));
+        return false;
+      }
+      return true;
+    } else {
+      return true;
+    }
+  }
+
   Future<void> onTaxpayerNextTapped(BuildContext context) async {
-    final lookupsCubit = context.read<DeclarationLookupsCubit>();
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => MultiBlocProvider(
-          providers: [
-            BlocProvider.value(value: this),
-            BlocProvider.value(value: lookupsCubit),
-          ],
-          child: SelectTypesOfPropertiesPage(
-            applicantType: applicantType,
-            declarationId: declarationId,
-            otherName: applicantOtherName,
+    if (validateFiles()) {
+      final lookupsCubit = context.read<DeclarationLookupsCubit>();
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: this),
+              BlocProvider.value(value: lookupsCubit),
+            ],
+            child: SelectTypesOfPropertiesPage(
+              applicantType: applicantType,
+              declarationId: declarationId,
+              otherName: applicantOtherName,
+            ),
           ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   Future<void> submit(BuildContext context) async {

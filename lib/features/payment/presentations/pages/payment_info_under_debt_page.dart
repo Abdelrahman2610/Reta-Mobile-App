@@ -50,11 +50,16 @@ class _PaymentInfoUnderDebtsView extends StatelessWidget {
                 context.read<PaymentInfoUnderDebtsCubit>().fetchUnits(
                   declarationId,
                 );
+                final paymentInfoCubit = context
+                    .read<PaymentInfoUnderDebtsCubit>();
                 PersistentNavBarNavigator.pushNewScreen(
                   context,
                   screen: PaymentRequestsPage(
                     declarationId: declarationId,
                     claimsSource: ClaimsSource.underDebt,
+                    onClaimDeleted: () {
+                      paymentInfoCubit.fetchUnits(declarationId);
+                    },
                   ),
                   withNavBar: true,
                   pageTransitionAnimation: PageTransitionAnimation.slideUp,
@@ -97,7 +102,6 @@ class _DebtContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<PaymentInfoUnderDebtsCubit>();
-
     return Column(
       children: [
         Expanded(
@@ -115,11 +119,16 @@ class _DebtContent extends StatelessWidget {
                     children: [
                       StepIndicator(
                         onSecondStepTapped: () {
+                          final paymentInfoCubit = context
+                              .read<PaymentInfoUnderDebtsCubit>();
                           PersistentNavBarNavigator.pushNewScreen(
                             context,
                             screen: PaymentRequestsPage(
                               declarationId: declarationId,
                               claimsSource: ClaimsSource.underDebt,
+                              onClaimDeleted: () {
+                                paymentInfoCubit.fetchUnits(declarationId);
+                              },
                             ),
                             withNavBar: true,
                             pageTransitionAnimation:
@@ -205,7 +214,9 @@ class _DebtContent extends StatelessWidget {
               10.hs,
               PaymentButton(
                 label: 'إصدار طلب السداد',
-                onTap: () => cubit.createClaim(declarationId),
+                onTap: cubit.totalRequired > 0
+                    ? () => cubit.createClaim(declarationId)
+                    : null,
               ),
             ],
           ),
@@ -250,6 +261,7 @@ class _DebtUnitCard extends StatelessWidget {
           EditableAmountField(
             label: 'المبلغ المطلوب سداده',
             controller: unit.amountController,
+            enabled: unit.isSelected,
             onChanged: (_) =>
                 context.read<PaymentInfoUnderDebtsCubit>().recalculate(),
           ),

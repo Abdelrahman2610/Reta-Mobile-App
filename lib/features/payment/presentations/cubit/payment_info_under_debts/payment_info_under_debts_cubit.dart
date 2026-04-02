@@ -87,10 +87,10 @@ class PaymentInfoUnderDebtsCubit extends Cubit<PaymentInfoUnderDebtsState> {
       case ApiSuccess(:final data):
         emit(PaymentInfoUnderDebtsSuccess(_data!));
         await Future.delayed(const Duration(milliseconds: 300));
-      emit(PaymentInfoUnderDebtsClaimSuccess());
+        emit(PaymentInfoUnderDebtsClaimSuccess());
       case ApiError(:final message):
         emit(PaymentInfoUnderDebtsSuccess(_data!));
-      emit(PaymentInfoUnderDebtsError(message));
+        emit(PaymentInfoUnderDebtsError(message));
     }
   }
 
