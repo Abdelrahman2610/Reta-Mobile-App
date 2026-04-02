@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -103,8 +104,22 @@ class AuthRepository {
         ApiConstants.forgotPasswordPhone,
         data: {'mobile': mobile},
       );
-      final body = response.data as Map<String, dynamic>;
-      return body['data'] as Map<String, dynamic>;
+
+      final rawData = response.data;
+      if (rawData == null || rawData is! Map<String, dynamic>) {
+        return {'ok': false, 'message': 'حدث خطأ غير متوقع، حاول مرة أخرى'};
+      }
+
+      final inner = rawData['data'];
+      if (inner == null || inner is! Map<String, dynamic>) {
+        return {
+          'ok': rawData['ok'] ?? false,
+          'message': rawData['message']?.toString() ?? 'حدث خطأ غير متوقع',
+          'error': rawData['error'],
+        };
+      }
+
+      return inner;
     });
   }
 
@@ -182,9 +197,14 @@ class AuthRepository {
   Future<ApiResult<UserModel>> getUserProfile() async {
     return safeApiCall(() async {
       final response = await _dio.get(ApiConstants.userProfile);
-      return UserModel.fromProfileResponse(
-        response.data as Map<String, dynamic>,
-      );
+      try {
+        return UserModel.fromProfileResponse(
+          response.data as Map<String, dynamic>,
+        );
+      } catch (e) {
+        log('UserModel.fromProfileResponse crashed: $e');
+        rethrow;
+      }
     });
   }
 
@@ -220,10 +240,16 @@ class AuthRepository {
           ),
       };
 
+      log('FORM FIELDS: ${body.keys.toList()}');
+      log('FILE PATH: ${idFile?.path}');
+      log('FILE EXISTS: ${await idFile?.exists()}');
+
       final response = await _dio.post(
         ApiConstants.editProfile,
         data: FormData.fromMap(body),
       );
+
+      log('EDIT PROFILE RESPONSE: ${response.data}');
 
       return EditProfileResponse.fromJson(
         response.data as Map<String, dynamic>,

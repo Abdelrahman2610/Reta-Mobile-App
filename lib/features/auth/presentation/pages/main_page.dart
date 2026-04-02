@@ -55,42 +55,154 @@ class MainPage extends StatelessWidget {
         BlocProvider(create: (_) => UserProfileCubit()..loadFromUser(user)),
         BlocProvider(create: (_) => DeclarationCubit()..fetchList()),
       ],
-      child: _MainView(user: user ?? UserModel.guest()),
+      child: _MainView(
+        user: user ?? UserModel.guest(),
+        isVerified: user?.nationalIdVerified ?? false,
+      ),
     );
   }
 }
 
 class _MainView extends StatefulWidget {
   final UserModel user;
+  final bool isVerified;
 
-  const _MainView({required this.user});
+  const _MainView({required this.user, required this.isVerified});
 
   @override
   State<_MainView> createState() => _MainViewState();
 }
 
 class _MainViewState extends State<_MainView> {
-  @override
-  void initState() {
-    super.initState();
-    InactivityService().init(() {
-      InactivityService().stop();
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const MainPage(isLoggedIn: false)),
-        (route) => false,
-      );
-    });
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   InactivityService().init(() {
+  //     InactivityService().stop();
+  //   Navigator.of(context).pushAndRemoveUntil(
+  //     MaterialPageRoute(builder: (_) => const MainPage(isLoggedIn: false)),
+  //     (route) => false,
+  //   );
+  //   });
+  // }
 
-  @override
-  void dispose() {
-    InactivityService().stop();
-    super.dispose();
+  // @override
+  // void dispose() {
+  //   InactivityService().stop();
+  //   super.dispose();
+  // }
+
+  void _showVerificationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          contentPadding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF3CD),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.verified_user_outlined,
+                  color: Color(0xFFF5A623),
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'التحقق من الهوية مطلوب',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A2340),
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'يجب التحقق من هويتك أولاً للوصول إلى هذه الخدمة.\nيرجى الانتقال إلى صفحة الإعدادات لإتمام التحقق.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF6B7280),
+                  height: 1.6,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        context.read<HomeCubit>().dismissVerificationPrompt();
+                        context.read<HomeCubit>().navigateTo(0);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFF005FAD)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text(
+                        'لاحقاً',
+                        style: TextStyle(color: Color(0xFF005FAD)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        context.read<HomeCubit>().dismissVerificationPrompt();
+                        context.read<HomeCubit>().navigateTo(4);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF005FAD),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'التحقق الآن',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeCubit, HomeState>(
+    return BlocConsumer<HomeCubit, HomeState>(
+      listenWhen: (prev, curr) =>
+          curr.showVerificationPrompt && !prev.showVerificationPrompt,
+      listener: (context, state) {
+        if (state.showVerificationPrompt) {
+          _showVerificationDialog(context);
+        }
+      },
       builder: (context, state) {
         return Scaffold(
           backgroundColor: AppColors.neutralLightLight,
@@ -120,7 +232,10 @@ class _MainViewState extends State<_MainView> {
                 context.read<HomeCubit>().mainScreenTabController.index,
               ),
               onItemSelected: (int index) {
-                context.read<HomeCubit>().selectTab(index);
+                context.read<HomeCubit>().selectTab(
+                  index,
+                  isVerified: widget.isVerified,
+                );
               },
               backgroundColor: Colors.white,
               resizeToAvoidBottomInset: true,
