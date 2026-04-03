@@ -7,18 +7,21 @@ import '../network/dio_client.dart';
 class UploadedFileModel {
   final String originalFileName;
   final String path;
+  final String fileId;
   final String fullUrl;
 
   UploadedFileModel({
     required this.originalFileName,
     required this.path,
+    required this.fileId,
     required this.fullUrl,
   });
 
   factory UploadedFileModel.fromJson(Map<String, dynamic> json) {
     return UploadedFileModel(
       originalFileName: json['original_file_name'],
-      path: json['file_id'],
+      path: json['path'],
+      fileId: json['file_id'],
       fullUrl: json['full_url'],
     );
   }

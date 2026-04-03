@@ -15,6 +15,7 @@ void showDebtsFilterSheet(
   BuildContext context, {
   DebtsFilterData? initialFilter,
   required ValueChanged<DebtsFilterData> onApply,
+  required VoidCallback onReset,
 }) {
   showModalBottomSheet(
     context: context,
@@ -23,6 +24,7 @@ void showDebtsFilterSheet(
     builder: (_) => _DebtsFilterSheet(
       initialFilter: initialFilter ?? const DebtsFilterData(),
       onApply: onApply,
+      onReset: onReset,
     ),
   );
 }
@@ -30,8 +32,13 @@ void showDebtsFilterSheet(
 class _DebtsFilterSheet extends StatefulWidget {
   final DebtsFilterData initialFilter;
   final ValueChanged<DebtsFilterData> onApply;
+  final VoidCallback onReset;
 
-  const _DebtsFilterSheet({required this.initialFilter, required this.onApply});
+  const _DebtsFilterSheet({
+    required this.initialFilter,
+    required this.onApply,
+    required this.onReset,
+  });
 
   @override
   State<_DebtsFilterSheet> createState() => _DebtsFilterSheetState();
@@ -131,8 +138,9 @@ class _DebtsFilterSheetState extends State<_DebtsFilterSheet> {
 
   void _reset() {
     setState(() {
-      _filter = const DebtsFilterData();
+      _filter = widget.initialFilter;
       _numberCtrl.clear();
+      widget.onReset();
     });
     Navigator.pop(context);
   }

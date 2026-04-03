@@ -90,13 +90,16 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   Nationality taxpayerNationality = Nationality.egyptian;
   final taxpayerNationalIdController = TextEditingController();
   String? taxpayerNationalIdFilePath;
+  String? taxpayerNationalIdFileId;
   String? taxpayerNationalIdOriginalName;
   String? taxpayerNationalIdUrl;
   final taxpayerPassportNumberController = TextEditingController();
   String? taxpayerPassportFilePath;
+  String? taxpayerPassportFileId;
   String? taxpayerPassportOriginalName;
   String? taxpayerPassportUrl;
   String? ownershipProofDocumentPath;
+  String? ownershipProofDocumentFileId;
   String? ownershipProofDocumentOriginalName;
   String? ownershipProofDocumentUrl;
   String? ownershipDeedFilePath;
@@ -109,19 +112,27 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
   final taxpayerTaxCardNumberController = TextEditingController();
   String? taxpayerTaxCardFilePath;
+  String? taxpayerTaxCardFileId;
   String? taxpayerTaxCardOriginalName;
   String? taxpayerTaxCardUrl;
   final taxpayerCommercialRegisterController = TextEditingController();
   String? taxpayerCommercialRegisterFilePath;
+  String? taxpayerCommercialRegisterFileId;
   String? taxpayerCommercialRegisterOriginalName;
   String? taxpayerCommercialRegisterUrl;
   final taxpayerOtherAttachmentNameController = TextEditingController();
   String? taxpayerOtherAttachmentFilePath;
+  String? taxpayerOtherAttachmentFileId;
   String? taxpayerOtherAttachmentOriginalName;
   String? taxpayerOtherAttachmentUrl;
   String? taxpayerAuthorizationFilePath;
+  String? taxpayerAuthorizationFileId;
   String? taxpayerAuthorizationOriginName;
   String? taxpayerAuthorizationUrl;
+  TaxpayerAttachmentModel? taxCardAttachment;
+  TaxpayerAttachmentModel? commercialNumberAttachment;
+  TaxpayerAttachmentModel? otherAttachment;
+  TaxpayerAttachmentModel? authorizationAttachment;
 
   /// ------------------ End of taxpayer information ------------------------
   void initFromDeclaration(DeclarationDetailsModel declaration) {
@@ -129,24 +140,35 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     applicantType = declaration.applicantRoleId.displayApplicant;
     if (taxpayer.isNatural) {
       taxpayerTypes = TaxpayerTypes.natural.displayText;
+      authorizationAttachment = declaration.powerOfAttorney;
       taxpayerFirstNameController.text = taxpayer.firstName ?? '';
       taxpayerLastNameController.text = taxpayer.lastName ?? '';
       taxpayerPhoneController.text = taxpayer.phone ?? '';
       taxpayerEmailController.text = taxpayer.email ?? '';
       taxpayerNationalIdController.text = taxpayer.nationalId ?? '';
-      taxpayerNationality = taxpayer.nationalityId == 1
+      taxpayerNationality = taxpayer.nationalityText == 'مصر'
           ? Nationality.egyptian
           : Nationality.foreign;
-      taxpayerNationalIdFilePath = taxpayer.nationalIdAttachment?.url;
+      taxpayerNationalIdFilePath = taxpayer.nationalIdAttachment?.path;
+      taxpayerNationalIdFileId = taxpayer.nationalIdAttachment?.url;
       taxpayerNationalIdUrl = taxpayer.nationalIdAttachment?.fullUrl;
       taxpayerNationalIdOriginalName =
           taxpayer.nationalIdAttachment?.originalFileName;
-      taxpayerPassportFilePath = taxpayer.passportAttachment?.url;
+      taxpayerPassportFilePath = taxpayer.passportAttachment?.path;
+      taxpayerPassportFileId = taxpayer.passportAttachment?.url;
       taxpayerPassportUrl = taxpayer.passportAttachment?.fullUrl;
       taxpayerPassportOriginalName =
           taxpayer.passportAttachment?.originalFileName;
     } else {
       taxpayerTypes = TaxpayerTypes.conventional.displayText;
+      if (taxpayerTypes == 'إعتباري') {
+        taxpayerTypes = 'اعتباري';
+      }
+
+      taxCardAttachment = taxpayer.taxCardAttachment;
+      commercialNumberAttachment = taxpayer.commercialRegisterAttachment;
+      otherAttachment = taxpayer.otherAttachment;
+      authorizationAttachment = declaration.powerOfAttorney;
       taxpayerNameController.text = taxpayer.name ?? '';
       taxpayerTaxCardNumberController.text = taxpayer.taxCardNumber ?? '';
       taxpayerCommercialRegisterController.text =
@@ -154,14 +176,26 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       taxpayerNationality = taxpayer.nationalityId == 1
           ? Nationality.egyptian
           : Nationality.foreign;
-      taxpayerTaxCardFilePath = taxpayer.taxCardAttachment?.url;
+
+      taxpayerTaxCardFilePath = taxpayer.taxCardAttachment?.path;
+      taxpayerTaxCardFileId = taxpayer.taxCardAttachment?.url;
+      taxpayerTaxCardUrl = taxpayer.taxCardAttachment?.fullUrl;
+
       taxpayerTaxCardOriginalName =
           taxpayer.taxCardAttachment?.originalFileName;
       taxpayerCommercialRegisterFilePath =
+          taxpayer.commercialRegisterAttachment?.path;
+      taxpayerCommercialRegisterFileId =
           taxpayer.commercialRegisterAttachment?.url;
+      taxpayerCommercialRegisterUrl =
+          taxpayer.commercialRegisterAttachment?.url;
+
       taxpayerCommercialRegisterOriginalName =
           taxpayer.commercialRegisterAttachment?.originalFileName;
-      taxpayerOtherAttachmentFilePath = taxpayer.otherAttachment?.url;
+      taxpayerOtherAttachmentFilePath = taxpayer.otherAttachment?.path;
+      taxpayerOtherAttachmentFileId = taxpayer.otherAttachment?.url;
+      taxpayerOtherAttachmentUrl = taxpayer.otherAttachment?.url;
+
       taxpayerOtherAttachmentOriginalName =
           taxpayer.otherAttachment?.originalFileName;
       taxpayerOtherAttachmentNameController.text =
@@ -169,13 +203,15 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     }
 
     // سند التوكيل
-    taxpayerAuthorizationFilePath = declaration.powerOfAttorney?.url;
-    taxpayerAuthorizationUrl = declaration.powerOfAttorney?.fullUrl;
+    taxpayerAuthorizationFilePath = declaration.powerOfAttorney?.path;
+    taxpayerAuthorizationFileId = declaration.powerOfAttorney?.url;
+    taxpayerAuthorizationUrl = declaration.powerOfAttorney?.url;
     taxpayerAuthorizationOriginName =
         declaration.powerOfAttorney?.originalFileName;
 
     // سند الملكية على الشيوع
-    ownershipProofDocumentPath = declaration.jointOwnershipDocument?.url;
+    ownershipProofDocumentPath = declaration.jointOwnershipDocument?.path;
+    ownershipProofDocumentFileId = declaration.jointOwnershipDocument?.url;
     ownershipProofDocumentUrl = declaration.jointOwnershipDocument?.fullUrl;
     ownershipProofDocumentOriginalName =
         declaration.jointOwnershipDocument?.originalFileName;
@@ -212,6 +248,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     switch (result) {
       case ApiSuccess<UploadedFileModel>(:final data):
         taxpayerNationalIdFilePath = data.path;
+        taxpayerNationalIdFileId = data.fileId;
         taxpayerNationalIdOriginalName = data.originalFileName;
         taxpayerNationalIdUrl = data.fullUrl;
         emit(state.copyWith(isLoading: false));
@@ -247,6 +284,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     switch (result) {
       case ApiSuccess<UploadedFileModel>(:final data):
         taxpayerPassportFilePath = data.path;
+        taxpayerPassportFileId = data.fileId;
         taxpayerPassportOriginalName = data.originalFileName;
         taxpayerPassportUrl = data.fullUrl;
         emit(state.copyWith(isLoading: false));
@@ -276,6 +314,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     switch (result) {
       case ApiSuccess<UploadedFileModel>(:final data):
         ownershipProofDocumentPath = data.path;
+        ownershipProofDocumentFileId = data.fileId;
         ownershipProofDocumentOriginalName = data.originalFileName;
         ownershipProofDocumentUrl = data.fullUrl;
         emit(state.copyWith(isLoading: false));
@@ -309,6 +348,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     switch (result) {
       case ApiSuccess<UploadedFileModel>(:final data):
         taxpayerAuthorizationFilePath = data.path;
+        taxpayerAuthorizationFileId = data.fileId;
         taxpayerAuthorizationOriginName = data.originalFileName;
         taxpayerAuthorizationUrl = data.fullUrl;
         emit(state.copyWith(isLoading: false));
@@ -318,6 +358,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     emit(
       state.copyWith(
         taxpayerAuthorizationFilePath: taxpayerAuthorizationFilePath,
+        taxpayerAuthorizationFileId: taxpayerAuthorizationFileId,
         taxpayerAuthorizationFullUrl: taxpayerAuthorizationUrl,
       ),
     );
@@ -326,10 +367,12 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   void removeLegalAuthorizationFile() {
     taxpayerAuthorizationUrl = null;
     taxpayerAuthorizationFilePath = null;
+    taxpayerAuthorizationFileId = null;
     emit(
       state.copyWith(
         taxpayerAuthorizationFilePath: 'remove',
         taxpayerAuthorizationFullUrl: 'remove',
+        taxpayerAuthorizationFileId: 'remove',
       ),
     );
   }
@@ -343,6 +386,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     switch (result) {
       case ApiSuccess<UploadedFileModel>(:final data):
         taxpayerTaxCardFilePath = data.path;
+        taxpayerTaxCardFileId = data.fileId;
         taxpayerTaxCardOriginalName = data.originalFileName;
         taxpayerTaxCardUrl = data.fullUrl;
         emit(state.copyWith(isLoading: false));
@@ -377,6 +421,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     switch (result) {
       case ApiSuccess<UploadedFileModel>(:final data):
         taxpayerCommercialRegisterFilePath = data.path;
+        taxpayerCommercialRegisterFileId = data.fileId;
         taxpayerCommercialRegisterOriginalName = data.originalFileName;
         taxpayerCommercialRegisterUrl = data.fullUrl;
         emit(state.copyWith(isLoading: false));
@@ -411,6 +456,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     switch (result) {
       case ApiSuccess<UploadedFileModel>(:final data):
         taxpayerOtherAttachmentFilePath = data.path;
+        taxpayerOtherAttachmentFileId = data.fileId;
         taxpayerOtherAttachmentOriginalName = data.originalFileName;
         taxpayerOtherAttachmentUrl = data.fullUrl;
         emit(state.copyWith(isLoading: false));
@@ -640,7 +686,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         applicantType == ApplicantType.other) {
       if (taxpayerAuthorizationFilePath != null) {
         payload['power_of_attorney'] = {
-          'file_id': taxpayerAuthorizationFilePath,
+          'file_id': taxpayerAuthorizationFileId,
+          'path': taxpayerAuthorizationFilePath,
           'original_file_name': taxpayerAuthorizationOriginName,
           'full_url': taxpayerAuthorizationUrl,
         };
@@ -651,7 +698,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     if (applicantType == ApplicantType.sharedOwnership) {
       if (ownershipProofDocumentPath != null) {
         payload['joint_ownership_document'] = {
-          'file_id': ownershipProofDocumentPath,
+          'file_id': ownershipProofDocumentFileId,
+          'path': ownershipProofDocumentPath,
           'original_file_name': ownershipProofDocumentOriginalName,
           'full_url': ownershipProofDocumentUrl,
         };
@@ -677,6 +725,14 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         .id;
     String phone = taxpayerPhoneController.text.trim();
     String email = taxpayerEmailController.text.trim();
+
+    final nationalityId = (lookups?.nationalities ?? [])
+        .firstWhere(
+          (p) => p.name == 'مصر',
+          orElse: () => DeclarationLookup(id: 1, name: ''),
+        )
+        .id;
+
     final Map<String, dynamic> taxpayer = {
       if (applicantType == ApplicantType.agent ||
           applicantType == ApplicantType.legalRepresentative ||
@@ -695,7 +751,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       if (taxpayerLastNameController.text.trim().isNotEmpty)
         'last_name': taxpayerLastNameController.text.trim(),
 
-      if (taxpayerTypes == 'طبيعي') 'nationality_id': taxpayerNationality.id,
+      if (taxpayerTypes == 'طبيعي') 'nationality_id': nationalityId,
       if (phone.isNotEmpty) 'phone': phone,
       if (phone.isEmpty) 'phone': null,
       if (email.isNotEmpty) 'email': email,
@@ -703,12 +759,13 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     };
 
     if (applicantType == ApplicantType.sharedOwnership) {
-      taxpayer['nationality_id'] = taxpayerNationality.id;
+      taxpayer['nationality_id'] = nationalityId;
       if (taxpayerNationality == Nationality.egyptian) {
         taxpayer['national_id'] = taxpayerNationalIdController.text.trim();
         if (taxpayerNationalIdFilePath != null) {
           taxpayer['national_id_attachment'] = {
-            'file_id': taxpayerNationalIdFilePath,
+            'file_id': taxpayerNationalIdFileId,
+            'path': taxpayerNationalIdFilePath,
             'original_file_name': taxpayerNationalIdOriginalName,
             'full_url': taxpayerNationalIdUrl,
           };
@@ -718,7 +775,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
             .trim();
         if (taxpayerPassportFilePath != null) {
           taxpayer['passport_attachment'] = {
-            'file_id': taxpayerPassportFilePath,
+            'file_id': taxpayerPassportFileId,
+            'path': taxpayerPassportFilePath,
             'original_file_name': taxpayerPassportOriginalName,
             'full_url': taxpayerPassportUrl,
           };
@@ -731,7 +789,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayer['national_id'] = taxpayerNationalIdController.text.trim();
         if (taxpayerNationalIdFilePath != null) {
           taxpayer['national_id_attachment'] = {
-            'file_id': taxpayerNationalIdFilePath,
+            'file_id': taxpayerNationalIdFileId,
+            'path': taxpayerNationalIdFilePath,
             'original_file_name': taxpayerNationalIdOriginalName,
             'full_url': taxpayerNationalIdUrl,
           };
@@ -741,7 +800,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
             .trim();
         if (taxpayerPassportFilePath != null) {
           taxpayer['passport_attachment'] = {
-            'file_id': taxpayerPassportFilePath,
+            'file_id': taxpayerPassportFileId,
+            'path': taxpayerPassportFilePath,
             'original_file_name': taxpayerPassportOriginalName,
             'full_url': taxpayerPassportUrl,
           };
@@ -755,14 +815,16 @@ class ApplicantCubit extends Cubit<ApplicantState> {
           .trim();
       if (taxpayerTaxCardFilePath != null) {
         taxpayer['tax_card_attachment'] = {
-          'file_id': taxpayerTaxCardFilePath,
+          'file_id': taxpayerTaxCardFileId,
+          if (taxpayerTaxCardFilePath != null) 'path': taxpayerTaxCardFilePath,
           'original_file_name': taxpayerTaxCardOriginalName,
           'full_url': taxpayerTaxCardUrl,
         };
       }
       if (taxpayerCommercialRegisterFilePath != null) {
         taxpayer['commercial_register_attachment'] = {
-          'file_id': taxpayerCommercialRegisterFilePath,
+          'file_id': taxpayerCommercialRegisterFileId,
+          'path': taxpayerCommercialRegisterFilePath,
           'original_file_name': taxpayerCommercialRegisterOriginalName,
           'full_url': taxpayerCommercialRegisterUrl,
         };
@@ -773,7 +835,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       }
       if (taxpayerOtherAttachmentFilePath != null) {
         taxpayer['other_attachment'] = {
-          'file_id': taxpayerOtherAttachmentFilePath,
+          'file_id': taxpayerOtherAttachmentFileId,
+          'path': taxpayerOtherAttachmentFilePath,
           'original_file_name': taxpayerOtherAttachmentOriginalName,
           'full_url': taxpayerOtherAttachmentUrl,
         };
@@ -847,12 +910,15 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         'original_file_name': taxpayerAuthorizationOriginName,
         'full_url': taxpayerAuthorizationUrl,
       };
+    } else if (authorizationAttachment != null) {
+      payload['power_of_attorney'] = authorizationAttachment?.toJson();
     }
 
     // ── سند الملكية على الشيوع ───────────────
     if (ownershipProofDocumentPath != null) {
       payload['joint_ownership_document'] = {
-        'file_id': ownershipProofDocumentPath,
+        'file_id': ownershipProofDocumentFileId,
+        'path': ownershipProofDocumentPath,
         'original_file_name': ownershipProofDocumentOriginalName,
         'full_url': ownershipProofDocumentUrl,
       };
@@ -861,18 +927,26 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     // ── بيانات المكلف ─────────────────────────
     final taxpayer = <String, dynamic>{};
 
+    final lookups = context.read<DeclarationLookupsCubit>().lookups;
+    final nationalityId = (lookups?.nationalities ?? [])
+        .firstWhere(
+          (p) => p.name == 'مصر',
+          orElse: () => DeclarationLookup(id: 1, name: ''),
+        )
+        .id;
     if (taxpayerTypes == TaxpayerTypes.natural.displayText) {
       taxpayer['first_name'] = taxpayerFirstNameController.text.trim();
       taxpayer['last_name'] = taxpayerLastNameController.text.trim();
       taxpayer['phone'] = taxpayerPhoneController.text.trim();
       taxpayer['email'] = taxpayerEmailController.text.trim();
-      taxpayer['nationality_id'] = taxpayerNationality.id;
+      taxpayer['nationality_id'] = nationalityId;
 
       if (taxpayerNationality == Nationality.egyptian) {
         taxpayer['national_id'] = taxpayerNationalIdController.text.trim();
         if (taxpayerNationalIdFilePath != null) {
           taxpayer['national_id_attachment'] = {
-            'file_id': taxpayerNationalIdFilePath,
+            'file_id': taxpayerNationalIdFileId,
+            'path': taxpayerNationalIdFilePath,
             'original_file_name': taxpayerNationalIdOriginalName,
             'full_url': taxpayerNationalIdUrl,
           };
@@ -882,7 +956,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
             .trim();
         if (taxpayerPassportFilePath != null) {
           taxpayer['passport_attachment'] = {
-            'file_id': taxpayerPassportFilePath,
+            'file_id': taxpayerPassportFileId,
+            'path': taxpayerPassportFilePath,
             'original_file_name': taxpayerPassportOriginalName,
             'full_url': taxpayerPassportUrl,
           };
@@ -894,36 +969,48 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       taxpayer['commercial_register'] = taxpayerCommercialRegisterController
           .text
           .trim();
-      taxpayer['nationality_id'] = taxpayerNationality.id;
+      taxpayer['nationality_id'] = nationalityId;
 
       if (taxpayerTaxCardFilePath != null) {
         taxpayer['tax_card_attachment'] = {
-          'file_id': taxpayerTaxCardFilePath,
+          'file_id': taxpayerTaxCardFileId,
+          'path': taxpayerTaxCardFilePath,
           'original_file_name': taxpayerTaxCardOriginalName,
           'full_url': taxpayerTaxCardUrl,
         };
+      } else if (taxCardAttachment != null) {
+        taxpayer['tax_card_attachment'] = taxCardAttachment?.toJson();
       }
+
       if (taxpayerCommercialRegisterFilePath != null) {
         taxpayer['commercial_register_attachment'] = {
-          'file_id': taxpayerCommercialRegisterFilePath,
+          'file_id': taxpayerCommercialRegisterFileId,
+          'path': taxpayerCommercialRegisterFilePath,
           'original_file_name': taxpayerCommercialRegisterOriginalName,
           'full_url': taxpayerCommercialRegisterUrl,
         };
+      } else if (commercialNumberAttachment != null) {
+        taxpayer['commercial_register_attachment'] = commercialNumberAttachment
+            ?.toJson();
       }
+
       if (taxpayerOtherAttachmentNameController.text.isNotEmpty) {
         taxpayer['other_attachment_name'] =
             taxpayerOtherAttachmentNameController.text.trim();
+
         if (taxpayerOtherAttachmentFilePath != null) {
           taxpayer['other_attachment'] = {
-            'file_id': taxpayerOtherAttachmentFilePath,
+            'file_id': taxpayerOtherAttachmentFileId,
+            'path': taxpayerOtherAttachmentFilePath,
             'original_file_name': taxpayerOtherAttachmentOriginalName,
             'full_url': taxpayerOtherAttachmentUrl,
           };
+        } else if (otherAttachment != null) {
+          taxpayer['other_attachment'] = otherAttachment?.toJson();
         }
       }
     }
 
-    final lookups = context.read<DeclarationLookupsCubit>().lookups;
     final taxpayerTypeId = (lookups?.taxpayerTypes ?? [])
         .firstWhere(
           (p) => p.name == taxpayerTypes,

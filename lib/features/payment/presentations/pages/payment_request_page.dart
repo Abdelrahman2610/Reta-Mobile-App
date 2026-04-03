@@ -32,10 +32,12 @@ class PaymentRequestsPage extends StatelessWidget {
     this.declarationId,
     required this.claimsSource,
     this.onClaimDeleted,
+    required this.fromDebts,
   });
   final String? declarationId;
   final ClaimsSource claimsSource;
   final VoidCallback? onClaimDeleted;
+  final bool fromDebts;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +56,7 @@ class PaymentRequestsPage extends StatelessWidget {
         declarationId: declarationId,
         source: claimsSource,
         onClaimDeleted: onClaimDeleted,
+        fromDebts: fromDebts,
       ),
     );
   }
@@ -64,10 +67,12 @@ class _PaymentRequestsView extends StatefulWidget {
     this.declarationId,
     required this.source,
     this.onClaimDeleted,
+    required this.fromDebts,
   });
   final String? declarationId;
   final ClaimsSource source;
   final VoidCallback? onClaimDeleted;
+  final bool fromDebts;
 
   @override
   State<_PaymentRequestsView> createState() => _PaymentRequestsViewState();
@@ -79,6 +84,10 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
   @override
   void initState() {
     super.initState();
+    initFilter();
+  }
+
+  void initFilter() {
     final now = DateTime.now();
     _filterData = PaymentFilterData(
       dateFrom: DateTime(now.year, now.month - 1, now.day),
@@ -121,7 +130,7 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                   ],
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    child: FilterHeader(context),
+                    child: FilterHeader(context, widget.fromDebts),
                   ),
                   Expanded(
                     child: const EmptyDataWidget(
@@ -152,7 +161,7 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                     15.hs,
                     const Divider(),
                     20.hs,
-                    FilterHeader(context),
+                    FilterHeader(context, widget.fromDebts),
                     20.hs,
                     ListView.builder(
                       physics: const NeverScrollableScrollPhysics(),
@@ -170,6 +179,7 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                                       claimId: claim.id,
                                       declarationId: widget.declarationId,
                                       source: widget.source,
+                                      fromDebts: widget.fromDebts,
                                     ),
                                     withNavBar: true,
                                     pageTransitionAnimation:
@@ -274,7 +284,7 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                                         .read<PaymentClaimsCubit>()
                                         .deleteClaim(
                                           claim.id,
-                                          widget.declarationId!,
+                                          widget.declarationId,
                                           context,
                                         );
                                     widget.onClaimDeleted?.call();
@@ -310,7 +320,7 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
     );
   }
 
-  Row FilterHeader(BuildContext context) {
+  Row FilterHeader(BuildContext context, bool fromDebts) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -338,11 +348,20 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
               context,
               initialFilter: _filterData,
               statuses: statuses,
+              fromDebts: fromDebts,
               onApply: (filter) {
                 setState(() => _filterData = filter);
                 context.read<PaymentClaimsCubit>().fetchClaims(
                   declarationId: widget.declarationId,
                   filter: filter,
+                );
+              },
+              onReset: () {
+                initFilter();
+                setState(() {});
+                context.read<PaymentClaimsCubit>().fetchClaims(
+                  declarationId: widget.declarationId,
+                  filter: _filterData,
                 );
               },
             );

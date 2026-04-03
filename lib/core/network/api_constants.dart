@@ -96,6 +96,9 @@ class ApiConstants {
   static const String hotelCategories = '$lookupBase/getHotelCategories';
   static const String claimStatus = '$lookupBase/claim-status';
 
+  static String ensureSingleExempt(int declarationId) =>
+      '/declaration-system/declarations/ensureSingleExempt/$declarationId';
+
   static String districtsByGovernorate(int governorateId) =>
       '$lookupBase/governorates/$governorateId/districts';
 

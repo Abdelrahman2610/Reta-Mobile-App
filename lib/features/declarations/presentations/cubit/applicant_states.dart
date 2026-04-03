@@ -14,6 +14,7 @@ class ApplicantState {
   final String? taxpayerPassportFileUrl;
   final String? taxpayerTypes;
   final String? taxpayerAuthorizationFilePath;
+  final String? taxpayerAuthorizationFileId;
   final String? taxpayerAuthorizationFullUrl;
   final String? taxpayerTaxCardFilePath;
   final String? taxpayerTaxCardFullUrl;
@@ -36,6 +37,7 @@ class ApplicantState {
     this.taxpayerPassportFileUrl,
     this.taxpayerTypes,
     this.taxpayerAuthorizationFilePath,
+    this.taxpayerAuthorizationFileId,
     this.taxpayerAuthorizationFullUrl,
     this.taxpayerTaxCardFilePath,
     this.taxpayerTaxCardFullUrl,
@@ -59,6 +61,7 @@ class ApplicantState {
     String? taxpayerPassportFileUrl,
     String? taxpayerTypes,
     String? taxpayerAuthorizationFilePath,
+    String? taxpayerAuthorizationFileId,
     String? taxpayerAuthorizationFullUrl,
     String? taxpayerTaxCardFilePath,
     String? taxpayerTaxCardFullUrl,
@@ -95,6 +98,9 @@ class ApplicantState {
       taxpayerAuthorizationFilePath: taxpayerAuthorizationFilePath == 'remove'
           ? null
           : taxpayerAuthorizationFilePath ?? this.taxpayerAuthorizationFilePath,
+      taxpayerAuthorizationFileId: taxpayerAuthorizationFileId == 'remove'
+          ? null
+          : taxpayerAuthorizationFileId ?? this.taxpayerAuthorizationFileId,
       taxpayerAuthorizationFullUrl: taxpayerAuthorizationFullUrl == 'remove'
           ? null
           : taxpayerAuthorizationFullUrl ?? this.taxpayerAuthorizationFullUrl,

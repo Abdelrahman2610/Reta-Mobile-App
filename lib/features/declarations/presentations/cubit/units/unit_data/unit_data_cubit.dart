@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,6 +45,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     fetchBuildingFloorNumber(buildingNumber);
     fetchBuildingUnitNumber(buildingNumber);
     initUnitData();
+    ensureSingleExempt();
   }
 
   final int? propertyTypeIdValue;
@@ -146,6 +145,29 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   final List<PetroBuilding> petroBuildings = [PetroBuilding()];
   final List<ProductionBuilding> productionBuildings = [ProductionBuilding()];
 
+  bool canSubmitSingleExempt = true;
+
+  Future<void> ensureSingleExempt() async {
+    if (unitType == UnitType.residential && declarationId != -1) {
+      final result = await safeApiCall(() async {
+        final response = await DioClient.instance.dio.get(
+          ApiConstants.ensureSingleExempt(declarationId),
+        );
+        final status = response.data['status'];
+        return status;
+      });
+
+      switch (result) {
+        case ApiSuccess(:final data):
+          canSubmitSingleExempt = data;
+          emit(state.copyWith(isLoading: false));
+        case ApiError(:final message):
+          canSubmitSingleExempt = false;
+          emit(state.copyWith(isLoading: false));
+      }
+    }
+  }
+
   // ─────────────────────────────────────────
   // Real and Mock Data
   // ─────────────────────────────────────────
@@ -232,7 +254,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     final unitNumber = state.buildingUnitList
         .firstWhere((element) => element.id == unitId)
         .name;
-
+    final leaseContract = unitData!['lease_contract'];
     emit(
       state.copyWith(
         selectedFloorNumber: isFloorOther ? 'أخرى' : floorText,
@@ -245,6 +267,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         ownershipDeedFilePath: ownershipDeed?['url'],
         ownershipDeedOriginalName: ownershipDeed?['original_file_name'],
         ownershipDeedFullUrl: ownershipDeed?['full_url'],
+        leaseContractFullUrl: leaseContract['full_url'],
       ),
     );
     // controllers
@@ -1133,8 +1156,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     return null;
   }
 
-  void changePrivateResidence() =>
+  void changePrivateResidence() {
+    if (canSubmitSingleExempt) {
       emit(state.copyWith(isExempt: !state.isExempt));
+    }
+  }
 
   Future<void> setOwnershipDeedFile(String path) async {
     emit(state.copyWith(isLoading: true));
@@ -1614,7 +1640,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           ..._buildUnitPayload(unitType, lookups),
         },
       };
-      log("submit unit payload: ${payload.toString()}");
       final result = isEdit
           ? await DeclarationService.instance.updateDeclaration(
               payload,

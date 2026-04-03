@@ -219,7 +219,7 @@ class TaxpayerAttachmentModel {
     return {
       'id': id,
       'field_name': fieldName,
-      'path': path,
+      // 'path': path,
       if (name != null) 'name': name,
       'url': url,
       'full_url': fullUrl,
@@ -332,6 +332,12 @@ class TaxpayerModel {
         'name': name,
         'tax_card_number': taxCardNumber,
         'commercial_register': commercialRegister,
+        'other_attachment_name': otherAttachmentName,
+
+        'tax_card_attachment': taxCardAttachment?.toJson(),
+        'commercial_register_attachment': commercialRegisterAttachment
+            ?.toJson(),
+        'other_attachment': otherAttachment?.toJson(),
       },
       'nationality_id': nationalityId,
       'nationality_text': nationalityText,
