@@ -284,7 +284,8 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                                       unitUnitNum: getUnitUnitNum(summary),
                                       unitTypeText: getUnitTypeText(summary),
                                       canEditOrRemove:
-                                          state.detailsModel?.statusId != "3",
+                                          state.detailsModel?.statusId == "1" ||
+                                          state.detailsModel?.statusId == "3",
                                     ),
                                   );
                                 },
