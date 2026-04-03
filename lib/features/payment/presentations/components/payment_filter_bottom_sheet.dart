@@ -19,7 +19,9 @@ void showPaymentFilterSheet(
   BuildContext context, {
   PaymentFilterData? initialFilter,
   required ValueChanged<PaymentFilterData> onApply,
+  required VoidCallback onReset,
   required List<PaymentStatusLookup> statuses,
+  required bool fromDebts,
 }) {
   showModalBottomSheet(
     context: context,
@@ -28,7 +30,9 @@ void showPaymentFilterSheet(
     builder: (_) => _PaymentFilterSheet(
       initialFilter: initialFilter ?? const PaymentFilterData(),
       onApply: onApply,
+      onReset: onReset,
       statuses: statuses,
+      fromDebts: fromDebts,
     ),
   );
 }
@@ -36,12 +40,16 @@ void showPaymentFilterSheet(
 class _PaymentFilterSheet extends StatefulWidget {
   final PaymentFilterData initialFilter;
   final ValueChanged<PaymentFilterData> onApply;
+  final VoidCallback onReset;
   final List<PaymentStatusLookup> statuses;
+  final bool fromDebts;
 
   const _PaymentFilterSheet({
     required this.initialFilter,
     required this.onApply,
+    required this.onReset,
     required this.statuses,
+    required this.fromDebts,
   });
 
   @override
@@ -115,9 +123,10 @@ class _PaymentFilterSheetState extends State<_PaymentFilterSheet> {
 
   void _reset() {
     setState(() {
-      _filter = const PaymentFilterData();
+      _filter = widget.initialFilter;
       _procCtrl.clear();
       _claimCtrl.clear();
+      widget.onReset();
     });
     Navigator.pop(context);
   }
@@ -208,15 +217,18 @@ class _PaymentFilterSheetState extends State<_PaymentFilterSheet> {
                       child: ListView(
                         controller: scrollCtrl,
                         children: [
-                          FilterAppContainer(
-                            child: _buildTextSection(
-                              title: 'رقم الإجراء',
-                              controller: _procCtrl,
-                              hint: 'أدخل رقم الإجراء',
-                              onClear: () => setState(() => _procCtrl.clear()),
+                          if (!widget.fromDebts) ...[
+                            FilterAppContainer(
+                              child: _buildTextSection(
+                                title: 'رقم الإجراء',
+                                controller: _procCtrl,
+                                hint: 'أدخل رقم الإجراء',
+                                onClear: () =>
+                                    setState(() => _procCtrl.clear()),
+                              ),
                             ),
-                          ),
-                          10.hs,
+                            10.hs,
+                          ],
                           FilterAppContainer(
                             child: _buildTextSection(
                               title: 'رقم طلب السداد',

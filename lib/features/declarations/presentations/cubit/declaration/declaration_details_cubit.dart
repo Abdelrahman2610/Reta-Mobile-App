@@ -189,7 +189,7 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
         '${ApiConstants.submitDeclaration(declarationId)}?data_accuracy_declaration=true',
         data: detailsModel!.toJson(),
       );
-      return true;
+      return response.data['success'];
     });
 
     switch (result) {

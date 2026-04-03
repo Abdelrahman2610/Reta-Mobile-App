@@ -136,7 +136,7 @@ class PaymentClaimsCubit extends Cubit<PaymentClaimsState> {
 
   Future<void> deleteClaim(
     int claimId,
-    String declarationId,
+    String? declarationId,
     BuildContext context,
   ) async {
     final result = await safeApiCall(() async {
@@ -148,10 +148,8 @@ class PaymentClaimsCubit extends Cubit<PaymentClaimsState> {
 
     switch (result) {
       case ApiSuccess():
-        // final paymentInfoCubit = context.read<PaymentInfoCubit>();
-        // paymentInfoCubit.fetchUnits(declarationId);
         emit(PaymentClaimsDeleteSuccess());
-        await fetchClaims(declarationId: _declarationId!, source: _source);
+        await fetchClaims(declarationId: _declarationId, source: _source);
       case ApiError(:final message):
         emit(PaymentClaimsError(message));
     }

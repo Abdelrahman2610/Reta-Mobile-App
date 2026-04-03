@@ -57,6 +57,7 @@ class _PaymentInfoUnderDebtsView extends StatelessWidget {
                   screen: PaymentRequestsPage(
                     declarationId: declarationId,
                     claimsSource: ClaimsSource.underDebt,
+                    fromDebts: true,
                     onClaimDeleted: () {
                       paymentInfoCubit.fetchUnits(declarationId);
                     },
@@ -126,6 +127,7 @@ class _DebtContent extends StatelessWidget {
                             screen: PaymentRequestsPage(
                               declarationId: declarationId,
                               claimsSource: ClaimsSource.underDebt,
+                              fromDebts: true,
                               onClaimDeleted: () {
                                 paymentInfoCubit.fetchUnits(declarationId);
                               },
