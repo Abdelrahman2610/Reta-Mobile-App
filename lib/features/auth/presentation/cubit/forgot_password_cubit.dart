@@ -169,7 +169,6 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
     switch (result) {
       case ApiSuccess(:final data):
-        // ✅ Guard against null or non-map responses (e.g. deleted account, rate limit)
         if (data == null || data is! Map<String, dynamic>) {
           emit(
             state.copyWith(
