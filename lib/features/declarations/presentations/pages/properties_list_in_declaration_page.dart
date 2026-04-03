@@ -125,7 +125,8 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                                 state.detailsModel?.applicantRoleText ??
                                 declarationModel.declarationTypeText ??
                                 "",
-                            declarationModel.statusId != "3",
+                            declarationModel.statusId == "1" ||
+                                declarationModel.statusId == "3",
                             onTap: () {
                               PersistentNavBarNavigator.pushNewScreen(
                                 context,
@@ -152,76 +153,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                           );
                         },
                       ),
-                      if (declarationModel.statusId != "3")
-                        SizedBox(height: 30.h),
-                      if (declarationModel.statusId != "3" &&
-                          state.detailsModel != null)
-                        AddNewPropertyButton(
-                          onAdd: () {
-                            _addUnit(context, state.detailsModel!);
-                          },
-                        ),
-                      SizedBox(height: 10.h),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20.w),
-                        child: Row(
-                          textDirection: TextDirection.rtl,
-                          children: [
-                            Expanded(
-                              flex: 5,
-                              child: SubmitDeclarationButton(
-                                onSubmit: () {
-                                  if (state.detailsModel?.unitsCount.total !=
-                                      0) {
-                                    showSubmitDeclarationDialog(
-                                      RuntimeData.getCurrentContext()!,
-                                      () {
-                                        context
-                                            .read<DeclarationDetailsCubit>()
-                                            .submitDeclaration();
-                                      },
-                                    );
-                                  }
-                                },
-                                isEnabled:
-                                    state.detailsModel?.unitsCount.total != 0,
-                              ),
-                            ),
-                            SizedBox(width: 10.w),
-                            Expanded(
-                              flex: 3,
-                              child: CancelDeclarationButton(
-                                onCancel: () {
-                                  if (state.detailsModel?.statusId == "2" &&
-                                      state.detailsModel?.unitsCount.total !=
-                                          0) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: AppText(
-                                          text: "يجب مسح كل العقارات اولا.",
-                                          maxLines: 3,
-                                          color: AppColors.white,
-                                        ),
-                                        backgroundColor: AppColors.errorDark,
-                                      ),
-                                    );
-                                  } else {
-                                    showCancelDeclarationDialog(
-                                      RuntimeData.getCurrentContext()!,
-                                      () {
-                                        context
-                                            .read<DeclarationDetailsCubit>()
-                                            .deleteDeclarationModel();
-                                      },
-                                    );
-                                  }
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
+                      _headerButtons(state, context),
                       SizedBox(height: 24.h),
                       if (state.detailsModel?.unitsCount.total != 0)
                         UnitTypeCategoryTabWidget(state.selectedCategoryIndex, (
@@ -418,12 +350,28 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
 
   _onStateChange(DeclarationDetailsStates state, BuildContext context) {
     if (state is DeclarationDeleteLoading ||
+        state is DeclarationStatusToOnEditLoading ||
         state is DeclarationSubmitLoading) {
       loadingPopup(RuntimeData.getCurrentContext()!);
     } else if (state is DeclarationDeleteSuccess) {
       updateDeclarationList();
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
       Navigator.of(context).pop();
+    } else if (state is DeclarationStatusToOnEditLoaded) {
+      updateDeclarationList();
+      declarationModel.statusId = state.statusId;
+      declarationModel.statusText = state.statusText;
+      Navigator.of(RuntimeData.getCurrentContext()!).pop();
+      Navigator.of(context).pop();
+      PersistentNavBarNavigator.pushNewScreen(
+        RuntimeData.getCurrentContext()!,
+        screen: PropertiesListInDeclarationPage(
+          declarationModel,
+          updateDeclarationList,
+        ),
+        withNavBar: true,
+        pageTransitionAnimation: PageTransitionAnimation.slideUp,
+      );
     } else if (state is DeclarationSubmitSuccess) {
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
       PersistentNavBarNavigator.pushNewScreen(
@@ -445,12 +393,114 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(state.message)));
+    } else if (state is DeclarationStatusToOnEditError) {
+      Navigator.of(RuntimeData.getCurrentContext()!).pop();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(state.message)));
     } else if (state is DeclarationSubmitError) {
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(state.message)));
     }
+  }
+
+  Widget _headerButtons(state, BuildContext context) {
+    return declarationModel.statusId == "2"
+        ? Column(
+            children: [
+              SizedBox(height: 30.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: AddNewPropertyButton(
+                  onAdd: () {
+                    context
+                        .read<DeclarationDetailsCubit>()
+                        .changeDeclarationStatusToOnEdit();
+                  },
+                  backgroundColor: AppColors.warningDark,
+                  label: "تعديل بيانات الإقرار",
+                  showIcon: false,
+                ),
+              ),
+            ],
+          )
+        : Column(
+            children: [
+              if (declarationModel.statusId == "1" ||
+                  declarationModel.statusId == "3")
+                SizedBox(height: 30.h),
+              if ((declarationModel.statusId == "1" ||
+                      declarationModel.statusId == "3") &&
+                  state.detailsModel != null)
+                AddNewPropertyButton(
+                  onAdd: () {
+                    _addUnit(context, state.detailsModel!);
+                  },
+                ),
+              SizedBox(height: 10.h),
+              if (state.detailsModel?.statusId == "3" ||
+                  state.detailsModel?.statusId == "1")
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Row(
+                    textDirection: TextDirection.rtl,
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: SubmitDeclarationButton(
+                          onSubmit: () {
+                            if (state.detailsModel?.unitsCount.total != 0) {
+                              showSubmitDeclarationDialog(
+                                RuntimeData.getCurrentContext()!,
+                                () {
+                                  context
+                                      .read<DeclarationDetailsCubit>()
+                                      .submitDeclaration();
+                                },
+                              );
+                            }
+                          },
+                          isEnabled: state.detailsModel?.unitsCount.total != 0,
+                        ),
+                      ),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        flex: 3,
+                        child: CancelDeclarationButton(
+                          onCancel: () {
+                            if ((state.detailsModel?.statusId == "3" ||
+                                    state.detailsModel?.statusId == "1") &&
+                                state.detailsModel?.unitsCount.total != 0) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: AppText(
+                                    text: "يجب مسح كل العقارات اولا.",
+                                    maxLines: 3,
+                                    color: AppColors.white,
+                                  ),
+                                  backgroundColor: AppColors.errorDark,
+                                ),
+                              );
+                            } else {
+                              showCancelDeclarationDialog(
+                                RuntimeData.getCurrentContext()!,
+                                () {
+                                  context
+                                      .read<DeclarationDetailsCubit>()
+                                      .deleteDeclarationModel();
+                                },
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          );
   }
 
   _addUnit(BuildContext context, DeclarationDetailsModel detailsModel) async {
@@ -488,6 +538,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
               declarationId: detailsModel.id,
               otherName: detailsModel.applicantRoleOther,
               locationData: detailsModel.toJson(),
+              handleCreateNewUnitFromDeclarationPropList: true,
             ),
           ),
         ),
@@ -516,7 +567,9 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                 ),
               ),
             ],
-            child: TaxpayerDataPage(),
+            child: TaxpayerDataPage(
+              handleCreateNewUnitFromDeclarationPropList: true,
+            ),
           ),
           // BlocProvider.value(value: this, child: TaxpayerDataPage()),
         ),

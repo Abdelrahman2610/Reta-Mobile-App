@@ -17,7 +17,12 @@ import '../components/shared_form.dart';
 import '../cubit/applicant_cubit.dart';
 
 class TaxpayerDataPage extends StatelessWidget {
-  const TaxpayerDataPage({super.key});
+  final bool handleCreateNewUnitFromDeclarationPropList;
+
+  const TaxpayerDataPage({
+    super.key,
+    this.handleCreateNewUnitFromDeclarationPropList = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +146,11 @@ class TaxpayerDataPage extends StatelessWidget {
                                     alignment: Alignment.center,
                                     onTap: () {
                                       if (cubit.validate()) {
-                                        cubit.onTaxpayerNextTapped(context);
+                                        cubit.onTaxpayerNextTapped(
+                                          context,
+                                          handleCreateNewUnitFromDeclarationPropList:
+                                              handleCreateNewUnitFromDeclarationPropList,
+                                        );
                                       }
                                     },
                                   ),

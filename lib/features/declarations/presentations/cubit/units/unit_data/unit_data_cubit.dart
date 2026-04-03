@@ -712,6 +712,14 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     }
   }
 
+  List<DeclarationLookup> removeDuplicates(List<DeclarationLookup> items) {
+    final seenNames = <String>{};
+
+    return items.where((item) {
+      return seenNames.add(item.name); // add returns false if already exists
+    }).toList();
+  }
+
   Future<void> fetchBuildingUnitNumber(
     dynamic buildingNumber, {
     bool loading = true,
@@ -726,7 +734,9 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         ApiConstants.unitsByRealEstate(buildingNumber),
       );
       final list = response.data['data'] as List;
-      return list.map((e) => DeclarationLookup.fromJson(e)).toList();
+      return removeDuplicates(
+        list.map((e) => DeclarationLookup.fromJson(e)).toList(),
+      );
     });
 
     switch (result) {
