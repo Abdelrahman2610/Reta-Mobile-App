@@ -2,12 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:reta/core/helpers/extensions/applicant_type.dart';
 import 'package:reta/features/declarations/presentations/pages/provider_data_page.dart';
 
 import '../../../../core/helpers/app_enum.dart';
+import '../../../../core/helpers/loading_popup.dart';
+import '../../../../core/helpers/runtime_data.dart';
+import '../../../../core/network/api_constants.dart';
+import '../../../../core/network/api_result.dart';
+import '../../../../core/network/dio_client.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/cubit/user_profile_cubit.dart';
 import '../../../auth/presentation/cubit/user_profile_state.dart';
+import '../../../auth/presentation/pages/help_support_page.dart';
 import '../../../components/app_bar.dart';
 import '../../../components/app_text.dart';
 import '../components/select_applicant_type_item.dart';
@@ -61,10 +68,18 @@ class SelectApplicantTypePage extends StatelessWidget {
                               title: "مالك",
                               subTitle:
                                   "تقديم الإقرار عن جميع العقارات المملوكة لك بصفتك المالك القانوني.",
-                              onPress: () => onApplicantTaped(
-                                applicantType: ApplicantType.owner,
-                                context: context,
-                              ),
+                              onPress: () {
+                                canApplicantCreateDeclaration(
+                                  ApplicantType.owner.id.toString(),
+                                  context,
+                                  () {
+                                    onApplicantTaped(
+                                      applicantType: ApplicantType.owner,
+                                      context: context,
+                                    );
+                                  },
+                                );
+                              },
                             ),
                             SizedBox(height: 16.h),
                             SelectApplicantTypeItem(
@@ -81,10 +96,18 @@ class SelectApplicantTypePage extends StatelessWidget {
                               title: "منتفع",
                               subTitle:
                                   "تقديم الإقرار عن عقار لك حق الانتفاع به وفق سند أو حق قانوني.",
-                              onPress: () => onApplicantTaped(
-                                applicantType: ApplicantType.beneficiary,
-                                context: context,
-                              ),
+                              onPress: () {
+                                canApplicantCreateDeclaration(
+                                  ApplicantType.beneficiary.id.toString(),
+                                  context,
+                                  () {
+                                    onApplicantTaped(
+                                      applicantType: ApplicantType.beneficiary,
+                                      context: context,
+                                    );
+                                  },
+                                );
+                              },
                             ),
                             SizedBox(height: 16.h),
                             SelectApplicantTypeItem(
@@ -101,10 +124,18 @@ class SelectApplicantTypePage extends StatelessWidget {
                               title: "مستغل",
                               subTitle:
                                   "تقديم الإقرار عن عقار تقوم باستغلاله أو الانتفاع به بموجب عقد أو سند قانوني.",
-                              onPress: () => onApplicantTaped(
-                                applicantType: ApplicantType.exploited,
-                                context: context,
-                              ),
+                              onPress: () {
+                                canApplicantCreateDeclaration(
+                                  ApplicantType.exploited.id.toString(),
+                                  context,
+                                  () {
+                                    onApplicantTaped(
+                                      applicantType: ApplicantType.exploited,
+                                      context: context,
+                                    );
+                                  },
+                                );
+                              },
                             ),
                             SizedBox(height: 16.h),
                             SelectApplicantTypeItem(
@@ -146,6 +177,36 @@ class SelectApplicantTypePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future canApplicantCreateDeclaration(
+    String id,
+    context,
+    Function nextStep,
+  ) async {
+    loadingPopup(RuntimeData.getCurrentContext()!);
+    final result = await safeApiCall(() async {
+      final response = await DioClient.instance.dio.post(
+        ApiConstants.checkApplicantRole(id),
+      );
+      return response.data as Map<String, dynamic>;
+    });
+    Navigator.pop(RuntimeData.getCurrentContext()!);
+    switch (result) {
+      case ApiSuccess(:final data):
+        if (data['data']['exists'] == true) {
+          showError(
+            context,
+            "لا يمكن إختيار هذه الصفة لوجود إقرار عام آخر بنفس هذه الصفة على النظام في نفس الفترة",
+          );
+        } else {
+          nextStep();
+          return true;
+        }
+      case ApiError(:final message):
+        showError(context, message);
+        return false;
+    }
   }
 
   void onApplicantTaped({

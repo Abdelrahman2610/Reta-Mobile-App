@@ -51,6 +51,9 @@ class ApiConstants {
   // ─── Declarations ────────────────────────────────────────────────────────────
   static const String declarations = '/declaration-system/declarations';
 
+  static String checkApplicantRole(String id) =>
+      '/declaration-system/declarations/check-applicant-role/$id';
+
   static String declarationById(String id) =>
       '/declaration-system/declarations/$id';
 
