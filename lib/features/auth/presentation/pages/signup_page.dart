@@ -1069,7 +1069,9 @@ class _ImageUploadField extends StatelessWidget {
     final picker = ImagePicker();
     final picked = await picker.pickImage(
       source: ImageSource.gallery,
-      imageQuality: 85,
+      imageQuality: 60,
+      maxWidth: 1024,
+      maxHeight: 1024,
     );
     if (picked != null) {
       onPickImage(File(picked.path));
