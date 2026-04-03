@@ -231,7 +231,6 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
   }
 
   Future<void> fetchLookups(BuildContext context) async {
-    emit(DeclarationDetailsLoading());
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
 
     if (lookupsCubit.lookups == null) {
