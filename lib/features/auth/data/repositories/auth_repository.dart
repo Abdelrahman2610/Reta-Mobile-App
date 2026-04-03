@@ -72,10 +72,27 @@ class AuthRepository {
         );
       }
 
+      log('=== REGISTER REQUEST DEBUG ===');
+      log('isForeign: $isForeign');
+      log('Form fields sent:');
+      formMap.forEach((key, value) {
+        if (value is MultipartFile) {
+          log('  $key: [FILE] ${value.filename}');
+        } else {
+          log('  $key: $value');
+        }
+      });
+      log('==============================');
+
       final response = await _dio.post(
         ApiConstants.registerSendOtp,
         data: FormData.fromMap(formMap),
       );
+
+      log('=== REGISTER RESPONSE ===');
+      log('Status: ${response.statusCode}');
+      log('Body: ${response.data}');
+      log('=========================');
 
       return RegisterOtpResponse.fromJson(
         response.data as Map<String, dynamic>,
