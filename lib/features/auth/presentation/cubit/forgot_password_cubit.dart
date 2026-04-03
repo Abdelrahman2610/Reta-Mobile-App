@@ -169,6 +169,16 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
     switch (result) {
       case ApiSuccess(:final data):
+        if (data == null || data is! Map<String, dynamic>) {
+          emit(
+            state.copyWith(
+              isLoading: false,
+              requestError: () => 'حدث خطأ غير متوقع، حاول مرة أخرى',
+            ),
+          );
+          return;
+        }
+
         final ok = data['ok'];
         if (ok == false) {
           final errorMap = data['error'];
@@ -205,6 +215,17 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
     switch (result) {
       case ApiSuccess(:final data):
+        // ✅ Guard against null or non-map responses
+        if (data == null || data is! Map<String, dynamic>) {
+          emit(
+            state.copyWith(
+              isLoading: false,
+              requestError: () => 'حدث خطأ غير متوقع، حاول مرة أخرى',
+            ),
+          );
+          return;
+        }
+
         final ok = data['ok'];
         if (ok == false) {
           final errorMap = data['error'];
@@ -261,6 +282,17 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
     switch (result) {
       case ApiSuccess(:final data):
+        // ✅ Guard against null or non-map responses
+        if (data == null || data is! Map<String, dynamic>) {
+          emit(
+            state.copyWith(
+              isLoading: false,
+              otpError: () => 'حدث خطأ غير متوقع، حاول مرة أخرى',
+            ),
+          );
+          return;
+        }
+
         emit(
           state.copyWith(
             isLoading: false,

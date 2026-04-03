@@ -76,7 +76,8 @@ class _UserProfileView extends StatelessWidget {
 
             if (state is UserProfileUpdateSuccess) {
               // ── Email verification sent ──────────────────────────────────────
-              if (state.emailVerificationSent) {
+              if (state.emailVerificationSent &&
+                  state.editedField == ProfileEditField.email) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Row(
@@ -106,7 +107,9 @@ class _UserProfileView extends StatelessWidget {
               }
 
               // ── OTP sent for phone change ────────────────────────────────────
-              if (state.otpData != null && state.otpData!.ok) {
+              if (state.otpData != null &&
+                  state.otpData!.ok &&
+                  state.editedField == ProfileEditField.phone) {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => BlocProvider.value(
@@ -118,15 +121,19 @@ class _UserProfileView extends StatelessWidget {
                 return;
               }
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    state.message,
-                    textDirection: TextDirection.rtl,
+              if (state.editedField != null && !state.emailVerificationSent) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      state.message.isNotEmpty
+                          ? state.message
+                          : 'تم التحديث بنجاح',
+                      textDirection: TextDirection.rtl,
+                    ),
+                    backgroundColor: AppColors.successMedium,
                   ),
-                  backgroundColor: AppColors.successMedium,
-                ),
-              );
+                );
+              }
             }
           },
           buildWhen: (_, current) =>
@@ -372,9 +379,6 @@ class _ProfileBodyState extends State<_ProfileBody> {
             // ── Attachment ────────────────────────────────────────────────
             _AttachmentField(
               label: 'مرفق الرقم القومي/جواز السفر',
-              files: u.isEgyptian
-                  ? (u.nationalIdFiles ?? [])
-                  : (u.passportFiles ?? []),
               isEgyptian: u.isEgyptian,
             ),
             const _Divider(),
@@ -763,18 +767,12 @@ class _VerifyButton extends StatelessWidget {
   }
 }
 
-// ─── Attachment field ─────────────────────────────────────────────────────────
-
+// ─── Attachment field ────────────────────────────────────────────────────────
 class _AttachmentField extends StatefulWidget {
   final String label;
-  final List<Map<String, dynamic>> files;
   final bool isEgyptian;
 
-  const _AttachmentField({
-    required this.label,
-    required this.files,
-    required this.isEgyptian,
-  });
+  const _AttachmentField({required this.label, required this.isEgyptian});
 
   @override
   State<_AttachmentField> createState() => _AttachmentFieldState();
@@ -806,6 +804,13 @@ class _AttachmentFieldState extends State<_AttachmentField> {
 
   @override
   Widget build(BuildContext context) {
+    final cubitState = context.watch<UserProfileCubit>().state;
+    final files = cubitState is UserProfileLoaded
+        ? (widget.isEgyptian
+              ? (cubitState.userModel.nationalIdFiles ?? [])
+              : (cubitState.userModel.passportFiles ?? []))
+        : <Map<String, dynamic>>[];
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       child: Column(
@@ -836,7 +841,7 @@ class _AttachmentFieldState extends State<_AttachmentField> {
           ),
           SizedBox(height: 8.h),
 
-          if (widget.files.isEmpty)
+          if (files.isEmpty)
             Align(
               alignment: Alignment.centerRight,
               child: Text(
@@ -849,13 +854,14 @@ class _AttachmentFieldState extends State<_AttachmentField> {
             )
           else
             Column(
-              children: widget.files.asMap().entries.map((entry) {
+              children: files.asMap().entries.map((entry) {
                 final index = entry.key;
                 final file = entry.value;
                 final rawPath = file['url']?.toString() ?? '';
                 final cleanPath = rawPath.replaceFirst('public/', '');
                 final url = '${ApiConstants.baseUrl}/files/$cleanPath';
                 return _AttachmentRow(
+                  key: ValueKey(url),
                   url: url,
                   fileName:
                       file['original_file_name']?.toString() ??
@@ -875,7 +881,7 @@ class _AttachmentRow extends StatefulWidget {
   final String url;
   final String fileName;
 
-  const _AttachmentRow({required this.url, required this.fileName});
+  const _AttachmentRow({super.key, required this.url, required this.fileName});
 
   @override
   State<_AttachmentRow> createState() => _AttachmentRowState();

@@ -21,12 +21,16 @@ class UserProfileCubit extends Cubit<UserProfileState> {
   Future<void> loadFromUser(UserModel? user) async {
     if (user != null) _emitFromModel(user);
 
-    final result = await _repository.getUserProfile();
-    switch (result) {
-      case ApiSuccess(:final data):
-        _emitFromModel(data);
-      case ApiError(:final message):
-        emit(UserProfileError(message));
+    try {
+      final result = await _repository.getUserProfile();
+      switch (result) {
+        case ApiSuccess(:final data):
+          _emitFromModel(data);
+        case ApiError(:final message):
+          emit(UserProfileError(message));
+      }
+    } catch (e) {
+      emit(UserProfileError('حدث خطأ أثناء تحميل البيانات'));
     }
   }
 
@@ -54,12 +58,19 @@ class UserProfileCubit extends Cubit<UserProfileState> {
       editedField = ProfileEditField.passport;
     }
 
+    final isEgyptian = current.userModel.isEgyptian;
+
     final result = await _repository.editProfile(
-      mobile: phone,
-      email: email,
-      nationalId: nationalId,
-      passportNum: passportNumber,
+      mobile: phone ?? current.userModel.phone,
+      email: email ?? current.userModel.email,
+      nationalId: isEgyptian
+          ? (nationalId ?? current.userModel.nationalId)
+          : null,
+      passportNum: !isEgyptian
+          ? (passportNumber ?? current.userModel.passportNumber)
+          : null,
       nationalityCode: current.userModel.nationalityCode ?? 'EG',
+      isEgyptian: isEgyptian,
     );
 
     switch (result) {
@@ -93,6 +104,10 @@ class UserProfileCubit extends Cubit<UserProfileState> {
 
     final result = await _repository.editProfile(
       nationalityCode: current.userModel.nationalityCode ?? 'EG',
+      mobile: current.userModel.phone,
+      email: current.userModel.email,
+      nationalId: isEgyptian ? current.userModel.nationalId : null,
+      passportNum: !isEgyptian ? current.userModel.passportNumber : null,
       idFile: file,
       isEgyptian: isEgyptian,
     );
@@ -100,6 +115,15 @@ class UserProfileCubit extends Cubit<UserProfileState> {
     switch (result) {
       case ApiSuccess(:final data):
         await loadFromUser(null);
+        emit(
+          UserProfileUpdateSuccess(
+            message: data.message,
+            otpData: null,
+            editedField: null,
+            emailVerificationSent: false,
+          ),
+        );
+
       case ApiError(:final message):
         emit(UserProfileError(message));
         _emitFromModel(current.userModel);

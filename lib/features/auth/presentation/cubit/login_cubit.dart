@@ -202,16 +202,16 @@ class LoginCubit extends Cubit<LoginState> {
 
     switch (result) {
       case ApiSuccess(:final data):
-        if (!data.phoneVerified) {
-          emit(
-            state.copyWith(
-              isLoading: false,
-              credentialError: () =>
-                  'رقم الموبايل غير مفعل، يرجى التحقق من رقمك أولاً',
-            ),
-          );
-          return;
-        }
+        // if (!data.phoneVerified) {
+        //   emit(
+        //     state.copyWith(
+        //       isLoading: false,
+        //       credentialError: () =>
+        //           'رقم الموبايل غير مفعل، يرجى التحقق من رقمك أولاً',
+        //     ),
+        //   );
+        //   return;
+        // }
         emit(
           state.copyWith(
             isLoading: false,
