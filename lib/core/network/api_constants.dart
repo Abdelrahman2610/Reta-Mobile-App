@@ -57,6 +57,9 @@ class ApiConstants {
   static String cancelDeclarationById(String id) =>
       '/declaration-system/declarations/$id/cancel';
 
+  static String changeDeclarationStatusToOnEdit(String id) =>
+      '/declaration-system/declarations/$id/status/under-modification';
+
   static String submitDeclaration(String id) =>
       '/declaration-system/declarations/$id/submit';
 

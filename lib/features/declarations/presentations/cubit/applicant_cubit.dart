@@ -631,7 +631,10 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     }
   }
 
-  Future<void> onTaxpayerNextTapped(BuildContext context) async {
+  Future<void> onTaxpayerNextTapped(
+    BuildContext context, {
+    handleCreateNewUnitFromDeclarationPropList = false,
+  }) async {
     if (validateFiles()) {
       final lookupsCubit = context.read<DeclarationLookupsCubit>();
       Navigator.push(
@@ -646,6 +649,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
               applicantType: applicantType,
               declarationId: declarationId,
               otherName: applicantOtherName,
+              handleCreateNewUnitFromDeclarationPropList:
+                  handleCreateNewUnitFromDeclarationPropList,
             ),
           ),
         ),

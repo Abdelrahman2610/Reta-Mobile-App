@@ -10,8 +10,8 @@ class DeclarationModel {
   final String? declarationNumber;
   final String? declarationTypeId;
   final String? declarationTypeText;
-  final String? statusId;
-  final String? statusText;
+  String? statusId;
+  String? statusText;
   final String? creationDate;
   final String? submittionDate;
   final String? updateDate;

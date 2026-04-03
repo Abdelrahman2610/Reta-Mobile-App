@@ -6,6 +6,15 @@ class DeclarationDetailsInitial extends DeclarationDetailsStates {}
 
 class DeclarationDetailsLoading extends DeclarationDetailsStates {}
 
+class DeclarationStatusToOnEditLoading extends DeclarationDetailsStates {}
+
+class DeclarationStatusToOnEditLoaded extends DeclarationDetailsStates {
+  final String statusId;
+  final String statusText;
+
+  DeclarationStatusToOnEditLoaded(this.statusId, this.statusText);
+}
+
 class DeclarationDetailsLoaded extends DeclarationDetailsStates {
   final DeclarationDetailsModel? detailsModel;
 
@@ -27,12 +36,19 @@ class DeclarationDetailsError extends DeclarationDetailsStates {
   DeclarationDetailsError(this.message);
 }
 
+class DeclarationStatusToOnEditError extends DeclarationDetailsStates {
+  final String message;
+
+  DeclarationStatusToOnEditError(this.message);
+}
+
 class DeclarationDeleteLoading extends DeclarationDetailsStates {}
 
 class DeclarationDeleteSuccess extends DeclarationDetailsStates {}
 
 class DeclarationDeleteError extends DeclarationDetailsStates {
   final String message;
+
   DeclarationDeleteError(this.message);
 }
 
@@ -40,6 +56,7 @@ class DeclarationSubmitLoading extends DeclarationDetailsStates {}
 
 class DeclarationSubmitSuccess extends DeclarationDetailsStates {
   final String declarationId;
+
   DeclarationSubmitSuccess(this.declarationId);
 }
 
@@ -47,5 +64,6 @@ class DeclarationDeleteUnitSuccess extends DeclarationDetailsStates {}
 
 class DeclarationSubmitError extends DeclarationDetailsStates {
   final String message;
+
   DeclarationSubmitError(this.message);
 }

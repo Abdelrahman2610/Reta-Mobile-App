@@ -163,6 +163,29 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
     }
   }
 
+  Future<void> changeDeclarationStatusToOnEdit() async {
+    emit(DeclarationStatusToOnEditLoading());
+
+    final result = await safeApiCall(() async {
+      final response = await DioClient.instance.dio.post(
+        ApiConstants.changeDeclarationStatusToOnEdit(declarationId),
+      );
+      return response.data['data'];
+    });
+
+    switch (result) {
+      case ApiSuccess(:final data):
+        emit(
+          DeclarationStatusToOnEditLoaded(
+            data['status_id'].toString(),
+            data['status_text'],
+          ),
+        );
+      case ApiError(:final message):
+        emit(DeclarationStatusToOnEditError(message));
+    }
+  }
+
   Future<void> deleteDeclarationUnit(String unitType, String unitId) async {
     emit(DeclarationDeleteLoading());
 
