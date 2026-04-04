@@ -118,7 +118,7 @@ class EmailVerificationAfterRegisterPage extends StatelessWidget {
               ),
 
               const SizedBox(height: 48),
-
+              //
               SizedBox(
                 width: double.infinity,
                 height: 52,
