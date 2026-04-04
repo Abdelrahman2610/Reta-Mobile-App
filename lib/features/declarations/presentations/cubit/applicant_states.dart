@@ -1,6 +1,8 @@
+import 'package:equatable/equatable.dart';
+
 import '../../../../core/helpers/app_enum.dart';
 
-class ApplicantState {
+class ApplicantState extends Equatable {
   final ApplicantType? applicantType;
   final bool isLoading;
   final String? errorMessage;
@@ -47,11 +49,25 @@ class ApplicantState {
     this.taxpayerOtherAttachmentFullUrl,
   });
 
+  @override
+  List<Object?> get props => [
+    taxpayerTypes,
+    taxpayerNationality,
+    taxpayerNationalIdFilePath,
+    taxpayerPassportFilePath,
+    taxpayerAuthorizationFilePath,
+    isLoading,
+    errorMessage,
+    successMessage,
+  ];
+
   ApplicantState copyWith({
     ApplicantType? applicantType,
     bool? isLoading,
     String? errorMessage,
+    bool clearError = false,
     String? successMessage,
+    bool clearSuccess = false,
     Nationality? taxpayerNationality,
     String? ownershipProofDocumentPath,
     String? ownershipProofDocumentFullUrl,
@@ -73,8 +89,10 @@ class ApplicantState {
     return ApplicantState(
       applicantType: applicantType ?? this.applicantType,
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: errorMessage,
-      successMessage: successMessage,
+      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+      successMessage: clearSuccess
+          ? null
+          : successMessage ?? this.successMessage,
       taxpayerNationality: taxpayerNationality ?? this.taxpayerNationality,
       ownershipProofDocumentPath: ownershipProofDocumentPath == 'remove'
           ? null

@@ -25,7 +25,7 @@ class FiltrationTitle extends StatelessWidget {
           text: title,
           fontSize: 17.sp,
           fontWeight: FontWeight.w600,
-          color: AppColors.bottomSheetTitle,
+          color: AppColors.labelsVibrantPrimary,
         ),
         GestureDetector(
           onTap: onResetTapped,

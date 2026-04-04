@@ -119,8 +119,8 @@ class ApiConstants {
   static String realEstatesByRegion(int regionId) =>
       '$lookupBase/regions/$regionId/real-estates';
 
-  static String unitsByRealEstate(int realEstateId) =>
-      '$lookupBase/real-estates/$realEstateId/units';
+  static String unitsByRealEstate(int realEstateId, int floorId) =>
+      '$lookupBase/real-estates/$realEstateId/$floorId/units';
 
   // ─── Claims ──────────────────────────────────────────────────────────────────
   static const String storeClaim =
@@ -181,5 +181,6 @@ class ApiConstants {
       'construction_license'; //رخصة بناء
   static const String operatingLicenseLabel =
       'operating_licenses'; //ترخيص تشغيل
-  static const String starCertificateLabel = 'star_certificate'; //شهادة_نجومية
+  static const String starCertificateLabel =
+      'certificate_of_stardom_level'; //شهادة_نجومية
 }

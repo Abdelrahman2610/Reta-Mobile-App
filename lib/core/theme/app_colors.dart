@@ -141,7 +141,7 @@ class AppColors {
 
   static const Color bottomSheetDragger = Color(0xFFCCCCCC);
 
-  static const Color bottomSheetTitle = Color(0xFF333333);
+  static const Color labelsVibrantPrimary = Color(0xFF333333);
 
   static const Color bottomSheetContent = Color(0xFF999999);
 

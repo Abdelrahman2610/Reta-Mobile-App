@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import '/core/network/api_constants.dart';
 import '/core/network/api_result.dart';
 import '/core/network/dio_client.dart';
@@ -65,10 +66,11 @@ class LookupsRepository {
 
   Future<ApiResult<List<dynamic>>> getUnitsByRealEstate(
     int realEstateId,
+    int floorId,
   ) async {
     return safeApiCall(() async {
       final response = await _dio.get(
-        ApiConstants.unitsByRealEstate(realEstateId),
+        ApiConstants.unitsByRealEstate(realEstateId, floorId),
       );
       return _asList(response.data);
     });

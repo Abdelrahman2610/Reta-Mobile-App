@@ -43,7 +43,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     required this.buildingNumber,
   }) : super(UnitDataState(vacantLandItems: [VacantLandItem()])) {
     fetchBuildingFloorNumber(buildingNumber);
-    fetchBuildingUnitNumber(buildingNumber);
     initUnitData();
     ensureSingleExempt();
   }
@@ -211,7 +210,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   Future<void> _initBaseUnitData() async {
     await fetchBuildingFloorNumber(buildingNumber);
-    await fetchBuildingUnitNumber(buildingNumber);
     final floorText = unitData!['real_estate_floor_text'];
     final floorOther = unitData!['real_estate_floor_other'];
     bool isFloorOther = floorOther != null;
@@ -221,6 +219,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           (floorText != null && !floorNumbers.contains(floorText));
     }
 
+    int floorId = int.parse(unitData!['real_estate_floor_id']);
+    await fetchBuildingUnitNumber(buildingNumber, floorId);
     final unitId = int.parse(unitData!['unit_id']?.toString() ?? '-1');
     final unitOther = unitData!['unit_other'];
     final isUnitOther = unitOther != null;
@@ -267,7 +267,9 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         ownershipDeedFilePath: ownershipDeed?['url'],
         ownershipDeedOriginalName: ownershipDeed?['original_file_name'],
         ownershipDeedFullUrl: ownershipDeed?['full_url'],
-        leaseContractFullUrl: leaseContract['full_url'],
+        leaseContractFullUrl: leaseContract != null
+            ? leaseContract['full_url']
+            : null,
       ),
     );
     // controllers
@@ -721,7 +723,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   Future<void> fetchBuildingUnitNumber(
-    dynamic buildingNumber, {
+    dynamic buildingNumber,
+    dynamic floorId, {
     bool loading = true,
   }) async {
     await Future.delayed(const Duration(milliseconds: 100));
@@ -731,7 +734,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
     final result = await safeApiCall(() async {
       final response = await DioClient.instance.dio.get(
-        ApiConstants.unitsByRealEstate(buildingNumber),
+        ApiConstants.unitsByRealEstate(buildingNumber, floorId),
       );
       final list = response.data['data'] as List;
       return removeDuplicates(
@@ -817,7 +820,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     emit(state.copyWith(selectedAmenities: current));
   }
 
-  void selectFloorNumber(String? value) {
+  Future<void> selectFloorNumber(String? value) async {
     final isOther = value == 'أخرى';
     emit(
       state.copyWith(
@@ -829,7 +832,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     );
     if (!isOther) floorNumberOtherController.clear();
 
-    fetchBuildingUnitNumber(buildingNumber);
+    int floorId = _getFloorId();
+    fetchBuildingUnitNumber(buildingNumber, floorId);
   }
 
   Future<void> selectFloorNumberOther(String? value) async {
@@ -1623,7 +1627,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
     try {
       emit(state.copyWith(isLoading: true));
-
       final propertyTypeId = lookups.propertyTypes
           .firstWhere(
             (p) => p.name == unitType.label,
@@ -2193,11 +2196,12 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   Map<String, dynamic> _buildBaseUnitPayload() {
     final floorId = state.isFloorNumberOther ? -1 : _getFloorId();
+    final unitID = state.isUnitNumberOther ? -1 : _getUnitID();
     return {
       'real_estate_floor_id': floorId,
       if (state.isFloorNumberOther)
         'real_estate_floor_other': _getFloorOtherId(),
-      'unit_id': state.isUnitNumberOther ? -1 : _getUnitID(),
+      if (unitID != -1) 'unit_id': unitID,
       if (state.isUnitNumberOther)
         'unit_other': unitNumberOtherController.text.trim(),
       'reta_contact_about_unit': state.contactedTaxAuthority == true ? 1 : 2,
