@@ -48,6 +48,7 @@ class _MyPaymentPage extends StatelessWidget {
                 context,
                 screen: PaymentRequestsPage(
                   claimsSource: ClaimsSource.declaration,
+                  fromDebts: false,
                 ),
                 withNavBar: true,
                 pageTransitionAnimation: PageTransitionAnimation.slideUp,

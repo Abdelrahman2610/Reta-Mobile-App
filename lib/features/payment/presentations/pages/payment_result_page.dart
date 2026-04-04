@@ -25,6 +25,7 @@ class PaymentResultPage extends StatelessWidget {
     this.declarationId,
     required this.source,
     required this.claimId,
+    required this.fromDebts,
   });
 
   final bool isSuccess;
@@ -32,6 +33,7 @@ class PaymentResultPage extends StatelessWidget {
   final String? declarationId;
   final ClaimsSource source;
   final int claimId;
+  final bool fromDebts;
 
   @override
   Widget build(BuildContext context) {
@@ -47,11 +49,16 @@ class PaymentResultPage extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.r),
         ),
         child: isSuccess
-            ? _SuccessContent(source: source, declarationId: declarationId)
+            ? _SuccessContent(
+                source: source,
+                declarationId: declarationId,
+                fromDebts: fromDebts,
+              )
             : _FailureContent(
                 declarationId: declarationId,
                 source: source,
                 claimId: claimId,
+                fromDebts: fromDebts,
               ),
       ),
     );
@@ -59,10 +66,15 @@ class PaymentResultPage extends StatelessWidget {
 }
 
 class _SuccessContent extends StatelessWidget {
-  const _SuccessContent({this.declarationId, required this.source});
+  const _SuccessContent({
+    this.declarationId,
+    required this.source,
+    required this.fromDebts,
+  });
 
   final String? declarationId;
   final ClaimsSource source;
+  final bool fromDebts;
 
   @override
   Widget build(BuildContext context) {
@@ -100,6 +112,7 @@ class _SuccessContent extends StatelessWidget {
               screen: PaymentRequestsPage(
                 declarationId: declarationId ?? '',
                 claimsSource: source,
+                fromDebts: fromDebts,
               ),
               withNavBar: true,
               pageTransitionAnimation: PageTransitionAnimation.slideUp,
@@ -160,11 +173,13 @@ class _FailureContent extends StatelessWidget {
     this.declarationId,
     required this.source,
     required this.claimId,
+    required this.fromDebts,
   });
 
   final String? declarationId;
   final ClaimsSource source;
   final int claimId;
+  final bool fromDebts;
 
   @override
   Widget build(BuildContext context) {
@@ -216,6 +231,7 @@ class _FailureContent extends StatelessWidget {
                   claimId: claimId,
                   declarationId: declarationId,
                   source: source,
+                  fromDebts: fromDebts,
                 ),
               ),
             );
@@ -231,6 +247,7 @@ class _FailureContent extends StatelessWidget {
               screen: PaymentRequestsPage(
                 declarationId: declarationId ?? '',
                 claimsSource: source,
+                fromDebts: fromDebts,
               ),
               withNavBar: true,
               pageTransitionAnimation: PageTransitionAnimation.slideUp,

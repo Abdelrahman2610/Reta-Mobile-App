@@ -10,12 +10,16 @@ class AddNewPropertyButton extends StatelessWidget {
   final VoidCallback onAdd;
   final String? label;
   final EdgeInsets? padding;
+  final Color? backgroundColor;
+  final bool showIcon;
 
   const AddNewPropertyButton({
     super.key,
     required this.onAdd,
     this.label,
     this.padding,
+    this.backgroundColor,
+    this.showIcon = true,
   });
 
   @override
@@ -28,17 +32,19 @@ class AddNewPropertyButton extends StatelessWidget {
         width: double.maxFinite,
         height: 48.h,
         borderColor: Colors.transparent,
-        backgroundColor: AppColors.mainOrange,
+        backgroundColor: backgroundColor ?? AppColors.mainOrange,
         textColor: Colors.white,
         fontSize: 12.sp,
         fontWeight: FontWeight.w600,
         iconLeft: false,
-        icon: ImageSvgCustomWidget(
-          color: Colors.white,
-          imgPath: FixedAssets.instance.addIcon,
-          height: 18.h,
-          width: 18.w,
-        ),
+        icon: !showIcon
+            ? null
+            : ImageSvgCustomWidget(
+                color: Colors.white,
+                imgPath: FixedAssets.instance.addIcon,
+                height: 18.h,
+                width: 18.w,
+              ),
       ),
     );
   }

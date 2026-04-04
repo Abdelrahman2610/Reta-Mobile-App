@@ -19,6 +19,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
   final Map<String, dynamic>? locationData;
   final Map<String, dynamic>? unitData;
   final String? otherName;
+  final bool handleCreateNewUnitFromDeclarationPropList;
 
   const SelectTypesOfPropertiesPage({
     super.key,
@@ -27,6 +28,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
     this.locationData,
     this.unitData,
     this.otherName,
+    this.handleCreateNewUnitFromDeclarationPropList = false,
   });
 
   @override
@@ -133,8 +135,11 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (locationData == null) SizedBox(height: 15.h),
-                if (locationData == null)
+                if (locationData == null ||
+                    handleCreateNewUnitFromDeclarationPropList)
+                  SizedBox(height: 15.h),
+                if (locationData == null ||
+                    handleCreateNewUnitFromDeclarationPropList)
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),

@@ -3,10 +3,12 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:reta/core/theme/app_colors.dart';
 import 'package:reta/features/components/app_text.dart';
 import 'package:reta/features/components/circular_progress_indicator_platform_widget.dart';
 import 'package:reta/features/payment/presentations/cubit/payment_electronic/payment_electronic_cubit.dart';
+import 'package:reta/features/payment/presentations/pages/payment_request_page.dart';
 import 'package:reta/features/payment/presentations/pages/payment_result_page.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -20,12 +22,14 @@ class ElectronicPaymentPage extends StatelessWidget {
   final int claimId;
   final String? declarationId;
   final ClaimsSource source;
+  final bool fromDebts;
 
   const ElectronicPaymentPage({
     super.key,
     required this.claimId,
     this.declarationId,
     required this.source,
+    required this.fromDebts,
   });
 
   @override
@@ -36,6 +40,7 @@ class ElectronicPaymentPage extends StatelessWidget {
         claimId: claimId,
         declarationId: declarationId,
         source: source,
+        fromDebts: fromDebts,
       ),
     );
   }
@@ -45,11 +50,13 @@ class _ElectronicPaymentView extends StatelessWidget {
   final String? declarationId;
   final ClaimsSource source;
   final int claimId;
+  final bool fromDebts;
 
   const _ElectronicPaymentView({
     this.declarationId,
     required this.source,
     required this.claimId,
+    required this.fromDebts,
   });
 
   @override
@@ -58,6 +65,19 @@ class _ElectronicPaymentView extends StatelessWidget {
       backgroundColor: AppColors.neutralLightMedium,
       appBar: MainAppBar(
         title: 'الدفع الإلكتروني',
+        backButtonAction: () {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+          PersistentNavBarNavigator.pushNewScreen(
+            context,
+            screen: PaymentRequestsPage(
+              declarationId: declarationId ?? '',
+              claimsSource: source,
+              fromDebts: fromDebts,
+            ),
+            withNavBar: true,
+            pageTransitionAnimation: PageTransitionAnimation.slideUp,
+          );
+        },
         backgroundColor: AppColors.mainBlueIndigoDye,
         backButtonIconColor: Colors.white,
         titleTextStyle: TextStyle(
@@ -69,9 +89,15 @@ class _ElectronicPaymentView extends StatelessWidget {
       body: BlocConsumer<PaymentElectronicCubit, PaymentElectronicState>(
         listener: (context, state) {
           if (state is PaymentElectronicError) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: AppText(
+                  text: state.message,
+                  alignment: Alignment.center,
+                  color: AppColors.white,
+                ),
+              ),
+            );
           }
         },
         builder: (context, state) {
@@ -86,7 +112,7 @@ class _ElectronicPaymentView extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     AppText(
-                      text: 'حدث خطأ أثناء بدء عملية الدفع',
+                      text: state.message,
                       fontSize: 14.sp,
                       color: AppColors.neutralDarkMedium,
                       alignment: AlignmentDirectional.center,
@@ -120,6 +146,7 @@ class _ElectronicPaymentView extends StatelessWidget {
                       claimId: claimId,
                       declarationId: declarationId,
                       source: source,
+                      fromDebts: fromDebts,
                     ),
                   ),
                 );
@@ -133,6 +160,7 @@ class _ElectronicPaymentView extends StatelessWidget {
                       declarationId: declarationId,
                       source: source,
                       claimId: claimId,
+                      fromDebts: fromDebts,
                     ),
                   ),
                 );

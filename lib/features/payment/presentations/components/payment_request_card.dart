@@ -145,6 +145,7 @@ class _PaymentClaimCardState extends State<PaymentClaimCard>
                           value: claim.declarationNumber,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           alignment: AlignmentDirectional.centerStart,
+                          textDirection: TextDirection.ltr,
                         ),
                       ),
                     ],

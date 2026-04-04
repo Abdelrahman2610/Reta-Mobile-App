@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/network/api_constants.dart';
 import 'package:reta/core/network/api_result.dart';
@@ -133,7 +134,11 @@ class PaymentClaimsCubit extends Cubit<PaymentClaimsState> {
   String _formatDate(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
-  Future<void> deleteClaim(int claimId) async {
+  Future<void> deleteClaim(
+    int claimId,
+    String? declarationId,
+    BuildContext context,
+  ) async {
     final result = await safeApiCall(() async {
       await DioClient.instance.dio.delete(
         '${ApiConstants.storeClaim}/$claimId',
@@ -144,7 +149,7 @@ class PaymentClaimsCubit extends Cubit<PaymentClaimsState> {
     switch (result) {
       case ApiSuccess():
         emit(PaymentClaimsDeleteSuccess());
-        await fetchClaims(declarationId: _declarationId!, source: _source);
+        await fetchClaims(declarationId: _declarationId, source: _source);
       case ApiError(:final message):
         emit(PaymentClaimsError(message));
     }

@@ -53,11 +53,17 @@ class ApiConstants {
   // ─── Declarations ────────────────────────────────────────────────────────────
   static const String declarations = '/declaration-system/declarations';
 
+  static String checkApplicantRole(String id) =>
+      '/declaration-system/declarations/check-applicant-role/$id';
+
   static String declarationById(String id) =>
       '/declaration-system/declarations/$id';
 
   static String cancelDeclarationById(String id) =>
       '/declaration-system/declarations/$id/cancel';
+
+  static String changeDeclarationStatusToOnEdit(String id) =>
+      '/declaration-system/declarations/$id/status/under-modification';
 
   static String submitDeclaration(String id) =>
       '/declaration-system/declarations/$id/submit';
@@ -97,6 +103,9 @@ class ApiConstants {
   static const String viewTypes = '$lookupBase/getViewTypes';
   static const String hotelCategories = '$lookupBase/getHotelCategories';
   static const String claimStatus = '$lookupBase/claim-status';
+
+  static String ensureSingleExempt(int declarationId) =>
+      '/declaration-system/declarations/ensureSingleExempt/$declarationId';
 
   static String districtsByGovernorate(int governorateId) =>
       '$lookupBase/governorates/$governorateId/districts';

@@ -9,15 +9,6 @@ extension NationalityExtension on Nationality {
         return 'أجنبي';
     }
   }
-
-  int get id {
-    switch (this) {
-      case Nationality.egyptian:
-        return 1;
-      case Nationality.foreign:
-        return 2;
-    }
-  }
 }
 
 extension NationalityFromString on String {

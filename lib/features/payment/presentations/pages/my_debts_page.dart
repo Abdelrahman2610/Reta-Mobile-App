@@ -48,6 +48,10 @@ class _MyDebtsViewState extends State<_MyDebtsView> {
   @override
   void initState() {
     super.initState();
+    initFilter();
+  }
+
+  void initFilter() {
     final now = DateTime.now();
     _filter = DebtsFilterData(
       dateFrom: DateTime(now.year, now.month - 1, now.day),
@@ -121,6 +125,13 @@ class _MyDebtsViewState extends State<_MyDebtsView> {
                                         .read<MyDebtsCubit>()
                                         .fetchDeclarations(filter: filter);
                                   },
+                                  onReset: () {
+                                    initFilter();
+                                    setState(() {});
+                                    context
+                                        .read<MyDebtsCubit>()
+                                        .fetchDeclarations(filter: _filter);
+                                  },
                                 ),
                                 count: _filter.activeCount,
                               ),
@@ -148,6 +159,12 @@ class _MyDebtsViewState extends State<_MyDebtsView> {
                   setState(() => _filter = filter);
                   context.read<MyDebtsCubit>().fetchDeclarations(
                     filter: filter,
+                  );
+                },
+                onReset: () {
+                  setState(() => _filter = const DebtsFilterData());
+                  context.read<MyDebtsCubit>().fetchDeclarations(
+                    filter: _filter,
                   );
                 },
               ),
@@ -325,6 +342,7 @@ class _InfoGrid extends StatelessWidget {
                 valueColor: AppColors.neutralDarkMedium,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 alignment: AlignmentDirectional.centerStart,
+                textDirection: TextDirection.ltr,
               ),
             ),
             12.ws,

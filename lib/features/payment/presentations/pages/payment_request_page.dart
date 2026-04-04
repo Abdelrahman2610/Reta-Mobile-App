@@ -31,9 +31,13 @@ class PaymentRequestsPage extends StatelessWidget {
     super.key,
     this.declarationId,
     required this.claimsSource,
+    this.onClaimDeleted,
+    required this.fromDebts,
   });
   final String? declarationId;
   final ClaimsSource claimsSource;
+  final VoidCallback? onClaimDeleted;
+  final bool fromDebts;
 
   @override
   Widget build(BuildContext context) {
@@ -51,15 +55,24 @@ class PaymentRequestsPage extends StatelessWidget {
       child: _PaymentRequestsView(
         declarationId: declarationId,
         source: claimsSource,
+        onClaimDeleted: onClaimDeleted,
+        fromDebts: fromDebts,
       ),
     );
   }
 }
 
 class _PaymentRequestsView extends StatefulWidget {
-  const _PaymentRequestsView({this.declarationId, required this.source});
+  const _PaymentRequestsView({
+    this.declarationId,
+    required this.source,
+    this.onClaimDeleted,
+    required this.fromDebts,
+  });
   final String? declarationId;
   final ClaimsSource source;
+  final VoidCallback? onClaimDeleted;
+  final bool fromDebts;
 
   @override
   State<_PaymentRequestsView> createState() => _PaymentRequestsViewState();
@@ -71,6 +84,10 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
   @override
   void initState() {
     super.initState();
+    initFilter();
+  }
+
+  void initFilter() {
     final now = DateTime.now();
     _filterData = PaymentFilterData(
       dateFrom: DateTime(now.year, now.month - 1, now.day),
@@ -84,7 +101,12 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
     return AppScaffold(
       padding: EdgeInsets.zero,
       title: 'طلبات السداد',
-      child: BlocBuilder<PaymentClaimsCubit, PaymentClaimsState>(
+      child: BlocConsumer<PaymentClaimsCubit, PaymentClaimsState>(
+        listener: (context, state) {
+          if (state is PaymentClaimsDeleteSuccess) {
+            widget.onClaimDeleted?.call();
+          }
+        },
         builder: (context, state) {
           if (state is PaymentClaimsLoading) {
             return const CircularProgressIndicatorPlatformWidget();
@@ -108,7 +130,7 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                   ],
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    child: FilterHeader(context),
+                    child: FilterHeader(context, widget.fromDebts),
                   ),
                   Expanded(
                     child: const EmptyDataWidget(
@@ -128,7 +150,9 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                     if (widget.declarationId != null) ...[
                       StepIndicator(
                         currentStep: 2,
-                        onFirstStepTapped: () => Navigator.pop(context),
+                        onFirstStepTapped: () {
+                          Navigator.pop(context);
+                        },
                       ),
                       24.hs,
                     ],
@@ -137,7 +161,7 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                     15.hs,
                     const Divider(),
                     20.hs,
-                    FilterHeader(context),
+                    FilterHeader(context, widget.fromDebts),
                     20.hs,
                     ListView.builder(
                       physics: const NeverScrollableScrollPhysics(),
@@ -155,6 +179,7 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                                       claimId: claim.id,
                                       declarationId: widget.declarationId,
                                       source: widget.source,
+                                      fromDebts: widget.fromDebts,
                                     ),
                                     withNavBar: true,
                                     pageTransitionAnimation:
@@ -257,7 +282,12 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                                   if (confirmed == true) {
                                     context
                                         .read<PaymentClaimsCubit>()
-                                        .deleteClaim(claim.id);
+                                        .deleteClaim(
+                                          claim.id,
+                                          widget.declarationId,
+                                          context,
+                                        );
+                                    widget.onClaimDeleted?.call();
                                   }
                                 }
                               : null,
@@ -290,7 +320,7 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
     );
   }
 
-  Row FilterHeader(BuildContext context) {
+  Row FilterHeader(BuildContext context, bool fromDebts) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -318,11 +348,20 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
               context,
               initialFilter: _filterData,
               statuses: statuses,
+              fromDebts: fromDebts,
               onApply: (filter) {
                 setState(() => _filterData = filter);
                 context.read<PaymentClaimsCubit>().fetchClaims(
                   declarationId: widget.declarationId,
                   filter: filter,
+                );
+              },
+              onReset: () {
+                initFilter();
+                setState(() {});
+                context.read<PaymentClaimsCubit>().fetchClaims(
+                  declarationId: widget.declarationId,
+                  filter: _filterData,
                 );
               },
             );
