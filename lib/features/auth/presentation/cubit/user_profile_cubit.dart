@@ -110,11 +110,11 @@ class UserProfileCubit extends Cubit<UserProfileState> {
       passportNum: !isEgyptian ? current.userModel.passportNumber : null,
       idFile: file,
       isEgyptian: isEgyptian,
+      docUploaded: true,
     );
 
     switch (result) {
       case ApiSuccess(:final data):
-        await loadFromUser(null);
         emit(
           UserProfileUpdateSuccess(
             message: data.message,
@@ -123,6 +123,7 @@ class UserProfileCubit extends Cubit<UserProfileState> {
             emailVerificationSent: false,
           ),
         );
+        await loadFromUser(null);
 
       case ApiError(:final message):
         emit(UserProfileError(message));

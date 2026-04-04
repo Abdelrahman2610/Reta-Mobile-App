@@ -53,7 +53,7 @@ class _DeclarationsView extends StatelessWidget {
         backgroundColor: AppColors.neutralLightMedium,
         appBar: MainAppBar(
           backButtonAction: () {
-            context.read<HomeCubit>().selectTab(0);
+            context.read<HomeCubit>().selectTab(0, isVerified: true);
           },
           title: "إقراراتي",
           backgroundColor: AppColors.mainBlueIndigoDye,

@@ -5,6 +5,7 @@ import 'package:reta/features/auth/data/models/user_models.dart';
 import 'package:reta/features/auth/presentation/cubit/notifications_cubit.dart';
 import 'package:reta/features/auth/presentation/cubit/settings_cubit.dart';
 import 'package:reta/features/auth/presentation/cubit/home_cubit.dart';
+import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
 import 'package:reta/features/auth/presentation/pages/user_profile_page.dart';
 import 'package:reta/features/auth/presentation/pages/help_support_page.dart';
 import 'package:reta/features/auth/presentation/pages/terms_privacy_page.dart';
@@ -28,6 +29,7 @@ class AuthenticatedSettingsContent extends StatelessWidget {
     final notificationsCubit = context.read<NotificationsCubit>();
     final homeCubit = context.read<HomeCubit>();
     final settingsCubit = context.read<SettingsCubit>();
+    final userProfileCubit = context.read<UserProfileCubit>();
 
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -36,6 +38,7 @@ class AuthenticatedSettingsContent extends StatelessWidget {
             BlocProvider.value(value: notificationsCubit),
             BlocProvider.value(value: homeCubit),
             BlocProvider.value(value: settingsCubit),
+            BlocProvider.value(value: userProfileCubit),
           ],
           child: page,
         ),
@@ -61,8 +64,7 @@ class AuthenticatedSettingsContent extends StatelessWidget {
             SettingsTile(
               icon: Icons.person_outline,
               label: 'بيانات المستخدم',
-              onTap: () =>
-                  _pushWithCubits(context, UserProfilePage(user: user)),
+              onTap: () => _pushWithCubits(context, UserProfilePage()),
             ),
 
             _SectionLabel('الإعدادات العامة'),

@@ -33,7 +33,8 @@ class _MyPaymentPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScaffold(
       title: 'مدفوعاتي',
-      onBackTapped: () => context.read<HomeCubit>().selectTab(0),
+      onBackTapped: () =>
+          context.read<HomeCubit>().selectTab(0, isVerified: true),
       child: ListView(
         padding: EdgeInsets.only(top: 35.h),
         children: [

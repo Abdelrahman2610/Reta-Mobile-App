@@ -16,6 +16,8 @@ class ApiConstants {
   static const String forgotPasswordPhone = '/forgot-password-phone';
   static const String resetPasswordOtp = '/reset-password-otp';
   static const String generateTokenForOtp = '/generate-token-for-otp';
+  static const String checkResetPasswordValidity =
+      '/check-reset-password-validity';
   static const String resetPassword = '/reset-password';
 
   // ─── Forgot Password (Email flow) ───────────────────────────────────────────

@@ -144,7 +144,7 @@ class _SuccessContent extends StatelessWidget {
                 label: 'العودة إلى إقراراتي',
                 onTap: () {
                   Navigator.of(context).popUntil((route) => route.isFirst);
-                  context.read<HomeCubit>().selectTab(2);
+                  context.read<HomeCubit>().selectTab(2, isVerified: true);
                 },
               ),
             ),

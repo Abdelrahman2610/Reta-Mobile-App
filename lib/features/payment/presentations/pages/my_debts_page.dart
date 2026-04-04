@@ -61,7 +61,8 @@ class _MyDebtsViewState extends State<_MyDebtsView> {
       backgroundColor: AppColors.neutralLightMedium,
       appBar: MainAppBar(
         title: 'مديونياتي',
-        backButtonAction: () => context.read<HomeCubit>().selectTab(0),
+        backButtonAction: () =>
+            context.read<HomeCubit>().selectTab(0, isVerified: true),
         backgroundColor: AppColors.mainBlueIndigoDye,
         backButtonIconColor: Colors.white,
         titleTextStyle: TextStyle(

@@ -110,6 +110,11 @@ class UserModel {
 
   bool get isAuthenticated => userType == UserType.authenticated;
 
+  bool get isFullyVerified =>
+      (emailVerified ?? false) &&
+      (phoneVerified ?? false) &&
+      (nationalIdVerified ?? false);
+
   UserModel copyWith({
     String? id,
     String? firstName,

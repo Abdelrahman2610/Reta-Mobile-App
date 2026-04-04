@@ -88,7 +88,7 @@ class _SignupPageState extends State<SignupPage> {
               MaterialPageRoute(
                 builder: (_) => BlocProvider.value(
                   value: context.read<SignupCubit>(),
-                  child: OtpPage(phoneNumber: state.phone),
+                  child: OtpPage(phoneNumber: state.phone, email: state.email),
                 ),
               ),
             );
@@ -1065,7 +1065,6 @@ class _ImageUploadField extends StatelessWidget {
     required this.onRemoveImage,
   });
 
-  //edited here so large images don't get a 422 "exceeds 5MB" error
   Future<void> _pickImageFromGallery() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(

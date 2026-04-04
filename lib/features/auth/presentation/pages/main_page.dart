@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:reta/core/widgets/coming_soon_bottom_sheet.dart';
+import 'package:reta/features/auth/presentation/cubit/user_profile_state.dart';
 import 'package:reta/features/auth/presentation/pages/settings_page.dart';
 import 'package:reta/features/components/app_text.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_cubit.dart';
@@ -57,7 +58,7 @@ class MainPage extends StatelessWidget {
       ],
       child: _MainView(
         user: user ?? UserModel.guest(),
-        isVerified: user?.nationalIdVerified ?? false,
+        // isVerified: user?.isFullyVerified ?? false,
       ),
     );
   }
@@ -65,9 +66,12 @@ class MainPage extends StatelessWidget {
 
 class _MainView extends StatefulWidget {
   final UserModel user;
-  final bool isVerified;
+  // final bool isVerified;
 
-  const _MainView({required this.user, required this.isVerified});
+  const _MainView({
+    required this.user,
+    //  required this.isVerified
+  });
 
   @override
   State<_MainView> createState() => _MainViewState();
@@ -92,101 +96,114 @@ class _MainViewState extends State<_MainView> {
   //   super.dispose();
   // }
 
-  void _showVerificationDialog(BuildContext context) {
+  void _showVerificationDialog(BuildContext context, UserModel user) {
+    final missing = <String>[
+      if (!(user.emailVerified ?? false)) 'البريد الإلكتروني',
+      if (!(user.phoneVerified ?? false)) 'رقم الموبايل',
+      if (!(user.nationalIdVerified ?? false)) 'الهوية الوطنية',
+    ];
+
+    final missingText = missing.isNotEmpty
+        ? 'يجب التحقق من: ${missing.join(' • ')} للوصول إلى هذه الخدمة.\nيرجى الانتقال إلى صفحة الإعدادات لإتمام التحقق.'
+        : 'يجب التحقق من هويتك أولاً للوصول إلى هذه الخدمة.';
+
     showDialog(
       context: context,
-      barrierDismissible: true,
-      builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          contentPadding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF3CD),
-                  shape: BoxShape.circle,
+      barrierDismissible: false,
+      builder: (_) => PopScope(
+        canPop: false,
+        child: Directionality(
+          textDirection: TextDirection.rtl,
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            contentPadding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFF3CD),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.verified_user_outlined,
+                    color: Color(0xFFF5A623),
+                    size: 32,
+                  ),
                 ),
-                child: const Icon(
-                  Icons.verified_user_outlined,
-                  color: Color(0xFFF5A623),
-                  size: 32,
+                const SizedBox(height: 16),
+                const Text(
+                  'التحقق مطلوب',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A2340),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'التحقق من الهوية مطلوب',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A2340),
+                const SizedBox(height: 10),
+                Text(
+                  missingText,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                    height: 1.6,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'يجب التحقق من هويتك أولاً للوصول إلى هذه الخدمة.\nيرجى الانتقال إلى صفحة الإعدادات لإتمام التحقق.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF6B7280),
-                  height: 1.6,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        context.read<HomeCubit>().dismissVerificationPrompt();
-                        context.read<HomeCubit>().navigateTo(0);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF005FAD)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          context.read<HomeCubit>().dismissVerificationPrompt();
+                          context.read<HomeCubit>().navigateTo(0);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFF005FAD)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      child: const Text(
-                        'لاحقاً',
-                        style: TextStyle(color: Color(0xFF005FAD)),
+                        child: const Text(
+                          'لاحقاً',
+                          style: TextStyle(color: Color(0xFF005FAD)),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        context.read<HomeCubit>().dismissVerificationPrompt();
-                        context.read<HomeCubit>().navigateTo(4);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF005FAD),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          context.read<HomeCubit>().dismissVerificationPrompt();
+                          context.read<HomeCubit>().navigateTo(4);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF005FAD),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          elevation: 0,
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        'التحقق الآن',
-                        style: TextStyle(color: Colors.white),
+                        child: const Text(
+                          'التحقق الآن',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -200,10 +217,20 @@ class _MainViewState extends State<_MainView> {
           curr.showVerificationPrompt && !prev.showVerificationPrompt,
       listener: (context, state) {
         if (state.showVerificationPrompt) {
-          _showVerificationDialog(context);
+          final profileState = context.read<UserProfileCubit>().state;
+          final liveUser = profileState is UserProfileLoaded
+              ? profileState.userModel
+              : widget.user;
+          _showVerificationDialog(context, liveUser);
         }
       },
       builder: (context, state) {
+        final profileState = context.watch<UserProfileCubit>().state;
+        final liveUser = profileState is UserProfileLoaded
+            ? profileState.userModel
+            : widget.user;
+        final isVerified = liveUser.isFullyVerified;
+
         return Scaffold(
           backgroundColor: AppColors.neutralLightLight,
           body: Directionality(
@@ -213,20 +240,11 @@ class _MainViewState extends State<_MainView> {
               context,
               controller: context.read<HomeCubit>().mainScreenTabController,
               screens: [
-                // index 0 — الرئيسية
-                HomeTab(user: widget.user),
-
-                // index 1 — مديونياتي
+                HomeTab(user: liveUser, isVerified: isVerified),
                 MyDebtsPage(),
-
-                // index 2 — إقراراتي
-                DeclarationsPage(user: widget.user),
-
-                // index 3 — مدفوعاتي
+                DeclarationsPage(user: liveUser),
                 MyPaymentPage(),
-
-                // index 4 — الإعدادات
-                SettingsPage(currentUser: widget.user),
+                SettingsPage(currentUser: liveUser),
               ],
               items: navBarItems(
                 context.read<HomeCubit>().mainScreenTabController.index,
@@ -234,7 +252,7 @@ class _MainViewState extends State<_MainView> {
               onItemSelected: (int index) {
                 context.read<HomeCubit>().selectTab(
                   index,
-                  isVerified: widget.isVerified,
+                  isVerified: isVerified,
                 );
               },
               backgroundColor: Colors.white,

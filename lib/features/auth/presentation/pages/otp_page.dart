@@ -2,16 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reta/features/auth/presentation/pages/main_page.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../cubit/signup_cubit.dart';
+import 'email_verification_after_register_page.dart';
 
 class OtpPage extends StatefulWidget {
   final String phoneNumber;
+  final String email;
 
-  const OtpPage({super.key, required this.phoneNumber});
+  const OtpPage({super.key, required this.phoneNumber, required this.email});
 
   @override
   State<OtpPage> createState() => _OtpPageState();
@@ -33,6 +34,8 @@ class _OtpPageState extends State<OtpPage> {
   Duration _remaining = _timerDuration;
   bool _canResend = false;
   int remainingAttempts = 2;
+
+  bool _hasAttemptedConfirm = false;
 
   @override
   void dispose() {
@@ -86,12 +89,17 @@ class _OtpPageState extends State<OtpPage> {
   void _goToInput() {
     context.read<SignupCubit>().clearOtpError();
     context.read<SignupCubit>().resendOtp();
-    setState(() => _step = _OtpStep.input);
+    setState(() {
+      _step = _OtpStep.input;
+      _hasAttemptedConfirm = false;
+    });
     _startTimer();
   }
 
   Future<void> _confirmOtp(BuildContext context) async {
     if (_otpValue.length < 6) return;
+
+    setState(() => _hasAttemptedConfirm = true);
 
     final user = await context.read<SignupCubit>().confirmOtp(_otpValue);
     if (!mounted) return;
@@ -103,7 +111,8 @@ class _OtpPageState extends State<OtpPage> {
 
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (_) => MainPage(isLoggedIn: true, user: user),
+          builder: (_) =>
+              EmailVerificationAfterRegisterPage(email: widget.email),
         ),
         (route) => false,
       );
@@ -118,6 +127,7 @@ class _OtpPageState extends State<OtpPage> {
     if (!_canResend) return;
     context.read<SignupCubit>().clearOtpError();
     _clearOtp();
+    setState(() => _hasAttemptedConfirm = false);
     await context.read<SignupCubit>().resendOtp();
     _startTimer();
   }
@@ -168,7 +178,8 @@ class _OtpPageState extends State<OtpPage> {
               otpValue: _otpValue,
               timerLabel: _timerLabel,
               canResend: _canResend,
-              remainingAttempts: 2,
+              remainingAttempts: remainingAttempts,
+              hasAttemptedConfirm: _hasAttemptedConfirm,
               onDigitEntered: _onDigitEntered,
               onKeyBack: _onKeyBack,
               onConfirm: () => _confirmOtp(context),
@@ -181,6 +192,8 @@ class _OtpPageState extends State<OtpPage> {
     );
   }
 }
+
+// ── _IntroScreen  ──────────────────────────────────────────────────
 
 class _IntroScreen extends StatelessWidget {
   final String phoneNumber;
@@ -264,6 +277,8 @@ class _IntroScreen extends StatelessWidget {
   }
 }
 
+// ── _InputScreen ─────────────────────────────────────────────────────────────
+
 class _InputScreen extends StatelessWidget {
   final String phoneNumber;
   final List<TextEditingController> controllers;
@@ -272,6 +287,7 @@ class _InputScreen extends StatelessWidget {
   final String timerLabel;
   final bool canResend;
   final int remainingAttempts;
+  final bool hasAttemptedConfirm;
   final void Function(int, String) onDigitEntered;
   final void Function(int) onKeyBack;
   final VoidCallback onConfirm;
@@ -286,6 +302,7 @@ class _InputScreen extends StatelessWidget {
     required this.timerLabel,
     required this.canResend,
     required this.remainingAttempts,
+    required this.hasAttemptedConfirm,
     required this.onDigitEntered,
     required this.onKeyBack,
     required this.onConfirm,
@@ -313,7 +330,11 @@ class _InputScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SignupCubit, SignupState>(
       builder: (context, state) {
-        final hasError = state.submitError != null && !_attemptsExhausted;
+        final hasError =
+            hasAttemptedConfirm &&
+            state.submitError != null &&
+            !_attemptsExhausted;
+
         final bool buttonActive =
             otpValue.length == 6 &&
             !state.isLoading &&
@@ -647,7 +668,7 @@ class _SuccessScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'جاري تحويلك لتسجيل الدخول...',
+            'جاري تحويلك...',
             style: AppTextStyles.bodyM.copyWith(
               color: AppColors.neutralDarkLightest,
             ),
