@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/fixed_assets.dart';
@@ -118,7 +116,6 @@ class AvailableBanksBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    log('MSG: ${availableBanks.first.imagePath}');
     return Container(
       height: MediaQuery.of(context).size.height * 0.80,
       width: double.infinity,
