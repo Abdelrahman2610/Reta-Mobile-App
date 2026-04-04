@@ -103,7 +103,7 @@ class _DebtDocumentsView extends StatelessWidget {
                         text: 'المرفقات',
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.bottomSheetTitle,
+                        color: AppColors.labelsVibrantPrimary,
                       ),
                       BlocBuilder<DebtDocumentsCubit, DebtDocumentsState>(
                         builder: (context, state) {

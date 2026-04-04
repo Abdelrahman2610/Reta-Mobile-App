@@ -251,7 +251,6 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayerNationalIdFileId = data.fileId;
         taxpayerNationalIdOriginalName = data.originalFileName;
         taxpayerNationalIdUrl = data.fullUrl;
-        emit(state.copyWith(isLoading: false));
       case ApiError<UploadedFileModel>(:final message):
         emit(state.copyWith(isLoading: false, errorMessage: message));
     }
@@ -287,11 +286,15 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayerPassportFileId = data.fileId;
         taxpayerPassportOriginalName = data.originalFileName;
         taxpayerPassportUrl = data.fullUrl;
-        emit(state.copyWith(isLoading: false));
       case ApiError<UploadedFileModel>(:final message):
         emit(state.copyWith(isLoading: false, errorMessage: message));
     }
-    emit(state.copyWith(taxpayerPassportFilePath: taxpayerPassportFilePath));
+    emit(
+      state.copyWith(
+        taxpayerPassportFilePath: taxpayerPassportFilePath,
+        isLoading: false,
+      ),
+    );
   }
 
   void removePassportFile() {
@@ -317,7 +320,6 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         ownershipProofDocumentFileId = data.fileId;
         ownershipProofDocumentOriginalName = data.originalFileName;
         ownershipProofDocumentUrl = data.fullUrl;
-        emit(state.copyWith(isLoading: false));
       case ApiError<UploadedFileModel>(:final message):
         emit(state.copyWith(isLoading: false, errorMessage: message));
     }
@@ -325,6 +327,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       state.copyWith(
         ownershipProofDocumentPath: ownershipProofDocumentPath,
         ownershipProofDocumentFullUrl: ownershipProofDocumentUrl,
+        isLoading: false,
       ),
     );
   }
@@ -351,7 +354,6 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayerAuthorizationFileId = data.fileId;
         taxpayerAuthorizationOriginName = data.originalFileName;
         taxpayerAuthorizationUrl = data.fullUrl;
-        emit(state.copyWith(isLoading: false));
       case ApiError<UploadedFileModel>(:final message):
         emit(state.copyWith(isLoading: false, errorMessage: message));
     }
@@ -360,6 +362,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayerAuthorizationFilePath: taxpayerAuthorizationFilePath,
         taxpayerAuthorizationFileId: taxpayerAuthorizationFileId,
         taxpayerAuthorizationFullUrl: taxpayerAuthorizationUrl,
+        isLoading: false,
       ),
     );
   }
@@ -389,7 +392,6 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayerTaxCardFileId = data.fileId;
         taxpayerTaxCardOriginalName = data.originalFileName;
         taxpayerTaxCardUrl = data.fullUrl;
-        emit(state.copyWith(isLoading: false));
       case ApiError<UploadedFileModel>(:final message):
         emit(state.copyWith(isLoading: false, errorMessage: message));
     }
@@ -397,6 +399,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       state.copyWith(
         taxpayerTaxCardFilePath: taxpayerTaxCardFilePath,
         taxpayerTaxCardFullUrl: taxpayerTaxCardUrl,
+        isLoading: false,
       ),
     );
   }
@@ -424,7 +427,6 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayerCommercialRegisterFileId = data.fileId;
         taxpayerCommercialRegisterOriginalName = data.originalFileName;
         taxpayerCommercialRegisterUrl = data.fullUrl;
-        emit(state.copyWith(isLoading: false));
       case ApiError<UploadedFileModel>(:final message):
         emit(state.copyWith(isLoading: false, errorMessage: message));
     }
@@ -432,6 +434,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       state.copyWith(
         taxpayerCommercialRegisterFilePath: taxpayerCommercialRegisterFilePath,
         taxpayerCommercialRegisterFullUrl: taxpayerCommercialRegisterUrl,
+        isLoading: false,
       ),
     );
   }
@@ -459,7 +462,6 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayerOtherAttachmentFileId = data.fileId;
         taxpayerOtherAttachmentOriginalName = data.originalFileName;
         taxpayerOtherAttachmentUrl = data.fullUrl;
-        emit(state.copyWith(isLoading: false));
       case ApiError<UploadedFileModel>(:final message):
         emit(state.copyWith(isLoading: false, errorMessage: message));
     }
@@ -467,6 +469,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       state.copyWith(
         taxpayerOtherAttachmentFilePath: taxpayerOtherAttachmentFilePath,
         taxpayerOtherAttachmentFullUrl: taxpayerOtherAttachmentUrl,
+        isLoading: false,
       ),
     );
   }
@@ -875,7 +878,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     return super.close();
   }
 
-  void clearError() => emit(state.copyWith(errorMessage: null));
+  void clearError() => emit(state.copyWith(clearError: true));
 
   void saveEdit(BuildContext context) {
     final lookupsCubit = context.read<DeclarationLookupsCubit>();

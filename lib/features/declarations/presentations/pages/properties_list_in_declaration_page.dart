@@ -550,11 +550,8 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
           builder: (context) => MultiBlocProvider(
             providers: [
               BlocProvider.value(value: lookupsCubit),
-              BlocProvider.value(
-                value: context.read<DeclarationLookupsCubit>()..fetchLookups(),
-              ),
-              BlocProvider.value(
-                value: ApplicantCubit(
+              BlocProvider(
+                create: (_) => ApplicantCubit(
                   applicantType: applicantType,
                   declarationId: detailsModel.id,
                   isEditMode: false,
@@ -571,7 +568,6 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
               handleCreateNewUnitFromDeclarationPropList: true,
             ),
           ),
-          // BlocProvider.value(value: this, child: TaxpayerDataPage()),
         ),
       );
     }

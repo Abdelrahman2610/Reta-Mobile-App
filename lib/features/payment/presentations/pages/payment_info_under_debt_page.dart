@@ -216,7 +216,7 @@ class _DebtContent extends StatelessWidget {
               10.hs,
               PaymentButton(
                 label: 'إصدار طلب السداد',
-                onTap: cubit.totalRequired > 0
+                onTap: cubit.totalRequired > 0 && checkForButton(data.units)
                     ? () => cubit.createClaim(declarationId)
                     : null,
               ),
@@ -226,6 +226,14 @@ class _DebtContent extends StatelessWidget {
       ],
     );
   }
+}
+
+bool checkForButton(List<DebtUnitItemModel> units) {
+  final selectedUnits = units.where((unit) => unit.isSelected).toList();
+  if (selectedUnits.isEmpty) return false;
+  return selectedUnits.every(
+    (unit) => unit.amountController.text.trim().isNotEmpty,
+  );
 }
 
 class _DebtUnitCard extends StatelessWidget {

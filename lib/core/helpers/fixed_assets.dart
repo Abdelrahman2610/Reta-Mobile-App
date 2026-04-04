@@ -2,6 +2,7 @@
 String assets = "assets/";
 String images = "${assets}images/";
 String svg = "${assets}svg/";
+String banks = "${assets}images/banks/";
 
 class FixedAssets {
   FixedAssets._();
@@ -54,4 +55,26 @@ class FixedAssets {
   String deleteICGrey = "${svg}delete_ic_grey.svg";
   String dateIC = "${svg}date_ic.svg";
   String warningIC = "${svg}warning_ic.svg";
+
+  /// ------------------------ Banks --------------------
+  String misrBank = "${banks}misr.png";
+  String nationalBank = "${banks}national.png";
+  String alexandriaBank = "${banks}alexandria.png";
+  String cairoBank = "${banks}cairo.png";
+  String aBCBank = "${banks}abc.png";
+  String housingBank = "${banks}housing.png";
+  String egyptPostBank = "${banks}egypt_post.png";
+  String egyptianArabLandBank = "${banks}egyptian_arab_land.png";
+  String saibBank = "${banks}saib.png";
+  String dubaiBank = "${banks}dubai.png";
+  String nationalInvestmentBank = "${banks}national_investment.png";
+  String arabBank = "${banks}arab.png";
+  String alBarakaBank = "${banks}albaraka.png";
+  String nationalGreeceBank = "${banks}national_greece.png";
+  String faisalBank = "${banks}faisal.png";
+  String fabBank = "${banks}fab.png";
+  String eGBank = "${banks}eg_bank.png";
+  String abkBank = "${banks}abk.png";
+  String ahliUnitedBank = "${banks}ahli_united.png";
+  String arabInvestmentBank = "${banks}arab_investment.png";
 }

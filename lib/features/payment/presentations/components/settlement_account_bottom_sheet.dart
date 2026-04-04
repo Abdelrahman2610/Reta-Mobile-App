@@ -75,7 +75,7 @@ class SettlementAccountBottomSheet extends StatelessWidget {
                           text: 'حساب التسويات',
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.bottomSheetTitle,
+                          color: AppColors.labelsVibrantPrimary,
                           alignment: AlignmentDirectional.center,
                         ),
                         4.hs,

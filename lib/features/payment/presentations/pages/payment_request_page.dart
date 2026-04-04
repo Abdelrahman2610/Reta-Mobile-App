@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/features/components/app_button.dart';
+import 'package:reta/features/payment/presentations/components/available_banks_bottom_sheet.dart';
 import 'package:reta/features/payment/presentations/components/filter_chip.dart';
 
 import '../../../../core/helpers/app_enum.dart';
@@ -130,7 +131,11 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                   ],
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    child: FilterHeader(context, widget.fromDebts),
+                    child: FilterHeader(
+                      context,
+                      widget.fromDebts,
+                      widget.source,
+                    ),
                   ),
                   Expanded(
                     child: const EmptyDataWidget(
@@ -161,7 +166,7 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                     15.hs,
                     const Divider(),
                     20.hs,
-                    FilterHeader(context, widget.fromDebts),
+                    FilterHeader(context, widget.fromDebts, widget.source),
                     20.hs,
                     ListView.builder(
                       physics: const NeverScrollableScrollPhysics(),
@@ -320,7 +325,7 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
     );
   }
 
-  Row FilterHeader(BuildContext context, bool fromDebts) {
+  Row FilterHeader(BuildContext context, bool fromDebts, ClaimsSource source) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -354,6 +359,7 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                 context.read<PaymentClaimsCubit>().fetchClaims(
                   declarationId: widget.declarationId,
                   filter: filter,
+                  source: source,
                 );
               },
               onReset: () {
@@ -362,6 +368,7 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                 context.read<PaymentClaimsCubit>().fetchClaims(
                   declarationId: widget.declarationId,
                   filter: _filterData,
+                  source: source,
                 );
               },
             );
@@ -405,7 +412,14 @@ class _BankDepositBanner extends StatelessWidget {
                 ),
                 4.hs,
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => AvailableBanksBottomSheet(),
+                    );
+                  },
                   child: AppText(
                     text: 'عرض البنوك المتاحة',
                     fontSize: 12.sp,
