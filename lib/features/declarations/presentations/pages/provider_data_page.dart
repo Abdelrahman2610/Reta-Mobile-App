@@ -6,6 +6,7 @@ import 'package:reta/core/theme/app_colors.dart';
 import 'package:reta/features/components/app_bar.dart';
 import 'package:reta/features/components/app_button.dart';
 import 'package:reta/features/components/app_container.dart';
+import 'package:reta/features/components/app_text.dart';
 
 import '../../../../core/helpers/extensions/dimensions.dart';
 import '../../../auth/presentation/cubit/user_profile_cubit.dart';
@@ -79,7 +80,11 @@ class _ProviderDataView extends StatelessWidget {
         if (state.errorMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.errorMessage!),
+              content: AppText(
+                text: state.errorMessage!,
+                color: AppColors.white,
+                alignment: AlignmentDirectional.center,
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -87,7 +92,11 @@ class _ProviderDataView extends StatelessWidget {
         if (state.successMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.successMessage!),
+              content: AppText(
+                text: state.successMessage!,
+                color: AppColors.white,
+                alignment: AlignmentDirectional.center,
+              ),
               backgroundColor: Colors.green,
             ),
           );

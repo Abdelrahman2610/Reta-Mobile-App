@@ -20,6 +20,7 @@ import '../../../components/app_bar.dart';
 import '../../../components/app_text.dart';
 import '../../../components/circular_progress_indicator_platform_widget.dart';
 import '../../../components/show_confirmation_dialog.dart';
+import '../../../payment/presentations/cubit/settlement/my_debts_cubit.dart';
 import '../../../payment/presentations/pages/payment_info_page.dart';
 import '../../data/models/declaration_details_model.dart';
 import '../../data/models/declaration_model.dart';
@@ -355,10 +356,12 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
         state is DeclarationSubmitLoading) {
       loadingPopup(RuntimeData.getCurrentContext()!);
     } else if (state is DeclarationDeleteSuccess) {
+      context.read<MyDebtsCubit>().fetchDeclarations();
       updateDeclarationList();
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
       Navigator.of(context).pop();
     } else if (state is DeclarationStatusToOnEditLoaded) {
+      context.read<MyDebtsCubit>().fetchDeclarations();
       updateDeclarationList();
       declarationModel.statusId = state.statusId;
       declarationModel.statusText = state.statusText;
@@ -374,6 +377,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
         pageTransitionAnimation: PageTransitionAnimation.slideUp,
       );
     } else if (state is DeclarationSubmitSuccess) {
+      context.read<MyDebtsCubit>().fetchDeclarations();
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
       PersistentNavBarNavigator.pushNewScreen(
         context,
@@ -391,19 +395,37 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
     } else if (state is DeclarationDeleteError) {
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(state.message)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: AppText(
+            text: state.message,
+            color: AppColors.white,
+            alignment: Alignment.center,
+          ),
+        ),
+      );
     } else if (state is DeclarationStatusToOnEditError) {
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(state.message)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: AppText(
+            text: state.message,
+            color: AppColors.white,
+            alignment: Alignment.center,
+          ),
+        ),
+      );
     } else if (state is DeclarationSubmitError) {
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(state.message)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: AppText(
+            text: state.message,
+            color: AppColors.white,
+            alignment: Alignment.center,
+          ),
+        ),
+      );
     }
   }
 

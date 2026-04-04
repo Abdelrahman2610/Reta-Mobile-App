@@ -2201,7 +2201,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       'real_estate_floor_id': floorId,
       if (state.isFloorNumberOther)
         'real_estate_floor_other': _getFloorOtherId(),
-      if (unitID != -1) 'unit_id': unitID,
+      'unit_id': unitID,
       if (state.isUnitNumberOther)
         'unit_other': unitNumberOtherController.text.trim(),
       'reta_contact_about_unit': state.contactedTaxAuthority == true ? 1 : 2,
