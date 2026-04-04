@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:dio/dio.dart';
 
 sealed class ApiResult<T> {
@@ -12,15 +13,12 @@ final class ApiSuccess<T> extends ApiResult<T> {
 final class ApiError<T> extends ApiResult<T> {
   final String message;
   final int? statusCode;
-
   final Map<String, List<String>>? validationErrors;
 
   const ApiError(this.message, {this.statusCode, this.validationErrors});
 
   bool get isValidationError => statusCode == 422;
-
   bool get isUnauthorized => statusCode == 401;
-
   String? fieldError(String field) => validationErrors?[field]?.firstOrNull;
 }
 
@@ -29,12 +27,18 @@ Future<ApiResult<T>> safeApiCall<T>(Future<T> Function() call) async {
     final result = await call();
     return ApiSuccess(result);
   } on DioException catch (e) {
+    log('❌ [safeApiCall] DioException caught');
+    log('   Status code: ${e.response?.statusCode}');
+    log('   Raw response data: ${e.response?.data}');
+    log('   Dio error type: ${e.type}');
+    log('   Extracted message: ${_extractMessage(e)}');
     return ApiError(
       _extractMessage(e),
       statusCode: e.response?.statusCode,
       validationErrors: _extractValidationErrors(e),
     );
   } catch (e) {
+    log('❌ [safeApiCall] Unknown error: $e');
     return ApiError(e.toString());
   }
 }
@@ -48,6 +52,7 @@ String _extractMessage(DioException e) {
 
       final error = data['error']?.toString();
       if (error != null && error.isNotEmpty) return error;
+
       final errors = data['errors'];
       if (errors is Map) {
         final firstField = errors.values.firstOrNull;

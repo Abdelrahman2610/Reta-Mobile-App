@@ -16,8 +16,9 @@ import 'notifications_page.dart';
 
 class HomeTab extends StatelessWidget {
   final UserModel user;
+  final bool isVerified;
 
-  const HomeTab({super.key, required this.user});
+  const HomeTab({super.key, required this.user, required this.isVerified});
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +47,7 @@ class HomeTab extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _DeclarationsSection(user: user),
+                    _DeclarationsSection(user: user, isVerified: isVerified),
                     const SizedBox(height: 16),
                   ],
                 ),
@@ -243,7 +244,9 @@ class _HeroCard extends StatelessWidget {
 
 class _DeclarationsSection extends StatelessWidget {
   final UserModel user;
-  const _DeclarationsSection({required this.user});
+  final bool isVerified;
+
+  const _DeclarationsSection({required this.user, required this.isVerified});
 
   @override
   Widget build(BuildContext context) {
@@ -255,7 +258,7 @@ class _DeclarationsSection extends StatelessWidget {
             (state.declarationList?.isEmpty ?? true)) {
           return _NewUserCTA(
             onTap: () {
-              context.read<HomeCubit>().selectTab(2);
+              context.read<HomeCubit>().selectTab(2, isVerified: isVerified);
             },
 
             //   Navigator.of(context).push(
@@ -281,7 +284,10 @@ class _DeclarationsSection extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.read<HomeCubit>().jumpTo(2),
+                  onPressed: () => context.read<HomeCubit>().jumpTo(
+                    2,
+                    isVerified: isVerified,
+                  ),
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
                     minimumSize: Size.zero,

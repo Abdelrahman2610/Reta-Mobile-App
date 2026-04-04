@@ -730,9 +730,12 @@ class SignupCubit extends Cubit<SignupState> {
 
     final isForeign = state.nationalityType == NationalityType.foreign;
 
-    final birthPlace = state.showManualBirthPlace
+    final birthPlace =
+        state.showManualBirthPlace && state.manualBirthPlace.trim().isNotEmpty
         ? state.manualBirthPlace.trim()
-        : (state.selectedBirthPlace?.id ?? '');
+        : (state.selectedBirthPlace?.id != '-1'
+              ? (state.selectedBirthPlace?.id ?? '')
+              : '');
 
     final bd = state.birthDate!;
     final birthDateStr =
@@ -836,9 +839,12 @@ class SignupCubit extends Cubit<SignupState> {
       nationalId: state.nationalId.trim(),
       nationalityCode: state.selectedNationality?.id ?? '',
       gender: state.selectedGender?.id ?? '1',
-      birthPlace: state.showManualBirthPlace
+      birthPlace:
+          state.showManualBirthPlace && state.manualBirthPlace.trim().isNotEmpty
           ? state.manualBirthPlace.trim()
-          : (state.selectedBirthPlace?.id ?? ''),
+          : (state.selectedBirthPlace?.id != '-1'
+                ? (state.selectedBirthPlace?.id ?? '')
+                : ''),
       birthDate: _formatDate(state.birthDate!),
       passportNumber: isForeign ? state.passportNumber.trim() : null,
     );
@@ -928,8 +934,14 @@ class SignupCubit extends Cubit<SignupState> {
       if (state.selectedBirthPlace == null) {
         birthPlaceError = 'محل الميلاد مطلوب';
       }
-      if (state.showManualBirthPlace && state.manualBirthPlace.trim().isEmpty) {
-        manualBirthPlaceError = 'محل الميلاد مطلوب';
+      if (state.showManualBirthPlace) {
+        if (state.manualBirthPlace.trim().isEmpty) {
+          manualBirthPlaceError = 'محل الميلاد مطلوب';
+        }
+      } else if (state.selectedBirthPlace == null) {
+        birthPlaceError = 'محل الميلاد مطلوب';
+      } else if (state.selectedBirthPlace?.id == '-1') {
+        birthPlaceError = 'يرجى إدخال محل الميلاد في الحقل أدناه';
       }
     }
 

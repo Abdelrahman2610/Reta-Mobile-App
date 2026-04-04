@@ -21,16 +21,20 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../data/models/user_models.dart';
 
 class UserProfilePage extends StatelessWidget {
-  final UserModel user;
+  // final UserModel user;
 
-  const UserProfilePage({super.key, required this.user});
+  const UserProfilePage({
+    super.key,
+    // required this.user
+  });
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => UserProfileCubit()..loadFromUser(user),
-      child: const _UserProfileView(),
-    );
+    // return BlocProvider(
+    //   create: (_) => UserProfileCubit()..loadFromUser(user),
+    //   child: const _UserProfileView(),
+    // );
+    return const _UserProfileView();
   }
 }
 

@@ -41,7 +41,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   static const _protectedTabs = {1, 2, 3};
 
-  void selectTab(int index, {bool isVerified = true}) {
+  void selectTab(int index, {required bool isVerified}) {
     if (!isVerified && _protectedTabs.contains(index)) {
       emit(state.copyWith(showVerificationPrompt: true));
       return;
@@ -49,7 +49,7 @@ class HomeCubit extends Cubit<HomeState> {
     navigateTo(index);
   }
 
-  void jumpTo(int index, {bool isVerified = true}) {
+  void jumpTo(int index, {required bool isVerified}) {
     if (!isVerified && _protectedTabs.contains(index)) {
       emit(state.copyWith(showVerificationPrompt: true));
       return;

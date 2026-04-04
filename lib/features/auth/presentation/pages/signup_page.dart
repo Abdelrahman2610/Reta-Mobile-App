@@ -88,7 +88,7 @@ class _SignupPageState extends State<SignupPage> {
               MaterialPageRoute(
                 builder: (_) => BlocProvider.value(
                   value: context.read<SignupCubit>(),
-                  child: OtpPage(phoneNumber: state.phone),
+                  child: OtpPage(phoneNumber: state.phone, email: state.email),
                 ),
               ),
             );

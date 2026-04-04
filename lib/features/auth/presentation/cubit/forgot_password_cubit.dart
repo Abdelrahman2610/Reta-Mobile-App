@@ -1,31 +1,25 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../../../core/network/api_result.dart';
-
-// ─── Enums ────────────────────────────────────────────────────────────────────
 
 enum ForgotTab { mobile, email }
 
 enum ForgotStep { input, otp, otpSuccess, newPassword, done, emailSent }
 
-// ─── State ────────────────────────────────────────────────────────────────────
-
 class ForgotPasswordState {
   final ForgotTab selectedTab;
   final ForgotStep step;
-
   final String mobile;
   final String email;
   final String? mobileError;
   final String? emailError;
   final bool isLoading;
   final String? requestError;
-
   final String otpValue;
   final String? otpError;
   final int resendCooldown;
-
   final String newPassword;
   final String confirmPassword;
   final bool isNewPasswordVisible;
@@ -33,7 +27,6 @@ class ForgotPasswordState {
   final String? newPasswordError;
   final String? confirmPasswordError;
   final String? resetError;
-
   final String? _userId;
   final String? _otpToken;
   final String? _resetToken;
@@ -152,7 +145,9 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
   Future<void> requestReset() async {
     if (!_validateStep1()) return;
-
+    log(
+      '[Cubit] requestReset → tab: ${state.selectedTab}, mobile: "${state.mobile}", email: "${state.email}"',
+    );
     emit(state.copyWith(isLoading: true, requestError: () => null));
 
     if (state.selectedTab == ForgotTab.mobile) {
@@ -163,12 +158,21 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
   }
 
   Future<void> _requestByPhone() async {
+    log('[Cubit] _requestByPhone → mobile: "${state.mobile.trim()}"');
+
     final result = await _authRepository.forgotPasswordByPhone(
       mobile: state.mobile.trim(),
     );
 
     switch (result) {
       case ApiSuccess(:final data):
+        log('[Cubit] _requestByPhone success');
+        log('   data: $data');
+        log('   ok: ${data['ok']}');
+        log('   user_id: ${data['user_id']}');
+        log('   request_code: ${data['request_code']}');
+        log('   wait_seconds: ${data['wait_seconds']}');
+
         if (data == null || data is! Map<String, dynamic>) {
           emit(
             state.copyWith(
@@ -183,9 +187,9 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
         if (ok == false) {
           final errorMap = data['error'];
           String message = data['message']?.toString() ?? 'حدث خطأ غير متوقع';
-          if (errorMap is Map) {
+          if (errorMap is Map)
             message = errorMap['message']?.toString() ?? message;
-          }
+          log('[Cubit] _requestByPhone ok=false → $message');
           emit(state.copyWith(isLoading: false, requestError: () => message));
           return;
         }
@@ -201,21 +205,28 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
             resendCooldown: data['wait_seconds'] as int? ?? 60,
           ),
         );
+        log(
+          '[Cubit] Moved to OTP step. userId=${state._userId}, otpToken=${state._otpToken}',
+        );
         _startResendCooldown(data['wait_seconds'] as int? ?? 60);
 
       case ApiError(:final message):
+        log('[Cubit] _requestByPhone error → $message');
         emit(state.copyWith(isLoading: false, requestError: () => message));
     }
   }
 
   Future<void> _requestByEmail() async {
+    log('[Cubit] _requestByEmail → email: "${state.email.trim()}"');
+
     final result = await _authRepository.forgotPasswordByEmail(
       email: state.email.trim(),
     );
 
     switch (result) {
       case ApiSuccess(:final data):
-        // ✅ Guard against null or non-map responses
+        log('[Cubit] _requestByEmail success → data: $data');
+
         if (data == null || data is! Map<String, dynamic>) {
           emit(
             state.copyWith(
@@ -230,9 +241,9 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
         if (ok == false) {
           final errorMap = data['error'];
           String message = data['message']?.toString() ?? 'حدث خطأ غير متوقع';
-          if (errorMap is Map) {
+          if (errorMap is Map)
             message = errorMap['message']?.toString() ?? message;
-          }
+          log('[Cubit] _requestByEmail ok=false → $message');
           emit(state.copyWith(isLoading: false, requestError: () => message));
           return;
         }
@@ -240,6 +251,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
         emit(state.copyWith(isLoading: false, step: ForgotStep.emailSent));
 
       case ApiError(:final message):
+        log('[Cubit] _requestByEmail error → $message');
         emit(state.copyWith(isLoading: false, requestError: () => message));
     }
   }
@@ -248,11 +260,18 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
       emit(state.copyWith(otpValue: v, otpError: () => null));
 
   Future<void> confirmOtp() async {
+    log('[Cubit] confirmOtp →');
+    log('   otpValue: "${state.otpValue}"');
+    log('   _userId: "${state._userId}"');
+    log('   _otpToken: "${state._otpToken}"');
+    log('   mobile: "${state.mobile}"');
+
     if (state.otpValue.length < 6) {
       emit(state.copyWith(otpError: () => 'أدخل رمز التحقق كاملاً'));
       return;
     }
-    if (state._userId == null || state._otpToken == null) {
+    if (state._otpToken == null) {
+      log('[Cubit] confirmOtp → missing otpToken!');
       emit(state.copyWith(otpError: () => 'بيانات غير مكتملة، أعد المحاولة'));
       return;
     }
@@ -260,7 +279,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
     emit(state.copyWith(isLoading: true, otpError: () => null));
 
     final result = await _authRepository.confirmForgotPasswordOtp(
-      userId: state._userId!,
+      userId: state._userId ?? '',
       mobile: state.mobile.trim(),
       token: state._otpToken!,
       otp: state.otpValue,
@@ -268,21 +287,28 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
     switch (result) {
       case ApiSuccess():
+        log('[Cubit] confirmOtp success → proceeding to generateResetToken');
         await _generateResetToken();
 
       case ApiError(:final message):
+        log('[Cubit] confirmOtp error → $message');
         emit(state.copyWith(isLoading: false, otpError: () => message));
     }
   }
 
   Future<void> _generateResetToken() async {
+    log('[Cubit] _generateResetToken → mobile: "${state.mobile.trim()}"');
+
     final result = await _authRepository.generateResetToken(
       mobile: state.mobile.trim(),
     );
 
     switch (result) {
       case ApiSuccess(:final data):
-        // ✅ Guard against null or non-map responses
+        log('[Cubit] _generateResetToken success');
+        log('   ALL keys: ${data.keys.toList()}');
+        log('   reset_token: ${data['reset_token']}');
+
         if (data == null || data is! Map<String, dynamic>) {
           emit(
             state.copyWith(
@@ -293,21 +319,76 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
           return;
         }
 
-        emit(
-          state.copyWith(
-            isLoading: false,
-            step: ForgotStep.otpSuccess,
-            resetToken: () => data['reset_token']?.toString(),
-          ),
-        );
+        final resetToken = data['reset_token']?.toString();
+        if (resetToken == null || resetToken.isEmpty) {
+          log('[Cubit] _generateResetToken → reset_token is null or empty!');
+          emit(
+            state.copyWith(
+              isLoading: false,
+              otpError: () => 'حدث خطأ غير متوقع، حاول مرة أخرى',
+            ),
+          );
+          return;
+        }
+
+        log('   → resolved resetToken: "$resetToken"');
+
+        await _checkResetPasswordValidity(resetToken);
 
       case ApiError(:final message):
+        log('[Cubit] _generateResetToken error → $message');
         emit(state.copyWith(isLoading: false, otpError: () => message));
     }
   }
 
-  void proceedToNewPassword() =>
-      emit(state.copyWith(step: ForgotStep.newPassword));
+  Future<void> _checkResetPasswordValidity(String resetToken) async {
+    log(
+      '[Cubit] _checkResetPasswordValidity → mobile: "${state.mobile.trim()}", token: "$resetToken"',
+    );
+
+    final result = await _authRepository.checkResetPasswordValidity(
+      token: resetToken,
+      mobile: state.mobile.trim(),
+    );
+
+    switch (result) {
+      case ApiSuccess(:final data):
+        log('[Cubit] _checkResetPasswordValidity success → data: $data');
+        emit(
+          state.copyWith(
+            isLoading: false,
+            step: ForgotStep.otpSuccess,
+            resetToken: () => resetToken,
+          ),
+        );
+        log('[Cubit] _resetToken saved, moved to otpSuccess');
+
+      case ApiError(:final message):
+        log('[Cubit] _checkResetPasswordValidity error → $message');
+        emit(state.copyWith(isLoading: false, otpError: () => message));
+    }
+  }
+
+  void proceedToNewPassword() async {
+    log('[Cubit] proceedToNewPassword → _resetToken: "${state._resetToken}"');
+
+    emit(state.copyWith(isLoading: true));
+
+    final result = await _authRepository.checkResetPasswordValidity(
+      token: state._resetToken!,
+      mobile: state.mobile.trim(),
+    );
+
+    switch (result) {
+      case ApiSuccess():
+        log('[Cubit] proceedToNewPassword validity check passed');
+        emit(state.copyWith(isLoading: false, step: ForgotStep.newPassword));
+
+      case ApiError(:final message):
+        log('[Cubit] proceedToNewPassword validity check failed → $message');
+        emit(state.copyWith(isLoading: false, resetError: () => message));
+    }
+  }
 
   void onNewPasswordChanged(String v) {
     emit(
@@ -353,6 +434,12 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
       _validatePassword(state.newPassword) == null;
 
   Future<void> submitNewPassword() async {
+    log('[Cubit] submitNewPassword →');
+    log('   _resetToken: "${state._resetToken}"');
+    log('   mobile: "${state.mobile}"');
+    log('   newPassword length: ${state.newPassword.length}');
+    log('   passwords match: ${state.newPassword == state.confirmPassword}');
+
     final pwErr = _validatePassword(state.newPassword);
     if (pwErr != null) {
       emit(state.copyWith(newPasswordError: () => pwErr));
@@ -367,6 +454,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
       return;
     }
     if (state._resetToken == null || state._resetToken!.isEmpty) {
+      log('[Cubit] submitNewPassword → _resetToken is null or empty!');
       emit(
         state.copyWith(
           resetError: () =>
@@ -378,24 +466,29 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
     emit(state.copyWith(isLoading: true, resetError: () => null));
 
+    log('[Cubit] Calling resetPassword with mobile: "${state.mobile.trim()}"');
+
     final result = await _authRepository.resetPassword(
       token: state._resetToken!,
       password: state.newPassword,
       passwordConfirmation: state.confirmPassword,
-      email: state.email.trim(),
+      mobile: state.mobile.trim(),
     );
 
     switch (result) {
       case ApiSuccess():
+        log('[Cubit] submitNewPassword success → moving to done');
         emit(state.copyWith(isLoading: false, step: ForgotStep.done));
 
       case ApiError(:final message):
+        log('[Cubit] submitNewPassword error → $message');
         emit(state.copyWith(isLoading: false, resetError: () => message));
     }
   }
 
   Future<void> resendOtp() async {
     if (state.resendCooldown > 0) return;
+    log('[Cubit] resendOtp');
     emit(state.copyWith(otpValue: '', otpError: () => null));
     await requestReset();
   }
