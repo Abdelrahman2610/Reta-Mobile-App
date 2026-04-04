@@ -28,10 +28,7 @@ class MyDebtsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => MyDebtsCubit()..fetchDeclarations(),
-      child: const _MyDebtsView(),
-    );
+    return const _MyDebtsView();
   }
 }
 

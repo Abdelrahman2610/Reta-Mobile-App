@@ -11,7 +11,6 @@ import '../../../components/app_bar.dart';
 import '../../../components/app_button.dart';
 import '../../../components/app_container.dart';
 import '../../../components/app_loading.dart';
-import '../../../components/app_text.dart';
 import '../components/declaration_tabs.dart';
 import '../components/shared_form.dart';
 import '../cubit/applicant_cubit.dart';
@@ -39,17 +38,6 @@ class TaxpayerDataPage extends StatelessWidget {
                   prev.errorMessage != curr.errorMessage,
               listener: (context, state) {
                 if (state.errorMessage != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: AppText(
-                        text: state.errorMessage!,
-                        color: Colors.white,
-                        alignment: AlignmentDirectional.center,
-                        maxLines: 3,
-                      ),
-                      backgroundColor: AppColors.errorDark,
-                    ),
-                  );
                   cubit.clearError();
                 }
               },
