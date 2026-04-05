@@ -24,7 +24,7 @@ class AppTheme {
 
       scaffoldBackgroundColor: AppColors.neutralLightLightest,
 
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.mainBlueIndigoDye,
         foregroundColor: AppColors.white,
         elevation: 0,
@@ -32,7 +32,7 @@ class AppTheme {
         titleTextStyle: AppTextStyles.actionXL,
       ),
 
-      textTheme: const TextTheme(
+      textTheme: TextTheme(
         displayLarge: AppTextStyles.h1,
         displayMedium: AppTextStyles.h2,
         displaySmall: AppTextStyles.h3,

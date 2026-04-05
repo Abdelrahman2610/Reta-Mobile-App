@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:reta/features/auth/presentation/pages/guest_declarations_page.dart';
 
@@ -105,7 +106,7 @@ class _HomeTab extends StatelessWidget {
   Widget _buildHero(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.45,
+      height: MediaQuery.of(context).size.height * 0.40,
       child: Stack(
         children: [
           Positioned.fill(
@@ -141,8 +142,8 @@ class _HomeTab extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 200,
-                      height: 200,
+                      width: 160.w,
+                      height: 160.w,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         boxShadow: [
@@ -155,24 +156,25 @@ class _HomeTab extends StatelessWidget {
                       ),
                       child: SvgPicture.asset('assets/images/logo.svg'),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6.h),
                     Text(
                       'مصلحة الضرائب العقارية',
                       textAlign: TextAlign.center,
                       textDirection: TextDirection.rtl,
                       style: AppTextStyles.h1.copyWith(
                         color: AppColors.highlightLightest,
-                        fontSize: 28,
+                        fontSize: 24.sp,
                         height: 1.2,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6.h),
                     Text(
                       'مرحبًا بك في خدمات مصلحة الضرائب العقارية',
                       textAlign: TextAlign.center,
                       textDirection: TextDirection.rtl,
                       style: AppTextStyles.bodyXL.copyWith(
                         color: AppColors.highlightLightest.withOpacity(0.82),
+                        fontSize: 14.sp,
                         height: 1.4,
                       ),
                     ),
@@ -233,7 +235,7 @@ class _HomeTab extends StatelessWidget {
                         textDirection: TextDirection.rtl,
                         style: AppTextStyles.h5.copyWith(
                           color: AppColors.neutralLightLightest,
-                          fontSize: 15,
+                          fontSize: 15.sp,
                         ),
                       ),
                       const SizedBox(height: 6),

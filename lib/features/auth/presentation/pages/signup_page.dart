@@ -112,15 +112,14 @@ class _SignupPageState extends State<SignupPage> {
             elevation: 0,
             centerTitle: true,
             automaticallyImplyLeading: false,
-            actions: [
-              IconButton(
-                icon: const Icon(
-                  Icons.arrow_forward_ios,
-                  color: AppColors.neutralLightLightest,
-                ),
-                onPressed: () => Navigator.pop(context),
+            leading: IconButton(
+              icon: const Icon(
+                Icons.arrow_back_ios,
+                color: AppColors.neutralLightLightest,
               ),
-            ],
+              onPressed: () => Navigator.pop(context),
+            ),
+
             title: Text(
               'إنشاء حساب جديد',
               style: AppTextStyles.actionXL.copyWith(
@@ -172,6 +171,7 @@ class _SignupPageState extends State<SignupPage> {
                       keyboardType: TextInputType.phone,
                       errorText: state.phoneError,
                       onChanged: cubit.onPhoneChanged,
+                      hintTextDirection: TextDirection.ltr,
                     ),
                     _InlineExpandField(
                       label: 'الجنسية',
@@ -369,6 +369,14 @@ class _SignupPageState extends State<SignupPage> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        Checkbox(
+                          value: state.agreedToTerms,
+                          onChanged: cubit.toggleTerms,
+                          activeColor: AppColors.highlightDarkest,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
                         Expanded(
                           child: Directionality(
                             textDirection: TextDirection.rtl,
@@ -376,7 +384,7 @@ class _SignupPageState extends State<SignupPage> {
                               children: [
                                 Text(
                                   'أقر بأنني قرأت ووافقت على ',
-                                  style: AppTextStyles.bodyS.copyWith(
+                                  style: AppTextStyles.bodyM.copyWith(
                                     color: AppColors.neutralDarkLight,
                                   ),
                                 ),
@@ -399,14 +407,6 @@ class _SignupPageState extends State<SignupPage> {
                                 ),
                               ],
                             ),
-                          ),
-                        ),
-                        Checkbox(
-                          value: state.agreedToTerms,
-                          onChanged: cubit.toggleTerms,
-                          activeColor: AppColors.highlightDarkest,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                       ],
@@ -501,6 +501,7 @@ class _Field extends StatelessWidget {
   final Widget? suffix;
   final int? maxLength;
   final List<TextInputFormatter>? inputFormatters;
+  final TextDirection hintTextDirection;
 
   const _Field({
     required this.label,
@@ -514,6 +515,7 @@ class _Field extends StatelessWidget {
     this.suffix,
     this.maxLength,
     this.inputFormatters,
+    this.hintTextDirection = TextDirection.rtl,
   });
 
   @override
@@ -521,7 +523,7 @@ class _Field extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           RichText(
             textDirection: TextDirection.rtl,
@@ -561,7 +563,7 @@ class _Field extends StatelessWidget {
                 hintStyle: AppTextStyles.bodyM.copyWith(
                   color: AppColors.neutralDarkLightest,
                 ),
-                hintTextDirection: TextDirection.rtl,
+                hintTextDirection: hintTextDirection,
                 suffixIcon: suffix,
                 counterText: '',
                 filled: true,
@@ -645,7 +647,7 @@ class _DateField extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           RichText(
             textDirection: TextDirection.rtl,
@@ -684,11 +686,6 @@ class _DateField extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Icon(
-                    Icons.calendar_month_outlined,
-                    size: 18,
-                    color: AppColors.neutralDarkLightest,
-                  ),
                   Text(
                     formatted ?? hint,
                     textDirection: TextDirection.rtl,
@@ -697,6 +694,11 @@ class _DateField extends StatelessWidget {
                           ? AppColors.neutralDarkDarkest
                           : AppColors.neutralDarkLightest,
                     ),
+                  ),
+                  const Icon(
+                    Icons.calendar_month_outlined,
+                    size: 18,
+                    color: AppColors.neutralDarkLightest,
                   ),
                 ],
               ),
@@ -748,7 +750,7 @@ class _InlineExpandField extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           RichText(
             textDirection: TextDirection.rtl,
@@ -787,21 +789,23 @@ class _InlineExpandField extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Expanded(
+                    child: Text(
+                      value ?? hint,
+                      textDirection: TextDirection.rtl,
+                      style: AppTextStyles.bodyM.copyWith(
+                        color: value != null
+                            ? AppColors.neutralDarkDarkest
+                            : AppColors.neutralDarkLightest,
+                      ),
+                    ),
+                  ),
                   Icon(
                     isExpanded
                         ? Icons.keyboard_arrow_up_rounded
                         : Icons.keyboard_arrow_down_rounded,
                     color: AppColors.neutralDarkLightest,
                     size: 22,
-                  ),
-                  Text(
-                    value ?? hint,
-                    textDirection: TextDirection.rtl,
-                    style: AppTextStyles.bodyM.copyWith(
-                      color: value != null
-                          ? AppColors.neutralDarkDarkest
-                          : AppColors.neutralDarkLightest,
-                    ),
                   ),
                 ],
               ),
@@ -913,7 +917,7 @@ class _InlineExpandGenderField extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           RichText(
             textDirection: TextDirection.rtl,
@@ -952,13 +956,6 @@ class _InlineExpandGenderField extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(
-                    isExpanded
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
-                    color: AppColors.neutralDarkLightest,
-                    size: 22,
-                  ),
                   Text(
                     displayValue ?? 'اختر النوع',
                     textDirection: TextDirection.rtl,
@@ -967,6 +964,13 @@ class _InlineExpandGenderField extends StatelessWidget {
                           ? AppColors.neutralDarkDarkest
                           : AppColors.neutralDarkLightest,
                     ),
+                  ),
+                  Icon(
+                    isExpanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    color: AppColors.neutralDarkLightest,
+                    size: 22,
                   ),
                 ],
               ),
@@ -1083,7 +1087,7 @@ class _ImageUploadField extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           RichText(
             textDirection: TextDirection.rtl,
@@ -1120,13 +1124,6 @@ class _ImageUploadField extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(
-                  hasImage ? Icons.image_rounded : Icons.image_outlined,
-                  color: hasImage
-                      ? AppColors.highlightDarkest
-                      : AppColors.neutralDarkLightest,
-                  size: 32,
-                ),
                 ElevatedButton.icon(
                   onPressed: hasImage ? onRemoveImage : _pickImageFromGallery,
                   icon: Icon(
@@ -1137,7 +1134,7 @@ class _ImageUploadField extends StatelessWidget {
                   ),
                   label: Text(
                     hasImage ? 'حذف الصورة' : 'رفع الصورة',
-                    style: AppTextStyles.actionS,
+                    style: AppTextStyles.actionM,
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: hasImage
@@ -1153,6 +1150,13 @@ class _ImageUploadField extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
+                ),
+                Icon(
+                  hasImage ? Icons.image_rounded : Icons.image_outlined,
+                  color: hasImage
+                      ? AppColors.highlightDarkest
+                      : AppColors.neutralDarkLightest,
+                  size: 32,
                 ),
               ],
             ),

@@ -74,7 +74,7 @@ class AuthGateSheet extends StatelessWidget {
             message,
             textDirection: TextDirection.rtl,
             textAlign: TextAlign.center,
-            style: AppTextStyles.bodyS.copyWith(
+            style: AppTextStyles.bodyM.copyWith(
               color: AppColors.neutralDarkLight,
               height: 1.6,
             ),
