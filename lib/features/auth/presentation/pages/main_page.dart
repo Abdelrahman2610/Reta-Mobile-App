@@ -136,11 +136,11 @@ class _MainViewState extends State<_MainView> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'التحقق مطلوب',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 17,
+                    fontSize: 17.sp,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1A2340),
                   ),
@@ -149,8 +149,8 @@ class _MainViewState extends State<_MainView> {
                 Text(
                   missingText,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: 14.sp,
                     color: Color(0xFF6B7280),
                     height: 1.6,
                   ),
@@ -420,7 +420,7 @@ class _MainViewState extends State<_MainView> {
                       textDirection: TextDirection.rtl,
                       style: AppTextStyles.h1.copyWith(
                         color: AppColors.highlightLightest,
-                        fontSize: 28,
+                        fontSize: 28.sp,
                         height: 1.2,
                       ),
                     ),
@@ -493,7 +493,7 @@ class _MainViewState extends State<_MainView> {
                         textDirection: TextDirection.rtl,
                         style: AppTextStyles.h5.copyWith(
                           color: AppColors.neutralLightLightest,
-                          fontSize: 15,
+                          fontSize: 15.sp,
                         ),
                       ),
                       const SizedBox(height: 6),

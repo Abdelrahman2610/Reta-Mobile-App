@@ -397,7 +397,7 @@ class _NewUserCTA extends StatelessWidget {
                         textDirection: TextDirection.rtl,
                         style: AppTextStyles.h5.copyWith(
                           color: AppColors.neutralLightLightest,
-                          fontSize: 15,
+                          fontSize: 15.sp,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -631,7 +631,7 @@ class _InfoBox extends StatelessWidget {
             textDirection: TextDirection.rtl,
             style: AppTextStyles.captionM.copyWith(
               color: AppColors.neutralDarkLight,
-              fontSize: 10,
+              fontSize: 10.sp,
             ),
           ),
           const SizedBox(height: 2),
@@ -641,7 +641,7 @@ class _InfoBox extends StatelessWidget {
             style: AppTextStyles.captionM.copyWith(
               color: AppColors.neutralDarkDark,
               fontWeight: FontWeight.w700,
-              fontSize: 11,
+              fontSize: 11.sp,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

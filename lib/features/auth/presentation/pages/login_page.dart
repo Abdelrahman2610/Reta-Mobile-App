@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
 import 'package:reta/features/auth/presentation/pages/main_page.dart';
@@ -356,6 +357,12 @@ class _LoginPageState extends State<LoginPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        Text(
+          ' ليس لديك حساب؟',
+          style: AppTextStyles.actionM.copyWith(
+            color: AppColors.neutralDarkLightest,
+          ),
+        ),
         TextButton(
           onPressed: () {
             Navigator.of(
@@ -375,12 +382,6 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
-        Text(
-          ' ليس لديك حساب؟',
-          style: AppTextStyles.actionM.copyWith(
-            color: AppColors.neutralDarkLightest,
-          ),
-        ),
       ],
     );
   }
@@ -388,7 +389,12 @@ class _LoginPageState extends State<LoginPage> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(top: 60, bottom: 32, left: 24, right: 24),
+      padding: EdgeInsets.only(
+        top: 60.h,
+        bottom: 32.h,
+        left: 24.w,
+        right: 24.w,
+      ),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -399,12 +405,12 @@ class _LoginPageState extends State<LoginPage> {
       child: Column(
         children: [
           Container(
-            width: 170,
-            height: 170,
-            decoration: BoxDecoration(shape: BoxShape.circle),
+            width: 130.w,
+            height: 130.w,
+            decoration: const BoxDecoration(shape: BoxShape.circle),
             child: Image.asset('assets/images/logo.png', fit: BoxFit.contain),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           Text(
             'مرحبا بك في خدمات مصلحة الضرائب العقارية',
             textDirection: TextDirection.rtl,
@@ -421,22 +427,22 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         Expanded(
           child: _buildSingleTab(
-            label: 'بالرقم القومي/جواز السفر',
-            isSelected: state.selectedTab == LoginTab.nationalId,
+            label: 'برقم الموبايل',
+            isSelected: state.selectedTab == LoginTab.mobile,
             onTap: () {
               _clearAllControllers();
-              cubit.selectTab(LoginTab.nationalId);
+              cubit.selectTab(LoginTab.mobile);
             },
           ),
         ),
         Container(width: 1, height: 40, color: AppColors.neutralLightDark),
         Expanded(
           child: _buildSingleTab(
-            label: 'برقم الموبايل',
-            isSelected: state.selectedTab == LoginTab.mobile,
+            label: 'بالرقم القومي/جواز السفر',
+            isSelected: state.selectedTab == LoginTab.nationalId,
             onTap: () {
               _clearAllControllers();
-              cubit.selectTab(LoginTab.mobile);
+              cubit.selectTab(LoginTab.nationalId);
             },
           ),
         ),
@@ -502,7 +508,7 @@ class _LoginPageState extends State<LoginPage> {
   }) {
     final bool hasError = errorText != null;
 
-    final Widget? prefixIcon = hasError
+    final Widget? suffixIcon = hasError
         ? const Padding(
             padding: EdgeInsets.all(12),
             child: Icon(
@@ -535,7 +541,8 @@ class _LoginPageState extends State<LoginPage> {
         hintStyle: AppTextStyles.bodyM.copyWith(
           color: AppColors.neutralDarkLightest,
         ),
-        prefixIcon: prefixIcon,
+        prefixIcon: null,
+        suffixIcon: suffixIcon,
         filled: true,
         fillColor: AppColors.white,
         contentPadding: const EdgeInsets.symmetric(

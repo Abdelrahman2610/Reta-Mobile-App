@@ -149,7 +149,6 @@ class _DeclarationsHome extends StatelessWidget {
               textAlign: TextAlign.right,
               style: AppTextStyles.bodyM.copyWith(
                 color: AppColors.neutralLightLightest,
-                height: 1.4,
               ),
             ),
             const SizedBox(height: 16),

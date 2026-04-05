@@ -8,6 +8,7 @@ import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_cubit.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration_lookups_cubit.dart';
 import 'package:reta/features/splash/presentation/pages/splash.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 // import 'core/widgets/inactivity_detector.dart';
 
 import 'core/helpers/runtime_data.dart';
@@ -40,26 +41,34 @@ class MainApp extends StatelessWidget {
           BlocProvider(lazy: true, create: (_) => UserProfileCubit()),
           BlocProvider(lazy: true, create: (_) => UserProfileCubit()),
         ],
-        child: Directionality(
-          textDirection: TextDirection.rtl,
-          child: MaterialApp(
-            navigatorKey: RuntimeData.mainAppKey,
-            theme: AppTheme.lightTheme,
-            // For RTL/LTR support:
-            // localizationsDelegates: const [
-            //   GlobalMaterialLocalizations.delegate,
-            //   GlobalWidgetsLocalizations.delegate,
-            //   GlobalCupertinoLocalizations.delegate,
-            // ],
-            debugShowCheckedModeBanner: false,
-            supportedLocales: const [Locale('ar'), Locale('en')],
-            // builder: (context, Widget? child) =>
-            //     InactivityDetector(child: child!),
-            builder: (context, Widget? child) => child!,
-            home: SplashPage(),
-          ),
+        // child: Directionality(
+        //   textDirection: TextDirection.ltr,
+        child: MaterialApp(
+          navigatorKey: RuntimeData.mainAppKey,
+          theme: AppTheme.lightTheme,
+
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('ar'), Locale('en')],
+          locale: const Locale('ar'),
+          debugShowCheckedModeBanner: false,
+          // builder: (context, Widget? child) =>
+          //     InactivityDetector(child: child!),
+          builder: (context, Widget? child) {
+            final mediaQuery = MediaQuery.of(context);
+            final clampedTextScale = mediaQuery.textScaleFactor.clamp(0.8, 1.2);
+            return MediaQuery(
+              data: mediaQuery.copyWith(textScaleFactor: clampedTextScale),
+              child: child!,
+            );
+          },
+          home: SplashPage(),
         ),
       ),
+      // ),
     );
   }
 }

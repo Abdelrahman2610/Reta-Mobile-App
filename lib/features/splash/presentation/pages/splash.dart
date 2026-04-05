@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/features/auth/presentation/pages/main_page.dart';
 
 import '../../../../core/network/dio_client.dart';
@@ -120,7 +121,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                         style: AppTextStyles.h3.copyWith(
                           color: AppColors.white,
                           fontWeight: FontWeight.w700,
-                          fontSize: 25,
+                          fontSize: 25.sp,
                           height: 1.15,
                           letterSpacing: 0.3,
                         ),
@@ -134,7 +135,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                         textDirection: TextDirection.rtl,
                         style: AppTextStyles.bodyM.copyWith(
                           color: AppColors.white.withOpacity(0.82),
-                          fontSize: 17,
+                          fontSize: 17.sp,
                           height: 1.3,
                           fontWeight: FontWeight.w400,
                         ),

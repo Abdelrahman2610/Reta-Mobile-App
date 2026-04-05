@@ -47,7 +47,7 @@ class _DeclarationGuidePageState extends State<DeclarationGuidePage> {
         appBar: MainAppBar(
           title: 'طلب إقرار ضريبي جديد',
           backgroundColor: AppColors.mainBlueIndigoDye,
-          titleTextStyle: TextStyle(color: Colors.white, fontSize: 16.sp),
+          titleTextStyle: TextStyle(color: Colors.white, fontSize: 8.sp),
         ),
         body: Column(
           children: [
@@ -62,7 +62,7 @@ class _DeclarationGuidePageState extends State<DeclarationGuidePage> {
                     border: Border.all(color: AppColors.neutralLightLightest),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'الدليل الإرشادي لتقديم الإقرار الضريبي',
@@ -181,7 +181,7 @@ class _DeclarationGuidePageState extends State<DeclarationGuidePage> {
                               child: Text(
                                 'أقر بأنني قرأت وفهمت التعليمات الواردة في الدليل الإرشادي، وأوافق على الالتزام بها عند تقديم الإقرار الضريبي.',
                                 textDirection: TextDirection.rtl,
-                                style: AppTextStyles.bodyS.copyWith(
+                                style: AppTextStyles.bodyM.copyWith(
                                   color: AppColors.neutralDarkLight,
                                 ),
                               ),
