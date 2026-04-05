@@ -388,4 +388,19 @@ class AuthRepository {
       );
     });
   }
+
+  Future<ApiResult<RegisterOtpResponse>> resendOtpForUnverifiedUser({
+    required String mobile,
+  }) async {
+    return safeApiCall(() async {
+      final response = await _dio.post(
+        ApiConstants.validatePhoneSendOtp,
+        data: {'mobile': mobile},
+      );
+      log('[Repo] resendOtpForUnverifiedUser response: ${response.data}');
+      return RegisterOtpResponse.fromJson(
+        response.data as Map<String, dynamic>,
+      );
+    });
+  }
 }

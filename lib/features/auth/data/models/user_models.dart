@@ -3,6 +3,9 @@ import 'package:reta/core/helpers/app_enum.dart';
 class UserModel {
   final String? id;
   final String? firstname;
+  final String? secondName;
+  final String? thirdName;
+  final String? fourthName;
   final String? lastname;
   final String? email;
   final String? phone;
@@ -26,6 +29,9 @@ class UserModel {
   const UserModel({
     this.id,
     this.firstname,
+    this.secondName,
+    this.thirdName,
+    this.fourthName,
     this.lastname,
     this.email,
     this.phone,
@@ -83,6 +89,9 @@ class UserModel {
     UserModel userModel = UserModel(
       id: profile['id']?.toString(),
       firstname: profile['first_name']?.toString(),
+      secondName: profile['second_name']?.toString(),
+      thirdName: profile['third_name']?.toString(),
+      fourthName: profile['fourth_name']?.toString(),
       lastname: profile['last_name']?.toString(),
       email: data['email']?.toString(),
       phone: profile['mobile']?.toString(),
@@ -111,13 +120,14 @@ class UserModel {
   bool get isAuthenticated => userType == UserType.authenticated;
 
   bool get isFullyVerified =>
-      (emailVerified ?? false) &&
-      (phoneVerified ?? false) &&
-      (nationalIdVerified ?? false);
+      (phoneVerified ?? false) && (nationalIdVerified ?? false);
 
   UserModel copyWith({
     String? id,
     String? firstName,
+    String? secondName,
+    String? thirdName,
+    String? fourthName,
     String? lastName,
     String? email,
     String? phone,
@@ -136,6 +146,9 @@ class UserModel {
     return UserModel(
       id: id ?? this.id,
       firstname: firstname ?? this.firstname,
+      secondName: secondName ?? this.secondName,
+      thirdName: thirdName ?? this.thirdName,
+      fourthName: fourthName ?? this.fourthName,
       lastname: lastname ?? this.lastname,
       email: email ?? this.email,
       phone: phone ?? this.phone,

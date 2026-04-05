@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
+import 'package:reta/features/auth/presentation/cubit/signup_cubit.dart';
 import 'package:reta/features/auth/presentation/pages/main_page.dart';
+import 'package:reta/features/auth/presentation/pages/otp_page.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -76,6 +78,25 @@ class _LoginPageState extends State<LoginPage> {
       create: (_) => LoginCubit(),
       child: BlocListener<LoginCubit, LoginState>(
         listener: (context, state) {
+          if (state.unverifiedMobile != null && state.pendingOtp != null) {
+            final cubit = SignupCubit();
+            cubit.seedPendingOtp(
+              userId: state.pendingOtp!.userId ?? '',
+              mobile: state.unverifiedMobile!,
+              token: state.pendingOtp!.token ?? '',
+            );
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => BlocProvider.value(
+                  value: cubit,
+                  child: OtpPage(
+                    phoneNumber: state.unverifiedMobile!,
+                    email: state.loginResponse?.email ?? '',
+                  ),
+                ),
+              ),
+            );
+          }
           if (state.isSuccess && state.loginResponse != null) {
             final response = state.loginResponse!;
             final user = UserModel(

@@ -62,5 +62,5 @@ class LoginResponse {
   String get displayName =>
       [firstName, lastName].where((s) => s != null && s.isNotEmpty).join(' ');
 
-  bool get isFullyVerified => phoneVerified && ocrVerified && emailVerified;
+  bool get isFullyVerified => phoneVerified && ocrVerified;
 }
