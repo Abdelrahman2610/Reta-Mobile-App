@@ -40,34 +40,37 @@ class MainApp extends StatelessWidget {
           BlocProvider(create: (_) => NotificationsCubit()),
           BlocProvider(lazy: true, create: (_) => UserProfileCubit()),
         ],
-        // child: Directionality(
-        //   textDirection: TextDirection.ltr,
-        child: MaterialApp(
-          navigatorKey: RuntimeData.mainAppKey,
-          theme: AppTheme.lightTheme,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: MaterialApp(
+            navigatorKey: RuntimeData.mainAppKey,
+            theme: AppTheme.lightTheme,
 
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [Locale('ar'), Locale('en')],
-          locale: const Locale('ar'),
-          debugShowCheckedModeBanner: false,
-          // builder: (context, Widget? child) =>
-          //     InactivityDetector(child: child!),
-          builder: (context, Widget? child) {
-            final mediaQuery = MediaQuery.of(context);
-            final clampedTextScale = mediaQuery.textScaleFactor.clamp(0.8, 1.2);
-            return MediaQuery(
-              data: mediaQuery.copyWith(textScaleFactor: clampedTextScale),
-              child: child!,
-            );
-          },
-          home: SplashPage(),
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('ar'), Locale('en')],
+            locale: const Locale('ar'),
+            debugShowCheckedModeBanner: false,
+            // builder: (context, Widget? child) =>
+            //     InactivityDetector(child: child!),
+            builder: (context, Widget? child) {
+              final mediaQuery = MediaQuery.of(context);
+              final clampedTextScale = mediaQuery.textScaleFactor.clamp(
+                0.8,
+                1.2,
+              );
+              return MediaQuery(
+                data: mediaQuery.copyWith(textScaleFactor: clampedTextScale),
+                child: child!,
+              );
+            },
+            home: SplashPage(),
+          ),
         ),
       ),
-      // ),
     );
   }
 }

@@ -315,6 +315,31 @@ class SignupState {
   }
 }
 
+// ─── Password validation helper  ────────────────────────────────────────────
+
+class PasswordRules {
+  static const int minLength = 8;
+  static const int maxLength = 10;
+
+  static bool hasUppercase(String v) => v.contains(RegExp(r'[A-Z]'));
+  static bool hasLowercase(String v) => v.contains(RegExp(r'[a-z]'));
+  static bool hasDigit(String v) => v.contains(RegExp(r'[0-9]'));
+  static bool hasNoSpaces(String v) => !v.contains(' ');
+  static bool meetsMinLength(String v) => v.length >= minLength;
+  static bool withinMaxLength(String v) => v.length <= maxLength;
+
+  static String? validate(String v) {
+    if (v.isEmpty) return 'كلمة السر مطلوبة';
+    if (!withinMaxLength(v)) return 'لا يمكن أن تتجاوز كلمة السر 10 أحرف';
+    if (!meetsMinLength(v)) return 'يجب أن تكون 8 أحرف على الأقل';
+    if (!hasUppercase(v)) return 'يجب أن تحتوي على حرف كبير (A-Z)';
+    if (!hasLowercase(v)) return 'يجب أن تحتوي على حرف صغير (a-z)';
+    if (!hasDigit(v)) return 'يجب أن تحتوي على رقم';
+    if (!hasNoSpaces(v)) return 'لا يُسمح باستخدام المسافات';
+    return null;
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Cubit
 // ─────────────────────────────────────────────────────────────────────────────
@@ -670,18 +695,22 @@ class SignupCubit extends Cubit<SignupState> {
     ),
   );
 
+  void seedPendingOtp({
+    required String userId,
+    required String mobile,
+    required String token,
+  }) {
+    _pendingOtpToken = token;
+    _pendingUserId = userId;
+    _pendingMobile = mobile;
+  }
+
+  // ── Password handlers ─────────────────────────────────────────────
+
   void onPasswordChanged(String v) => emit(
     state.copyWith(
       password: v,
-      passwordError: () {
-        if (v.isEmpty) return 'كلمة السر مطلوبة';
-        if (v.length < 8) return 'يجب أن تكون 8 أحرف على الأقل';
-        if (!v.contains(RegExp(r'[A-Z]'))) return 'يجب أن تحتوي على حرف كبير';
-        if (!v.contains(RegExp(r'[0-9]'))) return 'يجب أن تحتوي على رقم';
-        if (!v.contains(RegExp(r'[!@#\$%^&*]')))
-          return 'يجب أن تحتوي على رمز خاص';
-        return null;
-      },
+      passwordError: () => v.isEmpty ? null : PasswordRules.validate(v),
       confirmPasswordError: () {
         if (state.confirmPassword.isEmpty) return null;
         return state.confirmPassword != v ? 'كلمتا السر غير متطابقتين' : null;
@@ -721,10 +750,8 @@ class SignupCubit extends Cubit<SignupState> {
 
     emit(state.copyWith(isLoading: true, submitError: () => null));
 
-    final nameParts = state.restOfName.trim().split(' ');
-    final lastName = nameParts.isNotEmpty
-        ? nameParts.last
-        : state.restOfName.trim();
+    // final nameParts = state.restOfName.trim().split(' ');
+    final lastName = state.restOfName.trim();
 
     final gender = state.selectedGender?.id ?? '1';
 
@@ -749,7 +776,7 @@ class SignupCubit extends Cubit<SignupState> {
     final request = RegisterRequest(
       firstName: state.firstName.trim(),
       lastName: lastName,
-      email: state.email.trim(),
+      email: state.email.trim().isEmpty ? null : state.email.trim(),
       mobile: state.phone.trim(),
       password: state.password,
       passwordConfirm: state.confirmPassword,
@@ -831,8 +858,8 @@ class SignupCubit extends Cubit<SignupState> {
 
     final request = RegisterRequest(
       firstName: state.firstName.trim(),
-      lastName: state.restOfName.trim().split(' ').last,
-      email: state.email.trim(),
+      lastName: state.restOfName.trim(),
+      email: state.email.trim().isEmpty ? null : state.email.trim(),
       mobile: state.phone.trim(),
       password: state.password,
       passwordConfirm: state.confirmPassword,
@@ -887,19 +914,7 @@ class SignupCubit extends Cubit<SignupState> {
         ? 'تاريخ الميلاد مطلوب'
         : null;
 
-    String? passwordError;
-    final pw = state.password;
-    if (pw.isEmpty) {
-      passwordError = 'كلمة السر مطلوبة';
-    } else if (pw.length < 8) {
-      passwordError = 'يجب أن تكون 8 أحرف على الأقل';
-    } else if (!pw.contains(RegExp(r'[A-Z]'))) {
-      passwordError = 'يجب أن تحتوي على حرف كبير';
-    } else if (!pw.contains(RegExp(r'[0-9]'))) {
-      passwordError = 'يجب أن تحتوي على رقم';
-    } else if (!pw.contains(RegExp(r'[!@#\$%^&*]'))) {
-      passwordError = 'يجب أن تحتوي على رمز خاص';
-    }
+    final passwordError = PasswordRules.validate(state.password);
 
     final confirmPasswordError = state.confirmPassword != state.password
         ? 'كلمتا السر غير متطابقتين'

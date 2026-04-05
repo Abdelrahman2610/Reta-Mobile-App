@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reta/features/auth/presentation/pages/main_page.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -109,10 +110,13 @@ class _OtpPageState extends State<OtpPage> {
       await Future.delayed(const Duration(seconds: 2));
       if (!mounted) return;
 
+      final emailWasEntered = widget.email.trim().isNotEmpty;
+
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (_) =>
-              EmailVerificationAfterRegisterPage(email: widget.email),
+          builder: (_) => emailWasEntered
+              ? EmailVerificationAfterRegisterPage(email: widget.email)
+              : const MainPage(isLoggedIn: false),
         ),
         (route) => false,
       );

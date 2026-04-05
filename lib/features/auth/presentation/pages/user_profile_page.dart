@@ -303,7 +303,16 @@ class _ProfileBodyState extends State<_ProfileBody> {
           children: [
             _ReadOnlyField(
               label: 'الاسم الكامل',
-              value: '${u.firstname} ${u.lastname}'.trim(),
+              value:
+                  [
+                        u.firstname,
+                        u.secondName,
+                        u.thirdName,
+                        u.fourthName,
+                        u.lastname,
+                      ]
+                      .where((part) => part != null && part.trim().isNotEmpty)
+                      .join(' '),
             ),
             const _Divider(),
 

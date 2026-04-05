@@ -197,6 +197,9 @@ class UserProfileCubit extends Cubit<UserProfileState> {
         userModel: UserModel(
           id: user.id,
           firstname: (user.firstname ?? '').trim(),
+          secondName: user.secondName,
+          thirdName: user.thirdName,
+          fourthName: user.fourthName,
           lastname: (user.lastname ?? '').trim(),
           email: user.email ?? '',
           emailVerified: user.emailVerified ?? false,

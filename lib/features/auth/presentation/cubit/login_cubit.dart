@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reta/features/auth/data/models/otp_response.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/models/login_response.dart';
 import '../../../../core/network/api_result.dart';
@@ -29,6 +30,10 @@ class LoginState {
 
   final String? localError;
 
+  final String? unverifiedMobile;
+
+  final RegisterOtpResponse? pendingOtp;
+
   const LoginState({
     this.selectedTab = LoginTab.mobile,
     this.phone = '',
@@ -44,6 +49,8 @@ class LoginState {
     this.passportError,
     this.credentialError,
     this.localError,
+    this.unverifiedMobile,
+    this.pendingOtp,
   });
 
   bool get isFormValid {
@@ -82,6 +89,8 @@ class LoginState {
     String? Function()? passportError,
     String? Function()? credentialError,
     String? Function()? localError,
+    String? Function()? unverifiedMobile,
+    RegisterOtpResponse? Function()? pendingOtp,
   }) {
     return LoginState(
       selectedTab: selectedTab ?? this.selectedTab,
@@ -106,6 +115,10 @@ class LoginState {
           ? credentialError()
           : this.credentialError,
       localError: localError != null ? localError() : this.localError,
+      unverifiedMobile: unverifiedMobile != null
+          ? unverifiedMobile()
+          : this.unverifiedMobile,
+      pendingOtp: pendingOtp != null ? pendingOtp() : this.pendingOtp,
     );
   }
 }
@@ -131,6 +144,8 @@ class LoginCubit extends Cubit<LoginState> {
         passportError: () => null,
         credentialError: () => null,
         localError: () => null,
+        unverifiedMobile: () => null,
+        pendingOtp: () => null,
         isSuccess: false,
       ),
     );
@@ -183,6 +198,8 @@ class LoginCubit extends Cubit<LoginState> {
         isLoading: true,
         credentialError: () => null,
         localError: () => null,
+        unverifiedMobile: () => null,
+        pendingOtp: () => null,
       ),
     );
 
@@ -212,6 +229,35 @@ class LoginCubit extends Cubit<LoginState> {
         //   );
         //   return;
         // }
+        if (!data.phoneVerified) {
+          final mobile = data.mobile ?? state.phone;
+          final otpResult = await _authRepository.resendOtpForUnverifiedUser(
+            mobile: mobile,
+          );
+
+          switch (otpResult) {
+            case ApiSuccess(:final data as RegisterOtpResponse):
+              emit(
+                state.copyWith(
+                  isLoading: false,
+                  loginResponse: result is ApiSuccess
+                      ? (result as ApiSuccess<LoginResponse>).data
+                      : null,
+                  unverifiedMobile: () => mobile,
+                  pendingOtp: () => data,
+                ),
+              );
+            case ApiError(:final message):
+              emit(
+                state.copyWith(
+                  isLoading: false,
+                  credentialError: () => message,
+                ),
+              );
+          }
+          return;
+        }
+
         emit(
           state.copyWith(
             isLoading: false,

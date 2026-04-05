@@ -206,6 +206,7 @@ class _SignupPageState extends State<SignupPage> {
                         label: 'مرفق الرقم القومي',
                         isRequired: true,
                         hasImage: state.hasNationalIdImage,
+                        imageFile: state.nationalIdFile,
                         errorText: state.nationalIdImageError,
                         onPickImage: cubit.onNationalIdImagePicked,
                         onRemoveImage: cubit.onNationalIdImageRemoved,
@@ -287,6 +288,7 @@ class _SignupPageState extends State<SignupPage> {
                         label: 'مرفق صورة جواز السفر',
                         isRequired: true,
                         hasImage: state.hasNationalIdImage,
+                        imageFile: state.nationalIdFile,
                         errorText: state.nationalIdImageError,
                         onPickImage: cubit.onNationalIdImagePicked,
                         onRemoveImage: cubit.onNationalIdImageRemoved,
@@ -325,25 +327,16 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ],
 
-                    _Field(
+                    // ── Password field + live checklist ──────────────────────
+                    _PasswordField(
                       label: 'كلمة السر',
-                      isRequired: true,
-                      hint: '••••••••',
                       controller: _passwordController,
-                      obscureText: !state.isPasswordVisible,
+                      isVisible: state.isPasswordVisible,
                       errorText: state.passwordError,
                       onChanged: cubit.onPasswordChanged,
-                      suffix: IconButton(
-                        icon: Icon(
-                          state.isPasswordVisible
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                          color: AppColors.neutralDarkLightest,
-                          size: 20,
-                        ),
-                        onPressed: cubit.togglePasswordVisibility,
-                      ),
+                      onToggleVisibility: cubit.togglePasswordVisibility,
                     ),
+
                     _Field(
                       label: 'تأكيد كلمة السر',
                       isRequired: true,
@@ -362,6 +355,13 @@ class _SignupPageState extends State<SignupPage> {
                         ),
                         onPressed: cubit.toggleConfirmPasswordVisibility,
                       ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    BlocBuilder<SignupCubit, SignupState>(
+                      builder: (context, state) =>
+                          _PasswordChecklist(password: state.password),
                     ),
 
                     const SizedBox(height: 8),
@@ -463,6 +463,298 @@ class _SignupPageState extends State<SignupPage> {
             },
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// _PasswordField
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _PasswordField extends StatelessWidget {
+  final String label;
+  final TextEditingController controller;
+  final bool isVisible;
+  final String? errorText;
+  final void Function(String) onChanged;
+  final VoidCallback onToggleVisibility;
+
+  const _PasswordField({
+    required this.label,
+    required this.controller,
+    required this.isVisible,
+    required this.errorText,
+    required this.onChanged,
+    required this.onToggleVisibility,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pw = controller.text;
+    final isOverLimit = pw.length > PasswordRules.maxLength;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Label ──────────────────────────────────────────────────────────
+          RichText(
+            textDirection: TextDirection.rtl,
+            text: TextSpan(
+              style: AppTextStyles.h5.copyWith(
+                color: AppColors.neutralDarkDark,
+                fontWeight: FontWeight.w600,
+              ),
+              children: [
+                TextSpan(text: label),
+                TextSpan(
+                  text: '* ',
+                  style: AppTextStyles.h5.copyWith(color: AppColors.errorDark),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+
+          // ── Text field ─────────────────────────────────────────────────────
+          Directionality(
+            textDirection: TextDirection.rtl,
+            child: TextFormField(
+              controller: controller,
+              onChanged: onChanged,
+              obscureText: !isVisible,
+              textAlign: TextAlign.right,
+              style: AppTextStyles.bodyM.copyWith(
+                color: AppColors.neutralDarkDark,
+              ),
+              decoration: InputDecoration(
+                hintText: '••••••••',
+                hintStyle: AppTextStyles.bodyM.copyWith(
+                  color: AppColors.neutralDarkLightest,
+                ),
+                suffixIcon: isOverLimit
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: Icon(
+                          Icons.info_outline_rounded,
+                          color: AppColors.errorDark,
+                          size: 20,
+                        ),
+                      )
+                    : IconButton(
+                        icon: Icon(
+                          isVisible
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                          color: AppColors.neutralDarkLightest,
+                          size: 20,
+                        ),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        onPressed: onToggleVisibility,
+                      ),
+                filled: true,
+                fillColor: AppColors.white,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(
+                    color: AppColors.neutralLightDarkest,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(
+                    color: isOverLimit
+                        ? AppColors.errorDark
+                        : AppColors.neutralLightDarkest,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(
+                    color: isOverLimit
+                        ? AppColors.errorDark
+                        : AppColors.highlightDarkest,
+                    width: 2,
+                  ),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.errorDark),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(
+                    color: AppColors.errorDark,
+                    width: 2,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          if (isOverLimit) ...[
+            const SizedBox(height: 4),
+            Text(
+              'لا يمكن أن تتجاوز كلمة السر ${PasswordRules.maxLength} أحرف',
+              textDirection: TextDirection.rtl,
+              style: AppTextStyles.captionM.copyWith(
+                color: AppColors.errorDark,
+              ),
+            ),
+          ],
+          if (!isOverLimit && errorText != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              errorText!,
+              textDirection: TextDirection.rtl,
+              style: AppTextStyles.captionM.copyWith(
+                color: AppColors.errorDark,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// _PasswordChecklist
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _PasswordChecklist extends StatelessWidget {
+  final String password;
+
+  const _PasswordChecklist({required this.password});
+
+  @override
+  Widget build(BuildContext context) {
+    final pw = password;
+    final isEmpty = pw.isEmpty;
+
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8F9FA),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFE9ECEF)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'متطلبات كلمة المرور:',
+              textDirection: TextDirection.rtl,
+              style: AppTextStyles.captionM.copyWith(
+                color: AppColors.neutralDarkDark,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _CheckRow(
+              label: 'يجب أن تحتوي على حرف كبير (A-Z)',
+              met: !isEmpty && PasswordRules.hasUppercase(pw),
+              isEmpty: isEmpty,
+            ),
+            _CheckRow(
+              label: 'يجب أن تحتوي على حرف صغير (a-z)',
+              met: !isEmpty && PasswordRules.hasLowercase(pw),
+              isEmpty: isEmpty,
+            ),
+            _CheckRow(
+              label: 'يجب أن تحتوي على رقم واحد على الأقل',
+              met: !isEmpty && PasswordRules.hasDigit(pw),
+              isEmpty: isEmpty,
+            ),
+            _CheckRow(
+              label: 'يمكن إضافة رموز خاصة مثل (! @ # \$ %) وهي اختيارية',
+              met: true,
+              isEmpty: isEmpty,
+              isOptional: true,
+            ),
+            _CheckRow(
+              label:
+                  'الحد الأدنى 8 أحرف والحد الأقصى ${PasswordRules.maxLength} أحرف',
+              met:
+                  !isEmpty &&
+                  PasswordRules.meetsMinLength(pw) &&
+                  PasswordRules.withinMaxLength(pw),
+              isEmpty: isEmpty,
+            ),
+            _CheckRow(
+              label: 'لا يُسمح باستخدام المسافات',
+              met: !isEmpty && PasswordRules.hasNoSpaces(pw),
+              isEmpty: isEmpty,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CheckRow extends StatelessWidget {
+  final String label;
+  final bool met;
+  final bool isEmpty;
+  final bool isOptional;
+
+  const _CheckRow({
+    required this.label,
+    required this.met,
+    required this.isEmpty,
+    this.isOptional = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Color iconColor;
+    final IconData icon;
+
+    if (isOptional) {
+      iconColor = AppColors.neutralDarkLightest;
+      icon = Icons.info_outline_rounded;
+    } else if (isEmpty) {
+      iconColor = AppColors.neutralDarkLightest;
+      icon = Icons.radio_button_unchecked_rounded;
+    } else if (met) {
+      iconColor = const Color(0xFF2E7D32);
+      icon = Icons.check_circle_rounded;
+    } else {
+      iconColor = AppColors.errorDark;
+      icon = Icons.cancel_rounded;
+    }
+
+    final Color textColor = isOptional || isEmpty
+        ? AppColors.neutralDarkLightest
+        : (met ? const Color(0xFF2E7D32) : AppColors.errorDark);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16, color: iconColor),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              label,
+              textDirection: TextDirection.rtl,
+              style: AppTextStyles.captionM.copyWith(color: textColor),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1056,6 +1348,7 @@ class _ImageUploadField extends StatelessWidget {
   final String label;
   final bool isRequired;
   final bool hasImage;
+  final File? imageFile;
   final String? errorText;
   final void Function(File) onPickImage;
   final VoidCallback onRemoveImage;
@@ -1064,6 +1357,7 @@ class _ImageUploadField extends StatelessWidget {
     required this.label,
     required this.isRequired,
     required this.hasImage,
+    this.imageFile,
     required this.errorText,
     required this.onPickImage,
     required this.onRemoveImage,
@@ -1080,6 +1374,41 @@ class _ImageUploadField extends StatelessWidget {
     if (picked != null) {
       onPickImage(File(picked.path));
     }
+  }
+
+  void _showImagePreview(BuildContext context) {
+    if (imageFile == null) return;
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.file(imageFile!, fit: BoxFit.contain),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.black54,
+                    shape: BoxShape.circle,
+                  ),
+                  padding: const EdgeInsets.all(4),
+                  child: const Icon(Icons.close, color: Colors.white, size: 22),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -1151,12 +1480,15 @@ class _ImageUploadField extends StatelessWidget {
                     ),
                   ),
                 ),
-                Icon(
-                  hasImage ? Icons.image_rounded : Icons.image_outlined,
-                  color: hasImage
-                      ? AppColors.highlightDarkest
-                      : AppColors.neutralDarkLightest,
-                  size: 32,
+                GestureDetector(
+                  onTap: hasImage ? () => _showImagePreview(context) : null,
+                  child: Icon(
+                    hasImage ? Icons.image_rounded : Icons.image_outlined,
+                    color: hasImage
+                        ? AppColors.highlightDarkest
+                        : AppColors.neutralDarkLightest,
+                    size: 32,
+                  ),
                 ),
               ],
             ),

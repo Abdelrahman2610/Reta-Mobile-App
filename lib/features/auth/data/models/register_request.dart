@@ -1,7 +1,7 @@
 class RegisterRequest {
   final String firstName;
   final String lastName;
-  final String email;
+  final String? email;
   final String mobile;
   final String password;
   final String passwordConfirm;
@@ -23,7 +23,7 @@ class RegisterRequest {
   const RegisterRequest({
     required this.firstName,
     required this.lastName,
-    required this.email,
+    this.email,
     required this.mobile,
     required this.password,
     required this.passwordConfirm,
@@ -39,7 +39,6 @@ class RegisterRequest {
     final fields = <String, String>{
       'first_name': firstName,
       'last_name': lastName,
-      'email': email,
       'mobile': mobile,
       'password': password,
       'password_confirmation': passwordConfirm,
@@ -49,6 +48,10 @@ class RegisterRequest {
       'birth_place': birthPlace,
       'birth_date': birthDate,
     };
+
+    if (email != null && email!.trim().isNotEmpty) {
+      fields['email'] = email!.trim();
+    }
 
     if (passportNumber != null && passportNumber!.isNotEmpty) {
       fields['passport_num'] = passportNumber!;
