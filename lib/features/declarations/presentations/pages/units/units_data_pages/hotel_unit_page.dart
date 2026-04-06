@@ -154,43 +154,15 @@ class _HotelFacilityView extends StatelessWidget {
             16.hs,
 
             // ── عدد الغرف (rooms_count) ────────────
-            BlocBuilder<UnitDataCubit, UnitDataState>(
-              buildWhen: (prev, curr) => prev.roomsCount != curr.roomsCount,
-              builder: (context, state) => Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  AppText(
-                    text: 'عدد الغرف',
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.neutralDarkDark,
-                  ),
-                  AppText(
-                    text: ' *',
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.errorDark,
-                  ),
-                  const Spacer(),
-                  AppCounter(
-                    count: state.roomsCount,
-                    onDecrement: () {
-                      if (cubit.state.roomsCount > 1) {
-                        cubit.emit(
-                          cubit.state.copyWith(
-                            roomsCount: cubit.state.roomsCount - 1,
-                          ),
-                        );
-                      }
-                    },
-                    onIncrement: () => cubit.emit(
-                      cubit.state.copyWith(
-                        roomsCount: cubit.state.roomsCount + 1,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            AppTextFormField(
+              labelText: 'عدد الغرف',
+              labelRequired: true,
+              controller: cubit.facilityRoomCountController,
+              hintText: 'ادخل عدد الغرف',
+              keyboardType: TextInputType.number,
+              validator: (v) {
+                return v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null;
+              },
             ),
             16.hs,
 
