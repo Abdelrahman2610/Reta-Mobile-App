@@ -98,6 +98,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   // Controllers - منشآت مشتركة
   // ─────────────────────────────────────────
   final facilityNameController = TextEditingController(); // اسم المنشأة
+  final facilityRoomCountController = TextEditingController(); // عدد الغرف
   final facilityCodeController = TextEditingController(); // كود حساب المنشأة
   final activityTypeController = TextEditingController(); // نوع النشاط
   final facilityMarketValueController =
@@ -552,14 +553,14 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     final operatingLicense = unitData!['copy_of_the_operating_licenses'];
     final starCertificate = unitData!['certificate_of_stardom_level'];
 
+    facilityRoomCountController.text =
+        unitData!['rooms_count']?.toString() ?? '';
     emit(
       state.copyWith(
         selectedHotelView: viewText,
         selectedStarRating: starText,
         buildingsCount:
             int.tryParse(unitData!['buildings_count']?.toString() ?? '') ?? 1,
-        roomsCount:
-            int.tryParse(unitData!['rooms_count']?.toString() ?? '') ?? 1,
         hasSubUnits: unitData!['has_sub_units'] == 1,
         constructionLicenseFilePath: constructionLicense?['path'],
         constructionLicenseOriginalName:
@@ -2020,7 +2021,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       'view_type_id': viewTypeId,
       'license_date': operatingLicenseDateController.text.trim(),
       'buildings_count': state.buildingsCount,
-      'rooms_count': state.roomsCount,
+      'rooms_count': facilityRoomCountController.text.trim(),
       'star_rating_id': starRatingId,
       'has_sub_units': state.hasSubUnits == true ? 1 : 2,
       'hotelUnits': state.hotelSubUnits

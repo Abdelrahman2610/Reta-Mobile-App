@@ -81,7 +81,6 @@ class UnitDataState {
   final List<VacantLandItem> vacantLandItems;
   final List<HotelSubUnit> hotelSubUnits;
   final int hotelSubUnitsUpdateCount;
-  final int roomsCount;
   final bool? ministryBurden;
   final String? selectedBurdenActivity;
   final String? selectedMineQuarryFacilityTypesValue;
@@ -150,7 +149,6 @@ class UnitDataState {
     this.vacantLandItems = const [],
     this.hotelSubUnits = const [],
     this.hotelSubUnitsUpdateCount = 0,
-    this.roomsCount = 1,
     this.ministryBurden,
     this.selectedBurdenActivity,
     this.allocationContractFilePath,
@@ -240,7 +238,6 @@ class UnitDataState {
     List<VacantLandItem>? vacantLandItems,
     List<HotelSubUnit>? hotelSubUnits,
     int? hotelSubUnitsUpdateCount,
-    int? roomsCount,
     bool? ministryBurden,
     String? selectedBurdenActivity,
     Object? allocationContractFilePath = _undefined,
@@ -402,7 +399,6 @@ class UnitDataState {
       hotelSubUnits: hotelSubUnits ?? this.hotelSubUnits,
       hotelSubUnitsUpdateCount:
           hotelSubUnitsUpdateCount ?? this.hotelSubUnitsUpdateCount,
-      roomsCount: roomsCount ?? this.roomsCount,
       ministryBurden: ministryBurden ?? this.ministryBurden,
       selectedBurdenActivity:
           selectedBurdenActivity ?? this.selectedBurdenActivity,
