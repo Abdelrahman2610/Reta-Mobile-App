@@ -75,7 +75,8 @@ class UnitData extends StatelessWidget {
           listener: (context, state) async {
             if (state.isLoading || state.isFloorLoading) {
               loadingPopup(RuntimeData.getCurrentContext()!);
-            } else if (!state.isLoading && !state.isFloorLoading) {
+            }
+            if (!state.isLoading && !state.isFloorLoading) {
               Navigator.pop(RuntimeData.getCurrentContext()!);
             }
           },

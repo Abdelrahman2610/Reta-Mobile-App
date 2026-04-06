@@ -9,10 +9,12 @@ import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration/declaration_cubit.dart';
 import 'package:reta/features/declarations/presentations/cubit/declaration_lookups_cubit.dart';
 import 'package:reta/features/splash/presentation/pages/splash.dart';
+
 // import 'core/widgets/inactivity_detector.dart';
 
 import 'core/helpers/runtime_data.dart';
 import 'core/theme/app_theme.dart';
+import 'features/payment/presentations/cubit/settlement/my_debts_cubit.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,6 +40,7 @@ class MainApp extends StatelessWidget {
           BlocProvider(create: (_) => DeclarationLookupsCubit()),
           BlocProvider(create: (_) => DeclarationCubit()),
           BlocProvider(create: (_) => NotificationsCubit()),
+          BlocProvider(create: (_) => MyDebtsCubit()..fetchDeclarations()),
           BlocProvider(lazy: true, create: (_) => UserProfileCubit()),
         ],
         child: Directionality(

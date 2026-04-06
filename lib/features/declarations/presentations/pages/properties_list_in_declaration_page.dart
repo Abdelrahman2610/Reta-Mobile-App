@@ -385,6 +385,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
       context.read<MyDebtsCubit>().fetchDeclarations();
       updateDeclarationList();
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
+      Navigator.pop(context);
       PersistentNavBarNavigator.pushNewScreen(
         context,
         screen: PaymentInfoPage(
