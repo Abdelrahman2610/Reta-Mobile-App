@@ -9,6 +9,7 @@ import 'user_profile_state.dart';
 
 class UserProfileCubit extends Cubit<UserProfileState> {
   final AuthRepository _repository;
+  UserModel? userModelData;
 
   UserProfileCubit({AuthRepository? repository, UserModel? userModel})
     : _repository = repository ?? AuthRepository(),
@@ -192,31 +193,28 @@ class UserProfileCubit extends Cubit<UserProfileState> {
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   void _emitFromModel(UserModel user) {
-    emit(
-      UserProfileLoaded(
-        userModel: UserModel(
-          id: user.id,
-          firstname: (user.firstname ?? '').trim(),
-          secondName: user.secondName,
-          thirdName: user.thirdName,
-          fourthName: user.fourthName,
-          lastname: (user.lastname ?? '').trim(),
-          email: user.email ?? '',
-          emailVerified: user.emailVerified ?? false,
-          phone: user.phone ?? '',
-          phoneVerified: user.phoneVerified ?? false,
-          nationality: user.nationality ?? 'مصري',
-          nationalityCode: user.nationalityCode,
-          nationalId: user.nationalId ?? '',
-          nationalIdVerified: user.nationalIdVerified ?? false,
-          passportNumber: user.passportNumber,
-          dateOfBirth: user.dateOfBirth ?? '',
-          placeOfBirth: user.placeOfBirth ?? '',
-          gender: user.gender ?? '',
-          nationalIdFiles: user.nationalIdFiles ?? [],
-          passportFiles: user.passportFiles ?? [],
-        ),
-      ),
+    userModelData = UserModel(
+      id: user.id,
+      firstname: (user.firstname ?? '').trim(),
+      secondName: user.secondName,
+      thirdName: user.thirdName,
+      fourthName: user.fourthName,
+      lastname: (user.lastname ?? '').trim(),
+      email: user.email ?? '',
+      emailVerified: user.emailVerified ?? false,
+      phone: user.phone ?? '',
+      phoneVerified: user.phoneVerified ?? false,
+      nationality: user.nationality ?? 'مصري',
+      nationalityCode: user.nationalityCode,
+      nationalId: user.nationalId ?? '',
+      nationalIdVerified: user.nationalIdVerified ?? false,
+      passportNumber: user.passportNumber,
+      dateOfBirth: user.dateOfBirth ?? '',
+      placeOfBirth: user.placeOfBirth ?? '',
+      gender: user.gender ?? '',
+      nationalIdFiles: user.nationalIdFiles ?? [],
+      passportFiles: user.passportFiles ?? [],
     );
+    emit(UserProfileLoaded(userModel: userModelData!));
   }
 }
