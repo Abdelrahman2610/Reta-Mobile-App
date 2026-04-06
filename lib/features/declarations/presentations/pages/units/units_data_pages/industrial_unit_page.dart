@@ -95,8 +95,21 @@ class _IndustrialFacilityView extends StatelessWidget {
               controller: cubit.exploitedLandAreaController,
               hintText: 'المساحة الإجمالية بالمتر المربع',
               keyboardType: TextInputType.number,
-              validator: (v) =>
-                  v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'هذا الحقل مطلوب';
+
+                final total = double.tryParse(
+                  cubit.totalLandAreaFacilityController.text,
+                );
+                final exploited = double.tryParse(v);
+
+                if (exploited == null) return 'يرجى إدخال رقم صحيح';
+                if (total != null && exploited > total) {
+                  return 'يجب أن تكون المساحة المستغلة أصغر من أو تساوي المساحة الكلية';
+                }
+
+                return null;
+              },
             ),
             16.hs,
 

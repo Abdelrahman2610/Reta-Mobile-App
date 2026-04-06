@@ -55,6 +55,11 @@ class ProviderDataPage extends StatelessWidget {
             if (existingDeclaration != null) {
               cubit.initFromDeclaration(existingDeclaration!);
             }
+
+            if (existingDeclaration != null) {
+              cubit.initFromDeclaration(existingDeclaration!);
+            }
+
             return cubit;
           },
           lazy: false,

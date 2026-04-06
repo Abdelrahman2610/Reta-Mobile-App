@@ -147,17 +147,22 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   bool canSubmitSingleExempt = true;
 
   Future<void> ensureSingleExempt() async {
-    if (unitType == UnitType.residential && declarationId != -1) {
+    if (unitType == UnitType.residential) {
       final result = await safeApiCall(() async {
         final response = await DioClient.instance.dio.get(
           ApiConstants.ensureSingleExempt(declarationId),
         );
-        final status = response.data['status'];
-        return status;
+        if (response.data != '') {
+          final status = response.data['status'];
+          return status;
+        } else {
+          return true;
+        }
       });
 
       switch (result) {
         case ApiSuccess(:final data):
+          // canSubmitSingleExempt = true;
           canSubmitSingleExempt = data;
           emit(state.copyWith(isLoading: false));
         case ApiError(:final message):
@@ -255,8 +260,15 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         .firstWhere((element) => element.id == unitId)
         .name;
     final leaseContract = unitData!['lease_contract'];
+    additionalDocuments.clear();
+    unitData!['supporting_documents'].forEach(
+      (element) =>
+          additionalDocuments.add(AdditionalDocument.fromJson(element)),
+    );
+
     emit(
       state.copyWith(
+        additionalDocuments: additionalDocuments,
         selectedFloorNumber: isFloorOther ? 'أخرى' : floorText,
         isFloorNumberOther: isFloorOther,
         selectedUnitNumber: isUnitOther ? 'أخرى' : unitNumber,
@@ -1571,8 +1583,35 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         isEditMode: false,
       );
     }
+    final isEdit = unitData != null;
 
-    int _declarationId = await submit(context, unitType);
+    Map<String, dynamic> applicantPayload = isEdit
+        ? {"declaration_type_id": 1, "applicant_role_id": applicantType.id}
+        : context.read<ApplicantCubit>().buildPayload(context);
+
+    if (isEdit && applicantData != null) {
+      applicantPayload = applicantData!;
+    }
+
+    final propertyTypeId = lookups.propertyTypes
+        .firstWhere(
+          (p) => p.name == unitType.label,
+          orElse: () => DeclarationLookup(id: 1, name: ''),
+        )
+        .id;
+    final locationCubit = context.read<UnitLocationCubit>();
+
+    final payload = {
+      ...applicantPayload,
+      'unit': {
+        if (isEdit) "id": unitData?['id'],
+        'property_type_id': propertyTypeId,
+        ...locationCubit.buildLocationPayload(),
+        ..._buildUnitPayload(unitType, lookups),
+      },
+    };
+
+    int _declarationId = await submit(context, unitType, payload: payload);
     if (context.mounted && state.successMessage != null) {
       final locationCubit = context.read<UnitLocationCubit>();
       Map<String, dynamic> locationData = {
@@ -1597,6 +1636,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           .trim();
       locationData['is_other_real_state'] =
           locationCubit.state.isBuildingNumberOther;
+
+      locationData['applicant'] = applicantPayload;
       await Future.delayed(const Duration(milliseconds: 100));
       if (!context.mounted) return;
       Navigator.pop(context);
@@ -1614,6 +1655,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
               declarationId: _declarationId,
               locationData: locationData,
               unitData: null,
+              applicantPayload: applicantPayload,
             ),
           ),
         ),
@@ -1621,7 +1663,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     }
   }
 
-  Future<int> submit(BuildContext context, UnitType unitType) async {
+  Future<int> submit(
+    BuildContext context,
+    UnitType unitType, {
+    Map<String, dynamic>? payload,
+  }) async {
     final locationCubit = context.read<UnitLocationCubit>();
     final lookups = context.read<DeclarationLookupsCubit>().lookups!;
 
@@ -1636,23 +1682,28 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
       final isEdit = unitData != null;
 
-      Map<String, dynamic> applicantPayload = isEdit
-          ? {"declaration_type_id": 1, "applicant_role_id": applicantType.id}
-          : context.read<ApplicantCubit>().buildPayload(context);
+      if (payload == null) {
+        Map<String, dynamic> applicantPayload = isEdit
+            ? {"declaration_type_id": 1, "applicant_role_id": applicantType.id}
+            : context.read<ApplicantCubit>().buildPayload(context);
 
-      if (isEdit && applicantData != null) {
-        applicantPayload = applicantData!;
+        if (isEdit || applicantData != null) {
+          applicantPayload = applicantData!;
+        }
+
+        payload = {
+          ...applicantPayload,
+          'unit': {
+            if (isEdit) "id": unitData?['id'],
+            'property_type_id': propertyTypeId,
+            ...locationCubit.buildLocationPayload(),
+            ..._buildUnitPayload(unitType, lookups),
+          },
+        };
       }
 
-      final payload = {
-        ...applicantPayload,
-        'unit': {
-          if (isEdit) "id": unitData?['id'],
-          'property_type_id': propertyTypeId,
-          ...locationCubit.buildLocationPayload(),
-          ..._buildUnitPayload(unitType, lookups),
-        },
-      };
+      print("MSG: UnitPayload: ${_buildUnitPayload(unitType, lookups)}");
+
       final result = isEdit
           ? await DeclarationService.instance.updateDeclaration(
               payload,
@@ -2220,7 +2271,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         .map(
           (d) => {
             'name': d.nameController.text.trim(),
-            'file_id': d.filePath,
+            'path': d.filePath,
             'original_file_name':
                 d.originalFileName ?? d.nameController.text.trim(),
             'full_url': d.fullUrl,

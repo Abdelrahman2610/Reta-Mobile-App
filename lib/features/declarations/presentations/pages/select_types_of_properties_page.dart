@@ -18,6 +18,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
   final int declarationId;
   final Map<String, dynamic>? locationData;
   final Map<String, dynamic>? unitData;
+  final Map<String, dynamic>? applicantPayload;
   final String? otherName;
   final bool handleCreateNewUnitFromDeclarationPropList;
 
@@ -27,6 +28,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
     required this.declarationId,
     this.locationData,
     this.unitData,
+    this.applicantPayload,
     this.otherName,
     this.handleCreateNewUnitFromDeclarationPropList = false,
   });
@@ -256,6 +258,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
             locationData: locationData,
             unitData: unitData,
             otherName: otherName,
+            applicantData: applicantPayload,
           ),
         ),
       ),

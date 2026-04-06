@@ -13,6 +13,8 @@ class PaymentInfoCubit extends Cubit<PaymentInfoState> {
 
   double totalRequired = 0;
 
+  bool completeRequest = false;
+
   void toggleUnit(int index) {
     if (_data == null) return;
     _data!.units[index].isSelected = !_data!.units[index].isSelected;
@@ -88,6 +90,14 @@ class PaymentInfoCubit extends Cubit<PaymentInfoState> {
         emit(PaymentInfoClaimSuccess());
       case ApiError(:final message):
         emit(PaymentInfoError(message));
+    }
+  }
+
+  Future<void> onCompleteRequestsTapped() async {
+    completeRequest = true;
+
+    if (_data != null) {
+      emit(PaymentInfoSuccess(_data!));
     }
   }
 }

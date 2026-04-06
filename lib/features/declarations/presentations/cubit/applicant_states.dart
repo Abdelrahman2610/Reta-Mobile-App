@@ -59,6 +59,8 @@ class ApplicantState extends Equatable {
     isLoading,
     errorMessage,
     successMessage,
+    ownershipProofDocumentPath,
+    ownershipProofDocumentFullUrl,
   ];
 
   ApplicantState copyWith({

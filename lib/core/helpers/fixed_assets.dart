@@ -55,6 +55,7 @@ class FixedAssets {
   String deleteICGrey = "${svg}delete_ic_grey.svg";
   String dateIC = "${svg}date_ic.svg";
   String warningIC = "${svg}warning_ic.svg";
+  String completeRequestsIC = "${svg}complete_requests_ic.svg";
 
   /// ------------------------ Banks --------------------
   String misrBank = "${banks}misr.png";

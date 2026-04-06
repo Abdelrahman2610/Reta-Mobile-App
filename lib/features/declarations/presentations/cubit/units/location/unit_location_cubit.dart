@@ -479,6 +479,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
             applicantType: applicantType,
             unitType: unitType,
             otherName: otherName,
+            applicantPayload: applicantData,
           ),
         ),
       ),
