@@ -1971,6 +1971,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
                   )
                   .id;
         return {
+          'id': b.id,
           'building_type_id': buildingTypeId == -1 ? null : buildingTypeId,
           'floors_count': b.floorsCount,
           'total_area': double.tryParse(b.totalArea.text.trim()),
