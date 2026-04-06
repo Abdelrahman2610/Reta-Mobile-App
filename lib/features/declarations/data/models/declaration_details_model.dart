@@ -8,8 +8,8 @@ class DeclarationDetailsModel {
   final String declarationTypeId;
   final String declarationTypeText;
   final String? applicantRoleOther;
-  final String statusId;
-  final String statusText;
+  String statusId;
+  String statusText;
   final String applicantRoleId;
   final String applicantRoleText;
 
@@ -278,7 +278,9 @@ class TaxpayerModel {
   });
 
   bool get isNatural => typeId == 1;
+
   bool get isCompany => typeId == 2;
+
   String get displayName =>
       isNatural ? '${firstName ?? ''} ${lastName ?? ''}'.trim() : name ?? '';
 

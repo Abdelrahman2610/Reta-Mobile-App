@@ -34,6 +34,7 @@ import '../components/show_submit_declaration_dialog.dart';
 import '../components/submit_declaration_button.dart';
 import '../components/unit_type_category_tab_widget.dart';
 import '../cubit/applicant_cubit.dart';
+import '../cubit/declaration/declaration_cubit.dart';
 import '../cubit/declaration/declaration_details_cubit.dart';
 import '../cubit/declaration_lookups_cubit.dart';
 
@@ -126,8 +127,11 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                                 state.detailsModel?.applicantRoleText ??
                                 declarationModel.declarationTypeText ??
                                 "",
-                            declarationModel.statusId == "1" ||
-                                declarationModel.statusId == "3",
+                            state.detailsModel == null
+                                ? (declarationModel.statusId == "1" ||
+                                      declarationModel.statusId == "3")
+                                : (state.detailsModel?.statusId == "1" ||
+                                      state.detailsModel?.statusId == "3"),
                             onTap: () {
                               PersistentNavBarNavigator.pushNewScreen(
                                 context,
@@ -377,6 +381,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
         pageTransitionAnimation: PageTransitionAnimation.slideUp,
       );
     } else if (state is DeclarationSubmitSuccess) {
+      context.read<DeclarationCubit>().fetchList();
       context.read<MyDebtsCubit>().fetchDeclarations();
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
       PersistentNavBarNavigator.pushNewScreen(
@@ -430,7 +435,9 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
   }
 
   Widget _headerButtons(state, BuildContext context) {
-    return declarationModel.statusId == "2"
+    return (state.detailsModel == null
+            ? declarationModel.statusId == "2"
+            : state.detailsModel.statusId == "2")
         ? Column(
             children: [
               SizedBox(height: 30.h),
@@ -451,17 +458,27 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
           )
         : Column(
             children: [
-              if (declarationModel.statusId == "1" ||
-                  declarationModel.statusId == "3")
-                SizedBox(height: 30.h),
-              if ((declarationModel.statusId == "1" ||
-                      declarationModel.statusId == "3") &&
-                  state.detailsModel != null)
-                AddNewPropertyButton(
-                  onAdd: () {
-                    _addUnit(context, state.detailsModel!);
-                  },
-                ),
+              (state.detailsModel == null
+                      ? (declarationModel.statusId == "1" ||
+                            declarationModel.statusId == "3")
+                      : (state.detailsModel?.statusId == "1" ||
+                            state.detailsModel?.statusId == "3"))
+                  ? SizedBox(height: 30.h)
+                  : SizedBox.shrink(),
+              // if ((declarationModel.statusId == "1" ||
+              //         declarationModel.statusId == "3") &&
+              //     state.detailsModel != null)
+              (state.detailsModel == null
+                      ? (declarationModel.statusId == "1" ||
+                            declarationModel.statusId == "3")
+                      : (state.detailsModel?.statusId == "1" ||
+                            state.detailsModel?.statusId == "3"))
+                  ? AddNewPropertyButton(
+                      onAdd: () {
+                        _addUnit(context, state.detailsModel!);
+                      },
+                    )
+                  : SizedBox.shrink(),
               SizedBox(height: 10.h),
               if (state.detailsModel?.statusId == "3" ||
                   state.detailsModel?.statusId == "1")
