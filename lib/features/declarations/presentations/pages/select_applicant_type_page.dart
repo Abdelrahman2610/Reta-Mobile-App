@@ -12,6 +12,7 @@ import '../../../../core/network/api_constants.dart';
 import '../../../../core/network/api_result.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/verification_dialog.dart';
 import '../../../auth/presentation/cubit/user_profile_cubit.dart';
 import '../../../auth/presentation/cubit/user_profile_state.dart';
 import '../../../auth/presentation/pages/help_support_page.dart';
@@ -114,10 +115,14 @@ class SelectApplicantTypePage extends StatelessWidget {
                               title: "وكيل",
                               subTitle:
                                   "تقديم الإقرار نيابةً عن المكلف بموجب توكيل رسمي ساري.",
-                              onPress: () => onApplicantTaped(
-                                applicantType: ApplicantType.agent,
-                                context: context,
-                              ),
+                              onPress: () {
+                                if (checkCanSubmitIfUserNotValid(context)) {
+                                  onApplicantTaped(
+                                    applicantType: ApplicantType.agent,
+                                    context: context,
+                                  );
+                                }
+                              },
                             ),
                             SizedBox(height: 16.h),
                             SelectApplicantTypeItem(
@@ -143,11 +148,15 @@ class SelectApplicantTypePage extends StatelessWidget {
                               subTitle:
                                   "تقديم الإقرار بصفتك ممثلًا قانونيًا عن شخص أو جهة مكلفة.",
 
-                              onPress: () => onApplicantTaped(
-                                applicantType:
-                                    ApplicantType.legalRepresentative,
-                                context: context,
-                              ),
+                              onPress: () {
+                                if (checkCanSubmitIfUserNotValid(context)) {
+                                  onApplicantTaped(
+                                    applicantType:
+                                        ApplicantType.legalRepresentative,
+                                    context: context,
+                                  );
+                                }
+                              },
                             ),
                             SizedBox(height: 16.h),
                             SelectApplicantTypeItem(
@@ -158,11 +167,15 @@ class SelectApplicantTypePage extends StatelessWidget {
                               otherName: (otherName) {
                                 otherTitle = otherName;
                               },
-                              onPress: () => onApplicantTaped(
-                                applicantType: ApplicantType.other,
-                                context: context,
-                                applicantOtherName: otherTitle,
-                              ),
+                              onPress: () {
+                                if (checkCanSubmitIfUserNotValid(context)) {
+                                  onApplicantTaped(
+                                    applicantType: ApplicantType.other,
+                                    context: context,
+                                    applicantOtherName: otherTitle,
+                                  );
+                                }
+                              },
                             ),
                           ],
                         );
@@ -177,6 +190,16 @@ class SelectApplicantTypePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  bool checkCanSubmitIfUserNotValid(BuildContext context) {
+    final userModel = context.read<UserProfileCubit>().userModelData;
+    if (userModel != null && (userModel.phoneVerified ?? false) == false) {
+      showVerificationDialog(context, userModel);
+      return false;
+    } else {
+      return true;
+    }
   }
 
   Future canApplicantCreateDeclaration(
