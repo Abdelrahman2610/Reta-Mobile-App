@@ -175,6 +175,16 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
 
     switch (result) {
       case ApiSuccess(:final data):
+        _detailsModel?.statusId = data['status_id'].toString();
+        _detailsModel?.statusText = data['status_text'].toString();
+        emit(
+          DeclarationDetailsLoaded(
+            detailsModel,
+            selectedCategoryIndex,
+            activeCategories,
+            units,
+          ),
+        );
         emit(
           DeclarationStatusToOnEditLoaded(
             data['status_id'].toString(),
@@ -212,12 +222,28 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
         '${ApiConstants.submitDeclaration(declarationId)}?data_accuracy_declaration=true',
         data: detailsModel!.toJson(),
       );
-      return response.data['success'];
+      return response.data['data'];
     });
 
     switch (result) {
       case ApiSuccess(:final data):
-        emit(DeclarationSubmitSuccess(declarationId));
+        _detailsModel?.statusId = data['status_id'].toString();
+        _detailsModel?.statusText = data['status_text'].toString();
+        emit(
+          DeclarationDetailsLoaded(
+            detailsModel,
+            selectedCategoryIndex,
+            activeCategories,
+            units,
+          ),
+        );
+        emit(
+          DeclarationSubmitSuccess(
+            data['status_id'].toString(),
+            data['status_text'],
+            declarationId,
+          ),
+        );
       case ApiError(:final message):
         emit(DeclarationSubmitError(message));
     }
