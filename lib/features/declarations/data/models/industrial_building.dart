@@ -4,7 +4,7 @@ import 'package:uuid/uuid.dart';
 import 'declarations_lookups.dart';
 
 class IndustrialBuilding {
-  final String id;
+  String id;
 
   final TextEditingController totalArea = TextEditingController();
   final TextEditingController constructionDate = TextEditingController();
@@ -32,6 +32,7 @@ class IndustrialBuilding {
               .id;
 
     return {
+      id: id.toString(),
       'building_type_id': (typeId == null || typeId == -1) ? null : typeId,
       'floors_count': floorsCount,
       'total_area': double.tryParse(totalArea.text.trim()),
@@ -46,6 +47,7 @@ class IndustrialBuilding {
     Map<String, dynamic> data,
     List<DeclarationLookup> buildingTypeLookups,
   ) {
+    id = data['id'].toString() ?? '';
     totalArea.text = data['total_area']?.toString() ?? '';
     constructionDate.text = data['construction_date']?.toString() ?? '';
     marketValue.text = data['market_value']?.toString() ?? '';
