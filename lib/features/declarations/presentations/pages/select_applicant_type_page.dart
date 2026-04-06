@@ -194,7 +194,7 @@ class SelectApplicantTypePage extends StatelessWidget {
 
   bool checkCanSubmitIfUserNotValid(BuildContext context) {
     final userModel = context.read<UserProfileCubit>().userModelData;
-    if (userModel != null && (userModel.phoneVerified ?? false) == false) {
+    if (userModel != null && (userModel.emailVerified ?? false) == false) {
       showVerificationDialog(context, userModel);
       return false;
     } else {
