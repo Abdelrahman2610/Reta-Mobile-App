@@ -47,7 +47,9 @@ class _DeclarationGuidePageState extends State<DeclarationGuidePage> {
         appBar: MainAppBar(
           title: 'طلب إقرار ضريبي جديد',
           backgroundColor: AppColors.mainBlueIndigoDye,
-          titleTextStyle: TextStyle(color: Colors.white, fontSize: 8.sp),
+          titleTextStyle: AppTextStyles.actionXL.copyWith(
+            color: AppColors.neutralLightLightest,
+          ),
         ),
         body: Column(
           children: [
