@@ -221,7 +221,7 @@ class _MainViewState extends State<_MainView> {
           final liveUser = profileState is UserProfileLoaded
               ? profileState.userModel
               : widget.user;
-          showVerificationDialog(context, liveUser);
+          showVerificationDialog(context, liveUser, null, null);
         }
       },
       builder: (context, state) {

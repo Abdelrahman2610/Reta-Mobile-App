@@ -3,9 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
 import 'package:reta/features/auth/presentation/cubit/home_cubit.dart';
+import 'package:reta/core/widgets/verification_action.dart';
 
-void showVerificationDialog(BuildContext context, UserModel user) {
+void showVerificationDialog(
+  BuildContext contextWidget,
+  UserModel user,
+  Function? extraNavigation1,
+  Function? extraNavigation2,
+) {
   final missing = <String>[
+    if (!(user.emailVerified ?? false)) 'البريد الإلكتروني',
     if (!(user.phoneVerified ?? false)) 'رقم الموبايل',
     if (!(user.nationalIdVerified ?? false)) 'الهوية الوطنية',
   ];
@@ -14,10 +21,12 @@ void showVerificationDialog(BuildContext context, UserModel user) {
       ? 'يجب التحقق من: ${missing.join(' • ')} للوصول إلى هذه الخدمة.\nيرجى الانتقال إلى صفحة الإعدادات لإتمام التحقق.'
       : 'يجب التحقق من هويتك أولاً للوصول إلى هذه الخدمة.';
 
+  final action = VerificationAction.resolve(user, contextWidget);
+
   showDialog(
-    context: context,
+    context: contextWidget,
     barrierDismissible: false,
-    builder: (_) => PopScope(
+    builder: (context) => PopScope(
       canPop: false,
       child: Directionality(
         textDirection: TextDirection.rtl,
@@ -69,8 +78,11 @@ void showVerificationDialog(BuildContext context, UserModel user) {
                     child: OutlinedButton(
                       onPressed: () {
                         Navigator.of(context).pop();
-                        context.read<HomeCubit>().dismissVerificationPrompt();
-                        context.read<HomeCubit>().navigateTo(0);
+                        contextWidget
+                            .read<HomeCubit>()
+                            .dismissVerificationPrompt();
+                        final onLater = extraNavigation1 ?? action.onLater;
+                        onLater?.call();
                       },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFF005FAD)),
@@ -90,8 +102,12 @@ void showVerificationDialog(BuildContext context, UserModel user) {
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).pop();
-                        context.read<HomeCubit>().dismissVerificationPrompt();
-                        context.read<HomeCubit>().navigateTo(4);
+                        contextWidget
+                            .read<HomeCubit>()
+                            .dismissVerificationPrompt();
+                        final onVerifyNow =
+                            extraNavigation2 ?? action.onVerifyNow;
+                        onVerifyNow?.call();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF005FAD),
