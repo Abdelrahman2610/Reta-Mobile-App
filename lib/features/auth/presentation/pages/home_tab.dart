@@ -68,13 +68,11 @@ class _HomeHero extends StatelessWidget {
   String get _greeting {
     final hour = DateTime.now().hour;
     if (hour < 12) return 'صباح الخير';
-    if (hour < 17) return 'مساء الخير';
-    return 'مساء النور';
+    return 'مساء الخير';
   }
 
-  // Returns full name
-  String get _displayName =>
-      '${user.firstname ?? ''} ${user.lastname ?? ''}'.trim();
+  // Returns first name only
+  String get _displayName => user.firstname ?? '';
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +124,7 @@ class _HomeHero extends StatelessWidget {
                       textDirection: TextDirection.rtl,
                       children: [
                         Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             Text(
