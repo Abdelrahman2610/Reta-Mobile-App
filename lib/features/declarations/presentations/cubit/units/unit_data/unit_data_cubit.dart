@@ -1190,7 +1190,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   void changePrivateResidence() {
-    if (canSubmitSingleExempt) {
+    if (canSubmitSingleExempt || state.isExempt) {
+      canSubmitSingleExempt = true;
       emit(state.copyWith(isExempt: !state.isExempt));
     }
   }
@@ -1973,7 +1974,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
                   )
                   .id;
         return {
-          'id': b.id,
+          if (unitData != null) 'id': b.id,
           'building_type_id': buildingTypeId == -1 ? null : buildingTypeId,
           'floors_count': b.floorsCount,
           'total_area': double.tryParse(b.totalArea.text.trim()),
