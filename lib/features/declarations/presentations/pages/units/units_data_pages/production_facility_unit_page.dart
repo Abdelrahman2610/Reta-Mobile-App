@@ -254,7 +254,7 @@ class _ProductionFacilityUnitView extends StatelessWidget {
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.operatingLicenseFullUrl,
+                filePath: state.operationLicenseFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
                   if (path != null) cubit.setOperationLicenseFile(path);
