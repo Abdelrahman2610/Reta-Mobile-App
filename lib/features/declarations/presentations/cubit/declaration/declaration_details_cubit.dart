@@ -178,17 +178,17 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
         _detailsModel?.statusId = data['status_id'].toString();
         _detailsModel?.statusText = data['status_text'].toString();
         emit(
+          DeclarationStatusToOnEditLoaded(
+            data['status_id'].toString(),
+            data['status_text'],
+          ),
+        );
+        emit(
           DeclarationDetailsLoaded(
             detailsModel,
             selectedCategoryIndex,
             activeCategories,
             units,
-          ),
-        );
-        emit(
-          DeclarationStatusToOnEditLoaded(
-            data['status_id'].toString(),
-            data['status_text'],
           ),
         );
       case ApiError(:final message):
@@ -229,14 +229,6 @@ class DeclarationDetailsCubit extends Cubit<DeclarationDetailsStates> {
       case ApiSuccess(:final data):
         _detailsModel?.statusId = data['status_id'].toString();
         _detailsModel?.statusText = data['status_text'].toString();
-        emit(
-          DeclarationDetailsLoaded(
-            detailsModel,
-            selectedCategoryIndex,
-            activeCategories,
-            units,
-          ),
-        );
         emit(
           DeclarationSubmitSuccess(
             data['status_id'].toString(),

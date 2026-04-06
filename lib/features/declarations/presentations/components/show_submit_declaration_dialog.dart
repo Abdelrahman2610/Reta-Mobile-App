@@ -22,7 +22,6 @@ Future<void> showSubmitDeclarationDialog(
   );
 
   if (confirmed == true) {
-    onSubmit(); // Call cancel declaration API
-    debugPrint('Declaration cancelled');
+    onSubmit();
   }
 }
