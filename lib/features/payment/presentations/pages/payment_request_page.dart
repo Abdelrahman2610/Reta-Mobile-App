@@ -160,6 +160,18 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                         },
                       ),
                       24.hs,
+                    ] else ...[
+                      AppText(
+                        text:
+                            ' عرض جميع طلبات السداد الصادرة من مختلف الخدمات (المدفوعات تحت الحساب و تحت حساب المديونية).',
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.mainBlueIndigoDye,
+                        maxLines: 3,
+                        alignment: Alignment.center,
+                        textAlign: TextAlign.center,
+                      ),
+                      20.hs,
                     ],
 
                     _BankDepositBanner(),

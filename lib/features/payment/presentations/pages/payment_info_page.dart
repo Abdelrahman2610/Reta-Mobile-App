@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:reta/features/components/app_button.dart';
 import 'package:reta/features/payment/presentations/pages/payment_request_page.dart';
 
 import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../core/helpers/fixed_assets.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/cubit/home_cubit.dart';
 import '../../../components/app_container.dart';
 import '../../../components/app_scaffold.dart';
 import '../../../components/app_text.dart';
@@ -70,7 +72,11 @@ class _PaymentInfoView extends StatelessWidget {
 
     return AppScaffold(
       padding: EdgeInsets.zero,
-      title: 'طلبات السداد',
+      title: 'المدفوعات تحت حساب المديونية',
+      onBackTapped: () {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+        context.read<HomeCubit>().selectTab(2, isVerified: true);
+      },
       child: BlocListener<PaymentInfoCubit, PaymentInfoState>(
         listener: (context, state) {
           if (state is PaymentInfoClaimSuccess) {
@@ -174,64 +180,140 @@ class _PaymentInfoContent extends StatelessWidget {
                       if (fromDeclarationConfirmation) ...[
                         SuccessBanner(),
                         20.hs,
+                        if (!cubit.completeRequest) ...[
+                          AppContainer(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 24.w,
+                              vertical: 24.h,
+                            ),
+                            child: Column(
+                              children: [
+                                ImageSvgCustomWidget(
+                                  imgPath:
+                                      FixedAssets.instance.completeRequestsIC,
+                                ),
+                                28.hs,
+                                AppText(
+                                  text: 'استكمال الإجراءات',
+                                  fontSize: 20.sp,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.neutralDarkDarkest,
+                                  alignment: AlignmentDirectional.center,
+                                  textAlign: TextAlign.center,
+                                ),
+                                8.hs,
+                                AppText(
+                                  text:
+                                      'هل ترغب في إصدار طلب سداد للوحدات ضمن هذا الإقرار الآن؟ يمكنك اختيار الدفع الآن أو استكماله لاحقًا من خلال “مدفوعاتي”.',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 12.sp,
+                                  color: AppColors.neutralDarkLight,
+                                  alignment: AlignmentDirectional.center,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 3,
+                                ),
+                                28.hs,
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: AppButton(
+                                        label: 'إصدار طلب سداد الآن',
+                                        backgroundColor:
+                                            AppColors.highlightDarkest,
+                                        borderRadius: 12.sp,
+                                        onTap: cubit.onCompleteRequestsTapped,
+                                      ),
+                                    ),
+                                    8.ws,
+                                    Expanded(
+                                      child: AppButton(
+                                        label: 'لاحقًا',
+                                        borderColor: AppColors.highlightDarkest,
+                                        borderRadius: 12.sp,
+                                        withBorder: true,
+                                        borderWidth: 1.5.sp,
+                                        textColor: AppColors.highlightDarkest,
+                                        onTap: () {
+                                          Navigator.of(
+                                            context,
+                                          ).popUntil((route) => route.isFirst);
+                                          context.read<HomeCubit>().selectTab(
+                                            2,
+                                            isVerified: true,
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          20.hs,
+                        ],
                       ],
-                      AppContainer(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20.w,
-                          vertical: 20.h,
+
+                      if ((fromDeclarationConfirmation &&
+                              cubit.completeRequest) ||
+                          !fromDeclarationConfirmation)
+                        AppContainer(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 20.h,
+                          ),
+                          child: Column(
+                            children: [
+                              // Header
+                              AppText(
+                                text: 'طلب سداد',
+                                fontSize: 20.sp,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.neutralDarkDarkest,
+                                alignment: AlignmentDirectional.center,
+                              ),
+                              6.hs,
+                              AppText(
+                                text: 'مراجعة البيانات قبل الإصدار',
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.neutralDarkMedium,
+                                alignment: AlignmentDirectional.center,
+                              ),
+                              24.hs,
+                              AppText(
+                                text:
+                                    'الوحدات التي سيتم إصدار طلب/طلبات السداد عنها',
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.neutralDarkDarkest,
+                                alignment: AlignmentDirectional.center,
+                              ),
+                              24.hs,
+                              // Info banner
+                              _InfoBanner(infoStatus: infoStatus),
+                              24.hs,
+                              // Units list
+                              ListView.separated(
+                                padding: EdgeInsets.zero,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: data.units.length,
+                                separatorBuilder: (_, __) => 16.hs,
+                                itemBuilder: (context, index) {
+                                  final unit = data.units[index];
+                                  return RequestUnitCard(
+                                    unit: unit,
+                                    onToggleSelect: () =>
+                                        cubit.toggleUnit(index),
+                                    onToggleWallet: (v) =>
+                                        cubit.toggleWallet(index, v),
+                                  );
+                                },
+                              ),
+                              12.hs,
+                            ],
+                          ),
                         ),
-                        child: Column(
-                          children: [
-                            // Header
-                            AppText(
-                              text: 'طلب سداد',
-                              fontSize: 20.sp,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.neutralDarkDarkest,
-                              alignment: AlignmentDirectional.center,
-                            ),
-                            6.hs,
-                            AppText(
-                              text: 'مراجعة البيانات قبل الإصدار',
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w400,
-                              color: AppColors.neutralDarkMedium,
-                              alignment: AlignmentDirectional.center,
-                            ),
-                            24.hs,
-                            AppText(
-                              text:
-                                  'الوحدات التي سيتم إصدار طلب/طلبات السداد عنها',
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.neutralDarkDarkest,
-                              alignment: AlignmentDirectional.center,
-                            ),
-                            24.hs,
-                            // Info banner
-                            _InfoBanner(infoStatus: infoStatus),
-                            24.hs,
-                            // Units list
-                            ListView.separated(
-                              padding: EdgeInsets.zero,
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: data.units.length,
-                              separatorBuilder: (_, __) => 16.hs,
-                              itemBuilder: (context, index) {
-                                final unit = data.units[index];
-                                return RequestUnitCard(
-                                  unit: unit,
-                                  onToggleSelect: () => cubit.toggleUnit(index),
-                                  onToggleWallet: (v) =>
-                                      cubit.toggleWallet(index, v),
-                                );
-                              },
-                            ),
-                            12.hs,
-                          ],
-                        ),
-                      ),
                       44.hs,
                     ],
                   ),
@@ -241,32 +323,34 @@ class _PaymentInfoContent extends StatelessWidget {
           ),
         ),
         // Total
-        AppContainer(
-          padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 24.h),
-          child: Column(
-            children: [
-              if (infoStatus != PaymentRequestInfoStatus.completed)
-                AmountRow(
-                  label: 'المبلغ المطلوب سداده',
-                  amount: cubit.totalRequired.toStringAsFixed(2),
+        if ((fromDeclarationConfirmation && cubit.completeRequest) ||
+            !fromDeclarationConfirmation)
+          AppContainer(
+            padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 24.h),
+            child: Column(
+              children: [
+                if (infoStatus != PaymentRequestInfoStatus.completed)
+                  AmountRow(
+                    label: 'المبلغ المطلوب سداده',
+                    amount: cubit.totalRequired.toStringAsFixed(2),
+                  ),
+                10.hs,
+                PaymentButton(
+                  label: 'إصدار طلب السداد',
+                  textColor: infoStatus == PaymentRequestInfoStatus.completed
+                      ? AppColors.neutralDarkLight
+                      : null,
+                  onTap: infoStatus == PaymentRequestInfoStatus.completed
+                      ? null
+                      : () {
+                          context.read<PaymentInfoCubit>().createClaim(
+                            declarationId,
+                          );
+                        },
                 ),
-              10.hs,
-              PaymentButton(
-                label: 'إصدار طلب السداد',
-                textColor: infoStatus == PaymentRequestInfoStatus.completed
-                    ? AppColors.neutralDarkLight
-                    : null,
-                onTap: infoStatus == PaymentRequestInfoStatus.completed
-                    ? null
-                    : () {
-                        context.read<PaymentInfoCubit>().createClaim(
-                          declarationId,
-                        );
-                      },
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
         if (fromDeclarationConfirmation) 30.hs,
       ],
     );

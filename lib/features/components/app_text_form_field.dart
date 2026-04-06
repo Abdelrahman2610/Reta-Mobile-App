@@ -141,6 +141,7 @@ class AppTextFormField extends StatelessWidget {
           cursorColor: AppColors.black,
           decoration: InputDecoration(
             isDense: true,
+            errorMaxLines: 3,
             contentPadding: EdgeInsets.symmetric(
               horizontal: 16.w,
               vertical: 14.h,

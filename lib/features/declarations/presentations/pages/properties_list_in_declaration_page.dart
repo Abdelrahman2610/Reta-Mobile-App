@@ -383,6 +383,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
     } else if (state is DeclarationSubmitSuccess) {
       context.read<DeclarationCubit>().fetchList();
       context.read<MyDebtsCubit>().fetchDeclarations();
+      updateDeclarationList();
       Navigator.of(RuntimeData.getCurrentContext()!).pop();
       PersistentNavBarNavigator.pushNewScreen(
         context,

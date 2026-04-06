@@ -36,147 +36,156 @@ class UnitData extends StatelessWidget {
     required this.applicantType,
     required this.unitType,
     this.otherName,
+    this.applicantPayload,
   });
 
   final String? otherName;
   final ApplicantType applicantType;
   final UnitType unitType;
+  final Map<String, dynamic>? applicantPayload;
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<UnitDataCubit>();
     return BlocProvider.value(
       value: cubit,
-      child: BlocConsumer<UnitDataCubit, UnitDataState>(
-        listenWhen: (prev, curr) =>
-            curr.errorMessage != null ||
-            prev.isLoading != curr.isLoading ||
-            prev.isFloorLoading != curr.isFloorLoading,
-        listener: (context, state) {
-          if (state.isLoading || state.isFloorLoading) {
-            loadingPopup(RuntimeData.getCurrentContext()!);
-          } else if (state.errorMessage != null) {
+      child: BlocListener<UnitDataCubit, UnitDataState>(
+        listenWhen: (prev, curr) => prev.errorMessage != curr.errorMessage,
+        listener: (BuildContext context, UnitDataState state) {
+          if (state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: AppText(
                   text: state.errorMessage!,
                   maxLines: 3,
                   color: AppColors.white,
+                  alignment: Alignment.center,
                 ),
                 backgroundColor: AppColors.errorDark,
               ),
             );
+
             cubit.clearError();
           }
-          if (!state.isLoading && !state.isFloorLoading) {
-            Navigator.pop(RuntimeData.getCurrentContext()!);
-          }
         },
-        buildWhen: (prev, curr) => prev.isLoading != curr.isLoading,
-        builder: (context, state) {
-          return Directionality(
-            textDirection: TextDirection.rtl,
-            child: Scaffold(
-              backgroundColor: AppColors.neutralLightMedium,
-              appBar: MainAppBar(
-                title: 'إقرار ${otherName ?? applicantType.label}',
-                backgroundColor: AppColors.mainBlueIndigoDye,
-                backButtonIconColor: Colors.white,
-                titleTextStyle: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
+        child: BlocConsumer<UnitDataCubit, UnitDataState>(
+          listenWhen: (prev, curr) =>
+              prev.isLoading != curr.isLoading ||
+              prev.isFloorLoading != curr.isFloorLoading,
+          listener: (context, state) async {
+            if (state.isLoading || state.isFloorLoading) {
+              loadingPopup(RuntimeData.getCurrentContext()!);
+            } else if (!state.isLoading && !state.isFloorLoading) {
+              Navigator.pop(RuntimeData.getCurrentContext()!);
+            }
+          },
+          buildWhen: (prev, curr) => prev.isLoading != curr.isLoading,
+          builder: (context, state) {
+            return Directionality(
+              textDirection: TextDirection.rtl,
+              child: Scaffold(
+                backgroundColor: AppColors.neutralLightMedium,
+                appBar: MainAppBar(
+                  title: 'إقرار ${otherName ?? applicantType.label}',
+                  backgroundColor: AppColors.mainBlueIndigoDye,
+                  backButtonIconColor: Colors.white,
+                  titleTextStyle: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              body: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child: Column(
-                    children: [
-                      31.hs,
-                      UnitTitle(title: unitType.unitLabel),
-                      10.hs,
-                      AppContainer(
-                        height: 93,
-                        child: Row(
-                          children: [
-                            DeclarationDataTab(
-                              declarationsType:
-                                  DeclarationsDataType.locationData,
-                              isSelected: false,
-                              isFinished: true,
-                            ),
-                            DeclarationDataTab(
-                              declarationsType: unitType.tabEnum,
-                              isSelected: true,
-                              isFinished: false,
-                            ),
-                          ],
+                body: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Column(
+                      children: [
+                        31.hs,
+                        UnitTitle(title: unitType.unitLabel),
+                        10.hs,
+                        AppContainer(
+                          height: 93,
+                          child: Row(
+                            children: [
+                              DeclarationDataTab(
+                                declarationsType:
+                                    DeclarationsDataType.locationData,
+                                isSelected: false,
+                                isFinished: true,
+                              ),
+                              DeclarationDataTab(
+                                declarationsType: unitType.tabEnum,
+                                isSelected: true,
+                                isFinished: false,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      10.hs,
-                      switch (unitType) {
-                        UnitType.residential => ResidentialUnitPage(
-                          unitCubit: cubit,
-                          applicantType: applicantType,
-                        ),
-                        UnitType.commercial => CommercialUnitPage(
-                          unitCubit: cubit,
-                          applicantType: applicantType,
-                        ),
-                        UnitType.administrative => AdministrativeUnitPage(
-                          unitCubit: cubit,
-                        ),
-                        UnitType.serviceUnit => ServiceUnitPage(
-                          unitCubit: cubit,
-                        ),
-                        UnitType.fixedInstallations => FixedInstallationsPage(
-                          unitCubit: cubit,
-                        ),
-                        UnitType.vacantLand => VacantLandPage(unitCubit: cubit),
-                        UnitType.serviceFacility => ServiceFacilityPage(
-                          unitCubit: cubit,
-                        ),
-                        UnitType.hotelFacility => HotelFacilityPage(
-                          unitCubit: cubit,
-                        ),
-                        UnitType.industrialFacility => IndustrialFacilityPage(
-                          unitCubit: cubit,
-                        ),
-                        UnitType.productionFacility =>
-                          ProductionFacilityUnitPage(unitCubit: cubit),
-                        UnitType.petroleumFacility => PetroleumFacilityUnitPage(
-                          unitCubit: cubit,
-                        ),
-                        UnitType.minesAndQuarries => MineUnitPage(
-                          unitCubit: cubit,
-                        ),
-                      },
-                      16.hs,
+                        10.hs,
+                        switch (unitType) {
+                          UnitType.residential => ResidentialUnitPage(
+                            unitCubit: cubit,
+                            applicantType: applicantType,
+                          ),
+                          UnitType.commercial => CommercialUnitPage(
+                            unitCubit: cubit,
+                            applicantType: applicantType,
+                          ),
+                          UnitType.administrative => AdministrativeUnitPage(
+                            unitCubit: cubit,
+                          ),
+                          UnitType.serviceUnit => ServiceUnitPage(
+                            unitCubit: cubit,
+                          ),
+                          UnitType.fixedInstallations => FixedInstallationsPage(
+                            unitCubit: cubit,
+                          ),
+                          UnitType.vacantLand => VacantLandPage(
+                            unitCubit: cubit,
+                          ),
+                          UnitType.serviceFacility => ServiceFacilityPage(
+                            unitCubit: cubit,
+                          ),
+                          UnitType.hotelFacility => HotelFacilityPage(
+                            unitCubit: cubit,
+                          ),
+                          UnitType.industrialFacility => IndustrialFacilityPage(
+                            unitCubit: cubit,
+                          ),
+                          UnitType.productionFacility =>
+                            ProductionFacilityUnitPage(unitCubit: cubit),
+                          UnitType.petroleumFacility =>
+                            PetroleumFacilityUnitPage(unitCubit: cubit),
+                          UnitType.minesAndQuarries => MineUnitPage(
+                            unitCubit: cubit,
+                          ),
+                        },
+                        16.hs,
 
-                      UnitButtons(
-                        cubit: cubit,
-                        onSaveData: () {
-                          if (cubit.validate()) {
-                            cubit.onSaveDataTapped(context, unitType);
-                          }
-                        },
-                        onCancel: () => cubit.onCancelButtonTapped(context),
-                        onSaveAndAddOther: () {
-                          if (cubit.validate()) {
-                            cubit.onSaveAndAddOther(context, unitType);
-                          }
-                        },
-                        unitType: unitType,
-                      ),
-                      26.hs,
-                    ],
+                        UnitButtons(
+                          cubit: cubit,
+                          onSaveData: () {
+                            if (cubit.validate()) {
+                              cubit.onSaveDataTapped(context, unitType);
+                            }
+                          },
+                          onCancel: () => cubit.onCancelButtonTapped(context),
+                          onSaveAndAddOther: () {
+                            if (cubit.validate()) {
+                              cubit.onSaveAndAddOther(context, unitType);
+                            }
+                          },
+                          unitType: unitType,
+                        ),
+                        26.hs,
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

@@ -173,9 +173,24 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       taxpayerTaxCardNumberController.text = taxpayer.taxCardNumber ?? '';
       taxpayerCommercialRegisterController.text =
           taxpayer.commercialRegister ?? '';
-      taxpayerNationality = taxpayer.nationalityId == 1
+      taxpayerNationality = taxpayer.nationalityText == 'مصر'
           ? Nationality.egyptian
           : Nationality.foreign;
+
+      taxpayerPassportNumberController.text = taxpayer.passportNumber ?? '';
+      taxpayerNationalIdController.text = taxpayer.nationalId ?? '';
+
+      taxpayerPassportUrl = taxpayer.passportAttachment?.fullUrl;
+      taxpayerPassportFileId = taxpayer.passportAttachment?.id.toString();
+      taxpayerPassportFilePath = taxpayer.passportAttachment?.url;
+      taxpayerPassportOriginalName =
+          taxpayer.passportAttachment?.originalFileName;
+
+      taxpayerNationalIdFileId = taxpayer.nationalIdAttachment?.id.toString();
+      taxpayerNationalIdUrl = taxpayer.nationalIdAttachment?.fullUrl;
+      taxpayerNationalIdFilePath = taxpayer.nationalIdAttachment?.url;
+      taxpayerNationalIdOriginalName =
+          taxpayer.nationalIdAttachment?.originalFileName;
 
       taxpayerTaxCardFilePath = taxpayer.taxCardAttachment?.path;
       taxpayerTaxCardFileId = taxpayer.taxCardAttachment?.url;
@@ -188,13 +203,13 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       taxpayerCommercialRegisterFileId =
           taxpayer.commercialRegisterAttachment?.url;
       taxpayerCommercialRegisterUrl =
-          taxpayer.commercialRegisterAttachment?.url;
+          taxpayer.commercialRegisterAttachment?.fullUrl;
 
       taxpayerCommercialRegisterOriginalName =
           taxpayer.commercialRegisterAttachment?.originalFileName;
       taxpayerOtherAttachmentFilePath = taxpayer.otherAttachment?.path;
       taxpayerOtherAttachmentFileId = taxpayer.otherAttachment?.url;
-      taxpayerOtherAttachmentUrl = taxpayer.otherAttachment?.url;
+      taxpayerOtherAttachmentUrl = taxpayer.otherAttachment?.fullUrl;
 
       taxpayerOtherAttachmentOriginalName =
           taxpayer.otherAttachment?.originalFileName;
@@ -205,13 +220,14 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     // سند التوكيل
     taxpayerAuthorizationFilePath = declaration.powerOfAttorney?.path;
     taxpayerAuthorizationFileId = declaration.powerOfAttorney?.url;
-    taxpayerAuthorizationUrl = declaration.powerOfAttorney?.url;
+    taxpayerAuthorizationUrl = declaration.powerOfAttorney?.fullUrl;
     taxpayerAuthorizationOriginName =
         declaration.powerOfAttorney?.originalFileName;
 
     // سند الملكية على الشيوع
-    ownershipProofDocumentPath = declaration.jointOwnershipDocument?.path;
-    ownershipProofDocumentFileId = declaration.jointOwnershipDocument?.url;
+    ownershipProofDocumentPath = declaration.jointOwnershipDocument?.url;
+    ownershipProofDocumentFileId = declaration.jointOwnershipDocument?.id
+        .toString();
     ownershipProofDocumentUrl = declaration.jointOwnershipDocument?.fullUrl;
     ownershipProofDocumentOriginalName =
         declaration.jointOwnershipDocument?.originalFileName;
@@ -333,7 +349,10 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   }
 
   void removeOwnershipProofDocumentFile() {
+    ownershipProofDocumentUrl = null;
     ownershipProofDocumentPath = null;
+    ownershipProofDocumentFileId = null;
+    ownershipProofDocumentOriginalName = null;
     emit(
       state.copyWith(
         ownershipProofDocumentPath: 'remove',
@@ -661,22 +680,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     }
   }
 
-  Future<void> submit(BuildContext context) async {
-    if (!validate()) return;
-
-    emit(state.copyWith(isLoading: true));
-
-    try {
-      final payload = buildPayload(context);
-      debugPrint('Payload: $payload');
-
-      emit(state.copyWith(isLoading: false, successMessage: 'تم الحفظ بنجاح'));
-    } catch (e) {
-      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
-    }
-  }
-
-  Map<String, dynamic> buildPayload(BuildContext context) {
+  Map<String, dynamic> buildPayload(BuildContext context, {bool save = false}) {
     final applicantRoleId = applicantType.id;
 
     final Map<String, dynamic> payload = {
@@ -695,7 +699,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       if (taxpayerAuthorizationFilePath != null) {
         payload['power_of_attorney'] = {
           'file_id': taxpayerAuthorizationFileId,
-          'path': taxpayerAuthorizationFilePath,
+          if (!save) 'path': taxpayerAuthorizationFilePath,
           'original_file_name': taxpayerAuthorizationOriginName,
           'full_url': taxpayerAuthorizationUrl,
         };
@@ -707,7 +711,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       if (ownershipProofDocumentPath != null) {
         payload['joint_ownership_document'] = {
           'file_id': ownershipProofDocumentFileId,
-          'path': ownershipProofDocumentPath,
+          if (!save) 'path': ownershipProofDocumentPath,
           'original_file_name': ownershipProofDocumentOriginalName,
           'full_url': ownershipProofDocumentUrl,
         };
@@ -716,13 +720,17 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
     if (applicantType != ApplicantType.owner &&
         applicantType != ApplicantType.beneficiary) {
-      payload['taxpayer'] = _buildTaxpayerPayload(context);
+      payload['taxpayer'] = _buildTaxpayerPayload(context, save: save);
     }
 
+    print("ApplicantPayload: $payload");
     return payload;
   }
 
-  Map<String, dynamic> _buildTaxpayerPayload(BuildContext context) {
+  Map<String, dynamic> _buildTaxpayerPayload(
+    BuildContext context, {
+    required bool save,
+  }) {
     // للمالك والمنتفع — المكلف هو نفس المقدم
     final lookups = context.read<DeclarationLookupsCubit>().lookups;
     final taxpayerTypeId = (lookups?.taxpayerTypes ?? [])
@@ -736,7 +744,9 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
     final nationalityId = (lookups?.nationalities ?? [])
         .firstWhere(
-          (p) => p.name == 'مصر',
+          (p) =>
+              p.name ==
+              (taxpayerNationality == Nationality.egyptian ? 'مصر' : 'أسبانيا'),
           orElse: () => DeclarationLookup(id: 1, name: ''),
         )
         .id;
@@ -773,7 +783,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         if (taxpayerNationalIdFilePath != null) {
           taxpayer['national_id_attachment'] = {
             'file_id': taxpayerNationalIdFileId,
-            'path': taxpayerNationalIdFilePath,
+            if (!save) 'path': taxpayerNationalIdFilePath,
             'original_file_name': taxpayerNationalIdOriginalName,
             'full_url': taxpayerNationalIdUrl,
           };
@@ -784,7 +794,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         if (taxpayerPassportFilePath != null) {
           taxpayer['passport_attachment'] = {
             'file_id': taxpayerPassportFileId,
-            'path': taxpayerPassportFilePath,
+            if (!save) 'path': taxpayerPassportFilePath,
             'original_file_name': taxpayerPassportOriginalName,
             'full_url': taxpayerPassportUrl,
           };
@@ -817,10 +827,15 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       }
     }
     if (taxpayerTypes == 'اعتباري') {
-      taxpayer['tax_card_number'] = taxpayerTaxCardNumberController.text.trim();
-      taxpayer['commercial_register'] = taxpayerCommercialRegisterController
-          .text
-          .trim();
+      if (taxpayerTaxCardNumberController.text.isNotEmpty) {
+        taxpayer['tax_card_number'] = taxpayerTaxCardNumberController.text
+            .trim();
+      }
+      if (taxpayerCommercialRegisterController.text.isNotEmpty) {
+        taxpayer['commercial_register'] = taxpayerCommercialRegisterController
+            .text
+            .trim();
+      }
       if (taxpayerTaxCardFilePath != null) {
         taxpayer['tax_card_attachment'] = {
           'file_id': taxpayerTaxCardFileId,
@@ -905,134 +920,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   Future<void> saveTaxpayerEdit(BuildContext context) async {
     emit(state.copyWith(isLoading: true));
 
-    final payload = <String, dynamic>{
-      'declaration_type_id': 1,
-      'applicant_role_id': applicantType.id,
-      'applicant_role_other': applicantOtherName,
-    };
+    final payload = buildPayload(context, save: true);
 
-    // ── سند التوكيل ──────────────────────────
-    if (taxpayerAuthorizationFilePath != null) {
-      payload['power_of_attorney'] = {
-        'file_id': taxpayerAuthorizationFilePath,
-        'original_file_name': taxpayerAuthorizationOriginName,
-        'full_url': taxpayerAuthorizationUrl,
-      };
-    } else if (authorizationAttachment != null) {
-      payload['power_of_attorney'] = authorizationAttachment?.toJson();
-    }
-
-    // ── سند الملكية على الشيوع ───────────────
-    if (ownershipProofDocumentPath != null) {
-      payload['joint_ownership_document'] = {
-        'file_id': ownershipProofDocumentFileId,
-        'path': ownershipProofDocumentPath,
-        'original_file_name': ownershipProofDocumentOriginalName,
-        'full_url': ownershipProofDocumentUrl,
-      };
-    }
-
-    // ── بيانات المكلف ─────────────────────────
-    final taxpayer = <String, dynamic>{};
-
-    final lookups = context.read<DeclarationLookupsCubit>().lookups;
-    final nationalityId = (lookups?.nationalities ?? [])
-        .firstWhere(
-          (p) => p.name == 'مصر',
-          orElse: () => DeclarationLookup(id: 1, name: ''),
-        )
-        .id;
-    if (taxpayerTypes == TaxpayerTypes.natural.displayText) {
-      taxpayer['first_name'] = taxpayerFirstNameController.text.trim();
-      taxpayer['last_name'] = taxpayerLastNameController.text.trim();
-      taxpayer['phone'] = taxpayerPhoneController.text.trim();
-      taxpayer['email'] = taxpayerEmailController.text.trim();
-      taxpayer['nationality_id'] = nationalityId;
-
-      if (taxpayerNationality == Nationality.egyptian) {
-        taxpayer['national_id'] = taxpayerNationalIdController.text.trim();
-        if (taxpayerNationalIdFilePath != null) {
-          taxpayer['national_id_attachment'] = {
-            'file_id': taxpayerNationalIdFileId,
-            'path': taxpayerNationalIdFilePath,
-            'original_file_name': taxpayerNationalIdOriginalName,
-            'full_url': taxpayerNationalIdUrl,
-          };
-        }
-      } else {
-        taxpayer['passport_number'] = taxpayerPassportNumberController.text
-            .trim();
-        if (taxpayerPassportFilePath != null) {
-          taxpayer['passport_attachment'] = {
-            'file_id': taxpayerPassportFileId,
-            'path': taxpayerPassportFilePath,
-            'original_file_name': taxpayerPassportOriginalName,
-            'full_url': taxpayerPassportUrl,
-          };
-        }
-      }
-    } else {
-      taxpayer['name'] = taxpayerNameController.text.trim();
-      taxpayer['tax_card_number'] = taxpayerTaxCardNumberController.text.trim();
-      taxpayer['commercial_register'] = taxpayerCommercialRegisterController
-          .text
-          .trim();
-      taxpayer['nationality_id'] = nationalityId;
-
-      if (taxpayerTaxCardFilePath != null) {
-        taxpayer['tax_card_attachment'] = {
-          'file_id': taxpayerTaxCardFileId,
-          'path': taxpayerTaxCardFilePath,
-          'original_file_name': taxpayerTaxCardOriginalName,
-          'full_url': taxpayerTaxCardUrl,
-        };
-      } else if (taxCardAttachment != null) {
-        taxpayer['tax_card_attachment'] = taxCardAttachment?.toJson();
-      }
-
-      if (taxpayerCommercialRegisterFilePath != null) {
-        taxpayer['commercial_register_attachment'] = {
-          'file_id': taxpayerCommercialRegisterFileId,
-          'path': taxpayerCommercialRegisterFilePath,
-          'original_file_name': taxpayerCommercialRegisterOriginalName,
-          'full_url': taxpayerCommercialRegisterUrl,
-        };
-      } else if (commercialNumberAttachment != null) {
-        taxpayer['commercial_register_attachment'] = commercialNumberAttachment
-            ?.toJson();
-      }
-
-      if (taxpayerOtherAttachmentNameController.text.isNotEmpty) {
-        taxpayer['other_attachment_name'] =
-            taxpayerOtherAttachmentNameController.text.trim();
-
-        if (taxpayerOtherAttachmentFilePath != null) {
-          taxpayer['other_attachment'] = {
-            'file_id': taxpayerOtherAttachmentFileId,
-            'path': taxpayerOtherAttachmentFilePath,
-            'original_file_name': taxpayerOtherAttachmentOriginalName,
-            'full_url': taxpayerOtherAttachmentUrl,
-          };
-        } else if (otherAttachment != null) {
-          taxpayer['other_attachment'] = otherAttachment?.toJson();
-        }
-      }
-    }
-
-    final taxpayerTypeId = (lookups?.taxpayerTypes ?? [])
-        .firstWhere(
-          (p) => p.name == taxpayerTypes,
-          orElse: () => DeclarationLookup(id: 1, name: ''),
-        )
-        .id;
-
-    if (applicantType == ApplicantType.sharedOwnership) {
-      taxpayer["type_id"] = null;
-    } else {
-      taxpayer["type_id"] = taxpayerTypeId;
-    }
-
-    payload['taxpayer'] = taxpayer;
     final result = await safeApiCall(() async {
       final response = await DioClient.instance.dio.put(
         ApiConstants.declarationById(declarationId.toString()),

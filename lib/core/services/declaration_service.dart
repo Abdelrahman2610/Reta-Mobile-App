@@ -35,6 +35,7 @@ class DeclarationService {
     required int declarationId,
     required int unitId,
   }) async {
+    payload['unit']['id'] = unitId;
     return safeApiCall(() async {
       final response = await DioClient.instance.dio.put(
         '${ApiConstants.declarations}/$declarationId',
