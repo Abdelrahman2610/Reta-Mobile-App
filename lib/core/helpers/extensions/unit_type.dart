@@ -143,6 +143,7 @@ extension UnitTypeParser on String {
       case 'المنشآت الإنتاجية':
         return UnitType.productionFacility;
       case 'منشآت بترولية':
+      case 'المنشآت البترولية':
         return UnitType.petroleumFacility;
       default:
         return UnitType.minesAndQuarries;

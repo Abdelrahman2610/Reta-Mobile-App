@@ -1057,8 +1057,12 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     );
   }
 
-  void removeAllocationContractFile() =>
-      emit(state.copyWith(allocationContractFilePath: null));
+  void removeAllocationContractFile() => emit(
+    state.copyWith(
+      allocationContractFilePath: null,
+      allocationContractFullUrl: null,
+    ),
+  );
 
   void selectStarRating(String? value) {
     emit(state.copyWith(selectedStarRating: value));
@@ -1297,7 +1301,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           isLoading: false,
           operationLicenseFilePath: data.path,
           operationLicenseOriginalName: data.originalFileName,
-          operationLicenseFullUrl: data.originalFileName,
+          operationLicenseFullUrl: data.fullUrl,
         ),
       ),
     );
