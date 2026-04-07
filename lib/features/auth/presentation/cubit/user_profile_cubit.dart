@@ -18,9 +18,14 @@ class UserProfileCubit extends Cubit<UserProfileState> {
   }
 
   // ── Load ──────────────────────────────────────────────────────────────────
+  DateTime? _lastLoad;
 
   Future<void> loadFromUser(UserModel? user) async {
     if (user != null) _emitFromModel(user);
+
+    final now = DateTime.now();
+    if (_lastLoad != null && now.difference(_lastLoad!).inSeconds < 2) return;
+    _lastLoad = now;
 
     try {
       final result = await _repository.getUserProfile();
@@ -84,8 +89,8 @@ class UserProfileCubit extends Cubit<UserProfileState> {
             emailVerificationSent: data.sendNewMailVerification,
           ),
         );
-        if ((data.otpResponse == null || !data.otpResponse!.ok) &&
-            !data.sendNewMailVerification) {
+        final isPhoneOtpFlow = data.otpResponse != null && data.otpResponse!.ok;
+        if (!isPhoneOtpFlow) {
           await loadFromUser(null);
         }
 
