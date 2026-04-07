@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -725,7 +723,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       payload['taxpayer'] = _buildTaxpayerPayload(context, save: save);
     }
 
-    log("ApplicantPayload: $payload");
+    print("ApplicantPayload: $payload");
     return payload;
   }
 
@@ -760,11 +758,10 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         'type_id': taxpayerTypeId,
       if (applicantType == ApplicantType.sharedOwnership) 'type_id': null,
 
-      if (taxpayerTypeId == 1 || applicantType != ApplicantType.sharedOwnership)
+      if (taxpayerTypeId == 1 && applicantType != ApplicantType.sharedOwnership)
         'first_name': taxpayerNameController.text.trim().isNotEmpty
             ? taxpayerNameController.text.trim()
             : taxpayerFirstNameController.text.trim(), // اسم المكلف
-
       if (taxpayerTypeId == 2 || applicantType == ApplicantType.sharedOwnership)
         'name': taxpayerNameController.text.trim(),
 
