@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:reta/features/declarations/presentations/cubit/units/location/unit_location_cubit.dart';
 
 import '../../../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../../../core/theme/app_colors.dart';
@@ -106,14 +107,15 @@ class _FixedInstallationsView extends StatelessWidget {
                 ),
                 16.hs,
 
-                AppTextFormField(
-                  labelText: 'نوع التركيبة الآخر',
-                  labelRequired: true,
-                  controller: cubit.otherInstallationTypeController,
-                  hintText: 'إدخال نوع التركيبة الآخر',
-                  validator: (v) =>
-                      v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
-                ),
+                if (state.selectedInstallationType == kOther)
+                  AppTextFormField(
+                    labelText: 'نوع التركيبة الآخر',
+                    labelRequired: true,
+                    controller: cubit.otherInstallationTypeController,
+                    hintText: 'إدخال نوع التركيبة الآخر',
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+                  ),
                 16.hs,
 
                 AppDropdownField<String>(

@@ -151,7 +151,7 @@ class _PaymentClaimCardState extends State<PaymentClaimCard>
                     ],
                   ),
                   12.hs,
-                  if (claim.statusId == 2) ...[
+                  if (claim.statusId == 2 || claim.statusId == 3) ...[
                     _DetailCell(
                       label: 'وسيلة الدفع',
                       value: claim.paymentMethod ?? '',

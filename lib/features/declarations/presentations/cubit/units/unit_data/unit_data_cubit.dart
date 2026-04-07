@@ -227,7 +227,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           (floorText != null && !floorNumbers.contains(floorText));
     }
 
-    int floorId = int.parse(unitData!['real_estate_floor_id']);
+    int floorId = int.parse(unitData?['real_estate_floor_id'] ?? '0');
     await fetchBuildingUnitNumber(buildingNumber, floorId);
     final unitId = int.parse(unitData!['unit_id']?.toString() ?? '-1');
     final unitOther = unitData!['unit_other'];

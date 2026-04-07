@@ -47,7 +47,7 @@ class IndustrialBuilding {
     Map<String, dynamic> data,
     List<DeclarationLookup> buildingTypeLookups,
   ) {
-    id = data['id'].toString() ?? '';
+    id = data['id'].toString();
     totalArea.text = data['total_area']?.toString() ?? '';
     constructionDate.text = data['construction_date']?.toString() ?? '';
     marketValue.text = data['market_value']?.toString() ?? '';
