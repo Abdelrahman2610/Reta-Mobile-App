@@ -1,23 +1,15 @@
 class RegisterRequest {
   final String firstName;
-  final String lastName;
+  final String lastName; // ← back to single lastName
   final String? email;
   final String mobile;
   final String password;
   final String passwordConfirm;
   final String nationalId;
   final String nationalityCode;
-
-  /// "1" = male, "2" = female
   final String gender;
-
-  /// Governorate name (string) or free-text if "other"
   final String birthPlace;
-
-  /// Format: "YYYY-MM-DD"
   final String birthDate;
-
-  /// Passport number for foreign nationals
   final String? passportNumber;
 
   const RegisterRequest({
@@ -38,7 +30,7 @@ class RegisterRequest {
   Map<String, String> toFormFields() {
     final fields = <String, String>{
       'first_name': firstName,
-      'last_name': lastName,
+      'last_name': lastName, // ← send as-is, backend handles splitting
       'mobile': mobile,
       'password': password,
       'password_confirmation': passwordConfirm,
@@ -52,7 +44,6 @@ class RegisterRequest {
     if (email != null && email!.trim().isNotEmpty) {
       fields['email'] = email!.trim();
     }
-
     if (passportNumber != null && passportNumber!.isNotEmpty) {
       fields['passport_num'] = passportNumber!;
     }

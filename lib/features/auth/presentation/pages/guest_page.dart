@@ -281,109 +281,119 @@ class _HomeTab extends StatelessWidget {
         ],
       ),
       padding: const EdgeInsets.all(16),
-      child: Row(
-        textDirection: TextDirection.rtl,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        // ← Changed from Row to Column
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(
-            height: 80,
-            width: 70,
-            child: Image.asset('assets/images/logo.png', fit: BoxFit.contain),
-          ),
-          const SizedBox(width: 5),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'للاستفادة من خدمات التطبيق',
-                  textDirection: TextDirection.rtl,
-                  style: AppTextStyles.h5.copyWith(
-                    color: AppColors.mainBlueIndigoDye,
-                  ),
+          Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              SizedBox(
+                height: 48, // ← Reduced from 80
+                width: 48, // ← Reduced from 70
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  fit: BoxFit.contain,
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  'يرجى تسجيل الدخول أو إنشاء حساب جديد لتقديم الإقرار الضريبي وإدارة ممتلكاتك العقارية.',
-                  textDirection: TextDirection.rtl,
-                  style: AppTextStyles.bodyS.copyWith(
-                    color: AppColors.neutralDarkLight,
-                    height: 1.6,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  textDirection: TextDirection.rtl,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 44,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(
-                              RuntimeData.getCurrentContext()!,
-                            ).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                builder: (_) => const LoginPage(),
-                              ),
-                              (route) => false,
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.highlightDarkest,
-                            foregroundColor: AppColors.neutralLightLightest,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: Text(
-                            'تسجيل الدخول',
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.actionM.copyWith(
-                              color: AppColors.neutralLightLightest,
-                            ),
-                          ),
-                        ),
+                    Text(
+                      'للاستفادة من خدمات التطبيق',
+                      textDirection: TextDirection.rtl,
+                      style: AppTextStyles.h5.copyWith(
+                        color: AppColors.mainBlueIndigoDye,
                       ),
                     ),
-                    const SizedBox(width: 5),
-                    Expanded(
-                      child: SizedBox(
-                        height: 44,
-                        child: OutlinedButton(
-                          onPressed: () =>
-                              Navigator.of(
-                                RuntimeData.getCurrentContext()!,
-                              ).push(
-                                MaterialPageRoute(
-                                  builder: (_) => const SignupPage(),
-                                ),
-                              ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.highlightDarkest,
-                            side: const BorderSide(
-                              color: AppColors.highlightDarkest,
-                              width: 1.5,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: Text(
-                            'إنشاء حساب جديد',
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.actionM.copyWith(
-                              color: AppColors.highlightDarkest,
-                            ),
-                          ),
-                        ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'يرجى تسجيل الدخول أو إنشاء حساب جديد لتقديم الإقرار الضريبي وإدارة ممتلكاتك العقارية.',
+                      textDirection: TextDirection.rtl,
+                      style: AppTextStyles.bodyS.copyWith(
+                        color: AppColors.neutralDarkLight,
+                        height: 1.6,
                       ),
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            textDirection: TextDirection.rtl,
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 44,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(
+                        RuntimeData.getCurrentContext()!,
+                      ).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                        (route) => false,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.highlightDarkest,
+                      foregroundColor: AppColors.neutralLightLightest,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: FittedBox(
+                      // ← Wrap text in FittedBox
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'تسجيل الدخول',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.actionM.copyWith(
+                          color: AppColors.neutralLightLightest,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8), // ← Slightly more spacing
+              Expanded(
+                child: SizedBox(
+                  height: 44,
+                  child: OutlinedButton(
+                    onPressed: () =>
+                        Navigator.of(RuntimeData.getCurrentContext()!).push(
+                          MaterialPageRoute(builder: (_) => const SignupPage()),
+                        ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.highlightDarkest,
+                      side: const BorderSide(
+                        color: AppColors.highlightDarkest,
+                        width: 1.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: FittedBox(
+                      // ← Wrap text in FittedBox
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'إنشاء حساب', // ← Shortened slightly
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.actionM.copyWith(
+                          color: AppColors.highlightDarkest,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

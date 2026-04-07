@@ -806,13 +806,15 @@ class _AttachmentFieldState extends State<_AttachmentField> {
 
     setState(() => _uploading = true);
 
-    if (!mounted) return;
-    await context.read<UserProfileCubit>().editProfileWithFile(
-      file: file,
-      isEgyptian: widget.isEgyptian,
-    );
-
-    if (mounted) setState(() => _uploading = false);
+    try {
+      if (!mounted) return;
+      await context.read<UserProfileCubit>().editProfileWithFile(
+        file: file,
+        isEgyptian: widget.isEgyptian,
+      );
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
   }
 
   @override

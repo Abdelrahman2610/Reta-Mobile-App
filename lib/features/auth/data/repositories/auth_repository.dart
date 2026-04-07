@@ -61,6 +61,21 @@ class AuthRepository {
     bool isForeign = false,
   }) async {
     return safeApiCall(() async {
+      final uploadDio = Dio(
+        BaseOptions(
+          baseUrl: ApiConstants.baseUrl,
+          connectTimeout: const Duration(seconds: 60),
+          sendTimeout: const Duration(seconds: 120),
+          receiveTimeout: const Duration(seconds: 60),
+          headers: {'Accept': 'application/json'},
+        ),
+      );
+
+      final token = await DioClient.getToken();
+      if (token != null) {
+        uploadDio.options.headers['Authorization'] = 'Bearer $token';
+      }
+
       final fields = request.toFormFields();
       final formMap = <String, dynamic>{...fields};
 
@@ -84,7 +99,7 @@ class AuthRepository {
       });
       log('==============================');
 
-      final response = await _dio.post(
+      final response = await uploadDio.post(
         ApiConstants.registerSendOtp,
         data: FormData.fromMap(formMap),
       );
@@ -120,7 +135,7 @@ class AuthRepository {
 
       final response = await _dio.post(
         ApiConstants.forgotPasswordPhone,
-        data: {'mobile': mobile},
+        data: {'mobile': mobile, 'context': 'forgot_password'},
       );
 
       final rawData = response.data;
@@ -166,7 +181,7 @@ class AuthRepository {
           'token': token,
           'otp': otp,
           'mobile': mobile,
-          'user_id': userId,
+          'user_id': null,
           'context': 'forgot_password',
         },
       );
