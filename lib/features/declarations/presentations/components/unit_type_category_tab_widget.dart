@@ -59,7 +59,7 @@ class UnitTypeCategoryTabWidget extends StatelessWidget {
                 borderColor: AppColors.neutralDarkLightest,
                 height: 29,
                 borderRadius: 12,
-                width: 110,
+                width: 120,
               ),
             ],
           );
