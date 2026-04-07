@@ -9,6 +9,7 @@ import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
 import 'package:reta/features/auth/presentation/pages/user_profile_page.dart';
 import 'package:reta/features/auth/presentation/pages/help_support_page.dart';
 import 'package:reta/features/auth/presentation/pages/terms_privacy_page.dart';
+import 'package:reta/features/auth/presentation/cubit/user_profile_state.dart';
 import 'package:reta/core/theme/app_colors.dart';
 import 'package:reta/core/theme/app_text_styles.dart';
 import 'user_profile_header.dart';
@@ -31,19 +32,23 @@ class AuthenticatedSettingsContent extends StatelessWidget {
     final settingsCubit = context.read<SettingsCubit>();
     final userProfileCubit = context.read<UserProfileCubit>();
 
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => MultiBlocProvider(
-          providers: [
-            BlocProvider.value(value: notificationsCubit),
-            BlocProvider.value(value: homeCubit),
-            BlocProvider.value(value: settingsCubit),
-            BlocProvider.value(value: userProfileCubit),
-          ],
-          child: page,
-        ),
-      ),
-    );
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+            builder: (_) => MultiBlocProvider(
+              providers: [
+                BlocProvider.value(value: notificationsCubit),
+                BlocProvider.value(value: homeCubit),
+                BlocProvider.value(value: settingsCubit),
+                BlocProvider.value(value: userProfileCubit),
+              ],
+              child: page,
+            ),
+          ),
+        )
+        .then((_) {
+          userProfileCubit.loadFromUser(null);
+        });
   }
 
   @override
@@ -57,7 +62,14 @@ class AuthenticatedSettingsContent extends StatelessWidget {
           children: [
             const SizedBox(height: 16),
 
-            UserProfileHeader(user: user),
+            BlocBuilder<UserProfileCubit, UserProfileState>(
+              builder: (context, state) {
+                final liveUser = state is UserProfileLoaded
+                    ? state.userModel
+                    : user;
+                return UserProfileHeader(user: liveUser);
+              },
+            ),
 
             const SizedBox(height: 16),
 
@@ -72,10 +84,10 @@ class AuthenticatedSettingsContent extends StatelessWidget {
             SettingsToggleTile(
               icon: Icons.notifications_none_outlined,
               label: 'تفعيل الإشعارات',
-              value: notifState.notificationsEnabled, // ✅ reads from cubit
+              value: notifState.notificationsEnabled,
               onChanged: (val) => context
                   .read<NotificationsCubit>()
-                  .setNotificationsEnabled(val), // ✅ writes to cubit
+                  .setNotificationsEnabled(val),
             ),
             const SizedBox(height: 16),
 

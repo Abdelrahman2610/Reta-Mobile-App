@@ -40,8 +40,33 @@ class UserProfilePage extends StatelessWidget {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _UserProfileView extends StatelessWidget {
+class _UserProfileView extends StatefulWidget {
   const _UserProfileView();
+
+  @override
+  State<_UserProfileView> createState() => _UserProfileViewState();
+}
+
+class _UserProfileViewState extends State<_UserProfileView>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      context.read<UserProfileCubit>().loadFromUser(null);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -143,10 +168,25 @@ class _UserProfileView extends StatelessWidget {
           buildWhen: (_, current) =>
               current is UserProfileLoaded ||
               current is UserProfileUpdating ||
-              current is UserProfileInitial,
+              current is UserProfileInitial ||
+              current is UserProfileError ||
+              current is UserProfileUpdateSuccess ||
+              current is UserProfilePasswordChanged ||
+              current is UserProfilePhoneConfirmed,
           builder: (context, state) {
             if (state is UserProfileLoaded) {
               return _ProfileBody(userModel: state.userModel);
+            }
+            // For error/success/confirmed states, show the last known
+            // loaded body if available, otherwise show spinner briefly
+            // (loadFromUser will emit UserProfileLoaded shortly after).
+            if (state is UserProfileError ||
+                state is UserProfileUpdateSuccess ||
+                state is UserProfilePasswordChanged ||
+                state is UserProfilePhoneConfirmed) {
+              // These are transient — loadFromUser() is always called
+              // after them now, so a brief spinner is acceptable.
+              return const Center(child: CircularProgressIndicator());
             }
             return const Center(child: CircularProgressIndicator());
           },
