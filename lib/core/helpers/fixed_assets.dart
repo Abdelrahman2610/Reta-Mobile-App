@@ -57,6 +57,9 @@ class FixedAssets {
   String warningIC = "${svg}warning_ic.svg";
   String completeRequestsIC = "${svg}complete_requests_ic.svg";
 
+  ///Images
+  String securityIcon = "${images}security_icon.png";
+
   /// ------------------------ Banks --------------------
   String misrBank = "${banks}misr.png";
   String nationalBank = "${banks}national.png";

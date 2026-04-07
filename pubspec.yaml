@@ -19,6 +19,8 @@ dependencies:
   flutter_svg: ^2.0.10
   intl: ^0.20.2
   flutter_screenutil: ^5.9.3
+  root_jailbreak_sniffer: any
+  developer_mode: any
   persistent_bottom_nav_bar: any
   dropdown_button2: ^2.3.9
   file_picker: ^8.1.2
