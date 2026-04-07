@@ -177,15 +177,11 @@ class _UserProfileViewState extends State<_UserProfileView>
             if (state is UserProfileLoaded) {
               return _ProfileBody(userModel: state.userModel);
             }
-            // For error/success/confirmed states, show the last known
-            // loaded body if available, otherwise show spinner briefly
-            // (loadFromUser will emit UserProfileLoaded shortly after).
             if (state is UserProfileError ||
                 state is UserProfileUpdateSuccess ||
                 state is UserProfilePasswordChanged ||
                 state is UserProfilePhoneConfirmed) {
-              // These are transient — loadFromUser() is always called
-              // after them now, so a brief spinner is acceptable.
+              
               return const Center(child: CircularProgressIndicator());
             }
             return const Center(child: CircularProgressIndicator());
