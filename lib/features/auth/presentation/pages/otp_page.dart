@@ -19,10 +19,15 @@ class OtpPage extends StatefulWidget {
   State<OtpPage> createState() => _OtpPageState();
 }
 
-enum _OtpStep { intro, input, success }
+enum _OtpStep {
+  //intro,
+  input,
+  success,
+}
 
 class _OtpPageState extends State<OtpPage> {
-  _OtpStep _step = _OtpStep.intro;
+  //_OtpStep _step = _OtpStep.intro;
+  _OtpStep _step = _OtpStep.input;
 
   final List<TextEditingController> _controllers = List.generate(
     6,
@@ -37,6 +42,12 @@ class _OtpPageState extends State<OtpPage> {
   int remainingAttempts = 2;
 
   bool _hasAttemptedConfirm = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
 
   @override
   void dispose() {
@@ -169,11 +180,11 @@ class _OtpPageState extends State<OtpPage> {
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           child: switch (_step) {
-            _OtpStep.intro => _IntroScreen(
-              key: const ValueKey('intro'),
-              phoneNumber: widget.phoneNumber,
-              onContinue: _goToInput,
-            ),
+            // _OtpStep.intro => _IntroScreen(
+            //   key: const ValueKey('intro'),
+            //   phoneNumber: widget.phoneNumber,
+            //   onContinue: _goToInput,
+            // ),
             _OtpStep.input => _InputScreen(
               key: const ValueKey('input'),
               phoneNumber: widget.phoneNumber,

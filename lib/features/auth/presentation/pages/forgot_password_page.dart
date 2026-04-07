@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../cubit/forgot_password_cubit.dart';
@@ -915,11 +916,11 @@ class _StepNewPasswordState extends State<_StepNewPassword> {
           ),
         ),
         const SizedBox(width: 4),
-        const Text(
+        Text(
           '*',
           style: TextStyle(
             color: AppColors.errorDark,
-            fontSize: 16,
+            fontSize: 16.sp,
             fontWeight: FontWeight.bold,
             height: 1.2,
           ),
@@ -1083,7 +1084,7 @@ class _StepNewPasswordState extends State<_StepNewPassword> {
         children: [
           Text(
             '•',
-            style: TextStyle(color: bulletColor, fontSize: 14, height: 1.4),
+            style: TextStyle(color: bulletColor, fontSize: 14.sp, height: 1.4),
           ),
           Expanded(
             child: Text(

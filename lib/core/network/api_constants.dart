@@ -9,7 +9,7 @@ class ApiConstants {
   // ─── Auth ───────────────────────────────────────────────────────────────────
   static const String login = '/login';
   static const String registerSendOtp = '/register/sendOTP';
-
+  static const String registerUploadAttachment = '/register/upload-attachments';
   static const String registerConfirmOtp = '/validatePhone/confirmOtp';
 
   // ─── Forgot Password (Phone flow) ───────────────────────────────────────────

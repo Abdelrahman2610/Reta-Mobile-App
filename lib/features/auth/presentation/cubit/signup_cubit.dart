@@ -315,7 +315,7 @@ class SignupState {
   }
 }
 
-// ─── Password validation helper  ────────────────────────────────────────────
+// ─── Password validation helper ───────────────────────────────────────────────
 
 class PasswordRules {
   static const int minLength = 8;
@@ -705,7 +705,7 @@ class SignupCubit extends Cubit<SignupState> {
     _pendingMobile = mobile;
   }
 
-  // ── Password handlers ─────────────────────────────────────────────
+  // ── Password handlers ─────────────────────────────────────────────────────
 
   void onPasswordChanged(String v) => emit(
     state.copyWith(
@@ -743,18 +743,17 @@ class SignupCubit extends Cubit<SignupState> {
 
   void clearOtpError() => emit(state.copyWith(submitError: () => null));
 
-  // ── Submit ──────────────────────────────────────────────────────────────────
+  // ── Submit ────────────────────────────────────────────────────────────────
 
   Future<void> submit() async {
     if (!_validateAll()) return;
 
     emit(state.copyWith(isLoading: true, submitError: () => null));
 
-    // final nameParts = state.restOfName.trim().split(' ');
+    // ── Send restOfName as-is — backend stores and splits it internally ──────
     final lastName = state.restOfName.trim();
 
     final gender = state.selectedGender?.id ?? '1';
-
     final isForeign = state.nationalityType == NationalityType.foreign;
 
     final birthPlace =
@@ -806,13 +805,12 @@ class SignupCubit extends Cubit<SignupState> {
             isSubmitSuccess: true,
           ),
         );
-
       case ApiError(:final message):
         emit(state.copyWith(isLoading: false, submitError: () => message));
     }
   }
 
-  // ── Confirm OTP ─────────────────────────────────────────────────────────────
+  // ── Confirm OTP ───────────────────────────────────────────────────────────
 
   Future<UserModel?> confirmOtp(String otp) async {
     if (_pendingOtpToken == null || _pendingUserId == null) return null;
@@ -832,6 +830,9 @@ class SignupCubit extends Cubit<SignupState> {
     switch (result) {
       case ApiSuccess(:final data):
         emit(state.copyWith(isLoading: false));
+        // confirmOtp response does not return a user object — build a
+        // temporary one from state so the UI has something to show.
+        // The full name will be correct once getUserProfile() is called.
         final user = (data.userData != null)
             ? UserModel.fromLoginResponse(data.userData!)
             : UserModel(
@@ -849,7 +850,7 @@ class SignupCubit extends Cubit<SignupState> {
     }
   }
 
-  // ── Resend OTP ──────────────────────────────────────────────────────────────
+  // ── Resend OTP ────────────────────────────────────────────────────────────
 
   Future<void> resendOtp() async {
     emit(state.copyWith(isLoading: true, submitError: () => null));
@@ -896,7 +897,7 @@ class SignupCubit extends Cubit<SignupState> {
   String _formatDate(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
-  // ── Validation ──────────────────────────────────────────────────────────────
+  // ── Validation ────────────────────────────────────────────────────────────
 
   bool _validateAll() {
     final firstNameError = state.firstName.trim().isEmpty
@@ -915,7 +916,6 @@ class SignupCubit extends Cubit<SignupState> {
         : null;
 
     final passwordError = PasswordRules.validate(state.password);
-
     final confirmPasswordError = state.confirmPassword != state.password
         ? 'كلمتا السر غير متطابقتين'
         : null;
@@ -945,9 +945,6 @@ class SignupCubit extends Cubit<SignupState> {
     } else {
       if (state.passportNumber.trim().isEmpty) {
         passportNumberError = 'رقم جواز السفر مطلوب';
-      }
-      if (state.selectedBirthPlace == null) {
-        birthPlaceError = 'محل الميلاد مطلوب';
       }
       if (state.showManualBirthPlace) {
         if (state.manualBirthPlace.trim().isEmpty) {

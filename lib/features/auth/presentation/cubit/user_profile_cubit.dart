@@ -84,7 +84,8 @@ class UserProfileCubit extends Cubit<UserProfileState> {
             emailVerificationSent: data.sendNewMailVerification,
           ),
         );
-        if (data.otpResponse == null || !data.otpResponse!.ok) {
+        if ((data.otpResponse == null || !data.otpResponse!.ok) &&
+            !data.sendNewMailVerification) {
           await loadFromUser(null);
         }
 
@@ -99,39 +100,45 @@ class UserProfileCubit extends Cubit<UserProfileState> {
     required bool isEgyptian,
   }) async {
     final current = state;
-    if (current is! UserProfileLoaded) return;
+    if (current is! UserProfileLoaded) {
+      return;
+    }
 
     emit(const UserProfileUpdating());
 
-    final result = await _repository.editProfile(
-      nationalityCode: current.userModel.nationalityCode ?? 'EG',
-      mobile: current.userModel.phone,
-      email: current.userModel.email,
-      nationalId: isEgyptian ? current.userModel.nationalId : null,
-      passportNum: !isEgyptian ? current.userModel.passportNumber : null,
-      idFile: file,
-      isEgyptian: isEgyptian,
-      docUploaded: true,
-    );
+    try {
+      final result = await _repository.editProfile(
+        nationalityCode: current.userModel.nationalityCode ?? 'EG',
+        mobile: current.userModel.phone,
+        email: current.userModel.email,
+        nationalId: isEgyptian ? current.userModel.nationalId : null,
+        passportNum: !isEgyptian ? current.userModel.passportNumber : null,
+        idFile: file,
+        isEgyptian: isEgyptian,
+        docUploaded: true,
+      );
 
-    switch (result) {
-      case ApiSuccess(:final data):
-        emit(
-          UserProfileUpdateSuccess(
-            message: data.message,
-            otpData: null,
-            editedField: null,
-            emailVerificationSent: false,
-          ),
-        );
-        await loadFromUser(null);
+      switch (result) {
+        case ApiSuccess(:final data):
+          emit(
+            UserProfileUpdateSuccess(
+              message: data.message,
+              otpData: null,
+              editedField: null,
+              emailVerificationSent: false,
+            ),
+          );
+          await loadFromUser(null);
 
-      case ApiError(:final message):
-        emit(UserProfileError(message));
-        _emitFromModel(current.userModel);
+        case ApiError(:final message):
+          emit(UserProfileError(message));
+          _emitFromModel(current.userModel);
+      }
+    } catch (e) {
+      emit(UserProfileError(e.toString()));
+      _emitFromModel(current.userModel);
     }
   }
-
   // ── Confirm phone OTP ─────────────────────────────────────────────────────
 
   Future<void> confirmPhoneUpdate({
