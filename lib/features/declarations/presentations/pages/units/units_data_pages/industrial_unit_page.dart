@@ -417,6 +417,7 @@ class _BuildingItemState extends State<_BuildingItem> {
                 initialDate: DateTime.now(),
                 firstDate: DateTime(1900),
                 lastDate: DateTime.now(),
+                locale: const Locale('en'),
               );
               if (picked != null) {
                 setState(() {

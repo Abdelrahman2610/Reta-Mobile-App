@@ -99,10 +99,11 @@ class _HotelFacilityView extends StatelessWidget {
                   initialDate: DateTime.now(),
                   firstDate: DateTime(1990),
                   lastDate: DateTime.now(),
+                  locale: const Locale('en'),
                 );
                 if (picked != null) {
                   cubit.operatingLicenseDateController.text =
-                      '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                      '${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}';
                 }
               },
               suffixWidget: CalendarIcon(color: AppColors.neutralDarkLightest),

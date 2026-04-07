@@ -100,6 +100,7 @@ class _PaymentFilterSheetState extends State<_PaymentFilterSheet> {
           (isFrom ? _filter.dateFrom : _filter.dateTo) ?? DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
+      locale: const Locale('en'),
     );
     if (picked == null) return;
     setState(() {
