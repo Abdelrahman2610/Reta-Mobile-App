@@ -1,9 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -30,12 +28,12 @@ class DioClient {
     );
 
     ///TODO will be removed in production
-    (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
-        (HttpClient client) {
-          client.badCertificateCallback =
-              (X509Certificate cert, String host, int port) => true;
-          return client;
-        };
+    // (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
+    //     (HttpClient client) {
+    //       client.badCertificateCallback =
+    //           (X509Certificate cert, String host, int port) => true;
+    //       return client;
+    //     };
 
     dio.interceptors.add(
       LogInterceptor(
@@ -170,12 +168,12 @@ class PublicDioClient {
     dio.interceptors.add(_LoggingInterceptor());
 
     ///TODO will be removed in production
-    (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
-        (HttpClient client) {
-          client.badCertificateCallback =
-              (X509Certificate cert, String host, int port) => true;
-          return client;
-        };
+    // (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
+    //     (HttpClient client) {
+    //       client.badCertificateCallback =
+    //           (X509Certificate cert, String host, int port) => true;
+    //       return client;
+    //     };
 
     return dio;
   }
