@@ -157,6 +157,13 @@ class _EditProfileOtpPageState extends State<EditProfileOtpPage> {
                 textDirection: TextDirection.rtl,
               ),
               backgroundColor: AppColors.successMedium,
+              duration: const Duration(seconds: 2),
+              action: SnackBarAction(
+                label: 'حسناً',
+                textColor: AppColors.white,
+                onPressed: () =>
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+              ),
             ),
           );
           Navigator.of(context).pop(true);

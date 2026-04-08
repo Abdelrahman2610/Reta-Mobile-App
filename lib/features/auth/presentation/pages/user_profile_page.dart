@@ -99,6 +99,13 @@ class _UserProfileViewState extends State<_UserProfileView>
                     textDirection: TextDirection.rtl,
                   ),
                   backgroundColor: AppColors.successMedium,
+                  duration: const Duration(seconds: 2),
+                  action: SnackBarAction(
+                    label: 'حسناً',
+                    textColor: AppColors.white,
+                    onPressed: () =>
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+                  ),
                 ),
               );
             }
@@ -131,6 +138,12 @@ class _UserProfileViewState extends State<_UserProfileView>
                     ),
                     backgroundColor: AppColors.highlightDarkest,
                     duration: const Duration(seconds: 4),
+                    action: SnackBarAction(
+                      label: 'حسناً',
+                      textColor: AppColors.white,
+                      onPressed: () =>
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+                    ),
                   ),
                 );
               }
@@ -160,6 +173,13 @@ class _UserProfileViewState extends State<_UserProfileView>
                       textDirection: TextDirection.rtl,
                     ),
                     backgroundColor: AppColors.successMedium,
+                    duration: const Duration(seconds: 2),
+                    action: SnackBarAction(
+                      label: 'حسناً',
+                      textColor: AppColors.white,
+                      onPressed: () =>
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+                    ),
                   ),
                 );
               }
@@ -181,7 +201,6 @@ class _UserProfileViewState extends State<_UserProfileView>
                 state is UserProfileUpdateSuccess ||
                 state is UserProfilePasswordChanged ||
                 state is UserProfilePhoneConfirmed) {
-              
               return const Center(child: CircularProgressIndicator());
             }
             return const Center(child: CircularProgressIndicator());
@@ -316,6 +335,12 @@ class _ProfileBodyState extends State<_ProfileBody> {
         backgroundColor: result is ApiSuccess
             ? AppColors.successMedium
             : AppColors.errorDark,
+        duration: const Duration(seconds: 2),
+        action: SnackBarAction(
+          label: 'حسناً',
+          textColor: AppColors.white,
+          onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+        ),
       ),
     );
 
@@ -512,12 +537,19 @@ class _ProfileBodyState extends State<_ProfileBody> {
 
                 if (newPass != confirm) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
+                    SnackBar(
+                      content: const Text(
                         'كلمة المرور الجديدة غير متطابقة',
                         textDirection: TextDirection.rtl,
                       ),
                       backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 2),
+                      action: SnackBarAction(
+                        label: 'حسناً',
+                        textColor: Colors.white,
+                        onPressed: () =>
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+                      ),
                     ),
                   );
                   return;
@@ -969,6 +1001,13 @@ class _AttachmentRowState extends State<_AttachmentRow> {
               textDirection: TextDirection.rtl,
             ),
             backgroundColor: AppColors.errorDark,
+            duration: const Duration(seconds: 2),
+            action: SnackBarAction(
+              label: 'حسناً',
+              textColor: AppColors.white,
+              onPressed: () =>
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+            ),
           ),
         );
       }
