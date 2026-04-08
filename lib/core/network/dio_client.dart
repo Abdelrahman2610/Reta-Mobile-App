@@ -27,6 +27,13 @@ class DioClient {
       ),
     );
 
+    // (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
+    //     (HttpClient client) {
+    //       client.badCertificateCallback =
+    //           (X509Certificate cert, String host, int port) => true;
+    //       return client;
+    //     };
+
     dio.interceptors.add(
       LogInterceptor(
         request: true,
@@ -145,12 +152,27 @@ class _LoggingInterceptor extends Interceptor {
 
 // ─── Public Dio Client (no auth token) ───────────────────────────────────────
 class PublicDioClient {
-  static final Dio dio = Dio(
-    BaseOptions(
-      baseUrl: ApiConstants.baseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-      headers: {'Accept': 'application/json'},
-    ),
-  )..interceptors.add(_LoggingInterceptor());
+  static final Dio dio = _createDio();
+
+  static Dio _createDio() {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: ApiConstants.baseUrl,
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        headers: {'Accept': 'application/json'},
+      ),
+    );
+
+    dio.interceptors.add(_LoggingInterceptor());
+
+    // (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
+    //     (HttpClient client) {
+    //       client.badCertificateCallback =
+    //           (X509Certificate cert, String host, int port) => true;
+    //       return client;
+    //     };
+
+    return dio;
+  }
 }
