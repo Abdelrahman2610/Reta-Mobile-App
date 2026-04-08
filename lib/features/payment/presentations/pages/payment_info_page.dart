@@ -72,7 +72,7 @@ class _PaymentInfoView extends StatelessWidget {
 
     return AppScaffold(
       padding: EdgeInsets.zero,
-      title: 'المدفوعات تحت حساب المديونية',
+      title: 'المدفوعات تحت حساب الضريبة',
       onBackTapped: () {
         Navigator.of(context).popUntil((route) => route.isFirst);
         context.read<HomeCubit>().selectTab(2, isVerified: true);

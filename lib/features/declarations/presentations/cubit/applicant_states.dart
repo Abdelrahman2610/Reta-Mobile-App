@@ -61,6 +61,9 @@ class ApplicantState extends Equatable {
     successMessage,
     ownershipProofDocumentPath,
     ownershipProofDocumentFullUrl,
+    taxpayerNationalIdFileUrl,
+    taxpayerPassportFileUrl,
+    taxpayerAuthorizationFullUrl,
   ];
 
   ApplicantState copyWith({

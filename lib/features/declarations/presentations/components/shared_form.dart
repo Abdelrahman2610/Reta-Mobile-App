@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/features/declarations/presentations/components/shared_conventional_form.dart';
@@ -57,16 +58,6 @@ class _SharedFormState extends State<SharedForm> {
           ),
           24.hs,
           BlocBuilder<ApplicantCubit, ApplicantState>(
-            key: const ValueKey('shared_form_builder'),
-            buildWhen: (prev, curr) =>
-                prev.taxpayerNationality != curr.taxpayerNationality ||
-                prev.taxpayerTypes != curr.taxpayerTypes ||
-                prev.taxpayerNationalIdFilePath !=
-                    curr.taxpayerNationalIdFilePath ||
-                prev.taxpayerPassportFilePath !=
-                    curr.taxpayerPassportFilePath ||
-                prev.taxpayerAuthorizationFullUrl !=
-                    curr.taxpayerAuthorizationFullUrl,
             builder: (context, state) {
               return BlocBuilder<
                 DeclarationLookupsCubit,
@@ -121,6 +112,10 @@ class _SharedFormState extends State<SharedForm> {
                         labelFontSize: 14.sp,
                         controller: cubit.taxpayerPhoneController,
                         focusNode: _phoneFocusNode,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(11),
+                        ],
                       ),
                       16.hs,
                       AppTextFormField(

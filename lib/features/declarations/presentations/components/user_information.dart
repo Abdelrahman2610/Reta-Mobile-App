@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/helpers/extensions/dimensions.dart';
@@ -57,6 +58,10 @@ class UserInformation extends StatelessWidget {
             filledColor: AppColors.neutralLightLight,
             controller: cubit.applicantPhoneController,
             labelColor: AppColors.neutralDarkLightest,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(11),
+            ],
           ),
           16.hs,
           NationalityForm(
