@@ -121,6 +121,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.7"
+  developer_mode:
+    dependency: "direct main"
+    description:
+      name: developer_mode
+      sha256: "112f3d1cc92cbb4f80a32e5b1ade662ce307782c0b52aa489ab71f5da6fd90e5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
   device_info_plus:
     dependency: transitive
     description:
@@ -701,6 +709,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
+  root_jailbreak_sniffer:
+    dependency: "direct main"
+    description:
+      name: root_jailbreak_sniffer
+      sha256: "98b6d37f54c6ca3b282bf41e37ee23c1d4109f3653261e0b6dee6c93bffa9dfc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.4"
   share_plus:
     dependency: "direct main"
     description:
