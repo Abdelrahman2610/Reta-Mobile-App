@@ -40,7 +40,7 @@ class DioClient {
         request: true,
         requestUrl: true,
         requestHeader: true,
-        requestBody: false,
+        requestBody: true,
         responseUrl: true,
         responseHeader: true,
         responseBody: false,

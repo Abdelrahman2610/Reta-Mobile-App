@@ -146,6 +146,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       taxpayerPhoneController.text = taxpayer.phone ?? '';
       taxpayerEmailController.text = taxpayer.email ?? '';
       taxpayerNationalIdController.text = taxpayer.nationalId ?? '';
+      taxpayerPassportNumberController.text = taxpayer.passportNumber ?? '';
       taxpayerNationality = taxpayer.nationalityText == 'مصر'
           ? Nationality.egyptian
           : Nationality.foreign;
@@ -280,6 +281,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   }
 
   void removeNationalIdFile() {
+    emit(state.copyWith(isLoading: true));
     taxpayerNationalIdFilePath = null;
     taxpayerNationalIdUrl = null;
     emit(
@@ -314,6 +316,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   }
 
   void removePassportFile() {
+    emit(state.copyWith(isLoading: true));
     taxpayerPassportFilePath = null;
     taxpayerPassportUrl = null;
     emit(
@@ -387,6 +390,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   }
 
   void removeLegalAuthorizationFile() {
+    emit(state.copyWith(isLoading: true));
     taxpayerAuthorizationUrl = null;
     taxpayerAuthorizationFilePath = null;
     taxpayerAuthorizationFileId = null;
@@ -696,7 +700,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     if (applicantType == ApplicantType.agent ||
         applicantType == ApplicantType.legalRepresentative ||
         applicantType == ApplicantType.other) {
-      if (taxpayerAuthorizationFilePath != null) {
+      if (taxpayerAuthorizationUrl != null) {
         payload['power_of_attorney'] = {
           'file_id': taxpayerAuthorizationFileId,
           if (!save) 'path': taxpayerAuthorizationFilePath,
@@ -723,7 +727,6 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       payload['taxpayer'] = _buildTaxpayerPayload(context, save: save);
     }
 
-    print("ApplicantPayload: $payload");
     return payload;
   }
 

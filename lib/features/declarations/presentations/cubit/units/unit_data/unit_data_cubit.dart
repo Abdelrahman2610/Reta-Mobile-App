@@ -2081,6 +2081,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       'buildings': buildings
           .map(
             (b) => {
+              if (unitData != null) 'id': b.id,
               'floors_count': b.floorsCount,
               'building_area':
                   double.tryParse(b.areaController.text.trim()) ?? 0,
@@ -2144,6 +2145,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       'buildings': productionBuildings
           .map(
             (b) => {
+              if (unitData != null) 'id': b.id,
               'floors_count': b.floorsCount,
               'total_area': double.tryParse(b.totalArea.text.trim()) ?? 0,
               'market_value': double.tryParse(b.marketValue.text.trim()),
@@ -2202,6 +2204,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       'buildings': petroBuildings
           .map(
             (b) => {
+              if (unitData != null) 'id': b.id,
               'building_type_text': b.buildingType.text.trim(),
               'total_area': double.tryParse(b.totalArea.text.trim()),
               'construction_date': b.buildingDate.text.trim(),
