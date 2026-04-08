@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
 
 import 'declarations_lookups.dart';
 
@@ -11,7 +10,8 @@ class PetroBuilding {
   final TextEditingController totalArea = TextEditingController();
   final TextEditingController buildingDate = TextEditingController();
 
-  PetroBuilding({String? id}) : id = id ?? const Uuid().v4();
+  PetroBuilding({String? id})
+    : id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
 
   void dispose() {
     buildingDate.dispose();

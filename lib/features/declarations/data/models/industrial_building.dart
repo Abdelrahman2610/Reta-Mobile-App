@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
 
 import 'declarations_lookups.dart';
 
@@ -13,7 +12,8 @@ class IndustrialBuilding {
   String? buildingType;
   int floorsCount = 1;
 
-  IndustrialBuilding({String? id}) : id = id ?? const Uuid().v4();
+  IndustrialBuilding({String? id})
+    : id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
 
   void dispose() {
     totalArea.dispose();

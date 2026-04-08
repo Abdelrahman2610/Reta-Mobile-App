@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
 
 import 'declarations_lookups.dart';
 
@@ -10,7 +9,7 @@ class ProductionBuilding {
   final TextEditingController totalArea = TextEditingController();
 
   ProductionBuilding({String? id})
-    : id = id ?? const Uuid().v4(),
+    : id = id ?? DateTime.now().millisecondsSinceEpoch.toString(),
       floorsCount = 1;
 
   void dispose() {
