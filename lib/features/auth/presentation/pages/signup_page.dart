@@ -101,366 +101,379 @@ class _SignupPageState extends State<SignupPage> {
                   textDirection: TextDirection.rtl,
                 ),
                 backgroundColor: AppColors.errorDark,
+                duration: const Duration(seconds: 2),
+                action: SnackBarAction(
+                  label: 'حسناً',
+                  textColor: AppColors.white,
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  },
+                ),
               ),
             );
           }
         },
-        child: Scaffold(
-          backgroundColor: AppColors.white,
-          appBar: AppBar(
-            backgroundColor: AppColors.mainBlueIndigoDye,
-            elevation: 0,
-            centerTitle: true,
-            automaticallyImplyLeading: false,
-            leading: IconButton(
-              icon: const Icon(
-                Icons.arrow_back_ios,
-                color: AppColors.neutralLightLightest,
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-
-            title: Text(
-              'إنشاء حساب جديد',
-              style: AppTextStyles.actionXL.copyWith(
-                color: AppColors.neutralLightLightest,
-              ),
-            ),
-          ),
-          body: BlocBuilder<SignupCubit, SignupState>(
-            builder: (context, state) {
-              final cubit = context.read<SignupCubit>();
-              return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Scaffold(
+            resizeToAvoidBottomInset: true,
+            backgroundColor: AppColors.white,
+            appBar: AppBar(
+              backgroundColor: AppColors.mainBlueIndigoDye,
+              elevation: 0,
+              centerTitle: true,
+              automaticallyImplyLeading: false,
+              leading: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_ios,
+                  color: AppColors.neutralLightLightest,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _Field(
-                      label: 'الاسم الأول',
-                      isRequired: true,
-                      hint: 'أحمد',
-                      controller: _firstNameController,
-                      errorText: state.firstNameError,
-                      onChanged: cubit.onFirstNameChanged,
-                    ),
-                    _Field(
-                      label: 'باقي الاسم',
-                      isRequired: true,
-                      hint: 'عادل ابراهيم الدسوقي',
-                      controller: _restOfNameController,
-                      errorText: state.restOfNameError,
-                      onChanged: cubit.onRestOfNameChanged,
-                    ),
-                    _Field(
-                      label: 'البريد الإلكتروني',
-                      isRequired: false,
-                      hint: 'name@email.com',
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      errorText: state.emailError,
-                      onChanged: cubit.onEmailChanged,
-                    ),
-                    _Field(
-                      label: 'رقم الهاتف المحمول',
-                      isRequired: true,
-                      hint: '+20 100 077 16',
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      errorText: state.phoneError,
-                      onChanged: cubit.onPhoneChanged,
-                      hintTextDirection: TextDirection.ltr,
-                    ),
-                    _InlineExpandField(
-                      label: 'الجنسية',
-                      isRequired: true,
-                      value: state.selectedNationality?.label,
-                      hint: 'اختر الجنسية',
-                      isExpanded: state.isNationalityExpanded,
-                      options: state.nationalityOptions,
-                      isLoading: state.isNationalityLoading,
-                      errorText: state.nationalityError,
-                      onToggle: cubit.toggleNationalityExpand,
-                      onSelected: cubit.onNationalitySelected,
-                    ),
+                onPressed: () => Navigator.pop(context),
+              ),
 
-                    // ── Egyptian fields ──────────────────────────────────────
-                    if (state.nationalityType == NationalityType.egyptian) ...[
-                      _SectionTitle(title: 'بيانات الهوية'),
+              title: Text(
+                'إنشاء حساب جديد',
+                style: AppTextStyles.actionXL.copyWith(
+                  color: AppColors.neutralLightLightest,
+                ),
+              ),
+            ),
+            body: BlocBuilder<SignupCubit, SignupState>(
+              builder: (context, state) {
+                final cubit = context.read<SignupCubit>();
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
                       _Field(
-                        label: 'الرقم القومي',
+                        label: 'الاسم الأول',
                         isRequired: true,
-                        hint: '12345678901234',
-                        controller: _nationalIdController,
-                        keyboardType: TextInputType.number,
-                        maxLength: 14,
-                        errorText: state.nationalIdError,
-                        onChanged: cubit.onNationalIdChanged,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
+                        hint: 'أحمد',
+                        controller: _firstNameController,
+                        errorText: state.firstNameError,
+                        onChanged: cubit.onFirstNameChanged,
                       ),
-                      _ImageUploadField(
-                        label: 'مرفق الرقم القومي',
+                      _Field(
+                        label: 'باقي الاسم',
                         isRequired: true,
-                        hasImage: state.hasNationalIdImage,
-                        imageFile: state.nationalIdFile,
-                        errorText: state.nationalIdImageError,
-                        onPickImage: cubit.onNationalIdImagePicked,
-                        onRemoveImage: cubit.onNationalIdImageRemoved,
+                        hint: 'عادل ابراهيم الدسوقي',
+                        controller: _restOfNameController,
+                        errorText: state.restOfNameError,
+                        onChanged: cubit.onRestOfNameChanged,
                       ),
-                      _DateField(
-                        label: 'تاريخ الميلاد',
+                      _Field(
+                        label: 'البريد الإلكتروني',
+                        isRequired: false,
+                        hint: 'name@email.com',
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        errorText: state.emailError,
+                        onChanged: cubit.onEmailChanged,
+                      ),
+                      _Field(
+                        label: 'رقم الهاتف المحمول',
                         isRequired: true,
-                        hint: 'يوم/شهر/سنة',
-                        value: state.birthDate,
-                        errorText: state.birthDateError,
-                        onTap: () => _pickDate(
-                          context,
-                          title: 'تاريخ الميلاد',
-                          initialDate: state.birthDate,
-                          lastDate: DateTime.now(),
-                          onPicked: cubit.onBirthDateSelected,
-                        ),
+                        hint: '+20 100 077 16',
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        errorText: state.phoneError,
+                        onChanged: cubit.onPhoneChanged,
+                        hintTextDirection: TextDirection.ltr,
                       ),
                       _InlineExpandField(
-                        label: 'محل الميلاد',
+                        label: 'الجنسية',
                         isRequired: true,
-                        value: state.selectedBirthPlace?.label,
-                        hint: 'اختر محل الميلاد',
-                        isExpanded: state.isBirthPlaceExpanded,
-                        options: state.residenceOptions,
-                        isLoading: state.isResidenceLoading,
-                        errorText: state.birthPlaceError,
-                        onToggle: cubit.toggleBirthPlaceExpand,
-                        onSelected: cubit.onBirthPlaceSelected,
+                        value: state.selectedNationality?.label,
+                        hint: 'اختر الجنسية',
+                        isExpanded: state.isNationalityExpanded,
+                        options: state.nationalityOptions,
+                        isLoading: state.isNationalityLoading,
+                        errorText: state.nationalityError,
+                        onToggle: cubit.toggleNationalityExpand,
+                        onSelected: cubit.onNationalitySelected,
                       ),
-                      if (state.showManualBirthPlace)
+
+                      // ── Egyptian fields ──────────────────────────────────────
+                      if (state.nationalityType ==
+                          NationalityType.egyptian) ...[
+                        _SectionTitle(title: 'بيانات الهوية'),
                         _Field(
-                          label: 'إدخل محل الميلاد',
+                          label: 'الرقم القومي',
                           isRequired: true,
-                          hint: 'الرياض',
-                          controller: _manualBirthPlaceController,
-                          errorText: state.manualBirthPlaceError,
-                          onChanged: cubit.onManualBirthPlaceChanged,
+                          hint: '12345678901234',
+                          controller: _nationalIdController,
+                          keyboardType: TextInputType.number,
+                          maxLength: 14,
+                          errorText: state.nationalIdError,
+                          onChanged: cubit.onNationalIdChanged,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
                         ),
-                      _InlineExpandGenderField(
-                        label: 'النوع',
-                        isRequired: true,
-                        selectedGender: state.selectedGender,
-                        options: state.genderOptions,
-                        isLoading: state.isGenderLoading,
-                        isExpanded: state.isGenderExpanded,
-                        errorText: state.genderError,
-                        onToggle: cubit.toggleGenderExpand,
-                        onSelected: cubit.onGenderSelected,
-                      ),
-                    ],
-
-                    // ── Foreign fields ───────────────────────────────────────
-                    if (state.nationalityType == NationalityType.foreign) ...[
-                      _SectionTitle(title: 'بيانات جواز السفر'),
-                      _Field(
-                        label: 'رقم جواز السفر',
-                        isRequired: true,
-                        hint: 'رقم جواز السفر',
-                        controller: _passportNumController,
-                        errorText: state.passportNumberError,
-                        onChanged: cubit.onPassportNumberChanged,
-                      ),
-                      _DateField(
-                        label: 'تاريخ الميلاد',
-                        isRequired: true,
-                        hint: 'يوم/شهر/سنة',
-                        value: state.birthDate,
-                        errorText: state.birthDateError,
-                        onTap: () => _pickDate(
-                          context,
-                          title: 'تاريخ الميلاد',
-                          initialDate: state.birthDate,
-                          lastDate: DateTime.now(),
-                          onPicked: cubit.onBirthDateSelected,
-                        ),
-                      ),
-                      _ImageUploadField(
-                        label: 'مرفق صورة جواز السفر',
-                        isRequired: true,
-                        hasImage: state.hasNationalIdImage,
-                        imageFile: state.nationalIdFile,
-                        errorText: state.nationalIdImageError,
-                        onPickImage: cubit.onNationalIdImagePicked,
-                        onRemoveImage: cubit.onNationalIdImageRemoved,
-                      ),
-                      _InlineExpandField(
-                        label: 'محل الميلاد',
-                        isRequired: true,
-                        value: state.selectedBirthPlace?.label,
-                        hint: 'اختر محل الميلاد',
-                        isExpanded: state.isBirthPlaceExpanded,
-                        options: state.residenceOptions,
-                        isLoading: state.isResidenceLoading,
-                        errorText: state.birthPlaceError,
-                        onToggle: cubit.toggleBirthPlaceExpand,
-                        onSelected: cubit.onBirthPlaceSelected,
-                      ),
-                      if (state.showManualBirthPlace)
-                        _Field(
-                          label: 'إدخل محل الميلاد',
+                        _ImageUploadField(
+                          label: 'مرفق الرقم القومي',
                           isRequired: true,
-                          hint: 'الرياض',
-                          controller: _manualBirthPlaceController,
-                          errorText: state.manualBirthPlaceError,
-                          onChanged: cubit.onManualBirthPlaceChanged,
+                          hasImage: state.hasNationalIdImage,
+                          imageFile: state.nationalIdFile,
+                          errorText: state.nationalIdImageError,
+                          onPickImage: cubit.onNationalIdImagePicked,
+                          onRemoveImage: cubit.onNationalIdImageRemoved,
                         ),
-                      _InlineExpandGenderField(
-                        label: 'النوع',
-                        isRequired: true,
-                        selectedGender: state.selectedGender,
-                        options: state.genderOptions,
-                        isLoading: state.isGenderLoading,
-                        isExpanded: state.isGenderExpanded,
-                        errorText: state.genderError,
-                        onToggle: cubit.toggleGenderExpand,
-                        onSelected: cubit.onGenderSelected,
-                      ),
-                    ],
-
-                    // ── Password field + live checklist ──────────────────────
-                    _PasswordField(
-                      label: 'كلمة السر',
-                      controller: _passwordController,
-                      isVisible: state.isPasswordVisible,
-                      errorText: state.passwordError,
-                      onChanged: cubit.onPasswordChanged,
-                      onToggleVisibility: cubit.togglePasswordVisibility,
-                    ),
-
-                    _Field(
-                      label: 'تأكيد كلمة السر',
-                      isRequired: true,
-                      hint: '••••••••',
-                      controller: _confirmPassController,
-                      obscureText: !state.isConfirmPasswordVisible,
-                      errorText: state.confirmPasswordError,
-                      onChanged: cubit.onConfirmPasswordChanged,
-                      suffix: IconButton(
-                        icon: Icon(
-                          state.isConfirmPasswordVisible
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                          color: AppColors.neutralDarkLightest,
-                          size: 20,
-                        ),
-                        onPressed: cubit.toggleConfirmPasswordVisibility,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    BlocBuilder<SignupCubit, SignupState>(
-                      builder: (context, state) =>
-                          _PasswordChecklist(password: state.password),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Checkbox(
-                          value: state.agreedToTerms,
-                          onChanged: cubit.toggleTerms,
-                          activeColor: AppColors.highlightDarkest,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
+                        _DateField(
+                          label: 'تاريخ الميلاد',
+                          isRequired: true,
+                          hint: 'يوم/شهر/سنة',
+                          value: state.birthDate,
+                          errorText: state.birthDateError,
+                          onTap: () => _pickDate(
+                            context,
+                            title: 'تاريخ الميلاد',
+                            initialDate: state.birthDate,
+                            lastDate: DateTime.now(),
+                            onPicked: cubit.onBirthDateSelected,
                           ),
                         ),
-                        Expanded(
-                          child: Directionality(
-                            textDirection: TextDirection.rtl,
-                            child: Wrap(
-                              children: [
-                                Text(
-                                  'أقر بأنني قرأت ووافقت على ',
-                                  style: AppTextStyles.bodyM.copyWith(
-                                    color: AppColors.neutralDarkLight,
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            const TermsPrivacyPage(),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    'الشروط والأحكام وسياسة الخصوصية',
+                        _InlineExpandField(
+                          label: 'محل الميلاد',
+                          isRequired: true,
+                          value: state.selectedBirthPlace?.label,
+                          hint: 'اختر محل الميلاد',
+                          isExpanded: state.isBirthPlaceExpanded,
+                          options: state.residenceOptions,
+                          isLoading: state.isResidenceLoading,
+                          errorText: state.birthPlaceError,
+                          onToggle: cubit.toggleBirthPlaceExpand,
+                          onSelected: cubit.onBirthPlaceSelected,
+                        ),
+                        if (state.showManualBirthPlace)
+                          _Field(
+                            label: 'إدخل محل الميلاد',
+                            isRequired: true,
+                            hint: 'الرياض',
+                            controller: _manualBirthPlaceController,
+                            errorText: state.manualBirthPlaceError,
+                            onChanged: cubit.onManualBirthPlaceChanged,
+                          ),
+                        _InlineExpandGenderField(
+                          label: 'النوع',
+                          isRequired: true,
+                          selectedGender: state.selectedGender,
+                          options: state.genderOptions,
+                          isLoading: state.isGenderLoading,
+                          isExpanded: state.isGenderExpanded,
+                          errorText: state.genderError,
+                          onToggle: cubit.toggleGenderExpand,
+                          onSelected: cubit.onGenderSelected,
+                        ),
+                      ],
+
+                      // ── Foreign fields ───────────────────────────────────────
+                      if (state.nationalityType == NationalityType.foreign) ...[
+                        _SectionTitle(title: 'بيانات جواز السفر'),
+                        _Field(
+                          label: 'رقم جواز السفر',
+                          isRequired: true,
+                          hint: 'رقم جواز السفر',
+                          controller: _passportNumController,
+                          errorText: state.passportNumberError,
+                          onChanged: cubit.onPassportNumberChanged,
+                        ),
+                        _DateField(
+                          label: 'تاريخ الميلاد',
+                          isRequired: true,
+                          hint: 'يوم/شهر/سنة',
+                          value: state.birthDate,
+                          errorText: state.birthDateError,
+                          onTap: () => _pickDate(
+                            context,
+                            title: 'تاريخ الميلاد',
+                            initialDate: state.birthDate,
+                            lastDate: DateTime.now(),
+                            onPicked: cubit.onBirthDateSelected,
+                          ),
+                        ),
+                        _ImageUploadField(
+                          label: 'مرفق صورة جواز السفر',
+                          isRequired: true,
+                          hasImage: state.hasNationalIdImage,
+                          imageFile: state.nationalIdFile,
+                          errorText: state.nationalIdImageError,
+                          onPickImage: cubit.onNationalIdImagePicked,
+                          onRemoveImage: cubit.onNationalIdImageRemoved,
+                        ),
+                        _InlineExpandField(
+                          label: 'محل الميلاد',
+                          isRequired: true,
+                          value: state.selectedBirthPlace?.label,
+                          hint: 'اختر محل الميلاد',
+                          isExpanded: state.isBirthPlaceExpanded,
+                          options: state.residenceOptions,
+                          isLoading: state.isResidenceLoading,
+                          errorText: state.birthPlaceError,
+                          onToggle: cubit.toggleBirthPlaceExpand,
+                          onSelected: cubit.onBirthPlaceSelected,
+                        ),
+                        if (state.showManualBirthPlace)
+                          _Field(
+                            label: 'إدخل محل الميلاد',
+                            isRequired: true,
+                            hint: 'الرياض',
+                            controller: _manualBirthPlaceController,
+                            errorText: state.manualBirthPlaceError,
+                            onChanged: cubit.onManualBirthPlaceChanged,
+                          ),
+                        _InlineExpandGenderField(
+                          label: 'النوع',
+                          isRequired: true,
+                          selectedGender: state.selectedGender,
+                          options: state.genderOptions,
+                          isLoading: state.isGenderLoading,
+                          isExpanded: state.isGenderExpanded,
+                          errorText: state.genderError,
+                          onToggle: cubit.toggleGenderExpand,
+                          onSelected: cubit.onGenderSelected,
+                        ),
+                      ],
+
+                      // ── Password field + live checklist ──────────────────────
+                      _PasswordField(
+                        label: 'كلمة السر',
+                        controller: _passwordController,
+                        isVisible: state.isPasswordVisible,
+                        errorText: state.passwordError,
+                        onChanged: cubit.onPasswordChanged,
+                        onToggleVisibility: cubit.togglePasswordVisibility,
+                      ),
+
+                      _Field(
+                        label: 'تأكيد كلمة السر',
+                        isRequired: true,
+                        hint: '••••••••',
+                        controller: _confirmPassController,
+                        obscureText: !state.isConfirmPasswordVisible,
+                        errorText: state.confirmPasswordError,
+                        onChanged: cubit.onConfirmPasswordChanged,
+                        suffix: IconButton(
+                          icon: Icon(
+                            state.isConfirmPasswordVisible
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                            color: AppColors.neutralDarkLightest,
+                            size: 20,
+                          ),
+                          onPressed: cubit.toggleConfirmPasswordVisibility,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      BlocBuilder<SignupCubit, SignupState>(
+                        builder: (context, state) =>
+                            _PasswordChecklist(password: state.password),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Checkbox(
+                            value: state.agreedToTerms,
+                            onChanged: cubit.toggleTerms,
+                            activeColor: AppColors.highlightDarkest,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          Expanded(
+                            child: Directionality(
+                              textDirection: TextDirection.rtl,
+                              child: Wrap(
+                                children: [
+                                  Text(
+                                    'أقر بأنني قرأت ووافقت على ',
                                     style: AppTextStyles.bodyM.copyWith(
-                                      color: AppColors.highlightDarkest,
-                                      decoration: TextDecoration.underline,
+                                      color: AppColors.neutralDarkLight,
                                     ),
                                   ),
-                                ),
-                              ],
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              const TermsPrivacyPage(),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      'الشروط والأحكام وسياسة الخصوصية',
+                                      style: AppTextStyles.bodyM.copyWith(
+                                        color: AppColors.highlightDarkest,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
+                          ),
+                        ],
+                      ),
+
+                      if (state.termsError != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          state.termsError!,
+                          textDirection: TextDirection.rtl,
+                          style: AppTextStyles.captionM.copyWith(
+                            color: AppColors.errorDark,
                           ),
                         ),
                       ],
-                    ),
 
-                    if (state.termsError != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        state.termsError!,
-                        textDirection: TextDirection.rtl,
-                        style: AppTextStyles.captionM.copyWith(
-                          color: AppColors.errorDark,
-                        ),
-                      ),
-                    ],
+                      const SizedBox(height: 24),
 
-                    const SizedBox(height: 24),
-
-                    SizedBox(
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: !state.isLoading ? cubit.submit : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.highlightDarkest,
-                          disabledBackgroundColor:
-                              AppColors.neutralLightDarkest,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                      SizedBox(
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: !state.isLoading ? cubit.submit : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.highlightDarkest,
+                            disabledBackgroundColor:
+                                AppColors.neutralLightDarkest,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            elevation: 0,
                           ),
-                          elevation: 0,
+                          child: state.isLoading
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : Text(
+                                  'إنشاء حساب',
+                                  style: AppTextStyles.actionM.copyWith(
+                                    color: AppColors.neutralLightLightest,
+                                  ),
+                                ),
                         ),
-                        child: state.isLoading
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  color: AppColors.white,
-                                  strokeWidth: 2.5,
-                                ),
-                              )
-                            : Text(
-                                'إنشاء حساب',
-                                style: AppTextStyles.actionM.copyWith(
-                                  color: AppColors.neutralLightLightest,
-                                ),
-                              ),
                       ),
-                    ),
 
-                    const SizedBox(height: 32),
-                  ],
-                ),
-              );
-            },
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),

@@ -173,6 +173,13 @@ class _OtpPageState extends State<OtpPage> {
                   textDirection: TextDirection.rtl,
                 ),
                 backgroundColor: AppColors.errorDark,
+                duration: const Duration(seconds: 2),
+                action: SnackBarAction(
+                  label: 'حسناً',
+                  textColor: AppColors.white,
+                  onPressed: () =>
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+                ),
               ),
             );
           }
