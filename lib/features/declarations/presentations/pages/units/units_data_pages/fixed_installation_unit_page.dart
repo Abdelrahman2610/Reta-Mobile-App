@@ -173,7 +173,7 @@ class _FixedInstallationsView extends StatelessWidget {
                     );
                     if (picked != null) {
                       cubit.contractStartDateController.text =
-                          '${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}';
+                          '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
                     }
                   },
                   suffixWidget: CalendarIcon(),
@@ -198,7 +198,7 @@ class _FixedInstallationsView extends StatelessWidget {
                     );
                     if (picked != null) {
                       cubit.contractEndDateController.text =
-                          '${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}';
+                          '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
                     }
                   },
                   suffixWidget: CalendarIcon(),
