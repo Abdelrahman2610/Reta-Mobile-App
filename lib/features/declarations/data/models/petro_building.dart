@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'declarations_lookups.dart';
 
 class PetroBuilding {
-  final String id;
+  String id;
 
   final TextEditingController buildingType = TextEditingController();
   final TextEditingController bookCostBuilding = TextEditingController();
@@ -20,14 +20,14 @@ class PetroBuilding {
     bookCostBuilding.dispose();
   }
 
-  Map<String, dynamic> toPayload(List<DeclarationLookup> buildingTypeLookups) {
-    return {'total_area': double.tryParse(totalArea.text.trim())};
-  }
-
   void initFromMap(
     Map<String, dynamic> data,
     List<DeclarationLookup> buildingTypeLookups,
   ) {
+    id = data['id']?.toString() ?? '';
+    buildingType.text = data['building_type_text']?.toString() ?? '';
     totalArea.text = data['total_area']?.toString() ?? '';
+    buildingDate.text = data['construction_date']?.toString() ?? "";
+    bookCostBuilding.text = data['book_value']?.toString() ?? "";
   }
 }

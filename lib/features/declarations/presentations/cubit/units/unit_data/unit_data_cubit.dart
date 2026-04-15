@@ -684,23 +684,47 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   void _initPetroleumData() {
-    facilityNameController.text = unitData!['facility_name'] ?? '';
+    petroleumFacilityNameController.text = unitData!['facility_name'] ?? '';
     usageTypeController.text = unitData!['usage_type'] ?? '';
+    totalLandArea.text = unitData!['total_land_area'] ?? '';
+    totalLandUtilized.text = unitData!['used_land_area'] ?? '';
+    bookValueController.text = unitData!['land_book_value'] ?? '';
+
     totalLandAreaFacilityController.text =
         unitData!['total_land_area']?.toString() ?? '';
-    bookValueController.text = unitData!['book_value']?.toString() ?? '';
-
-    final balanceSheet = unitData!['all_assets_balance_sheet'];
-
-    if (balanceSheet != null) {
-      emit(
-        state.copyWith(
-          allAssetsBalanceSheetFilePath: balanceSheet['url'],
-          allAssetsBalanceSheetOriginalName: balanceSheet['original_file_name'],
-          allAssetsBalanceSheetFullUrl: balanceSheet['full_url'],
-        ),
-      );
+    final buildingsData = unitData!['buildings'] as List? ?? [];
+    if (buildingsData.isNotEmpty) {
+      for (final b in petroBuildings) {
+        b.dispose();
+      }
+      petroBuildings.clear();
+      for (final b in buildingsData) {
+        final building = PetroBuilding();
+        building.initFromMap(b as Map<String, dynamic>, lookups.buildingTypes);
+        petroBuildings.add(building);
+      }
     }
+
+    final constructionLicense = unitData!['construction_license'];
+    final openingBudget = unitData!['opening_budget'];
+    final allBookValue = unitData!['all_book_value'];
+
+    emit(
+      state.copyWith(
+        constructionLicenseFilePath: constructionLicense?['path'],
+        constructionLicenseOriginalName:
+            constructionLicense?['original_file_name'],
+        constructionLicenseFullUrl: constructionLicense?['full_url'],
+
+        openingBudgetFilePath: openingBudget?['path'],
+        openingBudgetOriginalName: openingBudget?['original_file_name'],
+        openingBudgetFullUrl: openingBudget?['full_url'],
+
+        allBookBValueFilePath: allBookValue?['path'],
+        allBookBValueOriginalName: allBookValue?['original_file_name'],
+        allBookBValueFullUrl: allBookValue?['full_url'],
+      ),
+    );
   }
 
   List<String> get residentialUnitTypes =>
