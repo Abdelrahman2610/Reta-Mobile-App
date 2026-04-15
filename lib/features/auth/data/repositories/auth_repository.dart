@@ -320,6 +320,8 @@ class AuthRepository {
     String? email,
     String? nationalId,
     String? passportNum,
+    String? firstName,
+    String? lastName,
     required String nationalityCode,
     File? idFile,
     bool isEgyptian = true,
@@ -329,12 +331,14 @@ class AuthRepository {
     return safeApiCall(() async {
       final body = <String, dynamic>{
         'nationality_code': nationalityCode,
-        'doc_uploaded': docUploaded.toString(),
-        'doc_deleted': docDeleted.toString(),
+        'doc_uploaded': docUploaded,
+        'doc_deleted': docDeleted,
         if (mobile != null) 'mobile': mobile,
         if (email != null) 'email': email,
-        if (nationalId != null) 'national_id': nationalId,
-        if (passportNum != null) 'passport_num': passportNum,
+        if (firstName != null) 'first_name': firstName,
+        if (lastName != null) 'last_name': lastName,
+        if (isEgyptian && nationalId != null) 'national_id': nationalId,
+        if (!isEgyptian && passportNum != null) 'passport_num': passportNum,
       };
 
       if (idFile != null) {
@@ -343,7 +347,7 @@ class AuthRepository {
           idFile.path,
           filename: idFile.path.split('/').last,
         );
-        body['doc_uploaded'] = 'true';
+        body['doc_uploaded'] = true;
       }
 
       log('FORM FIELDS: ${body.keys.toList()}');

@@ -69,4 +69,4 @@ class UserProfilePasswordChanged extends UserProfileState {
   List<Object?> get props => [message];
 }
 
-enum ProfileEditField { phone, email, nationalId, passport }
+enum ProfileEditField { phone, email, nationalId, passport, name }

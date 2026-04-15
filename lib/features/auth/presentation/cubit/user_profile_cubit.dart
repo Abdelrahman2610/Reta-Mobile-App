@@ -47,6 +47,8 @@ class UserProfileCubit extends Cubit<UserProfileState> {
     String? email,
     String? nationalId,
     String? passportNumber,
+    String? firstName,
+    String? lastName,
   }) async {
     final current = state;
     if (current is! UserProfileLoaded) return;
@@ -60,6 +62,8 @@ class UserProfileCubit extends Cubit<UserProfileState> {
       editedField = ProfileEditField.email;
     } else if (nationalId != null) {
       editedField = ProfileEditField.nationalId;
+    } else if (firstName != null || lastName != null) {
+      editedField = ProfileEditField.name;
     } else {
       editedField = ProfileEditField.passport;
     }
@@ -69,6 +73,8 @@ class UserProfileCubit extends Cubit<UserProfileState> {
     final result = await _repository.editProfile(
       mobile: phone ?? current.userModel.phone,
       email: email ?? current.userModel.email,
+      firstName: firstName,
+      lastName: lastName,
       nationalId: isEgyptian
           ? (nationalId ?? current.userModel.nationalId)
           : null,
@@ -105,26 +111,38 @@ class UserProfileCubit extends Cubit<UserProfileState> {
     required bool isEgyptian,
   }) async {
     final current = state;
-    if (current is! UserProfileLoaded) {
-      return;
-    }
+    if (current is! UserProfileLoaded) return;
 
     emit(const UserProfileUpdating());
 
     try {
       final result = await _repository.editProfile(
         nationalityCode: current.userModel.nationalityCode ?? 'EG',
-        mobile: current.userModel.phone,
-        email: current.userModel.email,
-        nationalId: isEgyptian ? current.userModel.nationalId : null,
-        passportNum: !isEgyptian ? current.userModel.passportNumber : null,
+        mobile: current.userModel.phone ?? '',
+        email: current.userModel.email ?? '',
+        nationalId: isEgyptian ? (current.userModel.nationalId ?? '') : null,
+        passportNum: !isEgyptian
+            ? (current.userModel.passportNumber ?? '')
+            : null,
         idFile: file,
         isEgyptian: isEgyptian,
         docUploaded: true,
       );
-
       switch (result) {
         case ApiSuccess(:final data):
+          if (data.ocrVerified != null &&
+              !data.ocrVerified!.ok &&
+              data.ocrVerified!.connectionError) {
+            emit(
+              UserProfileError(
+                data.ocrVerified!.message ??
+                    'تعذر الاتصال بخدمة التحقق، يرجى المحاولة لاحقاً',
+              ),
+            );
+            _emitFromModel(current.userModel);
+            return;
+          }
+
           emit(
             UserProfileUpdateSuccess(
               message: data.message,

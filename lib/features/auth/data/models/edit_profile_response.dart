@@ -78,14 +78,22 @@ class OcrVerifiedData {
   final bool ok;
   final int status;
   final String? message;
+  final bool connectionError;
 
-  const OcrVerifiedData({required this.ok, required this.status, this.message});
+  const OcrVerifiedData({
+    required this.ok,
+    required this.status,
+    this.message,
+    this.connectionError = false,
+  });
 
   factory OcrVerifiedData.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] as Map<String, dynamic>?;
     return OcrVerifiedData(
       ok: json['ok'] == true,
       status: json['status'] as int? ?? 0,
       message: json['message']?.toString(),
+      connectionError: data?['connection_error'] == true,
     );
   }
 }

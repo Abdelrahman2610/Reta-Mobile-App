@@ -4,11 +4,14 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/network/api_constants.dart';
 import 'package:reta/core/network/api_result.dart';
 import 'package:reta/core/network/dio_client.dart';
+import 'package:reta/core/widgets/pdf_security_scanner.dart';
+import 'package:reta/core/widgets/safe_pdf_viewer.dart';
 import 'package:reta/features/auth/data/repositories/profile_verification_repository.dart';
 import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
 import 'package:reta/features/auth/presentation/cubit/user_profile_state.dart';
@@ -258,10 +261,16 @@ class _ProfileBody extends StatefulWidget {
 class _ProfileBodyState extends State<_ProfileBody> {
   String? _editingField;
   final Map<String, TextEditingController> _controllers = {};
+  final _currentPassCtrl = TextEditingController();
+  final _newPassCtrl = TextEditingController();
+  final _confirmPassCtrl = TextEditingController();
 
   @override
   void dispose() {
     for (final c in _controllers.values) c.dispose();
+    _currentPassCtrl.dispose();
+    _newPassCtrl.dispose();
+    _confirmPassCtrl.dispose();
     super.dispose();
   }
 
@@ -352,6 +361,7 @@ class _ProfileBodyState extends State<_ProfileBody> {
   @override
   Widget build(BuildContext context) {
     final u = widget.userModel;
+    final isVerified = u.nationalIdVerified ?? false;
 
     return SingleChildScrollView(
       child: Container(
@@ -362,59 +372,73 @@ class _ProfileBodyState extends State<_ProfileBody> {
         ),
         child: Column(
           children: [
-            _ReadOnlyField(
-              label: 'الاسم الكامل',
-              value:
-                  [
-                        u.firstname,
-                        u.secondName,
-                        u.thirdName,
-                        u.fourthName,
-                        u.lastname,
-                      ]
-                      .where((part) => part != null && part.trim().isNotEmpty)
-                      .join(' '),
+            _NameField(
+              firstName: u.firstname ?? '',
+              restOfName: [
+                u.secondName,
+                u.thirdName,
+                u.fourthName,
+                u.lastname,
+              ].where((p) => p != null && p.trim().isNotEmpty).join(' '),
+              isVerified: isVerified,
+              onSave: (firstName, restOfName) {
+                context.read<UserProfileCubit>().editProfile(
+                  firstName: firstName,
+                  lastName: restOfName,
+                );
+              },
             ),
             const _Divider(),
 
-            // ── Email ────────────────────────────────────────────────────
-            _EditableField(
-              label: 'البريد الإلكتروني',
-              value: u.email ?? '',
-              fieldKey: 'email',
-              keyboardType: TextInputType.emailAddress,
-              isEditing: _editingField == 'email',
-              isVerified: u.emailVerified ?? false,
-              showVerifyButton: !(u.emailVerified ?? false),
-              controller: _controllerFor('email', u.email ?? ''),
-              onEditTap: () => _startEditing('email'),
-              onSave: () => _saveField(context, 'email'),
-              onCancel: _cancelEditing,
-              onVerifyTap: () => _openEmailVerification(context, u.email ?? ''),
-            ),
-            const _Divider(),
+            if (isVerified) ...[
+              _EditableField(
+                label: 'البريد الإلكتروني',
+                value: u.email ?? '',
+                fieldKey: 'email',
+                keyboardType: TextInputType.emailAddress,
+                isEditing: _editingField == 'email',
+                isVerified: u.emailVerified ?? false,
+                showVerifyButton: !(u.emailVerified ?? false),
+                controller: _controllerFor('email', u.email ?? ''),
+                onEditTap: () => _startEditing('email'),
+                onSave: () => _saveField(context, 'email'),
+                onCancel: _cancelEditing,
+                onVerifyTap: () =>
+                    _openEmailVerification(context, u.email ?? ''),
+              ),
+              const _Divider(),
 
-            // ── Phone ────────────────────────────────────────────────────
-            _EditableField(
-              label: 'رقم الهاتف المحمول',
-              value: u.phone ?? '',
-              fieldKey: 'phone',
-              keyboardType: TextInputType.phone,
-              isEditing: _editingField == 'phone',
-              isVerified: u.phoneVerified ?? false,
-              showVerifyButton: !(u.phoneVerified ?? false),
-              controller: _controllerFor('phone', u.phone ?? ''),
-              onEditTap: () => _startEditing('phone'),
-              onSave: () => _saveField(context, 'phone'),
-              onCancel: _cancelEditing,
-              onVerifyTap: () => _openPhoneVerification(context, u.phone ?? ''),
-            ),
-            const _Divider(),
+              _EditableField(
+                label: 'رقم الهاتف المحمول',
+                value: u.phone ?? '',
+                fieldKey: 'phone',
+                keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(11),
+                ],
+                isEditing: _editingField == 'phone',
+                isVerified: u.phoneVerified ?? false,
+                showVerifyButton: !(u.phoneVerified ?? false),
+                controller: _controllerFor('phone', u.phone ?? ''),
+                onEditTap: () => _startEditing('phone'),
+                onSave: () => _saveField(context, 'phone'),
+                onCancel: _cancelEditing,
+                onVerifyTap: () =>
+                    _openPhoneVerification(context, u.phone ?? ''),
+              ),
+              const _Divider(),
+            ] else ...[
+              _ReadOnlyField(label: 'البريد الإلكتروني', value: u.email ?? ''),
+              const _Divider(),
+              _ReadOnlyField(label: 'رقم الهاتف المحمول', value: u.phone ?? ''),
+              const _Divider(),
+            ],
 
             _ReadOnlyField(label: 'الجنسية', value: u.nationality ?? ''),
             const _Divider(),
 
-            // ── National ID / Passport ────────────────────────────────────
+            // NID / Passport
             if (u.isEgyptian) ...[
               _EditableField(
                 label: 'الرقم القومي',
@@ -450,7 +474,6 @@ class _ProfileBodyState extends State<_ProfileBody> {
             ],
             const _Divider(),
 
-            // ── Attachment ────────────────────────────────────────────────
             _AttachmentField(
               label: 'مرفق الرقم القومي/جواز السفر',
               isEgyptian: u.isEgyptian,
@@ -464,11 +487,7 @@ class _ProfileBodyState extends State<_ProfileBody> {
             _ReadOnlyField(label: 'النوع', value: u.gender ?? ''),
             const _Divider(),
 
-            _ReadOnlyField(
-              label: 'كلمة المرور',
-              value: '',
-              trailing: _EditLink(onTap: () => _showPasswordDialog(context)),
-            ),
+            const _PasswordField(),
             SizedBox(height: 6.h),
             const _Divider(),
             SizedBox(height: 8.h),
@@ -588,6 +607,7 @@ class _EditableField extends StatelessWidget {
   final VoidCallback onCancel;
   final VoidCallback? onVerifyTap;
   final bool hideEditWhenVerified;
+  final List<TextInputFormatter>? inputFormatters;
 
   const _EditableField({
     required this.label,
@@ -603,6 +623,7 @@ class _EditableField extends StatelessWidget {
     required this.onCancel,
     required this.onVerifyTap,
     this.hideEditWhenVerified = false,
+    this.inputFormatters,
   });
 
   @override
@@ -610,7 +631,7 @@ class _EditableField extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             textDirection: TextDirection.rtl,
@@ -623,121 +644,211 @@ class _EditableField extends StatelessWidget {
                   color: AppColors.neutralDarkDarkest,
                 ),
               ),
-              if (!isEditing)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (isVerified) ...[
-                      Text(
-                        'تم التحقق',
-                        textDirection: TextDirection.rtl,
-                        style: AppTextStyles.actionM.copyWith(
-                          color: AppColors.successMedium,
-                        ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isVerified) ...[
+                    Text(
+                      'تم التحقق',
+                      textDirection: TextDirection.rtl,
+                      style: AppTextStyles.actionM.copyWith(
+                        color: AppColors.successMedium,
                       ),
-                      SizedBox(width: 8.w),
-                    ],
-                    if (!(isVerified && hideEditWhenVerified))
-                      _EditLink(onTap: onEditTap),
+                    ),
+                    SizedBox(width: 8.w),
                   ],
-                ),
+                  if (!(isVerified && hideEditWhenVerified))
+                    isEditing
+                        ? _EditLink(
+                            label: 'يلغي',
+                            onTap: onCancel,
+                            color: AppColors.highlightDarkest,
+                          )
+                        : _EditLink(onTap: onEditTap),
+                ],
+              ),
             ],
           ),
-          SizedBox(height: 6.h),
 
-          if (isEditing) ...[
-            TextField(
-              controller: controller,
-              keyboardType: keyboardType,
-              textDirection: TextDirection.ltr,
-              autofocus: true,
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 12.w,
-                  vertical: 10.h,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(
-                    color: AppColors.highlightDarkest,
-                    width: 1.5,
-                  ),
+          if (value.isNotEmpty && !isEditing) ...[
+            SizedBox(height: 6.h),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                value,
+                textDirection: TextDirection.ltr,
+                textAlign: TextAlign.right,
+                style: AppTextStyles.bodyXL.copyWith(
+                  color: AppColors.neutralDarkLight,
                 ),
               ),
             ),
-            SizedBox(height: 10.h),
-            Row(
-              textDirection: TextDirection.rtl,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                SizedBox(
-                  height: 34.h,
-                  child: ElevatedButton(
-                    onPressed: onSave,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.highlightDarkest,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      elevation: 0,
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    ),
-                    child: Text(
-                      'حفظ',
-                      style: AppTextStyles.actionM.copyWith(
-                        color: AppColors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                SizedBox(
-                  height: 34.h,
-                  child: OutlinedButton(
-                    onPressed: onCancel,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.neutralDarkLight,
-                      side: BorderSide(color: AppColors.neutralLightDark),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    ),
-                    child: Text(
-                      'إلغاء',
-                      style: AppTextStyles.actionM.copyWith(
-                        color: AppColors.neutralDarkLight,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ] else ...[
-            if (value.isNotEmpty)
-              Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  value,
-                  textDirection: TextDirection.ltr,
-                  textAlign: TextAlign.right,
-                  style: AppTextStyles.bodyXL.copyWith(
-                    color: AppColors.neutralDarkLight,
-                  ),
-                ),
-              ),
-            if (showVerifyButton && onVerifyTap != null) ...[
-              SizedBox(height: 8.h),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: _VerifyButton(onTap: onVerifyTap!),
-              ),
-            ],
           ],
+
+          if (!isEditing && showVerifyButton && onVerifyTap != null) ...[
+            SizedBox(height: 8.h),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: SizedBox(
+                width: 57.w,
+                height: 40.h,
+                child: OutlinedButton(
+                  onPressed: onVerifyTap,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.errorDark,
+                    side: BorderSide(color: AppColors.errorDark, width: 1.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 12.h,
+                    ),
+                    minimumSize: Size(57.w, 40.h),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    'تأكيد',
+                    style: AppTextStyles.actionM.copyWith(
+                      color: AppColors.errorDark,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+
+          // ── Accordion ──────────────────────
+          AnimatedSize(
+            duration: const Duration(milliseconds: 320),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: ClipRect(
+              child: !isEditing
+                  ? const SizedBox.shrink()
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 6.h),
+
+                        if (value.isNotEmpty)
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              value,
+                              textDirection: TextDirection.ltr,
+                              textAlign: TextAlign.right,
+                              style: AppTextStyles.bodyXL.copyWith(
+                                color: AppColors.neutralDarkLight,
+                              ),
+                            ),
+                          ),
+
+                        SizedBox(height: 10.h),
+
+                        // ── Text field ────────────────────────────────
+                        TextField(
+                          controller: controller,
+                          keyboardType: keyboardType,
+                          inputFormatters: inputFormatters,
+                          textDirection: TextDirection.ltr,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12.w,
+                              vertical: 10.h,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.r),
+                              borderSide: BorderSide(
+                                color: AppColors.highlightDarkest,
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: 12.h),
+
+                        // ── Save + Verify buttons row ─────────────────
+                        Row(
+                          textDirection: TextDirection.rtl,
+                          children: [
+                            SizedBox(
+                              width: 57.w,
+                              height: 40.h,
+                              child: ElevatedButton(
+                                onPressed: onSave,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.mainBlueIndigoDye,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12.r),
+                                  ),
+                                  elevation: 0,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 16.w,
+                                    vertical: 12.h,
+                                  ),
+                                  side: BorderSide(
+                                    color: AppColors.mainBlueIndigoDye,
+                                    width: 1.5,
+                                  ),
+                                  minimumSize: Size(57.w, 40.h),
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: Text(
+                                  'حفظ',
+                                  style: AppTextStyles.actionM.copyWith(
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            if (showVerifyButton && onVerifyTap != null) ...[
+                              SizedBox(width: 8.w),
+                              SizedBox(
+                                width: 57.w,
+                                height: 40.h,
+                                child: OutlinedButton(
+                                  onPressed: onVerifyTap,
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: AppColors.errorDark,
+                                    side: BorderSide(
+                                      color: AppColors.errorDark,
+                                      width: 1.5,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 16.w,
+                                      vertical: 12.h,
+                                    ),
+                                    minimumSize: Size(57.w, 40.h),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: Text(
+                                    'تأكيد',
+                                    style: AppTextStyles.actionM.copyWith(
+                                      color: AppColors.errorDark,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        SizedBox(height: 4.h),
+                      ],
+                    ),
+            ),
+          ),
         ],
       ),
     );
@@ -798,21 +909,23 @@ class _ReadOnlyField extends StatelessWidget {
   }
 }
 
-// ─── Small reusable widgets ───────────────────────────────────────────────────
-
 class _EditLink extends StatelessWidget {
   final VoidCallback? onTap;
+  final String label;
+  final Color? color;
 
-  const _EditLink({this.onTap});
+  const _EditLink({this.onTap, this.label = 'تعديل', this.color});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Text(
-        'تعديل',
+        label,
         textDirection: TextDirection.rtl,
-        style: AppTextStyles.bodyM.copyWith(color: AppColors.highlightDarkest),
+        style: AppTextStyles.bodyM.copyWith(
+          color: color ?? AppColors.highlightDarkest,
+        ),
       ),
     );
   }
@@ -869,11 +982,27 @@ class _AttachmentFieldState extends State<_AttachmentField> {
     );
 
     if (result == null || result.files.single.path == null) return;
-
     final file = File(result.files.single.path!);
 
-    setState(() => _uploading = true);
+    final sizeInMB = await file.length() / (1024 * 1024);
+    if (sizeInMB > 5) {
+      if (mounted) _showError('حجم الملف يجب أن يكون أقل من 5 ميجابايت');
+      return;
+    }
 
+    final extension = file.path.split('.').last.toLowerCase();
+    if (extension == 'pdf') {
+      final bytes = await file.readAsBytes();
+      final threat = PdfSecurityScanner.scan(bytes);
+      if (threat != null) {
+        if (mounted) {
+          _showError('تم رفض الملف: $threat');
+        }
+        return;
+      }
+    }
+
+    setState(() => _uploading = true);
     try {
       if (!mounted) return;
       await context.read<UserProfileCubit>().editProfileWithFile(
@@ -883,6 +1012,16 @@ class _AttachmentFieldState extends State<_AttachmentField> {
     } finally {
       if (mounted) setState(() => _uploading = false);
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, textDirection: TextDirection.rtl),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   @override
@@ -976,7 +1115,7 @@ class _AttachmentRowState extends State<_AttachmentRow> {
 
   Future<void> _fetchAndOpen(BuildContext context) async {
     if (_bytes != null) {
-      _openFullScreen(context);
+      _openSafe(context, _bytes!);
       return;
     }
     setState(() => _loading = true);
@@ -989,7 +1128,7 @@ class _AttachmentRowState extends State<_AttachmentRow> {
       if (mounted) {
         _bytes = Uint8List.fromList(response.data!);
         setState(() => _loading = false);
-        _openFullScreen(context);
+        _openSafe(context, _bytes!);
       }
     } on DioException catch (e) {
       if (mounted) {
@@ -1001,31 +1140,46 @@ class _AttachmentRowState extends State<_AttachmentRow> {
               textDirection: TextDirection.rtl,
             ),
             backgroundColor: AppColors.errorDark,
-            duration: const Duration(seconds: 2),
-            action: SnackBarAction(
-              label: 'حسناً',
-              textColor: AppColors.white,
-              onPressed: () =>
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar(),
-            ),
           ),
         );
       }
     }
   }
 
-  void _openFullScreen(BuildContext context) {
+  void _openSafe(BuildContext context, Uint8List bytes) {
+    final isPdf = _isPdf(bytes);
+    if (isPdf) {
+      _openPdfSafely(context, bytes);
+    } else {
+      _openImageFullScreen(context, bytes);
+    }
+  }
+
+  bool _isPdf(Uint8List bytes) {
+    if (bytes.length < 4) return false;
+    return bytes[0] == 0x25 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x44 &&
+        bytes[3] == 0x46;
+  }
+
+  void _openPdfSafely(BuildContext context, Uint8List bytes) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SafePdfViewer(bytes: bytes, fileName: widget.fileName),
+      ),
+    );
+  }
+
+  void _openImageFullScreen(BuildContext context, Uint8List bytes) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => Scaffold(
           backgroundColor: Colors.black,
-          appBar: AppBar(
-            backgroundColor: Colors.black,
-            iconTheme: const IconThemeData(color: Colors.white),
-          ),
+          appBar: AppBar(backgroundColor: Colors.black),
           body: Center(
             child: InteractiveViewer(
-              child: Image.memory(_bytes!, fit: BoxFit.contain),
+              child: Image.memory(bytes, fit: BoxFit.contain),
             ),
           ),
         ),
@@ -1101,6 +1255,626 @@ class _Divider extends StatelessWidget {
       color: AppColors.neutralLightDarkest,
       indent: 16.w,
       endIndent: 16.w,
+    );
+  }
+}
+
+// ─── Password Field ─────────────────────────────
+class _PasswordField extends StatefulWidget {
+  const _PasswordField({super.key});
+
+  @override
+  State<_PasswordField> createState() => _PasswordFieldState();
+}
+
+class _PasswordFieldState extends State<_PasswordField> {
+  bool _isEditing = false;
+
+  final _currentPassCtrl = TextEditingController();
+  final _newPassCtrl = TextEditingController();
+  final _confirmPassCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _currentPassCtrl.dispose();
+    _newPassCtrl.dispose();
+    _confirmPassCtrl.dispose();
+    super.dispose();
+  }
+
+  void _savePassword() {
+    final current = _currentPassCtrl.text.trim();
+    final newPass = _newPassCtrl.text.trim();
+    final confirm = _confirmPassCtrl.text.trim();
+
+    if (current.isEmpty || newPass.isEmpty || confirm.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'يرجى ملء جميع الحقول',
+            textDirection: TextDirection.rtl,
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (newPass != confirm) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'كلمة المرور الجديدة غير متطابقة',
+            textDirection: TextDirection.rtl,
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    context.read<UserProfileCubit>().editPassword(
+      currentPassword: current,
+      newPassword: newPass,
+      confirmPassword: confirm,
+    );
+
+    _currentPassCtrl.clear();
+    _newPassCtrl.clear();
+    _confirmPassCtrl.clear();
+    setState(() => _isEditing = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            textDirection: TextDirection.rtl,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'كلمة المرور',
+                style: AppTextStyles.h6.copyWith(
+                  color: AppColors.neutralDarkDarkest,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => setState(() => _isEditing = !_isEditing),
+                child: Text(
+                  _isEditing ? 'إلغاء' : 'تعديل',
+                  style: AppTextStyles.bodyM.copyWith(
+                    color: AppColors.highlightDarkest,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          AnimatedSize(
+            duration: const Duration(milliseconds: 320),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: ClipRect(
+              child: !_isEditing
+                  ? const SizedBox.shrink()
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 12),
+
+                        Text(
+                          'أدخل كلمة المرور الحالية',
+                          style: AppTextStyles.h5.copyWith(
+                            color: AppColors.neutralDarkLightest,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _PasswordTextField(
+                          controller: _currentPassCtrl,
+                          hintText: 'كلمة المرور الحالية',
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        Text(
+                          'كلمة المرور الجديدة',
+                          style: AppTextStyles.h5.copyWith(
+                            color: AppColors.neutralDarkLightest,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _PasswordTextField(
+                          controller: _newPassCtrl,
+                          hintText: 'كلمة المرور الجديدة',
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        Text(
+                          'تأكيد كلمة المرور الجديدة',
+                          style: AppTextStyles.h5.copyWith(
+                            color: AppColors.neutralDarkLightest,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _PasswordTextField(
+                          controller: _confirmPassCtrl,
+                          hintText: 'تأكيد كلمة المرور الجديدة',
+                        ),
+
+                        const SizedBox(height: 24),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: SizedBox(
+                            width: 100.w,
+                            height: 48.h,
+                            child: ElevatedButton(
+                              onPressed: _savePassword,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.mainBlueIndigoDye,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: Text(
+                                'حفظ',
+                                style: AppTextStyles.actionM.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        ValueListenableBuilder<TextEditingValue>(
+                          valueListenable: _newPassCtrl,
+                          builder: (context, value, child) {
+                            return PasswordRequirements(password: value.text);
+                          },
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class PasswordRequirements extends StatelessWidget {
+  final String password;
+
+  const PasswordRequirements({super.key, required this.password});
+
+  @override
+  Widget build(BuildContext context) {
+    final rules = [
+      _PasswordRule(
+        label: 'يجب أن تحتوي على حرف كبير (A-Z).',
+        met: password.contains(RegExp(r'[A-Z]')),
+      ),
+      _PasswordRule(
+        label: 'يجب أن تحتوي على حرف صغير (a-z).',
+        met: password.contains(RegExp(r'[a-z]')),
+      ),
+      _PasswordRule(
+        label: 'يجب أن تحتوي على رقم واحد على الأقل.',
+        met: password.contains(RegExp(r'[0-9]')),
+      ),
+      _PasswordRule(
+        label: r'يمكن إضافة رموز خاصة مثل (! @ # $ % ( )) وهي اختيارية.',
+        met: password.contains(RegExp(r'[!@#\$%^&*()\[\]{}|\<>,.?/~`\-_=+]')),
+        optional: true,
+      ),
+      _PasswordRule(
+        label: 'الحد الأدنى 8 أحرف والحد الأقصى 10 أحرف.',
+        met: password.length >= 8 && password.length <= 10,
+      ),
+      _PasswordRule(
+        label: 'لا يُسمح باستخدام المسافات.',
+        met: password.isNotEmpty && !password.contains(' '),
+      ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'متطلبات كلمة المرور:',
+          textDirection: TextDirection.rtl,
+          style: AppTextStyles.bodyM.copyWith(
+            color: AppColors.neutralDarkLightest,
+          ),
+        ),
+        const SizedBox(height: 10),
+        ...rules.map((r) => _buildRequirementRow(r)),
+      ],
+    );
+  }
+
+  Widget _buildRequirementRow(_PasswordRule rule) {
+    final Color textColor = rule.met
+        ? AppColors.successDark
+        : rule.optional
+        ? const Color(0xFF9AA5B4)
+        : AppColors.neutralDarkLightest;
+
+    final Color bulletColor = rule.met
+        ? AppColors.successDark
+        : rule.optional
+        ? const Color(0xFF9AA5B4)
+        : AppColors.neutralDarkLightest;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        textDirection: TextDirection.rtl,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('•', style: TextStyle(color: bulletColor, height: 1.4)),
+          Expanded(
+            child: Text(
+              rule.label,
+              textDirection: TextDirection.rtl,
+              textAlign: TextAlign.right,
+              style: AppTextStyles.bodyM.copyWith(color: textColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PasswordRule {
+  final String label;
+  final bool met;
+  final bool optional;
+  const _PasswordRule({
+    required this.label,
+    required this.met,
+    this.optional = false,
+  });
+}
+
+class _PasswordTextField extends StatefulWidget {
+  final TextEditingController controller;
+  final String hintText;
+
+  const _PasswordTextField({
+    required this.controller,
+    required this.hintText,
+    super.key,
+  });
+
+  @override
+  State<_PasswordTextField> createState() => _PasswordTextFieldState();
+}
+
+class _PasswordTextFieldState extends State<_PasswordTextField> {
+  bool _obscureText = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: widget.controller,
+      obscureText: _obscureText,
+      textDirection: TextDirection.rtl,
+      keyboardType: TextInputType.visiblePassword,
+      inputFormatters: [
+        FilteringTextInputFormatter.deny(RegExp(r'[\u0600-\u06FF]')),
+      ],
+
+      decoration: InputDecoration(
+        isDense: true,
+        contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+        hintText: widget.hintText,
+        hintStyle: AppTextStyles.bodyM.copyWith(
+          color: AppColors.neutralDarkLight.withOpacity(0.6),
+        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.r),
+          borderSide: BorderSide(color: AppColors.highlightDarkest, width: 1.5),
+        ),
+        suffixIcon: IconButton(
+          icon: Icon(
+            _obscureText
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
+            color: AppColors.neutralDarkLight,
+          ),
+          onPressed: () => setState(() => _obscureText = !_obscureText),
+        ),
+      ),
+    );
+  }
+}
+
+class _NameField extends StatefulWidget {
+  final String firstName;
+  final String restOfName;
+  final bool isVerified;
+  final void Function(String firstName, String restOfName)? onSave;
+
+  const _NameField({
+    super.key,
+    required this.firstName,
+    required this.restOfName,
+    required this.isVerified,
+    this.onSave,
+  });
+
+  @override
+  State<_NameField> createState() => _NameFieldState();
+}
+
+class _NameFieldState extends State<_NameField> {
+  bool _isEditing = false;
+
+  late final TextEditingController _firstNameCtrl;
+  late final TextEditingController _restOfNameCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _firstNameCtrl = TextEditingController(text: widget.firstName);
+    _restOfNameCtrl = TextEditingController(text: widget.restOfName);
+  }
+
+  @override
+  void dispose() {
+    _firstNameCtrl.dispose();
+    _restOfNameCtrl.dispose();
+    super.dispose();
+  }
+
+  String get _fullName => [
+    widget.firstName,
+    widget.restOfName,
+  ].where((p) => p.trim().isNotEmpty).join(' ');
+
+  void _openEdit() {
+    _firstNameCtrl.text = widget.firstName;
+    _restOfNameCtrl.text = widget.restOfName;
+    setState(() => _isEditing = true);
+  }
+
+  void _cancelEdit() => setState(() => _isEditing = false);
+
+  void _save() {
+    final first = _firstNameCtrl.text.trim();
+    final rest = _restOfNameCtrl.text.trim();
+
+    if (first.isEmpty) {
+      FocusScope.of(context).requestFocus(FocusNode());
+      return;
+    }
+
+    setState(() => _isEditing = false);
+    widget.onSave?.call(first, rest);
+  }
+
+  @override
+  void didUpdateWidget(_NameField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isVerified && _isEditing) {
+      setState(() => _isEditing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            textDirection: TextDirection.rtl,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'الاسم الكامل',
+                textDirection: TextDirection.rtl,
+                style: AppTextStyles.h6.copyWith(
+                  color: AppColors.neutralDarkDarkest,
+                ),
+              ),
+              if (!widget.isVerified)
+                GestureDetector(
+                  onTap: _isEditing ? _cancelEdit : _openEdit,
+                  child: Text(
+                    _isEditing ? 'يلغي' : 'تعديل',
+                    style: AppTextStyles.bodyM.copyWith(
+                      color: AppColors.highlightDarkest,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          if (_fullName.isNotEmpty && !_isEditing) ...[
+            SizedBox(height: 6.h),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                _fullName,
+                textDirection: TextDirection.rtl,
+                textAlign: TextAlign.right,
+                style: AppTextStyles.bodyXL.copyWith(
+                  color: AppColors.neutralDarkLight,
+                ),
+              ),
+            ),
+          ],
+
+          AnimatedSize(
+            duration: const Duration(milliseconds: 320),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: ClipRect(
+              child: !_isEditing
+                  ? const SizedBox.shrink()
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 6.h),
+
+                        if (_fullName.isNotEmpty)
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              _fullName,
+                              textDirection: TextDirection.rtl,
+                              textAlign: TextAlign.right,
+                              style: AppTextStyles.bodyXL.copyWith(
+                                color: AppColors.neutralDarkLight,
+                              ),
+                            ),
+                          ),
+
+                        SizedBox(height: 10.h),
+
+                        _FieldLabel(text: 'الاسم الأول', required: true),
+                        SizedBox(height: 6.h),
+                        _NameTextField(
+                          controller: _firstNameCtrl,
+                          hintText: 'أحمد',
+                          autofocus: true,
+                        ),
+
+                        SizedBox(height: 16.h),
+
+                        _FieldLabel(required: true, text: 'باقي الاسم'),
+                        SizedBox(height: 6.h),
+                        _NameTextField(
+                          controller: _restOfNameCtrl,
+                          hintText: 'احمد محمد علي',
+                        ),
+
+                        SizedBox(height: 20.h),
+
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: SizedBox(
+                            width: 80.w,
+                            height: 44.h,
+                            child: ElevatedButton(
+                              onPressed: _save,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.mainBlueIndigoDye,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                                elevation: 0,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16.w,
+                                  vertical: 10.h,
+                                ),
+                                minimumSize: Size(80.w, 44.h),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Text(
+                                'حفظ',
+                                style: AppTextStyles.actionM.copyWith(
+                                  color: AppColors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: 4.h),
+                      ],
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FieldLabel extends StatelessWidget {
+  final String text;
+  final bool required;
+
+  const _FieldLabel({required this.text, this.required = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      textDirection: TextDirection.ltr,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (required) ...[
+          Text(
+            ' *',
+            style: AppTextStyles.bodyM.copyWith(color: AppColors.errorDark),
+          ),
+        ],
+        Text(
+          text,
+          textDirection: TextDirection.rtl,
+          style: AppTextStyles.bodyM.copyWith(
+            color: AppColors.neutralDarkDarkest,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _NameTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hintText;
+  final bool autofocus;
+
+  const _NameTextField({
+    required this.controller,
+    required this.hintText,
+    this.autofocus = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      autofocus: autofocus,
+      textDirection: TextDirection.rtl,
+      keyboardType: TextInputType.name,
+      style: AppTextStyles.bodyXL.copyWith(color: AppColors.neutralDarkDarkest),
+      decoration: InputDecoration(
+        isDense: true,
+        hintText: hintText,
+        hintStyle: AppTextStyles.bodyXL.copyWith(
+          color: AppColors.neutralDarkLight.withOpacity(0.5),
+        ),
+        hintTextDirection: TextDirection.rtl,
+        contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.r),
+          borderSide: BorderSide(color: AppColors.neutralLightDarkest),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.r),
+          borderSide: BorderSide(color: AppColors.neutralLightDarkest),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.r),
+          borderSide: BorderSide(color: AppColors.highlightDarkest, width: 1.5),
+        ),
+      ),
     );
   }
 }
