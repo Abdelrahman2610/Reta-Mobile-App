@@ -87,6 +87,8 @@ class ApiConstants {
 
   static const String governorates = '$lookupBase/governorates';
 
+  static const String validateTaxpayer =
+      '/declaration-system/declarations/validate-taxpayer';
   static const String declarationTypes = '$lookupBase/declaration-types';
   static const String propertyTypes = '$lookupBase/property-types';
   static const String taxpayerTypes = '$lookupBase/taxpayer-types';
