@@ -1,6 +1,6 @@
 class RegisterRequest {
   final String firstName;
-  final String lastName; // ← back to single lastName
+  final String lastName;
   final String? email;
   final String mobile;
   final String password;
@@ -30,7 +30,7 @@ class RegisterRequest {
   Map<String, String> toFormFields() {
     final fields = <String, String>{
       'first_name': firstName,
-      'last_name': lastName, // ← send as-is, backend handles splitting
+      'last_name': lastName,
       'mobile': mobile,
       'password': password,
       'password_confirmation': passwordConfirm,
@@ -50,4 +50,36 @@ class RegisterRequest {
 
     return fields;
   }
+
+  //   Map<String, String> toFormFields() {
+  //   final firstParts = firstName.trim().split(RegExp(r'\s+'));
+  //   final resolvedFirstName = firstParts.first;
+  //   final extraFromFirst = firstParts.length > 1
+  //       ? firstParts.sublist(1).join(' ')
+  //       : '';
+
+  //   final fields = <String, String>{
+  //     'first_name': resolvedFirstName,
+  //     'last_name': extraFromFirst.isEmpty
+  //         ? lastName
+  //         : '$extraFromFirst $lastName'.trim(),
+  //     'mobile': mobile,
+  //     'password': password,
+  //     'password_confirmation': passwordConfirm,
+  //     'national_id': nationalId,
+  //     'nationality_code': nationalityCode,
+  //     'gender': gender,
+  //     'birth_place': birthPlace,
+  //     'birth_date': birthDate,
+  //   };
+
+  //   if (email != null && email!.trim().isNotEmpty) {
+  //     fields['email'] = email!.trim();
+  //   }
+  //   if (passportNumber != null && passportNumber!.isNotEmpty) {
+  //     fields['passport_num'] = passportNumber!;
+  //   }
+
+  //   return fields;
+  // }
 }
