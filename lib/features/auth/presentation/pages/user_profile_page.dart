@@ -10,6 +10,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/network/api_constants.dart';
 import 'package:reta/core/network/api_result.dart';
 import 'package:reta/core/network/dio_client.dart';
+import 'package:reta/core/widgets/pdf_security_scanner.dart';
 import 'package:reta/core/widgets/safe_pdf_viewer.dart';
 import 'package:reta/features/auth/data/repositories/profile_verification_repository.dart';
 import 'package:reta/features/auth/presentation/cubit/user_profile_cubit.dart';
@@ -981,23 +982,24 @@ class _AttachmentFieldState extends State<_AttachmentField> {
     );
 
     if (result == null || result.files.single.path == null) return;
-
     final file = File(result.files.single.path!);
 
     final sizeInMB = await file.length() / (1024 * 1024);
     if (sizeInMB > 5) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'حجم الملف يجب أن يكون أقل من 5 ميجابايت',
-              textDirection: TextDirection.rtl,
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (mounted) _showError('حجم الملف يجب أن يكون أقل من 5 ميجابايت');
       return;
+    }
+
+    final extension = file.path.split('.').last.toLowerCase();
+    if (extension == 'pdf') {
+      final bytes = await file.readAsBytes();
+      final threat = PdfSecurityScanner.scan(bytes);
+      if (threat != null) {
+        if (mounted) {
+          _showError('تم رفض الملف: $threat');
+        }
+        return;
+      }
     }
 
     setState(() => _uploading = true);
@@ -1010,6 +1012,16 @@ class _AttachmentFieldState extends State<_AttachmentField> {
     } finally {
       if (mounted) setState(() => _uploading = false);
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, textDirection: TextDirection.rtl),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   @override
