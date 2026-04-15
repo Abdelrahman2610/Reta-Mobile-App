@@ -662,26 +662,53 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     handleCreateNewUnitFromDeclarationPropList = false,
   }) async {
     if (validateFiles()) {
-      final lookupsCubit = context.read<DeclarationLookupsCubit>();
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MultiBlocProvider(
-            providers: [
-              BlocProvider.value(value: this),
-              BlocProvider.value(value: lookupsCubit),
-            ],
-            child: SelectTypesOfPropertiesPage(
-              applicantType: applicantType,
-              declarationId: declarationId,
-              otherName: applicantOtherName,
-              handleCreateNewUnitFromDeclarationPropList:
-                  handleCreateNewUnitFromDeclarationPropList,
-            ),
+      emit(state.copyWith(isLoading: true));
+      Map<String, dynamic> payload = buildPayload(context);
+
+      final result = await safeApiCall(() async {
+        final response = await DioClient.instance.dio.post(
+          ApiConstants.validateTaxpayer,
+          data: payload,
+        );
+        return response.data as Map<String, dynamic>;
+      });
+
+      switch (result) {
+        case ApiSuccess(:final data):
+          emit(state.copyWith(isLoading: false));
+          onNavigateConfirmed(
+            context,
+            handleCreateNewUnitFromDeclarationPropList,
+          );
+        case ApiError(:final message):
+          emit(state.copyWith(isLoading: false, errorMessage: message));
+      }
+    }
+  }
+
+  void onNavigateConfirmed(
+    BuildContext context,
+    bool handleCreateNewUnitFromDeclarationPropList,
+  ) {
+    final lookupsCubit = context.read<DeclarationLookupsCubit>();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: this),
+            BlocProvider.value(value: lookupsCubit),
+          ],
+          child: SelectTypesOfPropertiesPage(
+            applicantType: applicantType,
+            declarationId: declarationId,
+            otherName: applicantOtherName,
+            handleCreateNewUnitFromDeclarationPropList:
+                handleCreateNewUnitFromDeclarationPropList,
           ),
         ),
-      );
-    }
+      ),
+    );
   }
 
   Map<String, dynamic> buildPayload(BuildContext context, {bool save = false}) {
