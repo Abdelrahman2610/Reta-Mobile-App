@@ -1,4 +1,7 @@
 PODS:
+  - developer_mode (0.0.2):
+    - Flutter
+    - IOSSecuritySuite (~> 1.9.0)
   - device_info_plus (0.0.1):
     - Flutter
   - DKImagePickerController/Core (4.3.9):
@@ -41,11 +44,15 @@ PODS:
     - FlutterMacOS
   - image_picker_ios (0.0.1):
     - Flutter
+  - IOSSecuritySuite (1.9.11)
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
   - printing (1.0.0):
     - Flutter
+  - root_jailbreak_sniffer (1.1.4):
+    - Flutter
+    - IOSSecuritySuite (~> 1.9.10)
   - SDWebImage (5.21.6):
     - SDWebImage/Core (= 5.21.6)
   - SDWebImage/Core (5.21.6)
@@ -64,6 +71,7 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
+  - developer_mode (from `.symlinks/plugins/developer_mode/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
@@ -71,6 +79,7 @@ DEPENDENCIES:
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - printing (from `.symlinks/plugins/printing/ios`)
+  - root_jailbreak_sniffer (from `.symlinks/plugins/root_jailbreak_sniffer/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - syncfusion_flutter_pdfviewer (from `.symlinks/plugins/syncfusion_flutter_pdfviewer/ios`)
@@ -81,10 +90,13 @@ SPEC REPOS:
   trunk:
     - DKImagePickerController
     - DKPhotoGallery
+    - IOSSecuritySuite
     - SDWebImage
     - SwiftyGif
 
 EXTERNAL SOURCES:
+  developer_mode:
+    :path: ".symlinks/plugins/developer_mode/ios"
   device_info_plus:
     :path: ".symlinks/plugins/device_info_plus/ios"
   file_picker:
@@ -99,6 +111,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   printing:
     :path: ".symlinks/plugins/printing/ios"
+  root_jailbreak_sniffer:
+    :path: ".symlinks/plugins/root_jailbreak_sniffer/ios"
   share_plus:
     :path: ".symlinks/plugins/share_plus/ios"
   shared_preferences_foundation:
@@ -111,6 +125,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/webview_flutter_wkwebview/darwin"
 
 SPEC CHECKSUMS:
+  developer_mode: 3d2ba41489126b1f865e3d32fc2a406972e8c705
   device_info_plus: bf2e3232933866d73fe290f2942f2156cdd10342
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
@@ -118,8 +133,10 @@ SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_secure_storage_darwin: 557817588b80e60213cbecb573c45c76b788018d
   image_picker_ios: 4f2f91b01abdb52842a8e277617df877e40f905b
+  IOSSecuritySuite: b51056d5411aee567153ca86ce7f6edfdc5d2654
   path_provider_foundation: 0b743cbb62d8e47eab856f09262bb8c1ddcfe6ba
   printing: 233e1b73bd1f4a05615548e9b5a324c98588640b
+  root_jailbreak_sniffer: 40c75645f12d307852cf6aa2d061bd6c8cba1664
   SDWebImage: 1bb6a1b84b6fe87b972a102bdc77dd589df33477
   share_plus: 8b6f8b3447e494cca5317c8c3073de39b3600d1f
   shared_preferences_foundation: 5086985c1d43c5ba4d5e69a4e8083a389e2909e6

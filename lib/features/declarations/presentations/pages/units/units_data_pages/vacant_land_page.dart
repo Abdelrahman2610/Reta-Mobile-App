@@ -95,7 +95,7 @@ class _VacantLandView extends StatelessWidget {
             // ── سند ملكية الأرض ───────────────────────
             BlocBuilder<UnitDataCubit, UnitDataState>(
               buildWhen: (prev, curr) =>
-                  prev.ownershipDeedFilePath != curr.ownershipDeedFilePath,
+                  prev.ownershipDeedFullUrl != curr.ownershipDeedFullUrl,
               builder: (context, state) {
                 return FileUploadField(
                   labelText: 'سند ملكية الأرض',
