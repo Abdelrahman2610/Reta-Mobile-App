@@ -608,6 +608,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
             ],
             child: TaxpayerDataPage(
               handleCreateNewUnitFromDeclarationPropList: true,
+              existingDeclaration: detailsModel,
             ),
           ),
         ),

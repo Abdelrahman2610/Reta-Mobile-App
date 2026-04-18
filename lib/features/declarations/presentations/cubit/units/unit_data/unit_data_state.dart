@@ -51,6 +51,8 @@ class UnitDataState {
   final String? constructionLicenseFilePath;
   final String? constructionLicenseOriginalName;
   final String? constructionLicenseFullUrl;
+  final String? constructionLicenseUrl;
+  final String? constructionLicenseFileId;
   final String? operatingLicenseFilePath;
   final String? operatingLicenseOriginalName;
   final String? operatingLicenseFullUrl;
@@ -129,6 +131,8 @@ class UnitDataState {
     this.constructionLicenseFilePath,
     this.constructionLicenseOriginalName,
     this.constructionLicenseFullUrl,
+    this.constructionLicenseUrl,
+    this.constructionLicenseFileId,
     this.operatingLicenseFilePath,
     this.operatingLicenseOriginalName,
     this.operatingLicenseFullUrl,
@@ -209,6 +213,8 @@ class UnitDataState {
     Object? constructionLicenseFilePath = _undefined,
     Object? constructionLicenseOriginalName = _undefined,
     Object? constructionLicenseFullUrl = _undefined,
+    Object? constructionLicenseUrl = _undefined,
+    Object? constructionLicenseFileId = _undefined,
     Object? operatingLicenseFilePath = _undefined,
     Object? operatingLicenseOriginalName = _undefined,
     Object? operatingLicenseFullUrl = _undefined,
@@ -336,6 +342,12 @@ class UnitDataState {
       constructionLicenseFullUrl: constructionLicenseFullUrl == _undefined
           ? this.constructionLicenseFullUrl
           : constructionLicenseFullUrl as String?,
+      constructionLicenseUrl: constructionLicenseUrl == _undefined
+          ? this.constructionLicenseUrl
+          : constructionLicenseUrl as String?,
+      constructionLicenseFileId: constructionLicenseFileId == _undefined
+          ? this.constructionLicenseFileId
+          : constructionLicenseFileId as String?,
       operatingLicenseFilePath: operatingLicenseFilePath == _undefined
           ? this.operatingLicenseFilePath
           : operatingLicenseFilePath as String?,

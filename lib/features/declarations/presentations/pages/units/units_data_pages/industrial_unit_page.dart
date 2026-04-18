@@ -247,27 +247,31 @@ class _IndustrialFacilityView extends StatelessWidget {
 
             BlocBuilder<UnitDataCubit, UnitDataState>(
               buildWhen: (prev, curr) =>
-                  prev.constructionLicenseFilePath !=
-                  curr.constructionLicenseFilePath,
-              builder: (context, state) => FileUploadField(
-                labelText: 'صورة من التراخيص الإنشائية',
-                text: 'حمل ملف',
-                backgroundColor: AppColors.highlightDarkest,
-                textColor: AppColors.white,
-                filePath: state.constructionLicenseFullUrl,
-                onFilePicked: () async {
-                  final path = await cubit.pickFile();
-                  if (path != null) cubit.setConstructionLicenseFile(path);
-                },
-                onFileRemoved: () => cubit.removeConstructionLicenseFile(),
-              ),
+                  prev.constructionLicenseFullUrl !=
+                  curr.constructionLicenseFullUrl,
+              builder: (context, state) {
+                print(
+                  "MSG: UI: constructionLicenseFullUrl: ${state.constructionLicenseFilePath}",
+                );
+                return FileUploadField(
+                  labelText: 'صورة من التراخيص الإنشائية',
+                  text: 'حمل ملف',
+                  backgroundColor: AppColors.highlightDarkest,
+                  textColor: AppColors.white,
+                  filePath: state.constructionLicenseFullUrl,
+                  onFilePicked: () async {
+                    final path = await cubit.pickFile();
+                    if (path != null) cubit.setConstructionLicenseFile(path);
+                  },
+                  onFileRemoved: () => cubit.removeConstructionLicenseFile(),
+                );
+              },
             ),
             16.hs,
 
             BlocBuilder<UnitDataCubit, UnitDataState>(
               buildWhen: (prev, curr) =>
-                  prev.operatingLicenseFilePath !=
-                  curr.operatingLicenseFilePath,
+                  prev.operatingLicenseFullUrl != curr.operatingLicenseFullUrl,
               builder: (context, state) => FileUploadField(
                 labelText: 'صورة من ترخيص التشغيل',
                 text: 'حمل ملف',
@@ -285,8 +289,8 @@ class _IndustrialFacilityView extends StatelessWidget {
 
             BlocBuilder<UnitDataCubit, UnitDataState>(
               buildWhen: (prev, curr) =>
-                  prev.allocationContractFilePath !=
-                  curr.allocationContractFilePath,
+                  prev.allocationContractFullUrl !=
+                  curr.allocationContractFullUrl,
               builder: (context, state) => FileUploadField(
                 labelText: 'صورة من عقد التخصيص',
                 text: 'حمل ملف',
