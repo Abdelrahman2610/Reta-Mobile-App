@@ -581,16 +581,17 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         buildingsCount:
             int.tryParse(unitData!['buildings_count']?.toString() ?? '') ?? 1,
         hasSubUnits: unitData!['has_sub_units'] == 1,
-        constructionLicenseFilePath: constructionLicense?['path'],
+        constructionLicenseFilePath: constructionLicense?['url'],
         constructionLicenseOriginalName:
             constructionLicense?['original_file_name'],
         constructionLicenseFullUrl: constructionLicense?['full_url'],
+        constructionLicenseFileId: constructionLicense?['field_name'],
 
-        operatingLicenseFilePath: operatingLicense?['path'],
+        operatingLicenseFilePath: operatingLicense?['url'],
         operatingLicenseOriginalName: operatingLicense?['original_file_name'],
         operatingLicenseFullUrl: operatingLicense?['full_url'],
 
-        starCertificateFilePath: starCertificate?['path'],
+        starCertificateFilePath: starCertificate?['url'],
         starCertificateOriginalName: starCertificate?['original_file_name'],
         starCertificateFullUrl: starCertificate?['full_url'],
 
@@ -658,6 +659,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     final allocationContract = unitData!['allocation_contract'];
     final ministryBurdenVal = unitData!['ministry_burden'];
 
+    print("MSG: constructionLicense: $constructionLicense");
+    print("MSG: operationLicense: $operationLicense");
+    print("MSG: allocationContract: $allocationContract");
+    print("MSG: ministryBurdenVal: $ministryBurdenVal");
+
     emit(
       state.copyWith(
         ministryBurden: ministryBurdenVal == true || ministryBurdenVal == 1,
@@ -666,16 +672,18 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         hasAdditionalDocuments:
             unitData!['submit_other_supporting_documents'] == 1,
         industrialBuildingsCount: industrialBuildings.length,
-        constructionLicenseFilePath: constructionLicense?['path'],
+        constructionLicenseFilePath: constructionLicense?['url'],
+        constructionLicenseUrl: constructionLicense?['url'],
         constructionLicenseOriginalName:
             constructionLicense?['original_file_name'],
         constructionLicenseFullUrl: constructionLicense?['full_url'],
+        constructionLicenseFileId: constructionLicense?['field_name'],
 
-        operatingLicenseFilePath: operationLicense?['path'],
+        operatingLicenseFilePath: operationLicense?['url'],
         operatingLicenseOriginalName: operationLicense?['original_file_name'],
         operatingLicenseFullUrl: operationLicense?['full_url'],
 
-        allocationContractFilePath: allocationContract?['path'],
+        allocationContractFilePath: allocationContract?['url'],
         allocationContractOriginalName:
             allocationContract?['original_file_name'],
         allocationContractFullUrl: allocationContract?['full_url'],
@@ -715,6 +723,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         constructionLicenseOriginalName:
             constructionLicense?['original_file_name'],
         constructionLicenseFullUrl: constructionLicense?['full_url'],
+        constructionLicenseFileId: constructionLicense?['field_name'],
 
         openingBudgetFilePath: openingBudget?['path'],
         openingBudgetOriginalName: openingBudget?['original_file_name'],
@@ -1308,6 +1317,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           constructionLicenseFilePath: data.path,
           constructionLicenseOriginalName: data.originalFileName,
           constructionLicenseFullUrl: data.fullUrl,
+          constructionLicenseFileId: data.fileId,
+          constructionLicenseUrl: data.path,
         ),
       ),
     );
@@ -1419,12 +1430,16 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   void removePermitPhotoFile() =>
       emit(state.copyWith(permitPhotoFilePath: null, permitPhotoFullUrl: null));
 
-  void removeConstructionLicenseFile() => emit(
-    state.copyWith(
-      constructionLicenseFilePath: null,
-      constructionLicenseFullUrl: null,
-    ),
-  );
+  void removeConstructionLicenseFile() {
+    emit(
+      state.copyWith(
+        constructionLicenseFilePath: null,
+        constructionLicenseFullUrl: null,
+        constructionLicenseUrl: null,
+        constructionLicenseFileId: null,
+      ),
+    );
+  }
 
   void removeOperatingLicenseFile() => emit(
     state.copyWith(
@@ -1595,7 +1610,83 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     return true;
   }
 
+  Future<void> _syncBuildingsIfNeeded(UnitType unitType) async {
+    if (unitData == null) return; // تعديل بس مش إضافة جديدة
+
+    switch (unitType) {
+      case UnitType.industrialFacility:
+        final oldBuildings = unitData!['buildings'] as List? ?? [];
+        final newBuildings = industrialBuildings.map((b) {
+          final buildingTypeId = lookups.buildingTypes
+              .firstWhere(
+                (t) => t.name == b.buildingType,
+                orElse: () => DeclarationLookup(id: -1, name: ''),
+              )
+              .id;
+          return {
+            'building_type_id': buildingTypeId == -1 ? null : buildingTypeId,
+            'floors_count': b.floorsCount,
+            'total_area': double.tryParse(b.totalArea.text.trim()),
+            'construction_date': b.constructionDate.text.trim(),
+            'market_value': b.marketValue.text.trim().isEmpty
+                ? null
+                : double.tryParse(b.marketValue.text.trim()),
+          };
+        }).toList();
+        await _syncBuildings(
+          unitPath: 'industrial',
+          oldBuildings: oldBuildings,
+          newBuildings: newBuildings,
+        );
+
+      case UnitType.petroleumFacility:
+        final oldBuildings = unitData!['buildings'] as List? ?? [];
+        final newBuildings = petroBuildings
+            .map(
+              (b) => {
+                'building_type_text': b.buildingType.text.trim(),
+                'total_area': double.tryParse(b.totalArea.text.trim()),
+                'construction_date': b.buildingDate.text.trim(),
+                'book_value':
+                    double.tryParse(b.bookCostBuilding.text.trim()) ?? 0,
+              },
+            )
+            .toList();
+        await _syncBuildings(
+          unitPath: 'petroleum',
+          oldBuildings: oldBuildings,
+          newBuildings: newBuildings,
+        );
+
+      case UnitType.productionFacility:
+        final oldBuildings = unitData!['buildings'] as List? ?? [];
+        final newBuildings = productionBuildings
+            .map(
+              (b) => {
+                'floors_count': b.floorsCount,
+                'total_area': double.tryParse(b.totalArea.text.trim()) ?? 0,
+                'market_value': double.tryParse(b.marketValue.text.trim()),
+              },
+            )
+            .toList();
+        await _syncBuildings(
+          unitPath: 'production',
+          oldBuildings: oldBuildings,
+          newBuildings: newBuildings,
+        );
+
+      default:
+        return;
+    }
+  }
+
   Future<void> onSaveDataTapped(BuildContext context, UnitType unitType) async {
+    if (unitType == UnitType.industrialFacility ||
+        unitType == UnitType.petroleumFacility ||
+        unitType == UnitType.productionFacility) {
+      await _syncBuildingsIfNeeded(unitType);
+    }
+
     final declarationCubit = context.read<DeclarationCubit>();
     int declarationId = await submit(context, unitType);
     if (context.mounted && state.successMessage != null) {
@@ -1621,6 +1712,12 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     BuildContext context,
     UnitType unitType,
   ) async {
+    if (unitType == UnitType.industrialFacility ||
+        unitType == UnitType.petroleumFacility ||
+        unitType == UnitType.productionFacility) {
+      await _syncBuildingsIfNeeded(unitType);
+    }
+
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
     ApplicantCubit applicantCubit;
     try {
@@ -1636,7 +1733,10 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
     Map<String, dynamic> applicantPayload = isEdit
         ? {"declaration_type_id": 1, "applicant_role_id": applicantType.id}
-        : context.read<ApplicantCubit>().buildPayload(context);
+        : context.read<ApplicantCubit>().buildPayload(
+            context,
+            isEdit: declarationId != -1,
+          );
 
     if (isEdit && applicantData != null) {
       applicantPayload = applicantData!;
@@ -1730,16 +1830,18 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           .id;
 
       final isEdit = unitData != null;
-
+      final bool isEditDeclaration = declarationId != -1;
       if (payload == null) {
         Map<String, dynamic> applicantPayload = isEdit
             ? {"declaration_type_id": 1, "applicant_role_id": applicantType.id}
-            : context.read<ApplicantCubit>().buildPayload(context);
+            : context.read<ApplicantCubit>().buildPayload(
+                context,
+                isEdit: isEditDeclaration,
+              );
 
         if (isEdit || applicantData != null) {
           applicantPayload = applicantData!;
         }
-
         payload = {
           ...applicantPayload,
           'unit': {
@@ -2006,27 +2108,28 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           burdenActivityId != null &&
           burdenActivityId != -1)
         'burden_activity_id': burdenActivityId,
-      'buildings_count': buildings.length,
-      'buildings': buildings.map((b) {
-        final buildingTypeId = b.buildingType == null
-            ? null
-            : lookups.buildingTypes
-                  .firstWhere(
-                    (t) => t.name == b.buildingType,
-                    orElse: () => DeclarationLookup(id: -1, name: ''),
-                  )
-                  .id;
-        return {
-          if (unitData != null) 'id': b.id,
-          'building_type_id': buildingTypeId == -1 ? null : buildingTypeId,
-          'floors_count': b.floorsCount,
-          'total_area': double.tryParse(b.totalArea.text.trim()),
-          'construction_date': b.constructionDate.text.trim(),
-          'market_value': b.marketValue.text.trim().isEmpty
+      if (unitData == null) 'buildings_count': buildings.length,
+      if (unitData == null)
+        'buildings': buildings.map((b) {
+          final buildingTypeId = b.buildingType == null
               ? null
-              : double.tryParse(b.marketValue.text.trim()),
-        };
-      }).toList(),
+              : lookups.buildingTypes
+                    .firstWhere(
+                      (t) => t.name == b.buildingType,
+                      orElse: () => DeclarationLookup(id: -1, name: ''),
+                    )
+                    .id;
+          return {
+            if (unitData != null) 'id': b.id,
+            'building_type_id': buildingTypeId == -1 ? null : buildingTypeId,
+            'floors_count': b.floorsCount,
+            'total_area': double.tryParse(b.totalArea.text.trim()),
+            'construction_date': b.constructionDate.text.trim(),
+            'market_value': b.marketValue.text.trim().isEmpty
+                ? null
+                : double.tryParse(b.marketValue.text.trim()),
+          };
+        }).toList(),
       if (state.constructionLicenseFilePath != null)
         'construction_license': {
           'path': state.constructionLicenseFilePath,
@@ -2184,17 +2287,18 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       'market_value': bookValueController.text.trim(),
       "ministry_burden": state.isExempt,
       "burden_activity_id": state.isExempt == true ? burdenActivityId : null,
-      'buildings_count': buildings.length,
-      'buildings': productionBuildings
-          .map(
-            (b) => {
-              if (unitData != null) 'id': b.id,
-              'floors_count': b.floorsCount,
-              'total_area': double.tryParse(b.totalArea.text.trim()) ?? 0,
-              'market_value': double.tryParse(b.marketValue.text.trim()),
-            },
-          )
-          .toList(),
+      if (unitData == null) 'buildings_count': buildings.length,
+      if (unitData == null)
+        'buildings': productionBuildings
+            .map(
+              (b) => {
+                if (unitData != null) 'id': b.id,
+                'floors_count': b.floorsCount,
+                'total_area': double.tryParse(b.totalArea.text.trim()) ?? 0,
+                'market_value': double.tryParse(b.marketValue.text.trim()),
+              },
+            )
+            .toList(),
       if (state.allocationContractFilePath != null)
         'allocation_contract': {
           'path': state.allocationContractFilePath,
@@ -2225,7 +2329,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       'total_land_area': totalLandArea.text.trim(),
       'used_land_area': totalLandUtilized.text.trim(),
       'land_book_value': bookValueController.text.trim(),
-      'buildings_count': petroBuildings.length,
+      if (unitData == null) 'buildings_count': petroBuildings.length,
       if (state.constructionLicenseFilePath != null)
         'construction_license': {
           'path': state.constructionLicenseFilePath,
@@ -2244,18 +2348,19 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           'original_file_name': state.allBookBValueOriginalName,
           'full_url': state.allBookBValueFullUrl,
         },
-      'buildings': petroBuildings
-          .map(
-            (b) => {
-              if (unitData != null) 'id': b.id,
-              'building_type_text': b.buildingType.text.trim(),
-              'total_area': double.tryParse(b.totalArea.text.trim()),
-              'construction_date': b.buildingDate.text.trim(),
-              'book_value':
-                  double.tryParse(b.bookCostBuilding.text.trim()) ?? 0,
-            },
-          )
-          .toList(),
+      if (unitData == null)
+        'buildings': petroBuildings
+            .map(
+              (b) => {
+                if (unitData != null) 'id': b.id,
+                'building_type_text': b.buildingType.text.trim(),
+                'total_area': double.tryParse(b.totalArea.text.trim()),
+                'construction_date': b.buildingDate.text.trim(),
+                'book_value':
+                    double.tryParse(b.bookCostBuilding.text.trim()) ?? 0,
+              },
+            )
+            .toList(),
       ..._buildSupportingDocsPayload(),
     };
   }
@@ -2370,6 +2475,62 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   void onCancelButtonTapped(BuildContext context) {
     Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  Future<void> _syncBuildings({
+    required String unitPath, // 'industrial' | 'petroleum' | 'production'
+    required List<dynamic> oldBuildings,
+    required List<Map<String, dynamic>> newBuildings,
+  }) async {
+    final unitId = unitData!['id'];
+
+    final tempOld = oldBuildings;
+    for (int index = 0; index < tempOld.length; index++) {
+      final b = tempOld[index];
+      final buildingId = b['id'];
+      final result = await safeApiCall(() async {
+        await DioClient.instance.dio.delete(
+          '${ApiConstants.baseUrl}/declaration-system/declarations/$declarationId/units/$unitPath/$unitId/$buildingId',
+        );
+      });
+
+      switch (result) {
+        case ApiSuccess(:final data):
+          oldBuildings.removeAt(index);
+        case ApiError(:final message):
+      }
+    }
+
+    for (final b in newBuildings) {
+      String totalLand = '0';
+      if (unitPath == 'industrial') {
+        totalLand = exploitedLandAreaController.text.trim();
+      } else if (unitPath == 'petroleum') {
+        totalLand = totalLandArea.text.trim();
+      } else if (unitPath == 'production') {
+        totalLand = totalLandArea.text.trim();
+      }
+
+      await safeApiCall(() async {
+        await DioClient.instance.dio.post(
+          '${ApiConstants.baseUrl}/declaration-system/declarations/$declarationId/units/$unitPath/$unitId',
+          data: {
+            "buildings_count": newBuildings.length + 1,
+            "total_land_area": totalLand,
+            "building": b,
+          },
+        );
+      });
+    }
+
+    for (final b in oldBuildings) {
+      final buildingId = b['id'];
+      await safeApiCall(() async {
+        await DioClient.instance.dio.delete(
+          '${ApiConstants.baseUrl}/declaration-system/declarations/$declarationId/units/$unitPath/$unitId/$buildingId',
+        );
+      });
+    }
   }
 
   // ─────────────────────────────────────────

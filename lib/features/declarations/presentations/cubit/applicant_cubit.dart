@@ -608,7 +608,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   }
 
   bool validateFiles() {
-    if (taxpayerTypes == 'اعتباري') {
+    if (taxpayerTypes == 'اعتباري' &&
+        applicantType != ApplicantType.sharedOwnership) {
       if ((taxpayerTaxCardUrl == null) &&
           (taxpayerCommercialRegisterUrl == null) &&
           (taxpayerOtherAttachmentUrl == null)) {
@@ -663,7 +664,10 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   }) async {
     if (validateFiles()) {
       emit(state.copyWith(isLoading: true));
-      Map<String, dynamic> payload = buildPayload(context);
+      Map<String, dynamic> payload = buildPayload(
+        context,
+        isEdit: declarationId != -1,
+      );
 
       final result = await safeApiCall(() async {
         final response = await DioClient.instance.dio.post(
@@ -711,7 +715,11 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     );
   }
 
-  Map<String, dynamic> buildPayload(BuildContext context, {bool save = false}) {
+  Map<String, dynamic> buildPayload(
+    BuildContext context, {
+    bool save = false,
+    bool isEdit = false,
+  }) {
     final applicantRoleId = applicantType.id;
 
     final Map<String, dynamic> payload = {
@@ -741,8 +749,10 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     if (applicantType == ApplicantType.sharedOwnership) {
       if (ownershipProofDocumentPath != null) {
         payload['joint_ownership_document'] = {
-          'file_id': ownershipProofDocumentFileId,
-          if (!save) 'path': ownershipProofDocumentPath,
+          if (isEdit) 'id': ownershipProofDocumentFileId,
+          if (!isEdit) 'file_id': ownershipProofDocumentFileId,
+          if (!save && !isEdit) 'path': ownershipProofDocumentPath,
+          if (isEdit) 'url': ownershipProofDocumentPath,
           'original_file_name': ownershipProofDocumentOriginalName,
           'full_url': ownershipProofDocumentUrl,
         };
@@ -751,7 +761,11 @@ class ApplicantCubit extends Cubit<ApplicantState> {
 
     if (applicantType != ApplicantType.owner &&
         applicantType != ApplicantType.beneficiary) {
-      payload['taxpayer'] = _buildTaxpayerPayload(context, save: save);
+      payload['taxpayer'] = _buildTaxpayerPayload(
+        context,
+        save: save,
+        isEdit: isEdit,
+      );
     }
 
     return payload;
@@ -760,6 +774,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   Map<String, dynamic> _buildTaxpayerPayload(
     BuildContext context, {
     required bool save,
+    required bool isEdit,
   }) {
     // للمالك والمنتفع — المكلف هو نفس المقدم
     final lookups = context.read<DeclarationLookupsCubit>().lookups;
@@ -811,8 +826,10 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayer['national_id'] = taxpayerNationalIdController.text.trim();
         if (taxpayerNationalIdFilePath != null) {
           taxpayer['national_id_attachment'] = {
-            'file_id': taxpayerNationalIdFileId,
-            if (!save) 'path': taxpayerNationalIdFilePath,
+            if (!isEdit) 'file_id': taxpayerNationalIdFileId,
+            if (isEdit) 'id': taxpayerNationalIdFileId,
+            if (!save && !isEdit) 'path': taxpayerNationalIdFilePath,
+            if (isEdit) 'url': taxpayerNationalIdFilePath,
             'original_file_name': taxpayerNationalIdOriginalName,
             'full_url': taxpayerNationalIdUrl,
           };
@@ -822,8 +839,10 @@ class ApplicantCubit extends Cubit<ApplicantState> {
             .trim();
         if (taxpayerPassportFilePath != null) {
           taxpayer['passport_attachment'] = {
-            'file_id': taxpayerPassportFileId,
-            if (!save) 'path': taxpayerPassportFilePath,
+            if (isEdit) 'id': taxpayerPassportFileId,
+            if (!isEdit) 'file_id': taxpayerPassportFileId,
+            if (!save && !isEdit) 'path': taxpayerPassportFilePath,
+            if (isEdit) 'url': taxpayerPassportFilePath,
             'original_file_name': taxpayerPassportOriginalName,
             'full_url': taxpayerPassportUrl,
           };
@@ -836,8 +855,10 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayer['national_id'] = taxpayerNationalIdController.text.trim();
         if (taxpayerNationalIdFilePath != null) {
           taxpayer['national_id_attachment'] = {
-            'file_id': taxpayerNationalIdFileId,
-            'path': taxpayerNationalIdFilePath,
+            if (isEdit) 'id': taxpayerNationalIdFileId,
+            if (!isEdit) 'file_id': taxpayerNationalIdFileId,
+            if (isEdit) 'url': taxpayerNationalIdFilePath,
+            if (!isEdit) 'path': taxpayerNationalIdFilePath,
             'original_file_name': taxpayerNationalIdOriginalName,
             'full_url': taxpayerNationalIdUrl,
           };
@@ -847,8 +868,10 @@ class ApplicantCubit extends Cubit<ApplicantState> {
             .trim();
         if (taxpayerPassportFilePath != null) {
           taxpayer['passport_attachment'] = {
-            'file_id': taxpayerPassportFileId,
-            'path': taxpayerPassportFilePath,
+            if (isEdit) 'id': taxpayerPassportFileId,
+            if (!isEdit) 'file_id': taxpayerPassportFileId,
+            if (isEdit) 'url': taxpayerPassportFilePath,
+            if (!isEdit) 'path': taxpayerPassportFilePath,
             'original_file_name': taxpayerPassportOriginalName,
             'full_url': taxpayerPassportUrl,
           };
@@ -867,16 +890,21 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       }
       if (taxpayerTaxCardFilePath != null) {
         taxpayer['tax_card_attachment'] = {
-          'file_id': taxpayerTaxCardFileId,
-          if (taxpayerTaxCardFilePath != null) 'path': taxpayerTaxCardFilePath,
+          if (isEdit) 'id': taxpayerTaxCardFileId,
+          if (!isEdit) 'file_id': taxpayerTaxCardFileId,
+          if (taxpayerTaxCardFilePath != null && !isEdit)
+            'path': taxpayerTaxCardFilePath,
+          if (isEdit) 'url': taxpayerTaxCardFilePath,
           'original_file_name': taxpayerTaxCardOriginalName,
           'full_url': taxpayerTaxCardUrl,
         };
       }
       if (taxpayerCommercialRegisterFilePath != null) {
         taxpayer['commercial_register_attachment'] = {
-          'file_id': taxpayerCommercialRegisterFileId,
-          'path': taxpayerCommercialRegisterFilePath,
+          if (isEdit) 'id': taxpayerCommercialRegisterFileId,
+          if (!isEdit) 'file_id': taxpayerCommercialRegisterFileId,
+          if (isEdit) 'url': taxpayerCommercialRegisterFilePath,
+          if (!isEdit) 'path': taxpayerCommercialRegisterFilePath,
           'original_file_name': taxpayerCommercialRegisterOriginalName,
           'full_url': taxpayerCommercialRegisterUrl,
         };
@@ -887,8 +915,10 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       }
       if (taxpayerOtherAttachmentFilePath != null) {
         taxpayer['other_attachment'] = {
-          'file_id': taxpayerOtherAttachmentFileId,
-          'path': taxpayerOtherAttachmentFilePath,
+          if (isEdit) 'id': taxpayerOtherAttachmentFileId,
+          if (!isEdit) 'file_id': taxpayerOtherAttachmentFileId,
+          if (!isEdit) 'path': taxpayerOtherAttachmentFilePath,
+          if (isEdit) 'url': taxpayerOtherAttachmentFilePath,
           'original_file_name': taxpayerOtherAttachmentOriginalName,
           'full_url': taxpayerOtherAttachmentUrl,
         };
@@ -949,7 +979,11 @@ class ApplicantCubit extends Cubit<ApplicantState> {
   Future<void> saveTaxpayerEdit(BuildContext context) async {
     emit(state.copyWith(isLoading: true));
 
-    final payload = buildPayload(context, save: true);
+    final payload = buildPayload(
+      context,
+      save: true,
+      isEdit: declarationId != -1,
+    );
 
     final result = await safeApiCall(() async {
       final response = await DioClient.instance.dio.put(

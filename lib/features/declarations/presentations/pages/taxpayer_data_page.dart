@@ -11,21 +11,28 @@ import '../../../components/app_bar.dart';
 import '../../../components/app_button.dart';
 import '../../../components/app_container.dart';
 import '../../../components/app_loading.dart';
+import '../../data/models/declaration_details_model.dart';
 import '../components/declaration_tabs.dart';
 import '../components/shared_form.dart';
 import '../cubit/applicant_cubit.dart';
 
 class TaxpayerDataPage extends StatelessWidget {
   final bool handleCreateNewUnitFromDeclarationPropList;
+  final DeclarationDetailsModel? existingDeclaration;
 
   const TaxpayerDataPage({
     super.key,
     this.handleCreateNewUnitFromDeclarationPropList = false,
+    this.existingDeclaration,
   });
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<ApplicantCubit>();
+
+    if (existingDeclaration != null) {
+      cubit.initFromDeclaration(existingDeclaration!);
+    }
     return Scaffold(
       backgroundColor: AppColors.neutralLightMedium,
       body: Form(
