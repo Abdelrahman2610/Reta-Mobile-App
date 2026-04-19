@@ -324,7 +324,7 @@ class _BuildingItemState extends State<_BuildingItem> {
               if (picked != null) {
                 setState(() {
                   widget.building.buildingDate.text =
-                      '${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}';
+                      '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
                 });
               }
             },
