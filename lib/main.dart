@@ -43,7 +43,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    // checkIfDeviceRoot();
+    checkIfDeviceRoot();
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -57,7 +57,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        // checkIfDeviceRoot();
+        checkIfDeviceRoot();
         break;
       case AppLifecycleState.paused:
         break;
