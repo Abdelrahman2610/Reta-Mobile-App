@@ -1,9 +1,13 @@
+//apply plugin : StringCare
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+//stringcare {
+//    srcFolders = ['src/main']
+//}
 
 android {
     namespace = "com.example.reta"
@@ -20,13 +24,28 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.reta"
+        applicationId = "com.etax.realestatetaxes"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 33
         targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+
+
+        externalNativeBuild {
+            cmake {
+                cppFlags += ""
+            }
+        }
+
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+        }
     }
 
     buildTypes {
@@ -37,6 +56,10 @@ android {
         }
     }
 }
+
+//dependencies {
+//    implementation("com.stringCare:library:4.0.1")
+//}
 
 flutter {
     source = "../.."

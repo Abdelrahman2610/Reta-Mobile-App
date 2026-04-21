@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:developer_mode/developer_mode.dart';
 import 'package:flutter/foundation.dart';
@@ -17,6 +18,7 @@ import 'package:root_jailbreak_sniffer/rjsniffer.dart';
 
 // import 'core/widgets/inactivity_detector.dart';
 
+import 'core/helpers/root_check.dart';
 import 'core/helpers/runtime_data.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/security_screen.dart';
@@ -90,6 +92,9 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     bool amIDebugged = false;
     bool isJailbroken = false;
     bool isDeveloperMode = false;
+    bool isRooted = Platform.isAndroid
+        ? await RootCheck.isDeviceRooted()
+        : false;
     // Platform messages may fail, so we use a try/catch PlatformException.
     // We also handle the message potentially returning null.
     try {
@@ -109,6 +114,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     log("amIEmulator: $amIEmulator");
     log("amIDebugged: $amIDebugged");
     log("isJailbroken: $isJailbroken");
+    log("isRooted: $isRooted");
     log("isDeveloperMode: $isDeveloperMode");
     // If the widget was removed from the tree while the asynchronous platform
     // message was in flight, we want to discard the reply rather than calling
@@ -117,7 +123,9 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     return amIDebugged ||
         amIEmulator ||
         amICompromised ||
-        isJailbroken | isDeveloperMode;
+        isRooted ||
+        isJailbroken ||
+        isDeveloperMode;
   }
 
   @override
