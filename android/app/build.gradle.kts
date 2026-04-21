@@ -1,14 +1,9 @@
-//apply plugin : StringCare
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
-//stringcare {
-//    srcFolders = ['src/main']
-//}
-
 android {
     namespace = "com.example.reta"
     compileSdk = flutter.compileSdkVersion
@@ -31,9 +26,6 @@ android {
         targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-
-
-
         externalNativeBuild {
             cmake {
                 cppFlags += ""
@@ -56,11 +48,6 @@ android {
         }
     }
 }
-
-//dependencies {
-//    implementation("com.stringCare:library:4.0.1")
-//}
-
 flutter {
     source = "../.."
 }
