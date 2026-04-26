@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -89,6 +87,25 @@ class _UserProfileViewState extends State<_UserProfileView>
                     textDirection: TextDirection.rtl,
                   ),
                   backgroundColor: AppColors.errorDark,
+                ),
+              );
+            }
+
+            if (state is UserProfileAttachmentUploadSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    state.message,
+                    textDirection: TextDirection.rtl,
+                  ),
+                  backgroundColor: AppColors.successMedium,
+                  duration: const Duration(seconds: 2),
+                  action: SnackBarAction(
+                    label: 'حسناً',
+                    textColor: AppColors.white,
+                    onPressed: () =>
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+                  ),
                 ),
               );
             }
@@ -191,6 +208,8 @@ class _UserProfileViewState extends State<_UserProfileView>
           buildWhen: (_, current) =>
               current is UserProfileLoaded ||
               current is UserProfileUpdating ||
+              current is UserProfileAttachmentUploading ||
+              current is UserProfileAttachmentUploadSuccess ||
               current is UserProfileInitial ||
               current is UserProfileError ||
               current is UserProfileUpdateSuccess ||
@@ -477,6 +496,7 @@ class _ProfileBodyState extends State<_ProfileBody> {
             _AttachmentField(
               label: 'مرفق الرقم القومي/جواز السفر',
               isEgyptian: u.isEgyptian,
+              profileId: int.tryParse(u.id ?? ''),
             ),
             const _Divider(),
 
@@ -965,8 +985,13 @@ class _VerifyButton extends StatelessWidget {
 class _AttachmentField extends StatefulWidget {
   final String label;
   final bool isEgyptian;
+  final int? profileId;
 
-  const _AttachmentField({required this.label, required this.isEgyptian});
+  const _AttachmentField({
+    required this.label,
+    required this.isEgyptian,
+    this.profileId,
+  });
 
   @override
   State<_AttachmentField> createState() => _AttachmentFieldState();
@@ -995,9 +1020,7 @@ class _AttachmentFieldState extends State<_AttachmentField> {
       final bytes = await file.readAsBytes();
       final threat = PdfSecurityScanner.scan(bytes);
       if (threat != null) {
-        if (mounted) {
-          _showError('تم رفض الملف: $threat');
-        }
+        if (mounted) _showError('تم رفض الملف: $threat');
         return;
       }
     }
@@ -1005,7 +1028,7 @@ class _AttachmentFieldState extends State<_AttachmentField> {
     setState(() => _uploading = true);
     try {
       if (!mounted) return;
-      await context.read<UserProfileCubit>().editProfileWithFile(
+      await context.read<UserProfileCubit>().uploadAttachment(
         file: file,
         isEgyptian: widget.isEgyptian,
       );
@@ -1079,12 +1102,13 @@ class _AttachmentFieldState extends State<_AttachmentField> {
               children: files.asMap().entries.map((entry) {
                 final index = entry.key;
                 final file = entry.value;
-                final rawPath = file['url']?.toString() ?? '';
-                final cleanPath = rawPath.replaceFirst('public/', '');
-                final url = '${ApiConstants.baseUrl}/files/$cleanPath';
+
+                // final fileId = file['id'] as int?;
+
                 return _AttachmentRow(
-                  key: ValueKey(url),
-                  url: url,
+                  key: ValueKey(widget.profileId ?? index),
+                  fileId: widget.profileId,
+                  isEgyptian: widget.isEgyptian,
                   fileName:
                       file['original_file_name']?.toString() ??
                       'الملف ${index + 1}',
@@ -1100,10 +1124,16 @@ class _AttachmentFieldState extends State<_AttachmentField> {
 // ─── Attachment row ───────────────────────────────────────────────────────────
 
 class _AttachmentRow extends StatefulWidget {
-  final String url;
+  final int? fileId;
+  final bool isEgyptian;
   final String fileName;
 
-  const _AttachmentRow({super.key, required this.url, required this.fileName});
+  const _AttachmentRow({
+    super.key,
+    required this.fileId,
+    required this.isEgyptian,
+    required this.fileName,
+  });
 
   @override
   State<_AttachmentRow> createState() => _AttachmentRowState();
@@ -1113,16 +1143,38 @@ class _AttachmentRowState extends State<_AttachmentRow> {
   Uint8List? _bytes;
   bool _loading = false;
 
+  String get _previewUrl {
+    final id = widget.fileId;
+    if (id == null) return '';
+    return widget.isEgyptian
+        ? ApiConstants.showUserNationalIdFile(id)
+        : ApiConstants.showUserPassportFile(id);
+  }
+
   Future<void> _fetchAndOpen(BuildContext context) async {
     if (_bytes != null) {
       _openSafe(context, _bytes!);
       return;
     }
+
+    if (_previewUrl.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'تعذر تحديد رابط الملف',
+            textDirection: TextDirection.rtl,
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() => _loading = true);
     try {
       final dio = DioClient.instance.dio;
       final response = await dio.get<List<int>>(
-        widget.url,
+        _previewUrl,
         options: Options(responseType: ResponseType.bytes),
       );
       if (mounted) {
@@ -1147,8 +1199,7 @@ class _AttachmentRowState extends State<_AttachmentRow> {
   }
 
   void _openSafe(BuildContext context, Uint8List bytes) {
-    final isPdf = _isPdf(bytes);
-    if (isPdf) {
+    if (_isPdf(bytes)) {
       _openPdfSafely(context, bytes);
     } else {
       _openImageFullScreen(context, bytes);

@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/network/api_result.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
@@ -103,6 +102,71 @@ class UserProfileCubit extends Cubit<UserProfileState> {
       case ApiError(:final message):
         emit(UserProfileError(message));
         _emitFromModel(current.userModel);
+    }
+  }
+
+  Future<void> uploadAttachment({
+    required File file,
+    required bool isEgyptian,
+  }) async {
+    final current = state;
+    if (current is! UserProfileLoaded) return;
+
+    emit(const UserProfileUpdating());
+
+    final uploadResult = await _repository.uploadAttachment(file: file);
+
+    switch (uploadResult) {
+      case ApiError(:final message):
+        emit(UserProfileError(message));
+        _emitFromModel(current.userModel);
+        return;
+
+      case ApiSuccess(:final data):
+        final fileId = data['data']?['file_id']?.toString();
+
+        if (fileId == null || fileId.isEmpty) {
+          emit(const UserProfileError('تعذر الحصول على معرف الملف'));
+          _emitFromModel(current.userModel);
+          return;
+        }
+
+        final result = await _repository.editProfile(
+          nationalityCode: current.userModel.nationalityCode ?? 'EG',
+          mobile: current.userModel.phone ?? '',
+          email: current.userModel.email ?? '',
+          firstName: current.userModel.firstname,
+          lastName: current.userModel.lastname,
+          nationalId: isEgyptian ? (current.userModel.nationalId ?? '') : null,
+          passportNum: !isEgyptian
+              ? (current.userModel.passportNumber ?? '')
+              : null,
+          idFile: file,
+          fileId: fileId,
+          isEgyptian: isEgyptian,
+          docUploaded: true,
+        );
+
+        switch (result) {
+          case ApiSuccess(:final data):
+            if (data.ocrVerified != null &&
+                !data.ocrVerified!.ok &&
+                data.ocrVerified!.connectionError) {
+              emit(
+                UserProfileError(
+                  data.ocrVerified!.message ?? 'تعذر الاتصال بخدمة التحقق',
+                ),
+              );
+              _emitFromModel(current.userModel);
+              return;
+            }
+            emit(UserProfileAttachmentUploadSuccess(message: data.message));
+            await loadFromUser(null);
+
+          case ApiError(:final message):
+            emit(UserProfileError(message));
+            _emitFromModel(current.userModel);
+        }
     }
   }
 
@@ -236,7 +300,7 @@ class UserProfileCubit extends Cubit<UserProfileState> {
       phoneVerified: user.phoneVerified ?? false,
       nationality: user.nationality ?? 'مصري',
       nationalityCode: user.nationalityCode,
-      nationalId: user.nationalId ?? '',
+      nationalId: user.nationalId,
       nationalIdVerified: user.nationalIdVerified ?? false,
       passportNumber: user.passportNumber,
       dateOfBirth: user.dateOfBirth ?? '',
