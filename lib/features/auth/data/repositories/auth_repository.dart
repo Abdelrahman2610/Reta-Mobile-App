@@ -324,6 +324,8 @@ class AuthRepository {
     String? lastName,
     required String nationalityCode,
     File? idFile,
+    String? fileId,
+
     bool isEgyptian = true,
     bool docUploaded = false,
     bool docDeleted = false,
@@ -337,8 +339,10 @@ class AuthRepository {
         if (email != null) 'email': email,
         if (firstName != null) 'first_name': firstName,
         if (lastName != null) 'last_name': lastName,
-        if (isEgyptian && nationalId != null) 'national_id': nationalId,
+        if (isEgyptian && nationalId != null && nationalId.isNotEmpty)
+          'national_id': nationalId,
         if (!isEgyptian && passportNum != null) 'passport_num': passportNum,
+        if (fileId != null) 'file_id': fileId,
       };
 
       if (idFile != null) {
@@ -363,6 +367,72 @@ class AuthRepository {
       return EditProfileResponse.fromJson(
         response.data as Map<String, dynamic>,
       );
+    });
+  }
+
+  Future<ApiResult<EditProfileResponse>> linkFileIdToProfile({
+    required String fileId,
+    required String path,
+    required String fullUrl,
+    required String nationalId,
+    required String mobile,
+    required String email,
+    required String nationalityCode,
+    required String firstName,
+    required String lastName,
+  }) async {
+    return safeApiCall(() async {
+      final body = <String, dynamic>{
+        'nationality_code': nationalityCode,
+        'doc_uploaded': true,
+        'doc_deleted': false,
+        'mobile': mobile,
+        'email': email,
+        'national_id': nationalId,
+        'first_name': firstName,
+        'last_name': lastName,
+        'file_id': fileId,
+        'path': path,
+        'full_url': fullUrl,
+        'national_id_file': path,
+        'national_id_file_path': path,
+        'national_id_file_url': fullUrl,
+      };
+
+      log('=== LINK FILE PAYLOAD ===');
+      body.forEach((k, v) => log('  $k: $v'));
+      log('========================');
+
+      final response = await _dio.post(
+        ApiConstants.editProfile,
+        data: FormData.fromMap(body),
+      );
+
+      log('=== LINK FILE RESPONSE: ${response.data} ===');
+      return EditProfileResponse.fromJson(
+        response.data as Map<String, dynamic>,
+      );
+    });
+  }
+
+  Future<ApiResult<Map<String, dynamic>>> uploadAttachment({
+    required File file,
+  }) async {
+    return safeApiCall(() async {
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          file.path,
+          filename: file.path.split('/').last,
+        ),
+        'label': 'profile_attachments',
+      });
+
+      final response = await _dio.post(
+        ApiConstants.uploadAttachment,
+        data: formData,
+      );
+
+      return response.data as Map<String, dynamic>;
     });
   }
 
