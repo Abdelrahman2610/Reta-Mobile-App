@@ -19,6 +19,7 @@ import '../../../../components/app_button.dart';
 import '../../../../components/app_container.dart';
 import '../../../../components/app_text.dart';
 import '../../../data/models/declarations_lookups.dart';
+import '../../../data/models/map_location_result.dart';
 import '../../components/checkbox_with_title.dart';
 import '../../components/declaration_data_tab.dart';
 import '../../components/units/unit_title.dart';

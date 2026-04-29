@@ -27,10 +27,10 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../components/app_bar.dart';
 import '../../../../components/app_container.dart';
 import '../../../../components/app_text.dart';
+import '../../../data/models/map_location_result.dart';
 import '../../components/declaration_data_tab.dart';
 import '../../components/units/unit_title.dart';
 import '../../cubit/units/unit_data/unit_data_state.dart';
-import 'map_web_view_screen.dart';
 
 class UnitData extends StatelessWidget {
   const UnitData({
