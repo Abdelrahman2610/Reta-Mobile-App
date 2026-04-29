@@ -11,6 +11,7 @@ import '../../../../../../core/network/dio_client.dart';
 import '../../../../data/models/declarations_lookups.dart';
 import '../../../../data/models/district_details.dart';
 import '../../../../data/models/street_model.dart';
+import '../../../pages/units/map_web_view_screen.dart';
 import '../../applicant_cubit.dart';
 import '../../declaration_lookups_cubit.dart';
 import '../unit_data/unit_data_cubit.dart';
@@ -37,6 +38,13 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   final Map<String, dynamic>? locationData;
   final Map<String, dynamic>? unitData;
   final Map<String, dynamic>? applicantData;
+  String unitId = '-1';
+
+  /// ------------------ New parameters --------------------------
+  final knownBuildNumController = TextEditingController();
+  final addressAdditionalInfoController = TextEditingController();
+  bool isNearestProperty = false;
+  MapLocationResult? _mapData;
 
   final formKey = GlobalKey<FormState>();
 
@@ -99,77 +107,80 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
 
   Future<void> _initFromUnitData(List<DeclarationLookup> governorates) async {
     emit(state.copyWith(isInitializing: true));
-    final governorateId = int.tryParse(unitData!['governorate_id']);
-    final governorate = governorates.firstWhere(
-      (g) => g.id == governorateId,
-      orElse: () => DeclarationLookup(id: 0, name: ''),
-    );
+    if (unitData != null) {
+      unitId = unitData!['id'].toString();
+      final governorateId = int.tryParse(unitData!['governorate_id']);
+      final governorate = governorates.firstWhere(
+        (g) => g.id == governorateId,
+        orElse: () => DeclarationLookup(id: 0, name: ''),
+      );
 
-    if (governorate.id == 0) return;
+      if (governorate.id == 0) return;
 
-    await fetchDistricts(governorate.id);
+      await fetchDistricts(governorate.id);
 
-    final districtId = int.tryParse(unitData!['district_id']);
-    final district = state.districtsList?.firstWhere(
-      (d) => d.id == districtId,
-      orElse: () => DeclarationLookup(id: 0, name: ''),
-    );
+      final districtId = int.tryParse(unitData!['district_id']);
+      final district = state.districtsList?.firstWhere(
+        (d) => d.id == districtId,
+        orElse: () => DeclarationLookup(id: 0, name: ''),
+      );
 
-    if (district != null && district.id != 0) {
-      await fetchVillagesAndStreets(district.id);
+      if (district != null && district.id != 0) {
+        await fetchVillagesAndStreets(district.id);
+      }
+
+      final villageId = int.tryParse(unitData!['village_id']);
+      final village = state.villagesList?.firstWhere(
+        (v) => v.id == villageId,
+        orElse: () => DeclarationLookup(id: 0, name: ''),
+      );
+      selectNeighborhood(village?.name);
+
+      final regionId = int.tryParse(unitData!['region_id']);
+      final street = state.streetsList?.firstWhere(
+        (s) => s.id == regionId,
+        orElse: () => StreetModel(id: 0, name: '', villageId: 0),
+      );
+      selectStreet(street?.name);
+
+      await fetchBuildingNumber(street?.id);
+
+      final realEstateIdString = unitData!['real_estate_id'];
+      int realEstateId = -1;
+      if (realEstateIdString.runtimeType == String) {
+        realEstateId = int.parse(realEstateIdString);
+      } else {
+        realEstateId = realEstateIdString;
+      }
+      final building = state.buildingList?.firstWhere(
+        (s) => s.id == realEstateId,
+        orElse: () => DeclarationLookup(id: 0, name: ''),
+      );
+
+      selectBuildingNumber(building?.name);
+
+      emit(
+        state.copyWith(
+          isInitializing: false,
+          selectedGovernorate: governorate.name,
+          selectedGovernorateId: governorate.id,
+          selectedDistrict: district?.name,
+          selectedDistrictId: district?.id,
+          selectedNeighborhood: village?.name,
+          isNeighborhoodOther: unitData!['village_other'] != null,
+          selectedStreet: street?.name,
+          isStreetOther: unitData!['region_other'] != null,
+          selectedBuildingNumberId: realEstateId,
+          selectedBuildingNumber: building?.name,
+          isBuildingNumberOther: unitData!['real_estate_other'] != null,
+        ),
+      );
+
+      // controllers
+      neighborhoodOtherController.text = unitData!['village_other'] ?? '';
+      streetOtherController.text = unitData!['region_other'] ?? '';
+      buildingNumberOtherController.text = unitData!['real_estate_other'] ?? '';
     }
-
-    final villageId = int.tryParse(unitData!['village_id']);
-    final village = state.villagesList?.firstWhere(
-      (v) => v.id == villageId,
-      orElse: () => DeclarationLookup(id: 0, name: ''),
-    );
-    selectNeighborhood(village?.name);
-
-    final regionId = int.tryParse(unitData!['region_id']);
-    final street = state.streetsList?.firstWhere(
-      (s) => s.id == regionId,
-      orElse: () => StreetModel(id: 0, name: '', villageId: 0),
-    );
-    selectStreet(street?.name);
-
-    await fetchBuildingNumber(street?.id);
-
-    final realEstateIdString = unitData!['real_estate_id'];
-    int realEstateId = -1;
-    if (realEstateIdString.runtimeType == String) {
-      realEstateId = int.parse(realEstateIdString);
-    } else {
-      realEstateId = realEstateIdString;
-    }
-    final building = state.buildingList?.firstWhere(
-      (s) => s.id == realEstateId,
-      orElse: () => DeclarationLookup(id: 0, name: ''),
-    );
-
-    selectBuildingNumber(building?.name);
-
-    emit(
-      state.copyWith(
-        isInitializing: false,
-        selectedGovernorate: governorate.name,
-        selectedGovernorateId: governorate.id,
-        selectedDistrict: district?.name,
-        selectedDistrictId: district?.id,
-        selectedNeighborhood: village?.name,
-        isNeighborhoodOther: unitData!['village_other'] != null,
-        selectedStreet: street?.name,
-        isStreetOther: unitData!['region_other'] != null,
-        selectedBuildingNumberId: realEstateId,
-        selectedBuildingNumber: building?.name,
-        isBuildingNumberOther: unitData!['real_estate_other'] != null,
-      ),
-    );
-
-    // controllers
-    neighborhoodOtherController.text = unitData!['village_other'] ?? '';
-    streetOtherController.text = unitData!['region_other'] ?? '';
-    buildingNumberOtherController.text = unitData!['real_estate_other'] ?? '';
   }
 
   Future<void> fetchGovernorates() async {
@@ -411,7 +422,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
 
   /// ---------------------------- Build Payload ----------------------------
 
-  Map<String, dynamic> buildLocationPayload() {
+  Map<String, dynamic> buildLocationPayloadOld() {
     return {
       'governorate_id': state.selectedGovernorateId,
       'district_id': state.selectedDistrictId,
@@ -431,6 +442,45 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
       if (state.isBuildingNumberOther)
         'real_estate_other': buildingNumberOtherController.text.trim(),
     };
+  }
+
+  Map<String, dynamic> buildLocationPayloadNew() {
+    Map<String, dynamic>? mapData = _mapData?.toMap();
+    return {
+      if (mapData != null) ...{
+        'search_using': 1,
+        'new_urban_communities_authority': state.isUrban ? 1 : 0,
+        'is_nearest_property': isNearestProperty ? 1 : 0,
+        'known_build_num': knownBuildNumController.text.trim(),
+        'address_additional_info': addressAdditionalInfoController.text.trim(),
+        'gg_governorate_id': mapData['gg_governorate_id'],
+        'gg_police_station_id': mapData['gg_police_station_id'],
+        'gg_street_id': mapData['gg_street_id'],
+        'gg_city_id': mapData['gg_city_id'],
+        'gg_district_id': mapData['gg_district_id'],
+        'gg_mogawra_id': mapData['gg_mogawra_id'],
+        'buildingProfile': mapData['buildingProfile'],
+      },
+    };
+  }
+
+  Map<String, dynamic> buildLocationPayload() {
+    switch (unitType) {
+      case UnitType.residential:
+      case UnitType.commercial:
+      case UnitType.administrative:
+      case UnitType.serviceUnit:
+      case UnitType.fixedInstallations:
+      case UnitType.vacantLand:
+        return buildLocationPayloadNew();
+      case UnitType.serviceFacility:
+      case UnitType.hotelFacility:
+      case UnitType.industrialFacility:
+      case UnitType.productionFacility:
+      case UnitType.petroleumFacility:
+      case UnitType.minesAndQuarries:
+        return buildLocationPayloadOld();
+    }
   }
 
   bool validate() => formKey.currentState?.validate() ?? false;
@@ -480,6 +530,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
             unitType: unitType,
             otherName: otherName,
             applicantPayload: applicantData,
+            mapLocationResult: _mapData,
           ),
         ),
       ),
@@ -494,5 +545,17 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
     buildingNumberOtherController.dispose();
     neighborhoodNameController.dispose();
     return super.close();
+  }
+
+  void onIsNearestPropertyTapped() {
+    emit(state.copyWith(isNearestProperty: !state.isNearestProperty));
+  }
+
+  void onIsUrbanTapped() {
+    emit(state.copyWith(isUrban: !state.isUrban));
+  }
+
+  void setMapData(MapLocationResult? mapData) {
+    _mapData = mapData;
   }
 }

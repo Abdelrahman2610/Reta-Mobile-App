@@ -32,52 +32,34 @@ class FloorUnitSection extends StatelessWidget {
               labelColor: AppColors.neutralDarkDark,
               hintText: 'اختر رقم الدور',
               value: state.selectedFloorNumber,
-              items: (state.buildingFloorList)
+              items: (cubit.lookups.realEstateFloors)
                   .map((f) => appDropDownOption(label: f.name))
                   .toList(),
-              onChanged: cubit.selectFloorNumber,
+              onChanged: cubit.selectFloorNumberOther,
               validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
             ),
             if (state.isFloorNumberOther) ...[
               16.hs,
-              AppDropdownField<String>(
-                labelText: 'رقم الدور',
-                labelRequired: true,
-                labelColor: AppColors.neutralDarkDark,
-                hintText: 'اختر رقم الدور',
-                value: state.selectedFloorNumberOther,
-                items: (cubit.lookups.realEstateFloors)
-                    .map((f) => appDropDownOption(label: f.name))
-                    .toList(),
-                onChanged: cubit.selectFloorNumberOther,
-                validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
-              ),
-            ],
-            16.hs,
-
-            AppDropdownField<String>(
-              labelText: 'رقم الوحدة',
-              labelRequired: true,
-              hintText: 'اختر رقم الوحدة',
-              value: state.selectedUnitNumber,
-              items: state.buildingUnitList
-                  .map((u) => appDropDownOption(label: u.name))
-                  .toList(),
-              onChanged: cubit.selectUnitNumber,
-              validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
-            ),
-            if (state.isUnitNumberOther) ...[
-              16.hs,
               AppTextFormField(
-                labelText: 'رقم الوحدة',
+                labelText: 'رقم الدور الآخر',
                 labelRequired: true,
                 labelColor: AppColors.neutralDarkDark,
-                controller: cubit.unitNumberOtherController,
-                hintText: 'ادخل رقم الوحدة',
+                controller: cubit.floorNumberOtherController,
+                hintText: 'ادخل رقم الدور',
                 validator: (v) =>
                     v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
               ),
             ],
+            16.hs,
+            AppTextFormField(
+              labelText: 'رقم الوحدة',
+              labelRequired: true,
+              labelColor: AppColors.neutralDarkDark,
+              controller: cubit.unitNumberOtherController,
+              hintText: 'ادخل رقم الوحدة',
+              validator: (v) =>
+                  v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+            ),
           ],
         );
       },

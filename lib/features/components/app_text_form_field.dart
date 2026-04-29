@@ -19,6 +19,7 @@ class AppTextFormField extends StatelessWidget {
   final Function(String)? onFieldSubmitted;
   final bool labelRequired;
   final int? maxLines;
+  final int? minLines;
   final bool? readOnly;
   final VoidCallback? onTap;
   final List<TextInputFormatter>? inputFormatters;
@@ -50,6 +51,7 @@ class AppTextFormField extends StatelessWidget {
     this.onFieldSubmitted,
     this.labelRequired = false,
     this.maxLines,
+    this.minLines,
     this.readOnly,
     this.onTap,
     this.inputFormatters,
@@ -118,7 +120,7 @@ class AppTextFormField extends StatelessWidget {
           obscureText: obscureText,
           keyboardType: keyboardType,
           maxLines: maxLines ?? 1,
-          minLines: maxLines != null && maxLines! > 1 ? 1 : null,
+          minLines: minLines ?? (maxLines != null && maxLines! > 1 ? 1 : null),
           readOnly: readOnly ?? false,
           onChanged: onChanged,
           onFieldSubmitted: onFieldSubmitted,

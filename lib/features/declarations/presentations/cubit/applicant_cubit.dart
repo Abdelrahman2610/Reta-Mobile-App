@@ -528,22 +528,24 @@ class ApplicantCubit extends Cubit<ApplicantState> {
     final isFormValid = formKey.currentState?.validate() ?? false;
     if (!isFormValid) return false;
 
-    switch (state.applicantType) {
+    switch (applicantType) {
       case ApplicantType.owner:
       case ApplicantType.exploited:
       case ApplicantType.beneficiary:
         return true;
       case ApplicantType.sharedOwnership:
       case ApplicantType.agent:
-        if (taxpayerNationalIdFilePath == null) {
+        if (taxpayerNationalIdFilePath == null &&
+            taxpayerNationality == Nationality.egyptian) {
           emit(state.copyWith(errorMessage: 'يرجى رفع صورة الرقم القومي'));
           return false;
         }
-        if (taxpayerPassportFilePath == null) {
+        if (taxpayerPassportFilePath == null &&
+            taxpayerNationality != Nationality.egyptian) {
           emit(state.copyWith(errorMessage: 'يرجى رفع صورة جواز السفر'));
           return false;
         }
-        if (ownershipDeedFilePath == null) {
+        if (ownershipProofDocumentPath == null) {
           emit(
             state.copyWith(
               errorMessage: 'يرجى رفع سند الملكية على الشيوع / إعلام الوراثة',
@@ -559,9 +561,18 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         }
         break;
       case ApplicantType.other:
-      case null:
-        break;
     }
+
+    // if (applicantType == ApplicantType.sharedOwnership) {
+    //   if (ownershipProofDocumentPath == null) {
+    //     emit(
+    //       state.copyWith(
+    //         errorMessage: 'يرجى رفع سند الملكية على الشيوع / إعلام الوراثة',
+    //       ),
+    //     );
+    //     return false;
+    //   }
+    // }
 
     return true;
   }

@@ -9,12 +9,14 @@ class AppScaffold extends StatelessWidget {
     super.key,
     this.title,
     this.onBackTapped,
+    this.onSave,
     required this.child,
     this.padding,
   });
 
   final String? title;
   final VoidCallback? onBackTapped;
+  final VoidCallback? onSave;
   final Widget child;
   final EdgeInsets? padding;
 
@@ -30,6 +32,7 @@ class AppScaffold extends StatelessWidget {
           backgroundColor: AppColors.mainBlueIndigoDye,
           backButtonIconColor: Colors.white,
           titleTextStyle: TextStyle(color: Colors.white, fontSize: 16.sp),
+          onSave: onSave,
         ),
         body: Padding(
           padding:

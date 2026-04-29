@@ -659,11 +659,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     final allocationContract = unitData!['allocation_contract'];
     final ministryBurdenVal = unitData!['ministry_burden'];
 
-    print("MSG: constructionLicense: $constructionLicense");
-    print("MSG: operationLicense: $operationLicense");
-    print("MSG: allocationContract: $allocationContract");
-    print("MSG: ministryBurdenVal: $ministryBurdenVal");
-
     emit(
       state.copyWith(
         ministryBurden: ministryBurdenVal == true || ministryBurdenVal == 1,
@@ -897,7 +892,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     );
     if (!isOther) floorNumberOtherController.clear();
 
-    int floorId = _getFloorId();
+    int floorId = _getFloorOtherId();
     fetchBuildingUnitNumber(buildingNumber, floorId);
   }
 
@@ -1496,7 +1491,9 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
     // ── كود حساب الوحدة ───────────────────────────────────────────
     final unitCode = unitCodeController.text.trim();
-    if (unitCode.isNotEmpty && unitCode.length != 14) {
+    if (unitCode.isNotEmpty &&
+        unitCode.length != 14 &&
+        (state.contactedTaxAuthority ?? false)) {
       emit(
         state.copyWith(errorMessage: 'كود حساب الوحدة يجب أن يكون 14 رقماً'),
       );
@@ -1945,6 +1942,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
     return {
       ..._buildBaseUnitPayload(),
+      //TODO: Update this value
+      "unit_number": "1",
       'usage_type': 'سكني',
       'unit_type_id': unitTypeId,
       'area': double.tryParse(areaController.text.trim()) ?? 0,
@@ -2034,7 +2033,10 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     return {
       ..._buildBaseUnitPayload(),
       'installation_type_id': installationTypeId,
-      if (otherInstallation != '') 'installation_type_other': otherInstallation,
+      // if (otherInstallation != '')
+      'installation_type_other': otherInstallation != ''
+          ? otherInstallation
+          : null,
       'is_taxpayer_owner_of_installation': (state.isTaxpayerOwner ?? false)
           ? 1
           : 2,
@@ -2328,7 +2330,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       'usage_type': usageTypeController.text.trim(),
       'total_land_area': totalLandArea.text.trim(),
       'used_land_area': totalLandUtilized.text.trim(),
-      'land_book_value': bookValueController.text.trim(),
+      if (bookValueController.text.isNotEmpty)
+        'land_book_value': bookValueController.text.trim(),
       if (unitData == null) 'buildings_count': petroBuildings.length,
       if (state.constructionLicenseFilePath != null)
         'construction_license': {
@@ -2406,15 +2409,15 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   Map<String, dynamic> _buildBaseUnitPayload() {
-    final floorId = state.isFloorNumberOther ? -1 : _getFloorId();
+    final floorId = state.isFloorNumberOther ? -1 : _getFloorOtherId();
     final unitID = state.isUnitNumberOther ? -1 : _getUnitID();
     return {
       'real_estate_floor_id': floorId,
       if (state.isFloorNumberOther)
-        'real_estate_floor_other': _getFloorOtherId(),
+        'real_estate_floor_other': floorNumberOtherController.text.trim(),
       'unit_id': unitID,
-      if (state.isUnitNumberOther)
-        'unit_other': unitNumberOtherController.text.trim(),
+      // if (state.isUnitNumberOther)
+      'unit_number': unitNumberOtherController.text.trim(),
       'reta_contact_about_unit': state.contactedTaxAuthority == true ? 1 : 2,
       'account_code': unitCodeController.text.trim().isEmpty
           ? null

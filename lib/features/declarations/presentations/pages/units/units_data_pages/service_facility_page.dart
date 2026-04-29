@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../../../core/theme/app_colors.dart';
-import '../../../../../components/app_container.dart';
 import '../../../../../components/app_text.dart';
 import '../../../../../components/app_text_form_field.dart';
 import '../../../../data/models/building_info.dart';
@@ -40,188 +39,173 @@ class _ServiceFacilityView extends StatelessWidget {
 
     return Form(
       key: cubit.formKey,
-      child: AppContainer(
-        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            AppText(
-              text: 'بيانات المنشأة الخدمية',
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w700,
-              color: AppColors.mainBlueIndigoDye,
-            ),
-            24.hs,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          // ── اسم المنشأة ──────────────────────────
+          AppTextFormField(
+            labelText: 'إسم المنشأة',
+            labelRequired: true,
+            controller: cubit.facilityNameController,
+            hintText: 'المساحة بالمتر المربع',
+            validator: (v) => v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+          ),
+          16.hs,
 
-            // ── اسم المنشأة ──────────────────────────
-            AppTextFormField(
-              labelText: 'إسم المنشأة',
-              labelRequired: true,
-              controller: cubit.facilityNameController,
-              hintText: 'المساحة بالمتر المربع',
-              validator: (v) =>
-                  v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
-            ),
-            16.hs,
+          // ── مساحة الأرض الكلية ──────────────────
+          AppTextFormField(
+            labelText: 'مساحة الأرض الكلية',
+            labelRequired: true,
+            controller: cubit.totalLandAreaFacilityController,
+            hintText: 'المساحة بالمتر المربع',
+            keyboardType: TextInputType.number,
+            validator: (v) => v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+          ),
+          16.hs,
 
-            // ── مساحة الأرض الكلية ──────────────────
-            AppTextFormField(
-              labelText: 'مساحة الأرض الكلية',
-              labelRequired: true,
-              controller: cubit.totalLandAreaFacilityController,
-              hintText: 'المساحة بالمتر المربع',
-              keyboardType: TextInputType.number,
-              validator: (v) =>
-                  v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
-            ),
-            16.hs,
+          // ── المباني ──────────────────────────────
+          _BuildingsSection(cubit: cubit),
+          16.hs,
 
-            // ── المباني ──────────────────────────────
-            _BuildingsSection(cubit: cubit),
-            16.hs,
+          // ── نوع النشاط ───────────────────────────
+          AppTextFormField(
+            labelText: 'نوع النشاط',
+            labelRequired: true,
+            controller: cubit.activityTypeController,
+            hintText: 'ادخل نوع النشاط',
+            validator: (v) => v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+          ),
+          16.hs,
 
-            // ── نوع النشاط ───────────────────────────
-            AppTextFormField(
-              labelText: 'نوع النشاط',
-              labelRequired: true,
-              controller: cubit.activityTypeController,
-              hintText: 'ادخل نوع النشاط',
-              validator: (v) =>
-                  v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
-            ),
-            16.hs,
+          // ── هل تم التواصل مع الضرائب؟ ───────────
+          const TaxContactSection(
+            customLabel:
+                'هل تم التواصل مع الضرائب العقارية بخصوص المنشأة محل الإقرار سابقاً؟',
+          ),
+          16.hs,
 
-            // ── هل تم التواصل مع الضرائب؟ ───────────
-            const TaxContactSection(
-              customLabel:
-                  'هل تم التواصل مع الضرائب العقارية بخصوص المنشأة محل الإقرار سابقاً؟',
-            ),
-            16.hs,
+          // ── كود حساب المنشأة ─────────────────────
+          BlocBuilder<UnitDataCubit, UnitDataState>(
+            buildWhen: (prev, curr) =>
+                prev.contactedTaxAuthority != curr.contactedTaxAuthority,
+            builder: (context, state) {
+              return (state.contactedTaxAuthority ?? false)
+                  ? Column(
+                      children: [
+                        AppTextFormField(
+                          labelText: 'كود حساب الوحدة',
+                          controller: cubit.unitCodeController,
+                          hintText: 'ادخل كود حساب الوحدة',
+                          keyboardType: TextInputType.number,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return null;
+                            if (v.length != 14) return 'يجب أن يكون 14 رقماً';
+                            if (!RegExp(r'^\d+$').hasMatch(v)) {
+                              return 'يجب أن يحتوي على أرقام فقط';
+                            }
+                            return null;
+                          },
+                        ),
+                        16.hs,
+                      ],
+                    )
+                  : SizedBox.shrink();
+            },
+          ),
 
-            // ── كود حساب المنشأة ─────────────────────
-            BlocBuilder<UnitDataCubit, UnitDataState>(
-              buildWhen: (prev, curr) =>
-                  prev.contactedTaxAuthority != curr.contactedTaxAuthority,
-              builder: (context, state) {
-                return (state.contactedTaxAuthority ?? false)
-                    ? Column(
-                        children: [
-                          AppTextFormField(
-                            labelText: 'كود حساب الوحدة',
-                            controller: cubit.unitCodeController,
-                            hintText: 'ادخل كود حساب الوحدة',
-                            keyboardType: TextInputType.number,
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return null;
-                              if (v.length != 14) return 'يجب أن يكون 14 رقماً';
-                              if (!RegExp(r'^\d+$').hasMatch(v)) {
-                                return 'يجب أن يحتوي على أرقام فقط';
-                              }
-                              return null;
-                            },
-                          ),
-                          16.hs,
-                        ],
-                      )
-                    : SizedBox.shrink();
+          // ── هل الوحدة معفاة؟ ─────────────────────
+          const ExemptionSection(isWithInfo: true),
+          16.hs,
+
+          // ── القيمة السوقية للمنشأة ────────────────
+          AppTextFormField(
+            labelText: 'القيمة السوقية للمنشأة',
+            controller: cubit.marketValueController,
+            hintText: 'ادخل القيمة السوقية للمنشأة',
+            keyboardType: TextInputType.number,
+          ),
+          16.hs,
+
+          // ── سند ملكية المنشأة ─────────────────────
+          BlocBuilder<UnitDataCubit, UnitDataState>(
+            buildWhen: (prev, curr) =>
+                prev.ownershipDeedFilePath != curr.ownershipDeedFilePath,
+            builder: (context, state) => FileUploadField(
+              labelText: 'سند ملكية المنشأة',
+              text: 'حمل ملف',
+              backgroundColor: AppColors.highlightDarkest,
+              textColor: AppColors.white,
+              filePath: state.ownershipDeedFullUrl,
+              onFilePicked: () async {
+                final path = await cubit.pickFile();
+                if (path != null) cubit.setOwnershipDeedFile(path);
               },
+              onFileRemoved: () => cubit.removeOwnershipDeedFile(),
             ),
+          ),
+          16.hs,
 
-            // ── هل الوحدة معفاة؟ ─────────────────────
-            const ExemptionSection(isWithInfo: true),
-            16.hs,
-
-            // ── القيمة السوقية للمنشأة ────────────────
-            AppTextFormField(
-              labelText: 'القيمة السوقية للمنشأة',
-              controller: cubit.marketValueController,
-              hintText: 'ادخل القيمة السوقية للمنشأة',
-              keyboardType: TextInputType.number,
+          // ── صورة من عقود الإيجار ─────────────────
+          BlocBuilder<UnitDataCubit, UnitDataState>(
+            buildWhen: (prev, curr) =>
+                prev.leaseContractFilePath != curr.leaseContractFilePath,
+            builder: (context, state) => FileUploadField(
+              labelText: 'صورة من عقود الإيجار',
+              text: 'حمل ملف',
+              backgroundColor: AppColors.highlightDarkest,
+              textColor: AppColors.white,
+              filePath: state.leaseContractFullUrl,
+              onFilePicked: () async {
+                final path = await cubit.pickFile();
+                if (path != null) cubit.setLeaseContractFile(path);
+              },
+              onFileRemoved: () => cubit.removeLeaseContractFile(),
             ),
-            16.hs,
+          ),
+          16.hs,
 
-            // ── سند ملكية المنشأة ─────────────────────
-            BlocBuilder<UnitDataCubit, UnitDataState>(
-              buildWhen: (prev, curr) =>
-                  prev.ownershipDeedFilePath != curr.ownershipDeedFilePath,
-              builder: (context, state) => FileUploadField(
-                labelText: 'سند ملكية المنشأة',
-                text: 'حمل ملف',
-                backgroundColor: AppColors.highlightDarkest,
-                textColor: AppColors.white,
-                filePath: state.ownershipDeedFullUrl,
-                onFilePicked: () async {
-                  final path = await cubit.pickFile();
-                  if (path != null) cubit.setOwnershipDeedFile(path);
-                },
-                onFileRemoved: () => cubit.removeOwnershipDeedFile(),
-              ),
+          // ── صورة من تراخيص البناء ────────────────
+          BlocBuilder<UnitDataCubit, UnitDataState>(
+            buildWhen: (prev, curr) =>
+                prev.constructionLicenseFilePath !=
+                curr.constructionLicenseFilePath,
+            builder: (context, state) => FileUploadField(
+              labelText: 'صورة من تراخيص البناء',
+              text: 'حمل ملف',
+              backgroundColor: AppColors.highlightDarkest,
+              textColor: AppColors.white,
+              filePath: state.constructionLicenseFullUrl,
+              onFilePicked: () async {
+                final path = await cubit.pickFile();
+                if (path != null) cubit.setConstructionLicenseFile(path);
+              },
+              onFileRemoved: () => cubit.removeConstructionLicenseFile(),
             ),
-            16.hs,
+          ),
+          16.hs,
 
-            // ── صورة من عقود الإيجار ─────────────────
-            BlocBuilder<UnitDataCubit, UnitDataState>(
-              buildWhen: (prev, curr) =>
-                  prev.leaseContractFilePath != curr.leaseContractFilePath,
-              builder: (context, state) => FileUploadField(
-                labelText: 'صورة من عقود الإيجار',
-                text: 'حمل ملف',
-                backgroundColor: AppColors.highlightDarkest,
-                textColor: AppColors.white,
-                filePath: state.leaseContractFullUrl,
-                onFilePicked: () async {
-                  final path = await cubit.pickFile();
-                  if (path != null) cubit.setLeaseContractFile(path);
-                },
-                onFileRemoved: () => cubit.removeLeaseContractFile(),
-              ),
+          // ── صورة من تراخيص التشغيل ───────────────
+          BlocBuilder<UnitDataCubit, UnitDataState>(
+            buildWhen: (prev, curr) =>
+                prev.operatingLicenseFilePath != curr.operatingLicenseFilePath,
+            builder: (context, state) => FileUploadField(
+              labelText: 'صورة من تراخيص التشغيل',
+              text: 'حمل ملف',
+              backgroundColor: AppColors.highlightDarkest,
+              textColor: AppColors.white,
+              filePath: state.operatingLicenseFullUrl,
+              onFilePicked: () async {
+                final path = await cubit.pickFile();
+                if (path != null) cubit.setOperatingLicenseFile(path);
+              },
+              onFileRemoved: () => cubit.removeOperatingLicenseFile(),
             ),
-            16.hs,
+          ),
+          16.hs,
 
-            // ── صورة من تراخيص البناء ────────────────
-            BlocBuilder<UnitDataCubit, UnitDataState>(
-              buildWhen: (prev, curr) =>
-                  prev.constructionLicenseFilePath !=
-                  curr.constructionLicenseFilePath,
-              builder: (context, state) => FileUploadField(
-                labelText: 'صورة من تراخيص البناء',
-                text: 'حمل ملف',
-                backgroundColor: AppColors.highlightDarkest,
-                textColor: AppColors.white,
-                filePath: state.constructionLicenseFullUrl,
-                onFilePicked: () async {
-                  final path = await cubit.pickFile();
-                  if (path != null) cubit.setConstructionLicenseFile(path);
-                },
-                onFileRemoved: () => cubit.removeConstructionLicenseFile(),
-              ),
-            ),
-            16.hs,
-
-            // ── صورة من تراخيص التشغيل ───────────────
-            BlocBuilder<UnitDataCubit, UnitDataState>(
-              buildWhen: (prev, curr) =>
-                  prev.operatingLicenseFilePath !=
-                  curr.operatingLicenseFilePath,
-              builder: (context, state) => FileUploadField(
-                labelText: 'صورة من تراخيص التشغيل',
-                text: 'حمل ملف',
-                backgroundColor: AppColors.highlightDarkest,
-                textColor: AppColors.white,
-                filePath: state.operatingLicenseFullUrl,
-                onFilePicked: () async {
-                  final path = await cubit.pickFile();
-                  if (path != null) cubit.setOperatingLicenseFile(path);
-                },
-                onFileRemoved: () => cubit.removeOperatingLicenseFile(),
-              ),
-            ),
-            16.hs,
-
-            // ── مستندات داعمة أخرى ───────────────────
-            const AdditionalDocumentsSection(),
-          ],
-        ),
+          // ── مستندات داعمة أخرى ───────────────────
+          const AdditionalDocumentsSection(),
+        ],
       ),
     );
   }

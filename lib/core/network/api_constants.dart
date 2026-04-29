@@ -1,7 +1,7 @@
 class ApiConstants {
   // ─── Base URL ───────────────────────────────────────────────────────────────
   // static const String baseUrl =
-  //     'http://dev-rta-services.etax.com.eg/reta-services/public/api';
+  //     'https://dev-rta-services.etax.com.eg/reta-services/public/api';
 
   static const String baseUrl =
       'https://tst-rta-services.etax.com.eg/reta-services/public/api';
