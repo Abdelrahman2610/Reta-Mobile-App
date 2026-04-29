@@ -215,15 +215,18 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   Future<void> _initBaseUnitData() async {
-    await fetchBuildingFloorNumber(buildingNumber);
+    // await fetchBuildingFloorNumber(buildingNumber);
+
     int floorId = int.parse(unitData?['real_estate_floor_id'] ?? '0');
-    String floorText = state.buildingFloorList
+    String floorText = lookups.realEstateFloors
         .firstWhere(
           (a) => a.id == floorId,
           orElse: () => DeclarationLookup(id: -1, name: kOther),
         )
         .name;
-    final floorOther = unitData!['real_estate_floor_other'];
+
+    final floorOther = unitData!['real_estate_floor_other_text'];
+    floorNumberOtherController.text = floorOther ?? '';
     bool isFloorOther = floorOther != null;
     if (unitType == UnitType.hotelFacility) {
       isFloorOther =
@@ -231,6 +234,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           (floorText != kOther && !floorNumbers.contains(floorText));
     }
 
+    unitNumberOtherController.text = unitData!['unit_number'];
     await fetchBuildingUnitNumber(buildingNumber, floorId);
     final unitId = int.parse(unitData!['unit_id']?.toString() ?? '-1');
     final unitOther = unitData!['unit_other'];
@@ -300,8 +304,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     );
 
     // controllers
-    if (isFloorOther) floorNumberOtherController.text = floorOther ?? '';
-    if (isUnitOther) unitNumberOtherController.text = unitOther ?? '';
+    // if (isFloorOther) floorNumberOtherController.text = floorOther ?? '';
+    // if (isUnitOther) unitNumberOtherController.text = unitOther ?? '';
   }
 
   void _initResidentialData() {
@@ -900,6 +904,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     emit(
       state.copyWith(
         selectedFloorNumberOther: value,
+        isFloorNumberOther: value == kOther,
         selectedUnitNumber: null,
         isUnitNumberOther: false,
       ),
