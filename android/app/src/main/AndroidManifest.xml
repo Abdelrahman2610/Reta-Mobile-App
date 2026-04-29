@@ -6,7 +6,6 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
 
     <application
-        android:usesCleartextTraffic="true"
         android:name="${applicationName}"
         android:label="Reta"
         android:icon="@mipmap/ic_launcher"
