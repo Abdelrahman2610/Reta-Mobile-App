@@ -88,6 +88,35 @@ extension UnitTypeLabel on UnitType {
     }
   }
 
+  String get title {
+    switch (this) {
+      case UnitType.residential:
+        return 'بيانات الوحدة السكنية';
+      case UnitType.commercial:
+        return 'بيانات الوحدة التجارية';
+      case UnitType.administrative:
+        return 'بيانات الوحدة الإدارية';
+      case UnitType.serviceUnit:
+        return 'بيانات الوحدة الخدمية';
+      case UnitType.fixedInstallations:
+        return 'بيانات التركيبة الثابتة';
+      case UnitType.vacantLand:
+        return 'بيانات الأرض الفضاء المستغلة';
+      case UnitType.serviceFacility:
+        return 'بيانات المنشأة الخدمية';
+      case UnitType.hotelFacility:
+        return 'بيانات المنشأة الفندقية';
+      case UnitType.industrialFacility:
+        return 'بيانات المنشأة الصناعية';
+      case UnitType.productionFacility:
+        return 'بيانات المنشأة الإنتاجية';
+      case UnitType.petroleumFacility:
+        return 'بيانات المنشأة البترولية';
+      case UnitType.minesAndQuarries:
+        return 'بيانات مناجم/محاجر/ملاحات';
+    }
+  }
+
   DeclarationsDataType get tabEnum {
     switch (this) {
       case UnitType.residential:

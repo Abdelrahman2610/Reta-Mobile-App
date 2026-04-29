@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/core/helpers/fixed_assets.dart';
-import 'package:reta/features/declarations/presentations/pages/units/unit_location_data_page.dart';
+import 'package:reta/features/declarations/presentations/pages/units/unit_location_data_new.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../components/app_bar.dart';
@@ -251,7 +251,7 @@ class SelectTypesOfPropertiesPage extends StatelessWidget {
             BlocProvider.value(value: lookupsCubit),
             BlocProvider.value(value: declarationCubit),
           ],
-          child: UnitLocationDataPage(
+          child: UnitLocationDataPageNew(
             unitType: unitType,
             applicantType: applicantType,
             declarationId: declarationId,

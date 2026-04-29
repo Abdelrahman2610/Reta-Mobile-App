@@ -8,7 +8,7 @@ import 'package:reta/features/declarations/presentations/cubit/declaration/decla
 import 'package:reta/features/declarations/presentations/pages/provider_data_page.dart';
 import 'package:reta/features/declarations/presentations/pages/select_types_of_properties_page.dart';
 import 'package:reta/features/declarations/presentations/pages/taxpayer_data_page.dart';
-import 'package:reta/features/declarations/presentations/pages/units/unit_location_data_page.dart';
+import 'package:reta/features/declarations/presentations/pages/units/unit_location_data_new.dart';
 
 import '../../../../core/helpers/extensions/applicant_type.dart';
 import '../../../../core/helpers/extensions/unit_type.dart';
@@ -241,7 +241,7 @@ class _PropertiesListInDeclarationView extends StatelessWidget {
                                                 value: lookupsCubit,
                                               ),
                                             ],
-                                            child: UnitLocationDataPage(
+                                            child: UnitLocationDataPageNew(
                                               applicantData:
                                                   state.detailsModel?.data,
                                               declarationId:

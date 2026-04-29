@@ -53,14 +53,20 @@ class UnitLocationDataPage extends StatelessWidget {
         otherName: otherName,
         applicantData: applicantData,
       ),
-      child: _UnitLocationDataPage(),
+      child: UnitLocationDataPageBodyOld(),
     );
   }
 }
 
-class _UnitLocationDataPage extends StatelessWidget {
-  const _UnitLocationDataPage();
+class UnitLocationDataPageBodyOld extends StatefulWidget {
+  const UnitLocationDataPageBodyOld();
 
+  @override
+  State<UnitLocationDataPageBodyOld> createState() =>
+      UnitLocationDataPageStateOld();
+}
+
+class UnitLocationDataPageStateOld extends State<UnitLocationDataPageBodyOld> {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<UnitLocationCubit>();

@@ -56,6 +56,8 @@ class FixedAssets {
   String dateIC = "${svg}date_ic.svg";
   String warningIC = "${svg}warning_ic.svg";
   String completeRequestsIC = "${svg}complete_requests_ic.svg";
+  String mapIC = "${svg}map_ic.svg";
+  String warningInfoIC = "${svg}info_warning_ic.svg";
 
   ///Images
   String securityIcon = "${images}security_icon.png";

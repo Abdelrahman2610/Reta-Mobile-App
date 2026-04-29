@@ -39,6 +39,8 @@ class UnitLocationState {
   final int? selectedStreetId;
   final int? selectedBuildingNumberId;
   final bool isInitializing;
+  final bool isNearestProperty;
+  final bool isUrban;
 
   const UnitLocationState({
     this.selectedGovernorate,
@@ -70,6 +72,8 @@ class UnitLocationState {
     this.selectedBuildingNumberId,
     this.isInitializing = false,
     this.buildingList,
+    this.isNearestProperty = false,
+    this.isUrban = false,
   });
 
   UnitLocationState copyWith({
@@ -101,6 +105,8 @@ class UnitLocationState {
     int? selectedStreetId,
     int? selectedBuildingNumberId,
     bool? isInitializing,
+    bool? isNearestProperty,
+    bool? isUrban,
   }) {
     return UnitLocationState(
       isDistrictOther: isDistrictOther ?? this.isDistrictOther,
@@ -150,6 +156,8 @@ class UnitLocationState {
           selectedBuildingNumberId ?? this.selectedBuildingNumberId,
       isInitializing: isInitializing ?? this.isInitializing,
       buildingList: buildingList ?? this.buildingList,
+      isNearestProperty: isNearestProperty ?? this.isNearestProperty,
+      isUrban: isUrban ?? this.isUrban,
     );
   }
 }

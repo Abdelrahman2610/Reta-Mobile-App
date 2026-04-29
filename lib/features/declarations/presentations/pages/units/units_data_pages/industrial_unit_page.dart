@@ -7,7 +7,6 @@ import 'package:reta/features/components/app_check_box.dart';
 import '../../../../../../core/helpers/extensions/dimensions.dart';
 import '../../../../../../core/helpers/fixed_assets.dart';
 import '../../../../../../core/theme/app_colors.dart';
-import '../../../../../components/app_container.dart';
 import '../../../../../components/app_text.dart';
 import '../../../../../components/app_text_form_field.dart';
 import '../../../../../components/image_svg_custom_widget.dart';
@@ -45,270 +44,255 @@ class _IndustrialFacilityView extends StatelessWidget {
 
     return Form(
       key: cubit.formKey,
-      child: AppContainer(
-        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            AppText(
-              text: 'بيانات المنشأة الصناعية',
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w700,
-              color: AppColors.mainBlueIndigoDye,
-            ),
-            24.hs,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          AppTextFormField(
+            labelText: 'أسم المنشأة',
+            labelRequired: true,
+            controller: cubit.facilityNameController,
+            hintText: 'ادخل أسم المنشأة',
+            validator: (v) => v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+          ),
+          16.hs,
 
-            AppTextFormField(
-              labelText: 'أسم المنشأة',
-              labelRequired: true,
-              controller: cubit.facilityNameController,
-              hintText: 'ادخل أسم المنشأة',
-              validator: (v) =>
-                  v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
-            ),
-            16.hs,
+          AppTextFormField(
+            labelText: 'نوع النشاط',
+            labelRequired: true,
+            controller: cubit.activityTypeController,
+            hintText: 'ادخل نوع النشاط',
+            validator: (v) => v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+          ),
+          16.hs,
 
-            AppTextFormField(
-              labelText: 'نوع النشاط',
-              labelRequired: true,
-              controller: cubit.activityTypeController,
-              hintText: 'ادخل نوع النشاط',
-              validator: (v) =>
-                  v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
-            ),
-            16.hs,
+          AppTextFormField(
+            labelText: 'مساحة الأرض الكلية',
+            labelRequired: true,
+            controller: cubit.totalLandAreaFacilityController,
+            hintText: 'المساحة الإجمالية بالمتر المربع',
+            keyboardType: TextInputType.number,
+            validator: (v) => v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+          ),
+          16.hs,
 
-            AppTextFormField(
-              labelText: 'مساحة الأرض الكلية',
-              labelRequired: true,
-              controller: cubit.totalLandAreaFacilityController,
-              hintText: 'المساحة الإجمالية بالمتر المربع',
-              keyboardType: TextInputType.number,
-              validator: (v) =>
-                  v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
-            ),
-            16.hs,
+          AppTextFormField(
+            labelText: 'مساحة الأرض المستغلة',
+            labelRequired: true,
+            controller: cubit.exploitedLandAreaController,
+            hintText: 'المساحة الإجمالية بالمتر المربع',
+            keyboardType: TextInputType.number,
+            validator: (v) {
+              if (v == null || v.isEmpty) return 'هذا الحقل مطلوب';
 
-            AppTextFormField(
-              labelText: 'مساحة الأرض المستغلة',
-              labelRequired: true,
-              controller: cubit.exploitedLandAreaController,
-              hintText: 'المساحة الإجمالية بالمتر المربع',
-              keyboardType: TextInputType.number,
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'هذا الحقل مطلوب';
+              final total = double.tryParse(
+                cubit.totalLandAreaFacilityController.text,
+              );
+              final exploited = double.tryParse(v);
 
-                final total = double.tryParse(
-                  cubit.totalLandAreaFacilityController.text,
-                );
-                final exploited = double.tryParse(v);
+              if (exploited == null) return 'يرجى إدخال رقم صحيح';
+              if (total != null && exploited > total) {
+                return 'يجب أن تكون المساحة المستغلة أصغر من أو تساوي المساحة الكلية';
+              }
 
-                if (exploited == null) return 'يرجى إدخال رقم صحيح';
-                if (total != null && exploited > total) {
-                  return 'يجب أن تكون المساحة المستغلة أصغر من أو تساوي المساحة الكلية';
-                }
+              return null;
+            },
+          ),
+          16.hs,
 
-                return null;
-              },
-            ),
-            16.hs,
+          AppTextFormField(
+            labelText: 'القيمة السوقية للأرض',
+            controller: cubit.landMarketValueController,
+            hintText: 'ادخل القيمة السوقية للأرض',
+            keyboardType: TextInputType.number,
+          ),
+          16.hs,
 
-            AppTextFormField(
-              labelText: 'القيمة السوقية للأرض',
-              controller: cubit.landMarketValueController,
-              hintText: 'ادخل القيمة السوقية للأرض',
-              keyboardType: TextInputType.number,
-            ),
-            16.hs,
+          TitleWithDivider(title: 'وصف المباني'),
+          12.hs,
 
-            TitleWithDivider(title: 'وصف المباني'),
-            12.hs,
-
-            BlocBuilder<UnitDataCubit, UnitDataState>(
-              buildWhen: (prev, curr) =>
-                  prev.industrialBuildingsCount !=
-                  curr.industrialBuildingsCount,
-              builder: (context, state) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        AppText(
-                          text: 'عدد المباني',
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.neutralDarkDark,
-                        ),
-                        AppText(
-                          text: ' *',
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.errorDark,
-                        ),
-                        const Spacer(),
-                        AppCounter(
-                          count: cubit.industrialBuildings.length,
-                          onDecrement: () => cubit.removeIndustrialBuilding(
-                            cubit.industrialBuildings.length - 1,
-                          ),
-                          onIncrement: cubit.addIndustrialBuilding,
-                        ),
-                      ],
-                    ),
-                    12.hs,
-
-                    ...cubit.industrialBuildings.asMap().entries.map(
-                      (e) => _BuildingItem(
-                        index: e.key,
-                        building: e.value,
-                        cubit: cubit,
-                        isLast: e.key == cubit.industrialBuildings.length - 1,
-                        canDelete: cubit.industrialBuildings.length > 1,
+          BlocBuilder<UnitDataCubit, UnitDataState>(
+            buildWhen: (prev, curr) =>
+                prev.industrialBuildingsCount != curr.industrialBuildingsCount,
+            builder: (context, state) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      AppText(
+                        text: 'عدد المباني',
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.neutralDarkDark,
                       ),
-                    ),
-                  ],
-                );
-              },
-            ),
-            16.hs,
-
-            const TaxContactSection(
-              customLabel:
-                  'هل تم التواصل مع الضرائب العقارية بخصوص المنشأة محل الإقرار سابقاً؟',
-            ),
-            16.hs,
-
-            BlocBuilder<UnitDataCubit, UnitDataState>(
-              buildWhen: (prev, curr) =>
-                  prev.contactedTaxAuthority != curr.contactedTaxAuthority,
-              builder: (context, state) {
-                return (state.contactedTaxAuthority ?? false)
-                    ? Column(
-                        children: [
-                          AppTextFormField(
-                            labelText: 'كود حساب المنشأة',
-                            controller: cubit.unitCodeController,
-                            hintText: 'ادخل كود حساب المنشأة',
-                            keyboardType: TextInputType.number,
-                          ),
-                          16.hs,
-                        ],
-                      )
-                    : const SizedBox.shrink();
-              },
-            ),
-
-            BlocBuilder<UnitDataCubit, UnitDataState>(
-              buildWhen: (prev, curr) =>
-                  prev.ministryBurden != curr.ministryBurden ||
-                  prev.selectedBurdenActivity != curr.selectedBurdenActivity,
-              builder: (context, state) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        AppCheckBox(
-                          isSelected: state.ministryBurden ?? false,
-                          onTap: cubit.toggleMinistryBurden,
+                      AppText(
+                        text: ' *',
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.errorDark,
+                      ),
+                      const Spacer(),
+                      AppCounter(
+                        count: cubit.industrialBuildings.length,
+                        onDecrement: () => cubit.removeIndustrialBuilding(
+                          cubit.industrialBuildings.length - 1,
                         ),
-                        12.ws,
-                        AppText(
-                          text: 'تحمل على وزارة المالية؟',
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.neutralDarkDark,
-                        ),
-                      ],
-                    ),
-
-                    if (state.ministryBurden == true) ...[
-                      16.hs,
-                      AppDropdownField<String>(
-                        labelText: 'النشاط المستفاد من التحمل',
-                        labelRequired: true,
-                        hintText: 'اختر النشاط',
-                        value: state.selectedBurdenActivity,
-                        items: cubit.lookups.burdenActivityTypes
-                            .map((b) => appDropDownOption(label: b.name))
-                            .toList(),
-                        onChanged: cubit.selectBurdenActivity,
-                        validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
+                        onIncrement: cubit.addIndustrialBuilding,
                       ),
                     ],
+                  ),
+                  12.hs,
+
+                  ...cubit.industrialBuildings.asMap().entries.map(
+                    (e) => _BuildingItem(
+                      index: e.key,
+                      building: e.value,
+                      cubit: cubit,
+                      isLast: e.key == cubit.industrialBuildings.length - 1,
+                      canDelete: cubit.industrialBuildings.length > 1,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          16.hs,
+
+          const TaxContactSection(
+            customLabel:
+                'هل تم التواصل مع الضرائب العقارية بخصوص المنشأة محل الإقرار سابقاً؟',
+          ),
+          16.hs,
+
+          BlocBuilder<UnitDataCubit, UnitDataState>(
+            buildWhen: (prev, curr) =>
+                prev.contactedTaxAuthority != curr.contactedTaxAuthority,
+            builder: (context, state) {
+              return (state.contactedTaxAuthority ?? false)
+                  ? Column(
+                      children: [
+                        AppTextFormField(
+                          labelText: 'كود حساب المنشأة',
+                          controller: cubit.unitCodeController,
+                          hintText: 'ادخل كود حساب المنشأة',
+                          keyboardType: TextInputType.number,
+                        ),
+                        16.hs,
+                      ],
+                    )
+                  : const SizedBox.shrink();
+            },
+          ),
+
+          BlocBuilder<UnitDataCubit, UnitDataState>(
+            buildWhen: (prev, curr) =>
+                prev.ministryBurden != curr.ministryBurden ||
+                prev.selectedBurdenActivity != curr.selectedBurdenActivity,
+            builder: (context, state) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      AppCheckBox(
+                        isSelected: state.ministryBurden ?? false,
+                        onTap: cubit.toggleMinistryBurden,
+                      ),
+                      12.ws,
+                      AppText(
+                        text: 'تحمل على وزارة المالية؟',
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.neutralDarkDark,
+                      ),
+                    ],
+                  ),
+
+                  if (state.ministryBurden == true) ...[
+                    16.hs,
+                    AppDropdownField<String>(
+                      labelText: 'النشاط المستفاد من التحمل',
+                      labelRequired: true,
+                      hintText: 'اختر النشاط',
+                      value: state.selectedBurdenActivity,
+                      items: cubit.lookups.burdenActivityTypes
+                          .map((b) => appDropDownOption(label: b.name))
+                          .toList(),
+                      onChanged: cubit.selectBurdenActivity,
+                      validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
+                    ),
                   ],
-                );
-              },
-            ),
-            16.hs,
+                ],
+              );
+            },
+          ),
+          16.hs,
 
-            BlocBuilder<UnitDataCubit, UnitDataState>(
-              buildWhen: (prev, curr) =>
-                  prev.constructionLicenseFullUrl !=
-                  curr.constructionLicenseFullUrl,
-              builder: (context, state) {
-                print(
-                  "MSG: UI: constructionLicenseFullUrl: ${state.constructionLicenseFilePath}",
-                );
-                return FileUploadField(
-                  labelText: 'صورة من التراخيص الإنشائية',
-                  text: 'حمل ملف',
-                  backgroundColor: AppColors.highlightDarkest,
-                  textColor: AppColors.white,
-                  filePath: state.constructionLicenseFullUrl,
-                  onFilePicked: () async {
-                    final path = await cubit.pickFile();
-                    if (path != null) cubit.setConstructionLicenseFile(path);
-                  },
-                  onFileRemoved: () => cubit.removeConstructionLicenseFile(),
-                );
-              },
-            ),
-            16.hs,
-
-            BlocBuilder<UnitDataCubit, UnitDataState>(
-              buildWhen: (prev, curr) =>
-                  prev.operatingLicenseFullUrl != curr.operatingLicenseFullUrl,
-              builder: (context, state) => FileUploadField(
-                labelText: 'صورة من ترخيص التشغيل',
+          BlocBuilder<UnitDataCubit, UnitDataState>(
+            buildWhen: (prev, curr) =>
+                prev.constructionLicenseFullUrl !=
+                curr.constructionLicenseFullUrl,
+            builder: (context, state) {
+              print(
+                "MSG: UI: constructionLicenseFullUrl: ${state.constructionLicenseFilePath}",
+              );
+              return FileUploadField(
+                labelText: 'صورة من التراخيص الإنشائية',
                 text: 'حمل ملف',
                 backgroundColor: AppColors.highlightDarkest,
                 textColor: AppColors.white,
-                filePath: state.operatingLicenseFullUrl,
+                filePath: state.constructionLicenseFullUrl,
                 onFilePicked: () async {
                   final path = await cubit.pickFile();
-                  if (path != null) cubit.setOperatingLicenseFile(path);
+                  if (path != null) cubit.setConstructionLicenseFile(path);
                 },
-                onFileRemoved: () => cubit.removeOperatingLicenseFile(),
-              ),
-            ),
-            16.hs,
+                onFileRemoved: () => cubit.removeConstructionLicenseFile(),
+              );
+            },
+          ),
+          16.hs,
 
-            BlocBuilder<UnitDataCubit, UnitDataState>(
-              buildWhen: (prev, curr) =>
-                  prev.allocationContractFullUrl !=
-                  curr.allocationContractFullUrl,
-              builder: (context, state) => FileUploadField(
-                labelText: 'صورة من عقد التخصيص',
-                text: 'حمل ملف',
-                backgroundColor: AppColors.highlightDarkest,
-                textColor: AppColors.white,
-                filePath: state.allocationContractFullUrl,
-                onFilePicked: () async {
-                  final path = await cubit.pickFile();
-                  if (path != null) cubit.setAllocationContractFile(path);
-                },
-                onFileRemoved: () => cubit.removeAllocationContractFile(),
-              ),
+          BlocBuilder<UnitDataCubit, UnitDataState>(
+            buildWhen: (prev, curr) =>
+                prev.operatingLicenseFullUrl != curr.operatingLicenseFullUrl,
+            builder: (context, state) => FileUploadField(
+              labelText: 'صورة من ترخيص التشغيل',
+              text: 'حمل ملف',
+              backgroundColor: AppColors.highlightDarkest,
+              textColor: AppColors.white,
+              filePath: state.operatingLicenseFullUrl,
+              onFilePicked: () async {
+                final path = await cubit.pickFile();
+                if (path != null) cubit.setOperatingLicenseFile(path);
+              },
+              onFileRemoved: () => cubit.removeOperatingLicenseFile(),
             ),
-            16.hs,
+          ),
+          16.hs,
 
-            const AdditionalDocumentsSection(),
-          ],
-        ),
+          BlocBuilder<UnitDataCubit, UnitDataState>(
+            buildWhen: (prev, curr) =>
+                prev.allocationContractFullUrl !=
+                curr.allocationContractFullUrl,
+            builder: (context, state) => FileUploadField(
+              labelText: 'صورة من عقد التخصيص',
+              text: 'حمل ملف',
+              backgroundColor: AppColors.highlightDarkest,
+              textColor: AppColors.white,
+              filePath: state.allocationContractFullUrl,
+              onFilePicked: () async {
+                final path = await cubit.pickFile();
+                if (path != null) cubit.setAllocationContractFile(path);
+              },
+              onFileRemoved: () => cubit.removeAllocationContractFile(),
+            ),
+          ),
+          16.hs,
+
+          const AdditionalDocumentsSection(),
+        ],
       ),
     );
   }
