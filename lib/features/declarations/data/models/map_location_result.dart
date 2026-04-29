@@ -58,6 +58,47 @@ class MapLocationResult {
     this.streetId,
   });
 
+  factory MapLocationResult.fromMap(Map<String, dynamic> map) {
+    final buildingProfile = map['buildingProfile'] as Map<String, dynamic>?;
+    final address = buildingProfile?['address'] as Map<String, dynamic>?;
+    final addressIds = buildingProfile?['address_ids'] as Map<String, dynamic>?;
+    final geometry = buildingProfile?['geometry'] as Map<String, dynamic>?;
+
+    return MapLocationResult(
+      renin: buildingProfile?['renin'],
+      buildingName: buildingProfile?['name'],
+      buildingType: buildingProfile?['type'],
+      areaMq: double.tryParse(buildingProfile?['area_m2']?.toString() ?? ''),
+      geometry: geometry,
+
+      // address names
+      governorate: address?['goveronrate'],
+      policeStation: address?['policestation'],
+      neighborhood: address?['neighborhood'],
+      street: address?['street'],
+      region: address?['region'],
+      city: address?['city'],
+      mogawra: address?['mogawra'],
+      village: address?['village'],
+      settlement: address?['settlement'],
+      streetNumber: address?['number'],
+
+      // address IDs
+      regionId: addressIds?['region_id']?.toString(),
+      governorateId:
+          addressIds?['goveronrate_id']?.toString() ??
+          map['gg_governorate_id']?.toString(),
+      cityId: addressIds?['city_id']?.toString(),
+      districtId: addressIds?['district_id']?.toString(),
+      policeStationId: addressIds?['policestation_id']?.toString(),
+      neighborhoodId: addressIds?['neighborhood_id']?.toString(),
+      mogawraId: addressIds?['mogawra_id']?.toString(),
+      villageId: addressIds?['village_id']?.toString(),
+      settlementId: addressIds?['settlement_id']?.toString(),
+      streetId: addressIds?['street_id']?.toString(),
+    );
+  }
+
   Map<String, dynamic> toMap() => {
     'buildingProfile': {
       'renin': renin,

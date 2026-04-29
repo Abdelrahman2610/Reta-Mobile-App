@@ -44,7 +44,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   final knownBuildNumController = TextEditingController();
   final addressAdditionalInfoController = TextEditingController();
   bool isNearestProperty = false;
-  MapLocationResult? _mapData;
+  MapLocationResult? mapData;
 
   final formKey = GlobalKey<FormState>();
 
@@ -108,70 +108,80 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   Future<void> _initFromUnitData(List<DeclarationLookup> governorates) async {
     emit(state.copyWith(isInitializing: true));
     if (unitData != null) {
+      mapData = MapLocationResult.fromMap(unitData!);
+      bool isUrban = unitData!['new_urban_communities_authority'] == 1;
+      isNearestProperty = unitData!['is_nearest_property'] == 1;
+      knownBuildNumController.text = unitData!['known_build_num'];
+      addressAdditionalInfoController.text =
+          unitData!['address_additional_info'];
+
       unitId = unitData!['id'].toString();
-      final governorateId = int.tryParse(unitData!['governorate_id']);
-      final governorate = governorates.firstWhere(
-        (g) => g.id == governorateId,
-        orElse: () => DeclarationLookup(id: 0, name: ''),
-      );
+      // final governorateId = int.tryParse(unitData!['governorate_id']);
+      // final governorateId = -1;
+      // final governorate = governorates.firstWhere(
+      //   (g) => g.id == governorateId,
+      //   orElse: () => DeclarationLookup(id: 0, name: ''),
+      // );
 
-      if (governorate.id == 0) return;
+      // if (governorate.id == 0) return;
 
-      await fetchDistricts(governorate.id);
+      // await fetchDistricts(governorate.id);
 
-      final districtId = int.tryParse(unitData!['district_id']);
-      final district = state.districtsList?.firstWhere(
-        (d) => d.id == districtId,
-        orElse: () => DeclarationLookup(id: 0, name: ''),
-      );
+      // final districtId = int.tryParse(unitData!['district_id']);
+      // final district = state.districtsList?.firstWhere(
+      //   (d) => d.id == districtId,
+      //   orElse: () => DeclarationLookup(id: 0, name: ''),
+      // );
 
-      if (district != null && district.id != 0) {
-        await fetchVillagesAndStreets(district.id);
-      }
+      // if (district != null && district.id != 0) {
+      //   await fetchVillagesAndStreets(district.id);
+      // }
 
-      final villageId = int.tryParse(unitData!['village_id']);
-      final village = state.villagesList?.firstWhere(
-        (v) => v.id == villageId,
-        orElse: () => DeclarationLookup(id: 0, name: ''),
-      );
-      selectNeighborhood(village?.name);
+      // final villageId = int.tryParse(unitData!['village_id']);
+      // final village = state.villagesList?.firstWhere(
+      //   (v) => v.id == villageId,
+      //   orElse: () => DeclarationLookup(id: 0, name: ''),
+      // );
+      // selectNeighborhood(village?.name);
 
-      final regionId = int.tryParse(unitData!['region_id']);
-      final street = state.streetsList?.firstWhere(
-        (s) => s.id == regionId,
-        orElse: () => StreetModel(id: 0, name: '', villageId: 0),
-      );
-      selectStreet(street?.name);
+      // final regionId = int.tryParse(unitData!['region_id']);
+      // final street = state.streetsList?.firstWhere(
+      //   (s) => s.id == regionId,
+      //   orElse: () => StreetModel(id: 0, name: '', villageId: 0),
+      // );
+      // selectStreet(street?.name);
 
-      await fetchBuildingNumber(street?.id);
+      // await fetchBuildingNumber(street?.id);
 
-      final realEstateIdString = unitData!['real_estate_id'];
-      int realEstateId = -1;
-      if (realEstateIdString.runtimeType == String) {
-        realEstateId = int.parse(realEstateIdString);
-      } else {
-        realEstateId = realEstateIdString;
-      }
-      final building = state.buildingList?.firstWhere(
-        (s) => s.id == realEstateId,
-        orElse: () => DeclarationLookup(id: 0, name: ''),
-      );
+      // final realEstateIdString = unitData!['real_estate_id'];
+      // int realEstateId = -1;
+      // if (realEstateIdString.runtimeType == String) {
+      //   realEstateId = int.parse(realEstateIdString);
+      // } else {
+      //   realEstateId = realEstateIdString;
+      // }
+      // final building = state.buildingList?.firstWhere(
+      //   (s) => s.id == realEstateId,
+      //   orElse: () => DeclarationLookup(id: 0, name: ''),
+      // );
 
-      selectBuildingNumber(building?.name);
+      // selectBuildingNumber(building?.name);
 
       emit(
         state.copyWith(
           isInitializing: false,
-          selectedGovernorate: governorate.name,
-          selectedGovernorateId: governorate.id,
-          selectedDistrict: district?.name,
-          selectedDistrictId: district?.id,
-          selectedNeighborhood: village?.name,
-          isNeighborhoodOther: unitData!['village_other'] != null,
-          selectedStreet: street?.name,
-          isStreetOther: unitData!['region_other'] != null,
-          selectedBuildingNumberId: realEstateId,
-          selectedBuildingNumber: building?.name,
+          isUrban: isUrban,
+          isNearestProperty: isNearestProperty,
+          // selectedGovernorate: governorate.name,
+          // selectedGovernorateId: governorate.id,
+          // selectedDistrict: district?.name,
+          // selectedDistrictId: district?.id,
+          // selectedNeighborhood: village?.name,
+          // isNeighborhoodOther: unitData!['village_other'] != null,
+          // selectedStreet: street?.name,
+          // isStreetOther: unitData!['region_other'] != null,
+          // selectedBuildingNumberId: realEstateId,
+          // selectedBuildingNumber: building?.name,
           isBuildingNumberOther: unitData!['real_estate_other'] != null,
         ),
       );
@@ -445,7 +455,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   }
 
   Map<String, dynamic> buildLocationPayloadNew() {
-    Map<String, dynamic>? mapData = _mapData?.toMap();
+    Map<String, dynamic>? mapData = this.mapData?.toMap();
     return {
       if (mapData != null) ...{
         'search_using': 1,
@@ -530,7 +540,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
             unitType: unitType,
             otherName: otherName,
             applicantPayload: applicantData,
-            mapLocationResult: _mapData,
+            mapLocationResult: mapData,
           ),
         ),
       ),
@@ -556,6 +566,6 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   }
 
   void setMapData(MapLocationResult? mapData) {
-    _mapData = mapData;
+    this.mapData = mapData;
   }
 }

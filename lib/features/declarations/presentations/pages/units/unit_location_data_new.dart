@@ -87,7 +87,6 @@ class UnitLocationDataPageBodyNew extends StatefulWidget {
 }
 
 class UnitLocationDataPageStateNew extends State<UnitLocationDataPageBodyNew> {
-  MapLocationResult? _mapData;
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<UnitLocationCubit>();
@@ -237,7 +236,7 @@ class UnitLocationDataPageStateNew extends State<UnitLocationDataPageBodyNew> {
                                             builder: (_) => MapWebViewScreen(
                                               urban: state.isUrban ? 1 : 0,
                                               suffix: addSuffix(
-                                                _mapData,
+                                                cubit.mapData,
                                                 state,
                                                 cubit,
                                               ),
@@ -246,7 +245,7 @@ class UnitLocationDataPageStateNew extends State<UnitLocationDataPageBodyNew> {
                                         );
                                     if (result != null) {
                                       cubit.setMapData(result);
-                                      setState(() => _mapData = result);
+                                      setState(() => cubit.mapData = result);
                                     }
                                   },
                                 ),
@@ -268,9 +267,10 @@ class UnitLocationDataPageStateNew extends State<UnitLocationDataPageBodyNew> {
                                   labelText: 'رقم العقار/المبني المتعارف عليه ',
                                   hintText: 'ادخل رقم العقار',
                                   controller: cubit.knownBuildNumController,
-                                  labelRequired: _mapData?.streetNumber == null,
+                                  labelRequired:
+                                      cubit.mapData?.streetNumber == null,
                                   validator: (v) {
-                                    if (_mapData?.streetNumber == null) {
+                                    if (cubit.mapData?.streetNumber == null) {
                                       if (v == null || v.isEmpty) {
                                         return 'هذا الحقل مطلوب';
                                       }
@@ -339,11 +339,6 @@ class UnitLocationDataPageStateNew extends State<UnitLocationDataPageBodyNew> {
     );
   }
 
-  String? _safeValue(String? value, List<String> items) {
-    if (value == null) return null;
-    return items.contains(value) ? value : null;
-  }
-
   String? addSuffix(
     MapLocationResult? mapData,
     state,
@@ -360,9 +355,11 @@ class UnitLocationDataPageStateNew extends State<UnitLocationDataPageBodyNew> {
 
     String suffix = '?urban=$urban';
     if (mapData != null) {
-      final List<dynamic> location =
+      final List<dynamic>? location =
           mapData.geometry?['geojson']?['coordinates'][0][0][0];
-      suffix += '&lng=${location[0]}&lat=${location[1]}&&unit=unit';
+      if (location != null) {
+        suffix += '&lng=${location[0]}&lat=${location[1]}&&unit=unit';
+      }
       if (cubit.unitId != '-1') {
         suffix += '&id=${cubit.unitId}';
       }
