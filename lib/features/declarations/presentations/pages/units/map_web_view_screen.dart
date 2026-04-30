@@ -20,6 +20,7 @@ class MapWebViewScreen extends StatefulWidget {
 class _MapWebViewScreenState extends State<MapWebViewScreen> {
   InAppWebViewController? _webViewController;
   bool _isLoading = true;
+  bool _jsInjected = false;
   String _token = '';
   MapLocationResult? _lastResult;
   final loadingService = LoadingService();
@@ -160,6 +161,8 @@ class _MapWebViewScreenState extends State<MapWebViewScreen> {
                     useShouldInterceptRequest: true,
                     useShouldInterceptAjaxRequest: true,
                     useShouldInterceptFetchRequest: true,
+                    cacheEnabled: false,
+                    clearCache: true,
                     mixedContentMode:
                         MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
                   ),
@@ -174,6 +177,8 @@ class _MapWebViewScreenState extends State<MapWebViewScreen> {
                     await loadingService.hideLoading(context);
                     setState(() => _isLoading = false);
                     if (_token.isEmpty) return;
+                    if (_jsInjected) return;
+                    _jsInjected = true;
 
                     await controller.evaluateJavascript(
                       source:
@@ -291,6 +296,8 @@ class _MapWebViewScreenState extends State<MapWebViewScreen> {
                       try {
                         final data = jsonDecode(jsonStr);
                         _handleMapResponse(data);
+                        _webViewController!.webStorage.sessionStorage.controller
+                            ?.clearAllCache();
                       } catch (e) {
                         debugPrint('JSON parse error: $e');
                       }
@@ -313,5 +320,12 @@ class _MapWebViewScreenState extends State<MapWebViewScreen> {
               ],
             ),
     );
+  }
+
+  @override
+  void dispose() {
+    _webViewController?.clearCache();
+    _webViewController = null;
+    super.dispose();
   }
 }
