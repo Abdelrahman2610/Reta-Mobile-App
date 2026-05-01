@@ -3,9 +3,14 @@ class ApiConstants {
   // static const String baseUrl =
   //     'https://dev-rta-services.etax.com.eg/reta-services/public/api';
 
-  // static const String baseEnvUrl = "https://services.rta.gov.eg";
-  static const String baseEnvUrl = "https://tst-rta-services.etax.com.eg";
+  ///Prod env
+  static const String baseEnvUrl = "https://services.rta.gov.eg";
+
+  ///Test env
+  // static const String baseEnvUrl = "https://tst-rta-services.etax.com.eg";
+
   static const String baseUrl = '$baseEnvUrl/reta-services/public/api';
+
   // static const String baseUrl = 'http://10.0.2.2:3000/api';
   // ─── Auth ───────────────────────────────────────────────────────────────────
   static const String login = '/login';
@@ -40,6 +45,7 @@ class ApiConstants {
   // ─── Profile Files ───────────────────────────────────────────────────────────
   static String showUserNationalIdFile(int id) =>
       '$baseUrl/category/files/preview/nationalIdFile?id=$id';
+
   static String showUserPassportFile(int id) =>
       '$baseUrl/category/files/preview/passportNumFile?id=$id';
 
@@ -134,24 +140,32 @@ class ApiConstants {
       '/declaration-system/declarations/mobile/index';
   static String allClaimsList =
       '/declaration-system/declarations/user/claims-list/all';
+
   static String claimsList(int declarationId) =>
       '/declaration-system/declarations/user/declaration/claims-list/$declarationId';
+
   static String underDebtClaimsList(int declarationId) =>
       '/declaration-system/declarations/claims-list/under-debt/$declarationId';
+
   static String claimDetail(int claimId) =>
       '/declaration-system/declarations/user/claims/$claimId';
+
   static String cancelClaim(int claimId) =>
       '/declaration-system/declarations/user/claim/$claimId';
+
   static String claimTransactionDetails(int claimId) =>
       '/declaration-system/declarations/user/claims-payment-transaction-details/$claimId';
 
   // ─── Wallet / Payment ────────────────────────────────────────────────────────
   static String walletDetails(int declarationId) =>
       '/declaration-system/declarations/wallet/$declarationId';
+
   static String initialPayment(int claimId) =>
       '/declaration-system/initial-payment/$claimId';
+
   static String underDeclarationProperties(int declarationId) =>
       '/declaration-system/UnderDeclarationProperties/list/$declarationId';
+
   static String underDebtProperties(int declarationId) =>
       '/declaration-system/under-debt-properties/list/$declarationId';
   static const String settlementOfDebts =
@@ -161,6 +175,7 @@ class ApiConstants {
   static const String notifications = '/declaration-system/notifications';
   static const String notificationsReadAll =
       '/declaration-system/notifications/read-all';
+
   static String notificationById(int id) =>
       '/declaration-system/notifications/$id';
 
