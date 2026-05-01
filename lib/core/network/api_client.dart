@@ -5,11 +5,12 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'api_constants.dart';
+
 // ════════════════════════════════════════════════════════════════════════════
 //  Base URL — change this if the server changes
 // ════════════════════════════════════════════════════════════════════════════
-const String kBaseUrl =
-    'https://tst-rta-services.etax.com.eg/reta-services/public/api';
+const String kBaseUrl = '${ApiConstants.baseEnvUrl}/reta-services/public/api';
 
 // ════════════════════════════════════════════════════════════════════════════
 //  Token storage helpers

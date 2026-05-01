@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
+import '../../../../../core/network/api_constants.dart';
 import '../../../../../core/network/dio_client.dart';
 import '../../../../../core/services/loading.dart';
 import '../../../data/models/map_location_result.dart';
@@ -25,9 +26,8 @@ class _MapWebViewScreenState extends State<MapWebViewScreen> {
   MapLocationResult? _lastResult;
   final loadingService = LoadingService();
 
-  static final String _fixedMapUrl =
-      'https://tst-rta-services.etax.com.eg/iframe-map';
-  static String _mapUrl = 'https://tst-rta-services.etax.com.eg/iframe-map';
+  static final String _fixedMapUrl = '${ApiConstants.baseEnvUrl}/iframe-map';
+  static String _mapUrl = '${ApiConstants.baseEnvUrl}/iframe-map';
 
   @override
   void initState() {

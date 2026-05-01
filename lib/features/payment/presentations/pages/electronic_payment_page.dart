@@ -14,6 +14,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../../core/helpers/app_enum.dart';
 import '../../../../core/helpers/extensions/dimensions.dart';
+import '../../../../core/network/api_constants.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../components/app_bar.dart';
 import '../../data/models/payment_electronic_data.dart';
@@ -242,7 +243,7 @@ class _PaymentWebViewState extends State<_PaymentWebView> {
             if (_hasNavigated) return NavigationDecision.prevent;
 
             if (url.contains(
-              'tst-rta-services.etax.com.eg/tax-declaration/payment/',
+              '${ApiConstants.baseEnvUrl.replaceAll("https://", "").replaceAll("http://", "")}/tax-declaration/payment/',
             )) {
               _hasNavigated = true;
               final uri = Uri.parse(url);

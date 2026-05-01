@@ -3,8 +3,9 @@ class ApiConstants {
   // static const String baseUrl =
   //     'https://dev-rta-services.etax.com.eg/reta-services/public/api';
 
-  static const String baseUrl =
-      'https://tst-rta-services.etax.com.eg/reta-services/public/api';
+  // static const String baseEnvUrl = "https://services.rta.gov.eg";
+  static const String baseEnvUrl = "https://tst-rta-services.etax.com.eg";
+  static const String baseUrl = '$baseEnvUrl/reta-services/public/api';
   // static const String baseUrl = 'http://10.0.2.2:3000/api';
   // ─── Auth ───────────────────────────────────────────────────────────────────
   static const String login = '/login';
