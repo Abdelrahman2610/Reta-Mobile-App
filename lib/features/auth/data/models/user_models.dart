@@ -7,6 +7,8 @@ class UserModel {
   final String? thirdName;
   final String? fourthName;
   final String? lastname;
+  final String? fullName;
+  final String? restOfName;
   final String? email;
   final String? phone;
   final String? nationalId;
@@ -21,10 +23,23 @@ class UserModel {
   final String? nationalityCode;
   final String? placeOfBirth;
 
-  //TODO: Add from json to these vars
   final String? passportNumber;
+  final String? factoryNum;
   final List<Map<String, dynamic>>? nationalIdFiles;
   final List<Map<String, dynamic>>? passportFiles;
+
+  // Address fields
+  final String? governorateId;
+  final String? governorateName;
+  final String? districtId;
+  final String? villageId;
+  final String? streetId;
+  final String? streetOther;
+  final String? realEstateNum;
+
+  // Account meta
+  final bool? newUser;
+  final String? lastSeen;
 
   const UserModel({
     this.id,
@@ -33,6 +48,8 @@ class UserModel {
     this.thirdName,
     this.fourthName,
     this.lastname,
+    this.fullName,
+    this.restOfName,
     this.email,
     this.phone,
     this.nationalId,
@@ -46,8 +63,18 @@ class UserModel {
     this.nationalityCode,
     this.placeOfBirth,
     this.passportNumber,
+    this.factoryNum,
     this.nationalIdFiles,
     this.passportFiles,
+    this.governorateId,
+    this.governorateName,
+    this.districtId,
+    this.villageId,
+    this.streetId,
+    this.streetOther,
+    this.realEstateNum,
+    this.newUser,
+    this.lastSeen,
   });
 
   factory UserModel.guest() {
@@ -77,6 +104,7 @@ class UserModel {
     final data = json['data'] as Map<String, dynamic>;
     final profile = data['profile'] as Map<String, dynamic>? ?? {};
     final nationality = profile['nationality'] as Map<String, dynamic>?;
+    final governorate = profile['governorate'] as Map<String, dynamic>?;
 
     List<Map<String, dynamic>>? parseFiles(dynamic raw) {
       if (raw == null) return null;
@@ -86,31 +114,41 @@ class UserModel {
       return null;
     }
 
-    UserModel userModel = UserModel(
+    return UserModel(
       id: profile['id']?.toString(),
       firstname: profile['first_name']?.toString(),
       secondName: profile['second_name']?.toString(),
       thirdName: profile['third_name']?.toString(),
       fourthName: profile['fourth_name']?.toString(),
       lastname: profile['last_name']?.toString(),
+      fullName: profile['full_name']?.toString(),
+      restOfName: profile['restOfName']?.toString(),
       email: data['email']?.toString(),
       phone: profile['mobile']?.toString(),
       nationalId: profile['national_id']?.toString(),
       passportNumber: profile['passport_num']?.toString(),
+      factoryNum: profile['factory_num']?.toString(),
       nationalityCode: nationality?['code']?.toString(),
       dateOfBirth: profile['birth_date']?.toString(),
       gender: profile['gender']?.toString(),
       nationality: nationality?['name']?.toString(),
       placeOfBirth: profile['birth_place']?.toString(),
+      governorateId: profile['governorate_id']?.toString(),
+      governorateName: governorate?['name']?.toString(),
+      districtId: profile['district_id']?.toString(),
+      villageId: profile['village_id']?.toString(),
+      streetId: profile['street_id']?.toString(),
+      streetOther: profile['street_other']?.toString(),
+      realEstateNum: profile['real_estate_num']?.toString(),
       emailVerified: data['email_verified_at'] != null,
       phoneVerified: profile['mobile_verified_at'] != null,
       nationalIdVerified: profile['ocr_verified'] == 1,
       nationalIdFiles: parseFiles(profile['national_id_file']),
       passportFiles: parseFiles(profile['passport_num_file']),
+      newUser: data['new_user'] == 1,
+      lastSeen: data['last_seen']?.toString(),
       userType: UserType.authenticated,
     );
-
-    return userModel;
   }
 
   bool get isGuest => userType == UserType.guest;
@@ -129,6 +167,8 @@ class UserModel {
     String? thirdName,
     String? fourthName,
     String? lastName,
+    String? fullName,
+    String? restOfName,
     String? email,
     String? phone,
     String? nationalId,
@@ -142,14 +182,26 @@ class UserModel {
     String? placeOfBirth,
     String? nationalityCode,
     String? passportNumber,
+    String? factoryNum,
+    String? governorateId,
+    String? governorateName,
+    String? districtId,
+    String? villageId,
+    String? streetId,
+    String? streetOther,
+    String? realEstateNum,
+    bool? newUser,
+    String? lastSeen,
   }) {
     return UserModel(
       id: id ?? this.id,
-      firstname: firstname ?? this.firstname,
+      firstname: firstName ?? this.firstname,
       secondName: secondName ?? this.secondName,
       thirdName: thirdName ?? this.thirdName,
       fourthName: fourthName ?? this.fourthName,
-      lastname: lastname ?? this.lastname,
+      lastname: lastName ?? this.lastname,
+      fullName: fullName ?? this.fullName,
+      restOfName: restOfName ?? this.restOfName,
       email: email ?? this.email,
       phone: phone ?? this.phone,
       nationalId: nationalId ?? this.nationalId,
@@ -163,6 +215,16 @@ class UserModel {
       placeOfBirth: placeOfBirth ?? this.placeOfBirth,
       nationalityCode: nationalityCode ?? this.nationalityCode,
       passportNumber: passportNumber ?? this.passportNumber,
+      factoryNum: factoryNum ?? this.factoryNum,
+      governorateId: governorateId ?? this.governorateId,
+      governorateName: governorateName ?? this.governorateName,
+      districtId: districtId ?? this.districtId,
+      villageId: villageId ?? this.villageId,
+      streetId: streetId ?? this.streetId,
+      streetOther: streetOther ?? this.streetOther,
+      realEstateNum: realEstateNum ?? this.realEstateNum,
+      newUser: newUser ?? this.newUser,
+      lastSeen: lastSeen ?? this.lastSeen,
     );
   }
 }

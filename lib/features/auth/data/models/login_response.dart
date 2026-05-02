@@ -11,6 +11,7 @@ class LoginResponse {
   final bool ocrVerified;
   final bool emailVerified;
   final int? idleTimeoutMinutes;
+  final bool newUser;
 
   const LoginResponse({
     this.tokenType,
@@ -25,6 +26,7 @@ class LoginResponse {
     this.ocrVerified = false,
     this.emailVerified = false,
     this.idleTimeoutMinutes,
+    this.newUser = false,
   });
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,7 @@ class LoginResponse {
       ocrVerified: json['ocr_verified'] == true,
       emailVerified: json['email_verified'] == true,
       idleTimeoutMinutes: json['idle_timeout_minutes'] as int?,
+      newUser: json['new_user'] == true,
     );
   }
 
