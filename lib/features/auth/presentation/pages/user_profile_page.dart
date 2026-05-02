@@ -925,6 +925,8 @@ class _ReadOnlyField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final displayValue = value.isNotEmpty ? value : '—';
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       child: Column(
@@ -944,20 +946,20 @@ class _ReadOnlyField extends StatelessWidget {
               trailing ?? const SizedBox.shrink(),
             ],
           ),
-          if (value.isNotEmpty) ...[
-            SizedBox(height: 6.h),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                value,
-                textDirection: TextDirection.rtl,
-                textAlign: TextAlign.right,
-                style: AppTextStyles.bodyXL.copyWith(
-                  color: AppColors.neutralDarkLight,
-                ),
+          SizedBox(height: 6.h),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              displayValue,
+              textDirection: TextDirection.rtl,
+              textAlign: TextAlign.right,
+              style: AppTextStyles.bodyXL.copyWith(
+                color: value.isNotEmpty
+                    ? AppColors.neutralDarkLight
+                    : AppColors.neutralLightDarkest,
               ),
             ),
-          ],
+          ),
         ],
       ),
     );
