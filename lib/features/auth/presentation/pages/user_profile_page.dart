@@ -410,50 +410,85 @@ class _ProfileBodyState extends State<_ProfileBody> {
             ),
             const _Divider(),
 
-            if (isVerified) ...[
-              _EditableField(
-                label: 'البريد الإلكتروني',
-                value: u.email ?? '',
-                fieldKey: 'email',
-                keyboardType: TextInputType.emailAddress,
-                isEditing: _editingField == 'email',
-                isVerified: u.emailVerified ?? false,
-                showVerifyButton: !(u.emailVerified ?? false),
-                controller: _controllerFor('email', u.email ?? ''),
-                onEditTap: () => _startEditing('email'),
-                onSave: () => _saveField(context, 'email'),
-                onCancel: _cancelEditing,
-                onVerifyTap: () =>
-                    _openEmailVerification(context, u.email ?? ''),
-              ),
-              const _Divider(),
+            // if (isVerified) ...[
+            //   _EditableField(
+            //     label: 'البريد الإلكتروني',
+            //     value: u.email ?? '',
+            //     fieldKey: 'email',
+            //     keyboardType: TextInputType.emailAddress,
+            //     isEditing: _editingField == 'email',
+            //     isVerified: u.emailVerified ?? false,
+            //     showVerifyButton: !(u.emailVerified ?? false),
+            //     controller: _controllerFor('email', u.email ?? ''),
+            //     onEditTap: () => _startEditing('email'),
+            //     onSave: () => _saveField(context, 'email'),
+            //     onCancel: _cancelEditing,
+            //     onVerifyTap: () =>
+            //         _openEmailVerification(context, u.email ?? ''),
+            //   ),
+            //   const _Divider(),
 
-              _EditableField(
-                label: 'رقم الهاتف المحمول',
-                value: u.phone ?? '',
-                fieldKey: 'phone',
-                keyboardType: TextInputType.phone,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(11),
-                ],
-                isEditing: _editingField == 'phone',
-                isVerified: u.phoneVerified ?? false,
-                showVerifyButton: !(u.phoneVerified ?? false),
-                controller: _controllerFor('phone', u.phone ?? ''),
-                onEditTap: () => _startEditing('phone'),
-                onSave: () => _saveField(context, 'phone'),
-                onCancel: _cancelEditing,
-                onVerifyTap: () =>
-                    _openPhoneVerification(context, u.phone ?? ''),
-              ),
-              const _Divider(),
-            ] else ...[
-              _ReadOnlyField(label: 'البريد الإلكتروني', value: u.email ?? ''),
-              const _Divider(),
-              _ReadOnlyField(label: 'رقم الهاتف المحمول', value: u.phone ?? ''),
-              const _Divider(),
-            ],
+            //   _EditableField(
+            //     label: 'رقم الهاتف المحمول',
+            //     value: u.phone ?? '',
+            //     fieldKey: 'phone',
+            //     keyboardType: TextInputType.phone,
+            //     inputFormatters: [
+            //       FilteringTextInputFormatter.digitsOnly,
+            //       LengthLimitingTextInputFormatter(11),
+            //     ],
+            //     isEditing: _editingField == 'phone',
+            //     isVerified: u.phoneVerified ?? false,
+            //     showVerifyButton: !(u.phoneVerified ?? false),
+            //     controller: _controllerFor('phone', u.phone ?? ''),
+            //     onEditTap: () => _startEditing('phone'),
+            //     onSave: () => _saveField(context, 'phone'),
+            //     onCancel: _cancelEditing,
+            //     onVerifyTap: () =>
+            //         _openPhoneVerification(context, u.phone ?? ''),
+            //   ),
+            //   const _Divider(),
+            // ] else ...[
+            //   _ReadOnlyField(label: 'البريد الإلكتروني', value: u.email ?? ''),
+            //   const _Divider(),
+            //   _ReadOnlyField(label: 'رقم الهاتف المحمول', value: u.phone ?? ''),
+            //   const _Divider(),
+            // ],
+            _EditableField(
+              label: 'البريد الإلكتروني',
+              value: u.email ?? '',
+              fieldKey: 'email',
+              keyboardType: TextInputType.emailAddress,
+              isEditing: _editingField == 'email',
+              isVerified: u.emailVerified ?? false,
+              showVerifyButton: !(u.emailVerified ?? false),
+              controller: _controllerFor('email', u.email ?? ''),
+              onEditTap: () => _startEditing('email'),
+              onSave: () => _saveField(context, 'email'),
+              onCancel: _cancelEditing,
+              onVerifyTap: () => _openEmailVerification(context, u.email ?? ''),
+            ),
+            const _Divider(),
+
+            _EditableField(
+              label: 'رقم الهاتف المحمول',
+              value: u.phone ?? '',
+              fieldKey: 'phone',
+              keyboardType: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(11),
+              ],
+              isEditing: _editingField == 'phone',
+              isVerified: u.phoneVerified ?? false,
+              showVerifyButton: !(u.phoneVerified ?? false),
+              controller: _controllerFor('phone', u.phone ?? ''),
+              onEditTap: () => _startEditing('phone'),
+              onSave: () => _saveField(context, 'phone'),
+              onCancel: _cancelEditing,
+              onVerifyTap: () => _openPhoneVerification(context, u.phone ?? ''),
+            ),
+            const _Divider(),
 
             _ReadOnlyField(label: 'الجنسية', value: u.nationality ?? ''),
             const _Divider(),
@@ -891,6 +926,8 @@ class _ReadOnlyField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final displayValue = value.isNotEmpty ? value : '—';
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       child: Column(
@@ -910,20 +947,20 @@ class _ReadOnlyField extends StatelessWidget {
               trailing ?? const SizedBox.shrink(),
             ],
           ),
-          if (value.isNotEmpty) ...[
-            SizedBox(height: 6.h),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                value,
-                textDirection: TextDirection.rtl,
-                textAlign: TextAlign.right,
-                style: AppTextStyles.bodyXL.copyWith(
-                  color: AppColors.neutralDarkLight,
-                ),
+          SizedBox(height: 6.h),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              displayValue,
+              textDirection: TextDirection.rtl,
+              textAlign: TextAlign.right,
+              style: AppTextStyles.bodyXL.copyWith(
+                color: value.isNotEmpty
+                    ? AppColors.neutralDarkLight
+                    : AppColors.neutralLightDarkest,
               ),
             ),
-          ],
+          ),
         ],
       ),
     );

@@ -219,17 +219,7 @@ class LoginCubit extends Cubit<LoginState> {
 
     switch (result) {
       case ApiSuccess(:final data):
-        // if (!data.phoneVerified) {
-        //   emit(
-        //     state.copyWith(
-        //       isLoading: false,
-        //       credentialError: () =>
-        //           'رقم الموبايل غير مفعل، يرجى التحقق من رقمك أولاً',
-        //     ),
-        //   );
-        //   return;
-        // }
-        if (!data.phoneVerified) {
+        if (data.newUser && !data.phoneVerified) {
           final mobile = data.mobile ?? state.phone;
           final otpResult = await _authRepository.resendOtpForUnverifiedUser(
             mobile: mobile,
@@ -269,6 +259,19 @@ class LoginCubit extends Cubit<LoginState> {
       case ApiError(:final message, :final statusCode):
         _handleApiError(statusCode: statusCode, message: message);
     }
+    // switch (result) {
+    //   case ApiSuccess(:final data):
+    //     emit(
+    //       state.copyWith(
+    //         isLoading: false,
+    //         isSuccess: true,
+    //         loginResponse: data,
+    //       ),
+    //     );
+
+    //   case ApiError(:final message, :final statusCode):
+    //     _handleApiError(statusCode: statusCode, message: message);
+    // }
   }
 
   void _handleApiError({required int? statusCode, required String message}) {
