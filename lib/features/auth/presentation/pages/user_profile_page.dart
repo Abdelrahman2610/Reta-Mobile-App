@@ -50,6 +50,8 @@ class _UserProfileView extends StatefulWidget {
 
 class _UserProfileViewState extends State<_UserProfileView>
     with WidgetsBindingObserver {
+  UserModel? _cachedUser;
+
   @override
   void initState() {
     super.initState();
@@ -87,25 +89,6 @@ class _UserProfileViewState extends State<_UserProfileView>
                     textDirection: TextDirection.rtl,
                   ),
                   backgroundColor: AppColors.errorDark,
-                ),
-              );
-            }
-
-            if (state is UserProfileAttachmentUploadSuccess) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    state.message,
-                    textDirection: TextDirection.rtl,
-                  ),
-                  backgroundColor: AppColors.successMedium,
-                  duration: const Duration(seconds: 2),
-                  action: SnackBarAction(
-                    label: 'حسناً',
-                    textColor: AppColors.white,
-                    onPressed: () =>
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar(),
-                  ),
                 ),
               );
             }
@@ -168,18 +151,24 @@ class _UserProfileViewState extends State<_UserProfileView>
                 );
               }
 
-              // ── OTP sent for phone change ────────────────────────────────────
+              // ── OTP sent for phone change ─────────────────────────────────
               if (state.otpData != null &&
                   state.otpData!.ok &&
                   state.editedField == ProfileEditField.phone) {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => BlocProvider.value(
-                      value: context.read<UserProfileCubit>(),
-                      child: EditProfileOtpPage(otpData: state.otpData!),
-                    ),
-                  ),
-                );
+                Navigator.of(context)
+                    .push(
+                      MaterialPageRoute(
+                        builder: (_) => BlocProvider.value(
+                          value: context.read<UserProfileCubit>(),
+                          child: EditProfileOtpPage(otpData: state.otpData!),
+                        ),
+                      ),
+                    )
+                    .then((_) {
+                      if (context.mounted) {
+                        context.read<UserProfileCubit>().loadFromUser(null);
+                      }
+                    });
                 return;
               }
 
@@ -205,26 +194,37 @@ class _UserProfileViewState extends State<_UserProfileView>
               }
             }
           },
-          buildWhen: (_, current) =>
+          buildWhen: (prev, current) =>
               current is UserProfileLoaded ||
+              current is UserProfileInitial ||
               current is UserProfileUpdating ||
               current is UserProfileAttachmentUploading ||
-              current is UserProfileAttachmentUploadSuccess ||
-              current is UserProfileInitial ||
-              current is UserProfileError ||
-              current is UserProfileUpdateSuccess ||
-              current is UserProfilePasswordChanged ||
-              current is UserProfilePhoneConfirmed,
+              current is UserProfileUpdateSuccess,
           builder: (context, state) {
             if (state is UserProfileLoaded) {
+              _cachedUser = state.userModel;
               return _ProfileBody(userModel: state.userModel);
             }
-            if (state is UserProfileError ||
-                state is UserProfileUpdateSuccess ||
-                state is UserProfilePasswordChanged ||
-                state is UserProfilePhoneConfirmed) {
-              return const Center(child: CircularProgressIndicator());
+
+            if (state is UserProfileUpdateSuccess && _cachedUser != null) {
+              return _ProfileBody(userModel: _cachedUser!);
             }
+
+            if (state is UserProfileUpdating ||
+                state is UserProfileAttachmentUploading) {
+              if (_cachedUser != null) {
+                return Stack(
+                  children: [
+                    _ProfileBody(userModel: _cachedUser!),
+                    Container(
+                      color: Colors.black.withOpacity(0.12),
+                      child: const Center(child: CircularProgressIndicator()),
+                    ),
+                  ],
+                );
+              }
+            }
+
             return const Center(child: CircularProgressIndicator());
           },
         ),
@@ -314,6 +314,7 @@ class _ProfileBodyState extends State<_ProfileBody> {
         cubit.editProfile(email: value);
       case 'phone':
         cubit.editProfile(phone: value);
+        break;
       case 'nationalId':
         cubit.editProfile(nationalId: value);
       case 'passport':

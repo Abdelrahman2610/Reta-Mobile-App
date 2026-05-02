@@ -30,13 +30,13 @@ class _EditProfileOtpPageState extends State<EditProfileOtpPage> {
   bool _isLoading = false;
   String? _error;
 
+  late OtpResponseData _currentOtpData;
+
   @override
   void initState() {
     super.initState();
-    final expireSeconds =
-        int.tryParse(widget.otpData.smsOtpExpire ?? '300') ?? 300;
-    _remaining = Duration(seconds: expireSeconds);
-    _startTimer();
+    _currentOtpData = widget.otpData;
+    _resetTimer(_currentOtpData);
   }
 
   @override
@@ -49,9 +49,16 @@ class _EditProfileOtpPageState extends State<EditProfileOtpPage> {
 
   // ── Timer ─────────────────────────────────────────────────────────────────
 
+  void _resetTimer(OtpResponseData otpData) {
+    _timer?.cancel();
+    final expireSeconds = int.tryParse(otpData.smsOtpExpire ?? '300') ?? 300;
+    _remaining = Duration(seconds: expireSeconds);
+    setState(() => _canResend = false);
+    _startTimer();
+  }
+
   void _startTimer() {
     _timer?.cancel();
-    setState(() => _canResend = false);
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       setState(() {
@@ -108,9 +115,9 @@ class _EditProfileOtpPageState extends State<EditProfileOtpPage> {
   Future<void> _confirm() async {
     if (_otpValue.length < 6 || _isLoading) return;
 
-    final token = widget.otpData.requestCode;
-    final mobile = widget.otpData.mobile;
-    final userId = widget.otpData.userId?.toString();
+    final token = _currentOtpData.requestCode;
+    final mobile = _currentOtpData.mobile;
+    final userId = _currentOtpData.userId?.toString();
 
     if (token == null || mobile == null || userId == null) {
       setState(() => _error = 'بيانات التحقق غير مكتملة');
@@ -130,16 +137,18 @@ class _EditProfileOtpPageState extends State<EditProfileOtpPage> {
     );
   }
 
-  void _handleResend() {
-    if (!_canResend) return;
+  Future<void> _handleResend() async {
+    if (!_canResend || _isLoading) return;
+
     _clearOtp();
     setState(() {
-      final expireSeconds =
-          int.tryParse(widget.otpData.smsOtpExpire ?? '300') ?? 300;
-      _remaining = Duration(seconds: expireSeconds);
+      _error = null;
+      _isLoading = true;
     });
-    _startTimer();
-    Navigator.of(context).pop(_ResendSignal());
+
+    await context.read<UserProfileCubit>().editProfile(
+      phone: _currentOtpData.mobile,
+    );
   }
 
   // ── Build ─────────────────────────────────────────────────────────────────
@@ -167,6 +176,24 @@ class _EditProfileOtpPageState extends State<EditProfileOtpPage> {
             ),
           );
           Navigator.of(context).pop(true);
+        } else if (state is UserProfileUpdateSuccess) {
+          if (state.otpData != null && state.otpData!.ok) {
+            setState(() {
+              _currentOtpData = state.otpData!;
+              _isLoading = false;
+            });
+            _resetTimer(state.otpData!);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text(
+                  'تم إرسال رمز جديد',
+                  textDirection: TextDirection.rtl,
+                ),
+                backgroundColor: AppColors.successMedium,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
         } else if (state is UserProfileError) {
           setState(() {
             _isLoading = false;
@@ -203,8 +230,6 @@ class _EditProfileOtpPageState extends State<EditProfileOtpPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 16),
-
-                // Icon
                 Container(
                   width: 88,
                   height: 88,
@@ -218,9 +243,7 @@ class _EditProfileOtpPageState extends State<EditProfileOtpPage> {
                     color: AppColors.mainBlueIndigoDye,
                   ),
                 ),
-
                 const SizedBox(height: 28),
-
                 Text(
                   'أدخل رمز التأكيد',
                   textDirection: TextDirection.rtl,
@@ -228,9 +251,7 @@ class _EditProfileOtpPageState extends State<EditProfileOtpPage> {
                     color: AppColors.mainBlueIndigoDye,
                   ),
                 ),
-
                 const SizedBox(height: 8),
-
                 Text(
                   'تم إرسال رمز مكوّن من 6 أرقام إلى',
                   textDirection: TextDirection.rtl,
@@ -239,18 +260,15 @@ class _EditProfileOtpPageState extends State<EditProfileOtpPage> {
                     color: AppColors.neutralDarkLight,
                   ),
                 ),
-
                 const SizedBox(height: 4),
-
                 Text(
-                  widget.otpData.mobile ?? '',
+                  _currentOtpData.mobile ?? '',
                   textDirection: TextDirection.ltr,
                   style: AppTextStyles.h5.copyWith(
                     color: AppColors.neutralDarkDarkest,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-
                 const SizedBox(height: 32),
 
                 // ── OTP Fields ────────────────────────────────────────────
@@ -395,21 +413,27 @@ class _EditProfileOtpPageState extends State<EditProfileOtpPage> {
 
                 // ── Resend ────────────────────────────────────────────────
                 TextButton(
-                  onPressed: _canResend ? _handleResend : null,
+                  onPressed: (_canResend && !_isLoading) ? _handleResend : null,
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: Text(
-                    'أعد إرسال الرمز',
-                    textDirection: TextDirection.rtl,
-                    style: AppTextStyles.actionM.copyWith(
-                      color: _canResend
-                          ? AppColors.highlightDarkest
-                          : AppColors.neutralDarkLightest,
-                    ),
-                  ),
+                  child: _isLoading && _canResend
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(
+                          'أعد إرسال الرمز',
+                          textDirection: TextDirection.rtl,
+                          style: AppTextStyles.actionM.copyWith(
+                            color: (_canResend && !_isLoading)
+                                ? AppColors.highlightDarkest
+                                : AppColors.neutralDarkLightest,
+                          ),
+                        ),
                 ),
 
                 const SizedBox(height: 32),
@@ -433,7 +457,7 @@ class _EditProfileOtpPageState extends State<EditProfileOtpPage> {
                       ),
                       elevation: 0,
                     ),
-                    child: _isLoading
+                    child: _isLoading && !_canResend
                         ? const SizedBox(
                             width: 22,
                             height: 22,
@@ -458,5 +482,3 @@ class _EditProfileOtpPageState extends State<EditProfileOtpPage> {
     );
   }
 }
-
-class _ResendSignal {}
