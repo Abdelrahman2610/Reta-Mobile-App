@@ -107,6 +107,8 @@ class ApiConstants {
       '$lookupBase/industrial-facility-lookups';
   static const String productionFacilityLookups =
       '$lookupBase/production-facility-lookups';
+  static const String serviceFacilityLookups =
+      '$lookupBase/service-facility-lookups';
   static const String starRatings = '$lookupBase/getStarRatings';
   static const String exploitationTypes = '$lookupBase/getExploitationTypes';
   static const String viewTypes = '$lookupBase/getViewTypes';

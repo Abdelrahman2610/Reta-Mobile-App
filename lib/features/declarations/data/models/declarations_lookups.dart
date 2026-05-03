@@ -37,6 +37,7 @@ class DeclarationLookupsModel {
   final List<DeclarationLookup> mineQuarryFacilityTypesValue;
   final List<DeclarationLookup> mineQuarryMaterialsValue;
   final List<DeclarationLookup> buildingTypes;
+  final List<DeclarationLookup> serviceFacilityTypes;
 
   const DeclarationLookupsModel({
     required this.declarationTypes,
@@ -62,6 +63,7 @@ class DeclarationLookupsModel {
     required this.mineQuarryMaterialsValue,
     required this.mineQuarryFacilityTypesValue,
     required this.buildingTypes,
+    this.serviceFacilityTypes = const [],
   });
 
   factory DeclarationLookupsModel.fromJson(
@@ -121,6 +123,7 @@ class DeclarationLookupsModel {
     List<DeclarationLookup>? productionBurdenActivityTypes,
     List<DeclarationLookup>? mineQuarryMaterialsValue,
     List<DeclarationLookup>? mineQuarryFacilityTypesValue,
+    List<DeclarationLookup>? serviceFacilityTypes,
   }) {
     return DeclarationLookupsModel(
       declarationTypes: declarationTypes,
@@ -149,6 +152,7 @@ class DeclarationLookupsModel {
           mineQuarryMaterialsValue ?? this.mineQuarryMaterialsValue,
       productionBurdenActivityTypes:
           productionBurdenActivityTypes ?? this.productionBurdenActivityTypes,
+      serviceFacilityTypes: serviceFacilityTypes ?? this.serviceFacilityTypes,
     );
   }
 

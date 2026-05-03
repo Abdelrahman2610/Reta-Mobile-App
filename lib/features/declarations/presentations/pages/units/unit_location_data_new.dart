@@ -1,14 +1,11 @@
 import 'package:dotted_border/dotted_border.dart';
-import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/app_enum.dart';
-import 'package:reta/core/helpers/fixed_assets.dart';
 import 'package:reta/features/components/app_loading.dart';
 import 'package:reta/features/components/app_text_form_field.dart';
-import 'package:reta/features/components/image_svg_custom_widget.dart';
-import 'package:reta/features/declarations/presentations/pages/units/unit_location_data_page.dart';
+import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/components/location_card.dart';
 
 import '../../../../../core/helpers/extensions/applicant_type.dart';
 import '../../../../../core/helpers/extensions/dimensions.dart';
@@ -17,12 +14,12 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../components/app_bar.dart';
 import '../../../../components/app_button.dart';
 import '../../../../components/app_container.dart';
-import '../../../../components/app_text.dart';
 import '../../../data/models/declarations_lookups.dart';
 import '../../../data/models/map_location_result.dart';
 import '../../components/checkbox_with_title.dart';
 import '../../components/declaration_data_tab.dart';
 import '../../components/units/unit_title.dart';
+import '../../components/warning_card.dart';
 import '../../cubit/declaration_lookups_cubit.dart';
 import '../../cubit/units/location/unit_location_cubit.dart';
 import '../../cubit/units/location/unit_location_states.dart';
@@ -60,20 +57,7 @@ class UnitLocationDataPageNew extends StatelessWidget {
         otherName: otherName,
         applicantData: applicantData,
       ),
-      child: switch (unitType) {
-        UnitType.residential ||
-        UnitType.commercial ||
-        UnitType.administrative ||
-        UnitType.serviceUnit ||
-        UnitType.vacantLand ||
-        UnitType.fixedInstallations => const UnitLocationDataPageBodyNew(),
-        UnitType.serviceFacility ||
-        UnitType.hotelFacility ||
-        UnitType.industrialFacility ||
-        UnitType.productionFacility ||
-        UnitType.petroleumFacility ||
-        UnitType.minesAndQuarries => const UnitLocationDataPageBodyOld(),
-      },
+      child: UnitLocationDataPageBodyNew(),
     );
   }
 }
@@ -161,39 +145,7 @@ class UnitLocationDataPageStateNew extends State<UnitLocationDataPageBodyNew> {
                                     ),
                                     child: Column(
                                       children: [
-                                        Container(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 16.w,
-                                            vertical: 16.h,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.warningLight,
-                                            borderRadius: BorderRadius.circular(
-                                              16.r,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              ImageSvgCustomWidget(
-                                                imgPath: FixedAssets
-                                                    .instance
-                                                    .warningInfoIC,
-                                              ),
-                                              16.ws,
-                                              Expanded(
-                                                child: AppText(
-                                                  text:
-                                                      'إذا كان العقار تابعًا لهيئة المجتمعات العمرانية، يرجى تحديد ذلك قبل فتح الخريطة.',
-                                                  fontSize: 15.sp,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: AppColors
-                                                      .neutralDarkDarkest,
-                                                  maxLines: 3,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                        WarningCard(),
                                         15.hs,
                                         CheckBoxWithTitle(
                                           label: 'هيئة المجتمعات العمرانية',
@@ -205,28 +157,8 @@ class UnitLocationDataPageStateNew extends State<UnitLocationDataPageBodyNew> {
                                   ),
                                 ),
                                 40.hs,
-                                AppText(
-                                  text:
-                                      'يرجى تحديد موقع العقار من الخريطة لاستكمال إدخال البيانات.',
-                                  fontSize: 20.sp,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.mainBlueIndigoDye,
-                                  alignment: AlignmentDirectional.center,
-                                  textAlign: TextAlign.center,
-                                  maxLines: 3,
-                                ),
-                                20.hs,
-                                AppButton(
-                                  label: 'تحديد العقار من الخريطة',
-                                  fontSize: 14,
-                                  height: 50.h,
-                                  fontWeight: FontWeight.w600,
-                                  backgroundColor: AppColors.mainOrange,
-                                  icon: ImageSvgCustomWidget(
-                                    imgPath: FixedAssets.instance.mapIC,
-                                  ),
-                                  iconLeft: false,
-                                  onTap: () async {
+                                EmptyLocation(
+                                  onAddLocationTapped: () async {
                                     final result =
                                         await Navigator.push<
                                           MapLocationResult?
@@ -249,19 +181,7 @@ class UnitLocationDataPageStateNew extends State<UnitLocationDataPageBodyNew> {
                                     }
                                   },
                                 ),
-                                10.hs,
-                                AppText(
-                                  text:
-                                      'سيتم فتح الخريطة لتحديد موقع العقار، ثم العودة لاستكمال البيانات.',
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 16.sp,
-                                  color: AppColors.neutralDarkLight,
-                                  maxLines: 3,
-                                  alignment: Alignment.center,
-                                  textAlign: TextAlign.center,
-                                ),
-                                40.hs,
-                                DottedLine(),
+
                                 54.hs,
                                 AppTextFormField(
                                   labelText: 'رقم العقار/المبني المتعارف عليه ',

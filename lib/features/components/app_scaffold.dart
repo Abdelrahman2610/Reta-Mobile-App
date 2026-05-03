@@ -12,6 +12,7 @@ class AppScaffold extends StatelessWidget {
     this.onSave,
     required this.child,
     this.padding,
+    this.appBarBGColor,
   });
 
   final String? title;
@@ -19,17 +20,18 @@ class AppScaffold extends StatelessWidget {
   final VoidCallback? onSave;
   final Widget child;
   final EdgeInsets? padding;
+  final Color? appBarBGColor;
 
   @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.neutralLightLight,
+        backgroundColor: AppColors.neutralLightMedium,
         appBar: MainAppBar(
           backButtonAction: onBackTapped ?? () => Navigator.pop(context),
           title: title ?? '',
-          backgroundColor: AppColors.mainBlueIndigoDye,
+          backgroundColor: appBarBGColor ?? AppColors.mainBlueIndigoDye,
           backButtonIconColor: Colors.white,
           titleTextStyle: TextStyle(color: Colors.white, fontSize: 16.sp),
           onSave: onSave,

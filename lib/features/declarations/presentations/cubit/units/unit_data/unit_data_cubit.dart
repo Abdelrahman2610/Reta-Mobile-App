@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/helpers/extensions/unit_type.dart';
 import 'package:reta/core/network/api_constants.dart';
 import 'package:reta/features/declarations/data/models/declaration_model.dart';
+import 'package:reta/features/declarations/data/models/map_location_result.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../../../core/helpers/app_enum.dart';
@@ -13,8 +14,9 @@ import '../../../../../../core/network/dio_client.dart';
 import '../../../../../../core/services/declaration_service.dart';
 import '../../../../../../core/services/upload_service.dart';
 import '../../../../data/models/additional_document.dart';
-import '../../../../data/models/building_info.dart';
 import '../../../../data/models/declarations_lookups.dart';
+import '../../../../data/models/facility_building_info.dart';
+import '../../../../data/models/hotel_building_info.dart';
 import '../../../../data/models/hotel_sub_unit.dart';
 import '../../../../data/models/industrial_building.dart';
 import '../../../../data/models/petro_building.dart';
@@ -140,7 +142,10 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   // Dynamic Lists
   // ─────────────────────────────────────────
   final List<AdditionalDocument> additionalDocuments = [];
-  final List<BuildingInfo> buildings = [BuildingInfo(id: '1')];
+  final List<ServiceFacilityBuildingInfo> facilityBuildings = [
+    ServiceFacilityBuildingInfo(id: '1'),
+  ];
+  final List<HotelBuildingInfo> hotelBuildings = [HotelBuildingInfo(id: '1')];
   final List<IndustrialBuilding> industrialBuildings = [IndustrialBuilding()];
   final List<PetroBuilding> petroBuildings = [PetroBuilding()];
   final List<ProductionBuilding> productionBuildings = [ProductionBuilding()];
@@ -234,7 +239,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           (floorText != kOther && !floorNumbers.contains(floorText));
     }
 
-    unitNumberOtherController.text = unitData!['unit_number'];
+    unitNumberOtherController.text = unitData!['unit_number'] ?? '';
     await fetchBuildingUnitNumber(buildingNumber, floorId);
     final unitId = int.parse(unitData!['unit_id']?.toString() ?? '-1');
     final unitOther = unitData!['unit_other'];
@@ -489,17 +494,34 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     lawNumberController.text = unitData!['law_number'] ?? '';
     lawYearController.text = unitData!['law_year']?.toString() ?? '';
 
+    // final facilityTypeId = unitData!['facility_type_id'];
+    // String? facilityTypeName;
+    // if (facilityTypeId != null) {
+    //   final found = lookups.serviceFacilityTypes.firstWhere(
+    //     (t) => t.id == facilityTypeId,
+    //     orElse: () => DeclarationLookup(id: -1, name: ''),
+    //   );
+    //   facilityTypeName = found.id == -1 ? null : found.name;
+    // }
+
     final buildingsData = unitData!['buildings'] as List? ?? [];
     if (buildingsData.isNotEmpty) {
-      for (final b in buildings) {
+      for (final b in facilityBuildings) {
         b.dispose();
       }
-      buildings.clear();
+      facilityBuildings.clear();
       for (final b in buildingsData) {
-        final building = BuildingInfo(id: _uuid.v4());
-        building.floorsCount = b['floors_count'] ?? 1;
-        building.areaController.text = b['building_area']?.toString() ?? '';
-        buildings.add(building);
+        final bMap = b as Map<String, dynamic>;
+        final building = ServiceFacilityBuildingInfo(
+          id: _uuid.v4(),
+          mapLocationResult: MapLocationResult.fromMap(bMap),
+          isNearestProperty: bMap['is_nearest_property'] == 1,
+        );
+        building.floorsCount = bMap['floors_count'] ?? 1;
+        building.areaController.text = bMap['building_area']?.toString() ?? '';
+        building.knownBuildingNumber.text =
+            bMap['known_build_num']?.toString() ?? '';
+        facilityBuildings.add(building);
       }
     }
 
@@ -522,9 +544,10 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     _updateTotalBuildingArea();
     emit(
       state.copyWith(
-        buildingsCount: buildings.length,
+        buildingsCount: facilityBuildings.length,
         isExempt: unitData!['exempted'] ?? false,
         selectedExemptionReason: exemptionReasonName,
+        // selectedFacilityActivity: facilityTypeName,
         contactedTaxAuthority: unitData!['reta_contact_about_unit'] == 1,
         hasAdditionalDocuments:
             unitData!['submit_other_supporting_documents'] == 1,
@@ -605,19 +628,69 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       ),
     );
 
-    final subUnitsData = unitData!['hotelUnits'] as List? ?? [];
-    if (subUnitsData.isNotEmpty) {
-      final subUnits = subUnitsData.map((u) {
-        final unit = HotelSubUnit();
-        unit.initFromMap(u as Map<String, dynamic>, lookups.realEstateFloors);
-        return unit;
-      }).toList();
+    List<HotelSubUnit> hotelSubUnits = [];
+    final buildingsData = unitData!['buildings'] as List? ?? [];
+    if (buildingsData.isNotEmpty) {
+      for (final b in hotelBuildings) {
+        b.dispose();
+      }
+
+      hotelBuildings.clear();
+      for (int i = 0; i < buildingsData.length; i++) {
+        final bData = buildingsData[i] as Map<String, dynamic>;
+        final building = HotelBuildingInfo(
+          id: '${i + 1}',
+          mapLocationResult: MapLocationResult.fromMap(bData),
+          isNearestProperty: bData['is_nearest_property'] == 1,
+        );
+        building.knownBuildingNumber.text =
+            bData['known_build_num']?.toString() ?? '';
+        building.floorsCount =
+            int.tryParse(bData['floors_number']?.toString() ?? '') ?? 1;
+        building.roomsCount =
+            int.tryParse(bData['rooms_number']?.toString() ?? '') ?? 1;
+        hotelBuildings.add(building);
+      }
+
+      final subUnitsData = unitData!['hotelUnits'] as List? ?? [];
+      for (final u in subUnitsData) {
+        // final unit = HotelSubUnit();
+        // unit.initFromMap(u as Map<String, dynamic>, lookups.realEstateFloors);
+        final unit = HotelSubUnit.fromMap(
+          u as Map<String, dynamic>,
+          lookups.realEstateFloors,
+        );
+        // building.hotelUnits.add(unit);
+        hotelSubUnits.add(unit);
+      }
+
       emit(
         state.copyWith(
-          hotelSubUnits: subUnits,
+          hotelSubUnits: hotelSubUnits,
+          buildingsCount: hotelBuildings.length,
           hotelSubUnitsUpdateCount: state.hotelSubUnitsUpdateCount + 1,
         ),
       );
+    } else {
+      final subUnitsData = unitData!['hotelUnits'] as List? ?? [];
+      if (subUnitsData.isNotEmpty && hotelBuildings.isNotEmpty) {
+        for (final u in subUnitsData) {
+          // final unit = HotelSubUnit();
+          // unit.fromMap(u as Map<String, dynamic>, lookups.realEstateFloors);
+          final unit = HotelSubUnit.fromMap(
+            u as Map<String, dynamic>,
+            lookups.realEstateFloors,
+          );
+          // hotelBuildings.first.hotelUnits.add(unit);
+          hotelSubUnits.add(unit);
+        }
+        emit(
+          state.copyWith(
+            hotelSubUnits: hotelSubUnits,
+            hotelSubUnitsUpdateCount: state.hotelSubUnitsUpdateCount + 1,
+          ),
+        );
+      }
     }
   }
 
@@ -866,6 +939,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     'مزارع الإنتاج الحيواني',
   ];
 
+  TextEditingController knownBuildNumController = TextEditingController();
+
   // ─────────────────────────────────────────
   // Shared Actions
   // ─────────────────────────────────────────
@@ -1004,31 +1079,58 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   // Actions - منشآت
   // ─────────────────────────────────────────
 
-  void incrementBuildings() {
-    final newBuilding = BuildingInfo(id: _uuid.v4());
-    buildings.add(newBuilding);
-    emit(state.copyWith(buildingsCount: buildings.length));
+  void incrementFacilityBuildings(MapLocationResult? mapLocationResult) {
+    final newBuilding = ServiceFacilityBuildingInfo(
+      id: _uuid.v4(),
+      mapLocationResult: mapLocationResult,
+    );
+
+    facilityBuildings.add(newBuilding);
+    emit(state.copyWith(buildingsCount: facilityBuildings.length));
   }
 
-  void decrementBuildings(int index) {
-    if (buildings.length > 1) {
-      buildings[index].dispose();
-      buildings.removeAt(index);
+  void decrementFacilityBuildings(int index) {
+    if (facilityBuildings.length > 1) {
+      facilityBuildings[index].dispose();
+      facilityBuildings.removeAt(index);
       _updateTotalBuildingArea();
-      emit(state.copyWith(buildingsCount: buildings.length));
+      emit(state.copyWith(buildingsCount: facilityBuildings.length));
     }
   }
 
   void updateBuildingArea() => _updateTotalBuildingArea();
 
+  void incrementHotelBuildings(MapLocationResult? mapLocationResult) {
+    hotelBuildings.add(
+      HotelBuildingInfo(id: _uuid.v4(), mapLocationResult: mapLocationResult),
+    );
+    emit(state.copyWith(buildingsCount: hotelBuildings.length));
+  }
+
+  Future<void> decrementHotelBuildings(int index) async {
+    if (hotelBuildings.length > 1) {
+      hotelBuildings[index].dispose();
+      String id = hotelBuildings[index].id;
+      hotelBuildings.removeAt(index);
+
+      await deleteBuilding('hotel', 'hotel_building', id);
+
+      emit(state.copyWith(buildingsCount: hotelBuildings.length));
+    }
+  }
+
   void _updateTotalBuildingArea() {
-    final total = buildings.fold<double>(
+    final total = facilityBuildings.fold<double>(
       0,
       (sum, b) => sum + (double.tryParse(b.areaController.text) ?? 0),
     );
     totalBuildingAreaController.text = total > 0
         ? total.toStringAsFixed(2)
         : '';
+  }
+
+  void selectServiceFacilityType(String? value) {
+    emit(state.copyWith(selectedFacilityActivity: value));
   }
 
   void selectHotelView(String? value) {
@@ -1134,10 +1236,13 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     );
   }
 
-  void removeHotelSubUnit(String id) {
+  Future<void> removeHotelSubUnit(String id) async {
     final unit = state.hotelSubUnits.firstWhere((u) => u.id == id);
     unit.dispose();
     final updated = state.hotelSubUnits.where((u) => u.id != id).toList();
+
+    await deleteBuilding('hotel', 'hotel_unit', id);
+
     // لو الليست فضت — ارجع hasSubUnits لـ false
     emit(
       state.copyWith(
@@ -1149,6 +1254,28 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   void triggerHotelSubUnitRebuild() {
+    emit(
+      state.copyWith(
+        hotelSubUnitsUpdateCount: state.hotelSubUnitsUpdateCount + 1,
+      ),
+    );
+  }
+
+  void addHotelSubUnitToBuilding(int buildingIndex) {
+    hotelBuildings[buildingIndex].addSubUnit();
+    emit(
+      state.copyWith(
+        hotelSubUnitsUpdateCount: state.hotelSubUnitsUpdateCount + 1,
+      ),
+    );
+  }
+
+  Future<void> removeHotelSubUnitFromBuilding(
+    int buildingIndex,
+    String unitId,
+  ) async {
+    hotelBuildings[buildingIndex].removeSubUnit(unitId);
+
     emit(
       state.copyWith(
         hotelSubUnitsUpdateCount: state.hotelSubUnitsUpdateCount + 1,
@@ -1578,12 +1705,19 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   // ── منشأة فندقية — مفيش سند تمليك، في ملفات تانية ───────────────
   bool _validateHotelFacility() {
-    // لو اختار "نعم" للوحدات التابعة — تأكد إن في وحدة واحدة على الأقل
-    if (state.hasSubUnits == true && state.hotelSubUnits.isEmpty) {
-      emit(
-        state.copyWith(errorMessage: 'يرجى إضافة وحدة تابعة واحدة على الأقل'),
-      );
-      return false;
+    if (state.hasSubUnits == true) {
+      // final totalSubUnits = hotelBuildings.fold(
+      //   0,
+      //   (sum, b) => sum + b.hotelUnits.length,
+      // );
+      // if (totalSubUnits == 0) {
+      //   emit(
+      //     state.copyWith(
+      //       errorMessage: 'يرجى إضافة وحدة تابعة واحدة على الأقل',
+      //     ),
+      //   );
+      //   return false;
+      // }
     }
     return _validateAdditionalDocs();
   }
@@ -2176,17 +2310,31 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         )
         .id;
 
+    final totalRooms = hotelBuildings.fold(0, (sum, b) => sum + b.roomsCount);
+
     return {
       ..._buildBaseUnitPayload(),
       'trade_name': facilityNameController.text.trim(),
       'view_type_id': viewTypeId,
       'license_date': operatingLicenseDateController.text.trim(),
-      'buildings_count': state.buildingsCount,
-      'rooms_count': facilityRoomCountController.text.trim(),
+      'buildings_count': hotelBuildings.length,
+      'rooms_count': totalRooms,
       'star_rating_id': starRatingId,
-      'has_sub_units': state.hasSubUnits == true ? 1 : 2,
-      'hotelUnits': state.hotelSubUnits
-          .map((u) => u.toPayload(lookups.realEstateFloors))
+      'has_sub_units': state.hasSubUnits == true ? 1 : 0,
+      'buildings': hotelBuildings
+          .map(
+            (b) => {
+              ...?b.mapLocationResult?.toMap(),
+              'known_build_num': b.knownBuildingNumber.text.trim(),
+              'is_nearest_property': b.isNearestProperty == true ? 1 : 0,
+              'floors_number': b.floorsCount,
+              'rooms_number': b.roomsCount,
+              // 'hotelUnits': b.hotelUnits
+              'hotelUnits': state.hotelSubUnits
+                  .map((u) => u.toPayload(lookups.realEstateFloors))
+                  .toList(),
+            },
+          )
           .toList(),
       if (state.constructionLicenseFilePath != null)
         'copy_of_the_construction_permits': {
@@ -2212,7 +2360,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   // منشآت صناعية
   Map<String, dynamic> buildFacilityPayload(DeclarationLookupsModel lookups) {
-    final totalBuildingArea = buildings.fold<double>(
+    final totalBuildingArea = facilityBuildings.fold<double>(
       0,
       (sum, b) => sum + (double.tryParse(b.areaController.text) ?? 0),
     );
@@ -2224,20 +2372,31 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         )
         .id;
 
+    // final facilityTypeId = lookups.serviceFacilityTypes
+    //     .firstWhere(
+    //       (t) => t.name == state.selectedFacilityActivity,
+    //       orElse: () => DeclarationLookup(id: -1, name: ''),
+    //     )
+    //     .id;
+
     return {
       ..._buildBaseUnitPayload(),
       'facility_name': facilityNameController.text.trim(),
+      // 'facility_type_id': facilityTypeId == -1 ? null : facilityTypeId,
       'activity_type': activityTypeController.text.trim(),
       'total_land_area': totalLandAreaFacilityController.text.trim(),
       'total_building_area': totalBuildingArea,
-      'buildings_count': buildings.length,
-      'buildings': buildings
+      'buildings_count': facilityBuildings.length,
+      'buildings': facilityBuildings
           .map(
             (b) => {
               if (unitData != null) 'id': b.id,
               'floors_count': b.floorsCount,
               'building_area':
                   double.tryParse(b.areaController.text.trim()) ?? 0,
+              ...?b.mapLocationResult?.toMap(),
+              'known_build_num': b.knownBuildingNumber.text.trim(),
+              'is_nearest_property': b.isNearestProperty == true ? 1 : 2,
             },
           )
           .toList(),
@@ -2294,7 +2453,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       'market_value': bookValueController.text.trim(),
       "ministry_burden": state.isExempt,
       "burden_activity_id": state.isExempt == true ? burdenActivityId : null,
-      if (unitData == null) 'buildings_count': buildings.length,
+      if (unitData == null) 'buildings_count': facilityBuildings.length,
       if (unitData == null)
         'buildings': productionBuildings
             .map(
@@ -2541,6 +2700,31 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     }
   }
 
+  Future<void> deleteBuilding(
+    String unitPath,
+    String suffix,
+    String buildingId,
+  ) async {
+    try {
+      emit(state.copyWith(isLoading: true));
+      final unitId = unitData!['id'];
+
+      final result = await safeApiCall(() async {
+        await DioClient.instance.dio.delete(
+          '${ApiConstants.baseUrl}/declaration-system/declarations/$declarationId/units/$unitPath/$unitId/$suffix/$buildingId',
+        );
+      });
+
+      emit(state.copyWith(isLoading: false));
+      switch (result) {
+        case ApiSuccess(:final data):
+        case ApiError(:final message):
+      }
+    } catch (error) {
+      emit(state.copyWith(isLoading: false, errorMessage: error.toString()));
+    }
+  }
+
   // ─────────────────────────────────────────
   // Dispose
   // ─────────────────────────────────────────
@@ -2577,11 +2761,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     for (final doc in additionalDocuments) {
       doc.dispose();
     }
-    for (final building in buildings) {
+    for (final building in facilityBuildings) {
       building.dispose();
     }
-    for (final unit in state.hotelSubUnits) {
-      unit.dispose();
+    for (final b in hotelBuildings) {
+      b.dispose();
     }
     for (final b in industrialBuildings) {
       b.dispose();
