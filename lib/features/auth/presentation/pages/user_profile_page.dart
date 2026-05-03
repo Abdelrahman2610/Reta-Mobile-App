@@ -50,6 +50,8 @@ class _UserProfileView extends StatefulWidget {
 
 class _UserProfileViewState extends State<_UserProfileView>
     with WidgetsBindingObserver {
+  UserModel? _cachedUser;
+
   @override
   void initState() {
     super.initState();
@@ -87,25 +89,6 @@ class _UserProfileViewState extends State<_UserProfileView>
                     textDirection: TextDirection.rtl,
                   ),
                   backgroundColor: AppColors.errorDark,
-                ),
-              );
-            }
-
-            if (state is UserProfileAttachmentUploadSuccess) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    state.message,
-                    textDirection: TextDirection.rtl,
-                  ),
-                  backgroundColor: AppColors.successMedium,
-                  duration: const Duration(seconds: 2),
-                  action: SnackBarAction(
-                    label: 'حسناً',
-                    textColor: AppColors.white,
-                    onPressed: () =>
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar(),
-                  ),
                 ),
               );
             }
@@ -168,18 +151,24 @@ class _UserProfileViewState extends State<_UserProfileView>
                 );
               }
 
-              // ── OTP sent for phone change ────────────────────────────────────
+              // ── OTP sent for phone change ─────────────────────────────────
               if (state.otpData != null &&
                   state.otpData!.ok &&
                   state.editedField == ProfileEditField.phone) {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => BlocProvider.value(
-                      value: context.read<UserProfileCubit>(),
-                      child: EditProfileOtpPage(otpData: state.otpData!),
-                    ),
-                  ),
-                );
+                Navigator.of(context)
+                    .push(
+                      MaterialPageRoute(
+                        builder: (_) => BlocProvider.value(
+                          value: context.read<UserProfileCubit>(),
+                          child: EditProfileOtpPage(otpData: state.otpData!),
+                        ),
+                      ),
+                    )
+                    .then((_) {
+                      if (context.mounted) {
+                        context.read<UserProfileCubit>().loadFromUser(null);
+                      }
+                    });
                 return;
               }
 
@@ -205,26 +194,37 @@ class _UserProfileViewState extends State<_UserProfileView>
               }
             }
           },
-          buildWhen: (_, current) =>
+          buildWhen: (prev, current) =>
               current is UserProfileLoaded ||
+              current is UserProfileInitial ||
               current is UserProfileUpdating ||
               current is UserProfileAttachmentUploading ||
-              current is UserProfileAttachmentUploadSuccess ||
-              current is UserProfileInitial ||
-              current is UserProfileError ||
-              current is UserProfileUpdateSuccess ||
-              current is UserProfilePasswordChanged ||
-              current is UserProfilePhoneConfirmed,
+              current is UserProfileUpdateSuccess,
           builder: (context, state) {
             if (state is UserProfileLoaded) {
+              _cachedUser = state.userModel;
               return _ProfileBody(userModel: state.userModel);
             }
-            if (state is UserProfileError ||
-                state is UserProfileUpdateSuccess ||
-                state is UserProfilePasswordChanged ||
-                state is UserProfilePhoneConfirmed) {
-              return const Center(child: CircularProgressIndicator());
+
+            if (state is UserProfileUpdateSuccess && _cachedUser != null) {
+              return _ProfileBody(userModel: _cachedUser!);
             }
+
+            if (state is UserProfileUpdating ||
+                state is UserProfileAttachmentUploading) {
+              if (_cachedUser != null) {
+                return Stack(
+                  children: [
+                    _ProfileBody(userModel: _cachedUser!),
+                    Container(
+                      color: Colors.black.withOpacity(0.12),
+                      child: const Center(child: CircularProgressIndicator()),
+                    ),
+                  ],
+                );
+              }
+            }
+
             return const Center(child: CircularProgressIndicator());
           },
         ),
@@ -314,6 +314,7 @@ class _ProfileBodyState extends State<_ProfileBody> {
         cubit.editProfile(email: value);
       case 'phone':
         cubit.editProfile(phone: value);
+        break;
       case 'nationalId':
         cubit.editProfile(nationalId: value);
       case 'passport':
@@ -409,50 +410,85 @@ class _ProfileBodyState extends State<_ProfileBody> {
             ),
             const _Divider(),
 
-            if (isVerified) ...[
-              _EditableField(
-                label: 'البريد الإلكتروني',
-                value: u.email ?? '',
-                fieldKey: 'email',
-                keyboardType: TextInputType.emailAddress,
-                isEditing: _editingField == 'email',
-                isVerified: u.emailVerified ?? false,
-                showVerifyButton: !(u.emailVerified ?? false),
-                controller: _controllerFor('email', u.email ?? ''),
-                onEditTap: () => _startEditing('email'),
-                onSave: () => _saveField(context, 'email'),
-                onCancel: _cancelEditing,
-                onVerifyTap: () =>
-                    _openEmailVerification(context, u.email ?? ''),
-              ),
-              const _Divider(),
+            // if (isVerified) ...[
+            //   _EditableField(
+            //     label: 'البريد الإلكتروني',
+            //     value: u.email ?? '',
+            //     fieldKey: 'email',
+            //     keyboardType: TextInputType.emailAddress,
+            //     isEditing: _editingField == 'email',
+            //     isVerified: u.emailVerified ?? false,
+            //     showVerifyButton: !(u.emailVerified ?? false),
+            //     controller: _controllerFor('email', u.email ?? ''),
+            //     onEditTap: () => _startEditing('email'),
+            //     onSave: () => _saveField(context, 'email'),
+            //     onCancel: _cancelEditing,
+            //     onVerifyTap: () =>
+            //         _openEmailVerification(context, u.email ?? ''),
+            //   ),
+            //   const _Divider(),
 
-              _EditableField(
-                label: 'رقم الهاتف المحمول',
-                value: u.phone ?? '',
-                fieldKey: 'phone',
-                keyboardType: TextInputType.phone,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(11),
-                ],
-                isEditing: _editingField == 'phone',
-                isVerified: u.phoneVerified ?? false,
-                showVerifyButton: !(u.phoneVerified ?? false),
-                controller: _controllerFor('phone', u.phone ?? ''),
-                onEditTap: () => _startEditing('phone'),
-                onSave: () => _saveField(context, 'phone'),
-                onCancel: _cancelEditing,
-                onVerifyTap: () =>
-                    _openPhoneVerification(context, u.phone ?? ''),
-              ),
-              const _Divider(),
-            ] else ...[
-              _ReadOnlyField(label: 'البريد الإلكتروني', value: u.email ?? ''),
-              const _Divider(),
-              _ReadOnlyField(label: 'رقم الهاتف المحمول', value: u.phone ?? ''),
-              const _Divider(),
-            ],
+            //   _EditableField(
+            //     label: 'رقم الهاتف المحمول',
+            //     value: u.phone ?? '',
+            //     fieldKey: 'phone',
+            //     keyboardType: TextInputType.phone,
+            //     inputFormatters: [
+            //       FilteringTextInputFormatter.digitsOnly,
+            //       LengthLimitingTextInputFormatter(11),
+            //     ],
+            //     isEditing: _editingField == 'phone',
+            //     isVerified: u.phoneVerified ?? false,
+            //     showVerifyButton: !(u.phoneVerified ?? false),
+            //     controller: _controllerFor('phone', u.phone ?? ''),
+            //     onEditTap: () => _startEditing('phone'),
+            //     onSave: () => _saveField(context, 'phone'),
+            //     onCancel: _cancelEditing,
+            //     onVerifyTap: () =>
+            //         _openPhoneVerification(context, u.phone ?? ''),
+            //   ),
+            //   const _Divider(),
+            // ] else ...[
+            //   _ReadOnlyField(label: 'البريد الإلكتروني', value: u.email ?? ''),
+            //   const _Divider(),
+            //   _ReadOnlyField(label: 'رقم الهاتف المحمول', value: u.phone ?? ''),
+            //   const _Divider(),
+            // ],
+            _EditableField(
+              label: 'البريد الإلكتروني',
+              value: u.email ?? '',
+              fieldKey: 'email',
+              keyboardType: TextInputType.emailAddress,
+              isEditing: _editingField == 'email',
+              isVerified: u.emailVerified ?? false,
+              showVerifyButton: !(u.emailVerified ?? false),
+              controller: _controllerFor('email', u.email ?? ''),
+              onEditTap: () => _startEditing('email'),
+              onSave: () => _saveField(context, 'email'),
+              onCancel: _cancelEditing,
+              onVerifyTap: () => _openEmailVerification(context, u.email ?? ''),
+            ),
+            const _Divider(),
+
+            _EditableField(
+              label: 'رقم الهاتف المحمول',
+              value: u.phone ?? '',
+              fieldKey: 'phone',
+              keyboardType: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(11),
+              ],
+              isEditing: _editingField == 'phone',
+              isVerified: u.phoneVerified ?? false,
+              showVerifyButton: !(u.phoneVerified ?? false),
+              controller: _controllerFor('phone', u.phone ?? ''),
+              onEditTap: () => _startEditing('phone'),
+              onSave: () => _saveField(context, 'phone'),
+              onCancel: _cancelEditing,
+              onVerifyTap: () => _openPhoneVerification(context, u.phone ?? ''),
+            ),
+            const _Divider(),
 
             _ReadOnlyField(label: 'الجنسية', value: u.nationality ?? ''),
             const _Divider(),
@@ -890,6 +926,8 @@ class _ReadOnlyField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final displayValue = value.isNotEmpty ? value : '—';
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       child: Column(
@@ -909,20 +947,20 @@ class _ReadOnlyField extends StatelessWidget {
               trailing ?? const SizedBox.shrink(),
             ],
           ),
-          if (value.isNotEmpty) ...[
-            SizedBox(height: 6.h),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                value,
-                textDirection: TextDirection.rtl,
-                textAlign: TextAlign.right,
-                style: AppTextStyles.bodyXL.copyWith(
-                  color: AppColors.neutralDarkLight,
-                ),
+          SizedBox(height: 6.h),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              displayValue,
+              textDirection: TextDirection.rtl,
+              textAlign: TextAlign.right,
+              style: AppTextStyles.bodyXL.copyWith(
+                color: value.isNotEmpty
+                    ? AppColors.neutralDarkLight
+                    : AppColors.neutralLightDarkest,
               ),
             ),
-          ],
+          ),
         ],
       ),
     );

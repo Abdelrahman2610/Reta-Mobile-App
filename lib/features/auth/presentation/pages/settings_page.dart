@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/core/widgets/authenticated_settings_content.dart';
+import 'package:reta/core/widgets/settings_footer.dart';
 // import 'package:reta/core/helpers/runtime_data.dart';
 import 'package:reta/features/auth/presentation/pages/main_page.dart';
 
@@ -121,55 +122,64 @@ class _GuestSettingsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          const SizedBox(height: 32),
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.all(16),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate([
+              const SizedBox(height: 32),
 
-          _buildSectionLabel('الدعم والمعلومات'),
-          const SizedBox(height: 8),
-          _buildSettingsCard(context, [
-            _SettingItem(
-              icon: Icons.help_outline,
-              label: 'المساعدة والدعم',
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const HelpSupportPage()),
-                );
-              },
-            ),
-            _SettingItem(
-              icon: Icons.privacy_tip_outlined,
-              label: 'الشروط والخصوصية',
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const TermsPrivacyPage()),
-                );
-              },
-            ),
-          ]),
+              _buildSectionLabel('الدعم والمعلومات'),
+              const SizedBox(height: 8),
+              _buildSettingsCard(context, [
+                _SettingItem(
+                  icon: Icons.help_outline,
+                  label: 'المساعدة والدعم',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const HelpSupportPage()),
+                  ),
+                ),
+                _SettingItem(
+                  icon: Icons.privacy_tip_outlined,
+                  label: 'الشروط والخصوصية',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const TermsPrivacyPage()),
+                  ),
+                ),
+              ]),
 
-          const SizedBox(height: 24),
-          _buildSectionLabel('إجراءات الحساب'),
-          const SizedBox(height: 8),
-          _buildSettingsCard(context, [
-            _SettingItem(
-              icon: Icons.login_outlined,
-              label: 'تسجيل الدخول',
-              onTap: () {
-                Navigator.of(
-                  RuntimeData.getCurrentContext()!,
-                ).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const LoginPage()),
-                  (route) => false,
-                );
-              },
+              const SizedBox(height: 24),
+              _buildSectionLabel('إجراءات الحساب'),
+              const SizedBox(height: 8),
+              _buildSettingsCard(context, [
+                _SettingItem(
+                  icon: Icons.login_outlined,
+                  label: 'تسجيل الدخول',
+                  onTap: () {
+                    Navigator.of(
+                      RuntimeData.getCurrentContext()!,
+                    ).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => const LoginPage()),
+                      (route) => false,
+                    );
+                  },
+                ),
+              ]),
+            ]),
+          ),
+        ),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: const SettingsFooter(),
             ),
-          ]),
-        ],
-      ),
+          ),
+        ),
+      ],
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reta/core/widgets/settings_toggle_tile.dart';
+import 'package:reta/core/widgets/settings_footer.dart';
 import 'package:reta/features/auth/data/models/user_models.dart';
 import 'package:reta/features/auth/presentation/cubit/notifications_cubit.dart';
 import 'package:reta/features/auth/presentation/cubit/settings_cubit.dart';
@@ -46,9 +47,7 @@ class AuthenticatedSettingsContent extends StatelessWidget {
             ),
           ),
         )
-        .then((_) {
-          userProfileCubit.loadFromUser(null);
-        });
+        .then((_) => userProfileCubit.loadFromUser(null));
   }
 
   @override
@@ -57,71 +56,87 @@ class AuthenticatedSettingsContent extends StatelessWidget {
 
     return BlocBuilder<NotificationsCubit, NotificationsState>(
       builder: (context, notifState) {
-        return ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          children: [
-            const SizedBox(height: 16),
+        return CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  const SizedBox(height: 16),
 
-            BlocBuilder<UserProfileCubit, UserProfileState>(
-              builder: (context, state) {
-                final liveUser = state is UserProfileLoaded
-                    ? state.userModel
-                    : user;
-                return UserProfileHeader(user: liveUser);
-              },
+                  BlocBuilder<UserProfileCubit, UserProfileState>(
+                    builder: (context, state) {
+                      final liveUser = state is UserProfileLoaded
+                          ? state.userModel
+                          : user;
+                      return UserProfileHeader(user: liveUser);
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  SettingsTile(
+                    icon: Icons.person_outline,
+                    label: 'بيانات المستخدم',
+                    onTap: () => _pushWithCubits(context, UserProfilePage()),
+                  ),
+
+                  _SectionLabel('الإعدادات العامة'),
+                  const SizedBox(height: 8),
+                  SettingsToggleTile(
+                    icon: Icons.notifications_none_outlined,
+                    label: 'تفعيل الإشعارات',
+                    value: notifState.notificationsEnabled,
+                    onChanged: (val) => context
+                        .read<NotificationsCubit>()
+                        .setNotificationsEnabled(val),
+                  ),
+                  const SizedBox(height: 16),
+
+                  _SectionLabel('الدعم والمعلومات'),
+                  const SizedBox(height: 8),
+                  SettingsTile(
+                    icon: Icons.help_outline,
+                    label: 'المساعدة والدعم',
+                    onTap: () =>
+                        _pushWithCubits(context, const HelpSupportPage()),
+                  ),
+                  SettingsTile(
+                    icon: Icons.privacy_tip_outlined,
+                    label: 'الشروط والخصوصية',
+                    onTap: () =>
+                        _pushWithCubits(context, const TermsPrivacyPage()),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  _SectionLabel('إجراءات الحساب'),
+                  const SizedBox(height: 8),
+                  SettingsTile(
+                    icon: Icons.logout_outlined,
+                    label: 'تسجيل الخروج',
+                    onTap: () => _handleLogout(context, cubit),
+                  ),
+                  SettingsTile(
+                    icon: Icons.delete_outline,
+                    label: 'حذف الحساب',
+                    isDestructive: true,
+                    onTap: () => _handleDeleteAccount(context, cubit),
+                  ),
+                ]),
+              ),
             ),
 
-            const SizedBox(height: 16),
-
-            SettingsTile(
-              icon: Icons.person_outline,
-              label: 'بيانات المستخدم',
-              onTap: () => _pushWithCubits(context, UserProfilePage()),
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: const SettingsFooter(),
+                ),
+              ),
             ),
-
-            _SectionLabel('الإعدادات العامة'),
-            const SizedBox(height: 8),
-            SettingsToggleTile(
-              icon: Icons.notifications_none_outlined,
-              label: 'تفعيل الإشعارات',
-              value: notifState.notificationsEnabled,
-              onChanged: (val) => context
-                  .read<NotificationsCubit>()
-                  .setNotificationsEnabled(val),
-            ),
-            const SizedBox(height: 16),
-
-            _SectionLabel('الدعم والمعلومات'),
-            const SizedBox(height: 8),
-            SettingsTile(
-              icon: Icons.help_outline,
-              label: 'المساعدة والدعم',
-              onTap: () => _pushWithCubits(context, const HelpSupportPage()),
-            ),
-            SettingsTile(
-              icon: Icons.privacy_tip_outlined,
-              label: 'الشروط والخصوصية',
-              onTap: () => _pushWithCubits(context, const TermsPrivacyPage()),
-            ),
-
-            const SizedBox(height: 16),
-
-            _SectionLabel('إجراءات الحساب'),
-            const SizedBox(height: 8),
-            SettingsTile(
-              icon: Icons.logout_outlined,
-              label: 'تسجيل الخروج',
-              isDestructive: false,
-              onTap: () => _handleLogout(context, cubit),
-            ),
-            SettingsTile(
-              icon: Icons.delete_outline,
-              label: 'حذف الحساب',
-              isDestructive: true,
-              onTap: () => _handleDeleteAccount(context, cubit),
-            ),
-
-            const SizedBox(height: 32),
           ],
         );
       },
@@ -137,9 +152,7 @@ class AuthenticatedSettingsContent extends StatelessWidget {
       confirmLabel: 'خروج',
       isDestructive: false,
     );
-    if (confirmed) {
-      await cubit.logout();
-    }
+    if (confirmed) await cubit.logout();
   }
 
   Future<void> _handleDeleteAccount(
@@ -154,9 +167,7 @@ class AuthenticatedSettingsContent extends StatelessWidget {
       confirmLabel: 'حذف الحساب نهائيًا',
       isDestructive: true,
     );
-    if (confirmed) {
-      await cubit.deleteAccount();
-    }
+    if (confirmed) await cubit.deleteAccount();
   }
 }
 
