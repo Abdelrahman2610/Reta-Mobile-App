@@ -3,10 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:reta/core/helpers/app_enum.dart';
 import 'package:reta/core/helpers/extensions/unit_type.dart';
-import 'package:reta/features/components/app_button.dart';
 import 'package:reta/features/declarations/presentations/cubit/units/unit_data/unit_data_cubit.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/administrative_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/commercial_unit_page.dart';
+import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/components/location_card.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/components/unit_buttons.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/fixed_installation_unit_page.dart';
 import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/hotel_unit_page.dart';
@@ -40,6 +40,7 @@ class UnitData extends StatelessWidget {
     this.otherName,
     this.applicantPayload,
     this.mapLocationResult,
+    required this.isUrban,
   });
 
   final String? otherName;
@@ -47,6 +48,7 @@ class UnitData extends StatelessWidget {
   final UnitType unitType;
   final Map<String, dynamic>? applicantPayload;
   final MapLocationResult? mapLocationResult;
+  final bool isUrban;
 
   @override
   Widget build(BuildContext context) {
@@ -141,96 +143,16 @@ class UnitData extends StatelessWidget {
                                 color: AppColors.mainBlueIndigoDye,
                               ),
                               24.hs,
-                              if (mapLocationResult != null) ...[
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 20.w,
-                                    vertical: 20.h,
+                              if (unitType == UnitType.residential ||
+                                  unitType == UnitType.commercial ||
+                                  unitType == UnitType.administrative ||
+                                  unitType == UnitType.fixedInstallations ||
+                                  unitType == UnitType.vacantLand)
+                                if (mapLocationResult != null) ...[
+                                  LocationCard(
+                                    mapLocationResult: mapLocationResult,
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    gradient: RadialGradient(
-                                      center: Alignment(-1.0, 0),
-                                      radius: 4.0,
-                                      colors: [
-                                        Color(0xFFC8DFF5),
-                                        Color(0xFFDDEAF8),
-                                        Color(0xFFEDF4FB),
-                                        Colors.white,
-                                      ],
-                                      stops: const [0.0, 0.03, 0.25, 1.0],
-                                    ),
-                                    borderRadius: BorderRadius.circular(10.r),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.08),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      AppText(
-                                        text: 'بيانات الموقع',
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.neutralDarkDark,
-                                      ),
-                                      10.hs,
-                                      Container(
-                                        width: double.infinity,
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: 12.w,
-                                          vertical: 12.h,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.white,
-                                          borderRadius: BorderRadius.circular(
-                                            6.r,
-                                          ),
-                                        ),
-                                        child: Column(
-                                          children: [
-                                            AppText(
-                                              text: 'العنوان',
-                                              fontSize: 12.sp,
-                                              fontWeight: FontWeight.w500,
-                                              color:
-                                                  AppColors.neutralDarkMedium,
-                                            ),
-                                            4.hs,
-                                            AppText(
-                                              text: buildAddress(
-                                                mapLocationResult,
-                                              ),
-                                              textAlign: TextAlign.right,
-                                              fontSize: 12.sp,
-                                              fontWeight: FontWeight.w600,
-                                              maxLines: 3,
-                                              color:
-                                                  AppColors.neutralDarkDarkest,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      20.hs,
-                                      AppButton(
-                                        label: 'تعديل',
-                                        backgroundColor:
-                                            AppColors.highlightDarkest,
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w600,
-                                        textColor:
-                                            AppColors.neutralLightLightest,
-                                        height: 50.h,
-                                        onTap: () => Navigator.pop(context),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                                ],
                               switch (unitType) {
                                 UnitType.residential => ResidentialUnitPage(
                                   unitCubit: cubit,
@@ -252,9 +174,13 @@ class UnitData extends StatelessWidget {
                                 ),
                                 UnitType.serviceFacility => ServiceFacilityPage(
                                   unitCubit: cubit,
+                                  mapLocationResult: mapLocationResult,
+                                  isUrban: isUrban,
                                 ),
                                 UnitType.hotelFacility => HotelFacilityPage(
                                   unitCubit: cubit,
+                                  mapLocationResult: mapLocationResult,
+                                  isUrban: isUrban,
                                 ),
                                 UnitType.industrialFacility =>
                                   IndustrialFacilityPage(unitCubit: cubit),
@@ -298,22 +224,5 @@ class UnitData extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String buildAddress(MapLocationResult? mapLocation) {
-    if (mapLocation == null) return '';
-    final parts = <String>[];
-
-    if (mapLocation.governorate != null) parts.add(mapLocation.governorate!);
-    if (mapLocation.neighborhood != null) parts.add(mapLocation.neighborhood!);
-    if (mapLocation.policeStation != null) {
-      parts.add(mapLocation.policeStation!);
-    }
-    if (mapLocation.street != null) parts.add(mapLocation.street!);
-    if (mapLocation.streetNumber != null) {
-      parts.add(mapLocation.streetNumber.toString());
-    }
-
-    return parts.join('، ');
   }
 }

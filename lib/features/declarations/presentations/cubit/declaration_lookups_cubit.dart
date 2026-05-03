@@ -76,6 +76,15 @@ class DeclarationLookupsCubit extends Cubit<DeclarationLookupsState> {
         );
         return res.data['data'] as Map<String, dynamic>;
       }),
+      safeApiCall(() async {
+        final res = await DioClient.instance.dio.get(
+          ApiConstants.serviceFacilityLookups,
+        );
+        final list = (res.data['data'] as List? ?? [])
+            .map((e) => DeclarationLookup.fromJson(e as Map<String, dynamic>))
+            .toList();
+        return list;
+      }),
     ]);
 
     final mainResult = results[0] as ApiResult<DeclarationLookupsModel>;
@@ -85,6 +94,7 @@ class DeclarationLookupsCubit extends Cubit<DeclarationLookupsState> {
     final industrialResult = results[4];
     final productionResult = results[5];
     final mineQuarryFacilityTypes = results[6];
+    final serviceFacilityResult = results[7];
 
     if (mainResult is ApiError<DeclarationLookupsModel>) {
       emit(DeclarationLookupsError(mainResult.message));
@@ -132,6 +142,12 @@ class DeclarationLookupsCubit extends Cubit<DeclarationLookupsState> {
           .toList();
 
       model = model.copyWith(productionBurdenActivityTypes: burdenList);
+    }
+
+    if (serviceFacilityResult is ApiSuccess<List<DeclarationLookup>>) {
+      model = model.copyWith(
+        serviceFacilityTypes: serviceFacilityResult.data,
+      );
     }
 
     if (mineQuarryFacilityTypes is ApiSuccess) {

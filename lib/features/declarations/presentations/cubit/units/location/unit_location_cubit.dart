@@ -475,22 +475,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   }
 
   Map<String, dynamic> buildLocationPayload() {
-    switch (unitType) {
-      case UnitType.residential:
-      case UnitType.commercial:
-      case UnitType.administrative:
-      case UnitType.serviceUnit:
-      case UnitType.fixedInstallations:
-      case UnitType.vacantLand:
-        return buildLocationPayloadNew();
-      case UnitType.serviceFacility:
-      case UnitType.hotelFacility:
-      case UnitType.industrialFacility:
-      case UnitType.productionFacility:
-      case UnitType.petroleumFacility:
-      case UnitType.minesAndQuarries:
-        return buildLocationPayloadOld();
-    }
+    return buildLocationPayloadNew();
   }
 
   bool validate() => formKey.currentState?.validate() ?? false;
@@ -541,6 +526,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
             otherName: otherName,
             applicantPayload: applicantData,
             mapLocationResult: mapData,
+            isUrban: state.isUrban,
           ),
         ),
       ),

@@ -57,6 +57,7 @@ class AppDropdownField<T> extends StatelessWidget {
                   text: labelText,
                   style: TextStyle(
                     fontSize: labelFontSize ?? 14.sp,
+                    fontFamily: 'NotoSansArabic',
                     fontWeight: FontWeight.w700,
                     color: labelColor ?? AppColors.neutralDarkDark,
                   ),
