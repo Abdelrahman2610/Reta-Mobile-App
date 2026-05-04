@@ -83,7 +83,9 @@ class _FacilityBuildingLocationDataState
     final building = cubit.facilityBuildings[widget.index];
 
     return AppScaffold(
-      title: 'وصف المبنى الرئيسي للمنشأة الخدمية',
+      title: widget.index == 0
+          ? 'وصف المبنى الرئيسي للمنشأة الخدمية'
+          : 'وصف مباني المنشأة الخدمية',
       padding: EdgeInsets.zero,
       child: BlocBuilder<UnitDataCubit, UnitDataState>(
         builder: (context, state) {
@@ -127,7 +129,7 @@ class _FacilityBuildingLocationDataState
                                         widget.isUrban,
                                         cubit.unitType,
                                         cubit.unitData != null
-                                            ? cubit.unitData!['unit_id']
+                                            ? cubit.unitData!['id'].toString()
                                             : '-1',
                                       ),
                                     ),
@@ -168,16 +170,19 @@ class _FacilityBuildingLocationDataState
                           keyboardType: TextInputType.number,
                           onChanged: (_) => cubit.updateBuildingArea(),
                         ),
-                        16.hs,
-                        CheckBoxWithTitle(
-                          label:
-                              'العقار المحدد هو أقرب عقار للموقع الخاص بالوحدة محل الإقرار',
-                          isSelected: building.isNearestProperty ?? false,
-                          onSelectTapped: () => setState(
-                            () => building.isNearestProperty =
-                                !(building.isNearestProperty ?? false),
+
+                        if (widget.index != 0) ...[
+                          16.hs,
+                          CheckBoxWithTitle(
+                            label:
+                                'العقار المحدد هو أقرب عقار للموقع الخاص بالوحدة محل الإقرار',
+                            isSelected: building.isNearestProperty ?? false,
+                            onSelectTapped: () => setState(
+                              () => building.isNearestProperty =
+                                  !(building.isNearestProperty ?? false),
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
@@ -195,7 +200,7 @@ class _FacilityBuildingLocationDataState
                         label: 'حفظ البيانات',
                         borderColor: AppColors.successDark,
                         withIcon: false,
-                        onSubmit: () => Navigator.pop(context),
+                        onSubmit: () => Navigator.pop(context, true),
                       ),
                     ),
                     SizedBox(width: 10.w),

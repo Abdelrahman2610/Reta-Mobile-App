@@ -536,7 +536,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       case ApplicantType.sharedOwnership:
       case ApplicantType.agent:
         if (taxpayerNationalIdFilePath == null &&
-            taxpayerNationality == Nationality.egyptian) {
+            taxpayerNationality == Nationality.egyptian &&
+            taxpayerTypes == 'طبيعي') {
           emit(state.copyWith(errorMessage: 'يرجى رفع صورة الرقم القومي'));
           return false;
         }
@@ -545,7 +546,8 @@ class ApplicantCubit extends Cubit<ApplicantState> {
           emit(state.copyWith(errorMessage: 'يرجى رفع صورة جواز السفر'));
           return false;
         }
-        if (ownershipProofDocumentPath == null) {
+        if (ownershipProofDocumentPath == null &&
+            applicantType == ApplicantType.sharedOwnership) {
           emit(
             state.copyWith(
               errorMessage: 'يرجى رفع سند الملكية على الشيوع / إعلام الوراثة',

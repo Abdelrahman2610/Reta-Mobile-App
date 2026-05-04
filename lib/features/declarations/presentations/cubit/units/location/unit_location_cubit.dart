@@ -59,36 +59,13 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
   Future<void> _restoreLocationData(
     List<DeclarationLookup> governorates,
   ) async {
-    final governorate = governorates.firstWhere(
-      (g) => g.name == locationData!['governorate'],
-      orElse: () => DeclarationLookup(id: 0, name: ''),
-    );
-
-    if (governorate.id == 0) return;
-
-    await fetchDistricts(governorate.id);
-
-    final district = state.districtsList?.firstWhere(
-      (d) => d.name == locationData!['district'],
-      orElse: () => DeclarationLookup(id: 0, name: ''),
-    );
-
-    if (district != null && district.id != 0) {
-      await fetchVillagesAndStreets(district.id);
-    }
-
-    selectNeighborhood(locationData!['neighborhood']);
-    selectStreet(locationData!['street']);
-
-    await fetchBuildingNumber(state.selectedStreetId);
-    selectBuildingNumber(locationData!['buildingNumber']);
-
+    mapData = locationData?['buildingProfile'] ?? {};
     emit(
       state.copyWith(
         selectedGovernorate: locationData!['governorate'],
-        selectedGovernorateId: governorate.id,
+        // selectedGovernorateId: governorate.id,
         selectedDistrict: locationData!['district'],
-        selectedDistrictId: district?.id,
+        // selectedDistrictId: district?.id,
         selectedNeighborhood: locationData!['neighborhood'],
         isNeighborhoodOther: locationData!['is_other_village'] ?? false,
         selectedStreet: locationData!['street'],
@@ -111,61 +88,12 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
       mapData = MapLocationResult.fromMap(unitData!);
       bool isUrban = unitData!['new_urban_communities_authority'] == 1;
       isNearestProperty = unitData!['is_nearest_property'] == 1;
-      knownBuildNumController.text = unitData!['known_build_num'];
+      knownBuildNumController.text = unitData?['known_build_num'] ?? '';
       addressAdditionalInfoController.text =
-          unitData!['address_additional_info'];
+          unitData?['address_additional_info'] ?? '';
 
       unitId = unitData!['id'].toString();
-      // final governorateId = int.tryParse(unitData!['governorate_id']);
-      // final governorateId = -1;
-      // final governorate = governorates.firstWhere(
-      //   (g) => g.id == governorateId,
-      //   orElse: () => DeclarationLookup(id: 0, name: ''),
-      // );
-
-      // if (governorate.id == 0) return;
-
-      // await fetchDistricts(governorate.id);
-
-      // final districtId = int.tryParse(unitData!['district_id']);
-      // final district = state.districtsList?.firstWhere(
-      //   (d) => d.id == districtId,
-      //   orElse: () => DeclarationLookup(id: 0, name: ''),
-      // );
-
-      // if (district != null && district.id != 0) {
-      //   await fetchVillagesAndStreets(district.id);
-      // }
-
-      // final villageId = int.tryParse(unitData!['village_id']);
-      // final village = state.villagesList?.firstWhere(
-      //   (v) => v.id == villageId,
-      //   orElse: () => DeclarationLookup(id: 0, name: ''),
-      // );
-      // selectNeighborhood(village?.name);
-
-      // final regionId = int.tryParse(unitData!['region_id']);
-      // final street = state.streetsList?.firstWhere(
-      //   (s) => s.id == regionId,
-      //   orElse: () => StreetModel(id: 0, name: '', villageId: 0),
-      // );
-      // selectStreet(street?.name);
-
-      // await fetchBuildingNumber(street?.id);
-
-      // final realEstateIdString = unitData!['real_estate_id'];
-      // int realEstateId = -1;
-      // if (realEstateIdString.runtimeType == String) {
-      //   realEstateId = int.parse(realEstateIdString);
-      // } else {
-      //   realEstateId = realEstateIdString;
-      // }
-      // final building = state.buildingList?.firstWhere(
-      //   (s) => s.id == realEstateId,
-      //   orElse: () => DeclarationLookup(id: 0, name: ''),
-      // );
-
-      // selectBuildingNumber(building?.name);
+      mapData = unitData?['buildingProfile'];
 
       emit(
         state.copyWith(
@@ -527,6 +455,7 @@ class UnitLocationCubit extends Cubit<UnitLocationState> {
             applicantPayload: applicantData,
             mapLocationResult: mapData,
             isUrban: state.isUrban,
+            locationData: locationData,
           ),
         ),
       ),

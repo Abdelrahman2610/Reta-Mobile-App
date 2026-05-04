@@ -111,7 +111,9 @@ class _HotelBuildingLocationDataState extends State<HotelBuildingLocationData> {
     final building = cubit.hotelBuildings[widget.index];
 
     return AppScaffold(
-      title: 'وصف المبنى الرئيسي للمنشأة الفندقية',
+      title: widget.index == 0
+          ? 'وصف المبنى الرئيسي للمنشأة الفندقية'
+          : 'وصف مباني المنشأة الفندقية',
       padding: EdgeInsets.zero,
       child: BlocBuilder<UnitDataCubit, UnitDataState>(
         builder: (context, state) {
@@ -200,16 +202,18 @@ class _HotelBuildingLocationDataState extends State<HotelBuildingLocationData> {
                           onDecrementTapped: () => _decrementFloors(building),
                         ),
 
-                        16.hs,
-                        CheckBoxWithTitle(
-                          label:
-                              'العقار المحدد هو أقرب عقار للموقع الخاص بالوحدة محل الإقرار',
-                          isSelected: building.isNearestProperty ?? false,
-                          onSelectTapped: () => setState(
-                            () => building.isNearestProperty =
-                                !(building.isNearestProperty ?? false),
+                        if (widget.index != 0) ...[
+                          16.hs,
+                          CheckBoxWithTitle(
+                            label:
+                                'العقار المحدد هو أقرب عقار للموقع الخاص بالوحدة محل الإقرار',
+                            isSelected: building.isNearestProperty ?? false,
+                            onSelectTapped: () => setState(
+                              () => building.isNearestProperty =
+                                  !(building.isNearestProperty ?? false),
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
@@ -231,7 +235,7 @@ class _HotelBuildingLocationDataState extends State<HotelBuildingLocationData> {
                         onSubmit: () {
                           building.mapLocationResult ??=
                               widget.mapLocationResult;
-                          Navigator.pop(context);
+                          Navigator.pop(context, true);
                         },
                       ),
                     ),

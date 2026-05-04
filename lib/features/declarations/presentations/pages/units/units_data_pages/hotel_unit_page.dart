@@ -35,10 +35,12 @@ class HotelFacilityPage extends StatelessWidget {
     required this.unitCubit,
     this.mapLocationResult,
     required this.isUrban,
+    required this.locationData,
   });
   final UnitDataCubit unitCubit;
   final MapLocationResult? mapLocationResult;
   final bool isUrban;
+  final Map<String, dynamic>? locationData;
 
   @override
   Widget build(BuildContext context) {
@@ -47,15 +49,21 @@ class HotelFacilityPage extends StatelessWidget {
       child: _HotelFacilityView(
         mapLocationResult: mapLocationResult,
         isUrban: isUrban,
+        locationData: locationData,
       ),
     );
   }
 }
 
 class _HotelFacilityView extends StatefulWidget {
-  const _HotelFacilityView({this.mapLocationResult, required this.isUrban});
+  const _HotelFacilityView({
+    this.mapLocationResult,
+    required this.isUrban,
+    required this.locationData,
+  });
   final MapLocationResult? mapLocationResult;
   final bool isUrban;
+  final Map<String, dynamic>? locationData;
 
   @override
   State<_HotelFacilityView> createState() => _HotelFacilityViewState();
@@ -152,7 +160,6 @@ class _HotelFacilityViewState extends State<_HotelFacilityView> {
                 cubit.emit(cubit.state.copyWith(buildingsCount: parsed));
               }
             },
-
             onIncrementTapped: () {
               int value = cubit.state.buildingsCount + 1;
               _buildingController.text = value.toString();
@@ -163,6 +170,7 @@ class _HotelFacilityViewState extends State<_HotelFacilityView> {
               if (value >= 1) {
                 cubit.emit(cubit.state.copyWith(buildingsCount: value));
               }
+              setState(() {});
             },
             onDecrementTapped: () {
               int value = cubit.state.buildingsCount - 1;
@@ -174,6 +182,7 @@ class _HotelFacilityViewState extends State<_HotelFacilityView> {
               if (value >= 1) {
                 cubit.emit(cubit.state.copyWith(buildingsCount: value));
               }
+              setState(() {});
             },
           ),
 
@@ -305,6 +314,7 @@ class _HotelFacilityViewState extends State<_HotelFacilityView> {
             cubit: cubit,
             mapLocationResult: widget.mapLocationResult,
             isUrban: widget.isUrban,
+            locationData: widget.locationData,
           ),
           16.hs,
 
@@ -333,7 +343,7 @@ class _HotelFacilityViewState extends State<_HotelFacilityView> {
                 prev.hasSubUnits != curr.hasSubUnits ||
                 prev.hotelSubUnitsUpdateCount != curr.hotelSubUnitsUpdateCount,
             builder: (context, state) {
-              if (state.hasSubUnits != true || state.hotelSubUnits.isEmpty) {
+              if (state.hasSubUnits != true) {
                 return const SizedBox.shrink();
               }
               return BuildingContainer(
@@ -366,8 +376,30 @@ class _HotelFacilityViewState extends State<_HotelFacilityView> {
                       backgroundColor: AppColors.highlightDarkest,
                       textColor: AppColors.white,
                       height: 55.h,
-                      onTap: cubit.addHotelSubUnit,
                       fontWeight: FontWeight.w600,
+                      onTap: () async {
+                        final newUnit = HotelSubUnit();
+                        final newIndex = state.hotelSubUnits.length;
+                        final result =
+                            await PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen: BlocProvider.value(
+                                value: cubit,
+                                child: HotelSubUnitDetailPage(
+                                  unit: newUnit,
+                                  index: newIndex,
+                                ),
+                              ),
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.slideUp,
+                            );
+                        if (result == true) {
+                          cubit.confirmAddHotelSubUnit(newUnit);
+                        } else {
+                          newUnit.dispose();
+                        }
+                      },
                     ),
                   ],
                 ),
@@ -383,18 +415,30 @@ class _HotelFacilityViewState extends State<_HotelFacilityView> {
 // ─────────────────────────────────────────
 // Hotel Buildings Section
 // ─────────────────────────────────────────
-class _HotelBuildingsSection extends StatelessWidget {
+class _HotelBuildingsSection extends StatefulWidget {
   const _HotelBuildingsSection({
     required this.cubit,
     this.mapLocationResult,
     required this.isUrban,
+    required this.locationData,
   });
   final UnitDataCubit cubit;
   final MapLocationResult? mapLocationResult;
   final bool isUrban;
+  final Map<String, dynamic>? locationData;
+
+  @override
+  State<_HotelBuildingsSection> createState() => _HotelBuildingsSectionState();
+}
+
+class _HotelBuildingsSectionState extends State<_HotelBuildingsSection> {
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
+    final cubit = widget.cubit;
     return BlocBuilder<UnitDataCubit, UnitDataState>(
       buildWhen: (prev, curr) => prev.buildingsCount != curr.buildingsCount,
       builder: (context, state) {
@@ -407,9 +451,10 @@ class _HotelBuildingsSection extends StatelessWidget {
               BuildingsTitle(),
               12.hs,
               LocationCard(
+                hideEditButton: widget.locationData != null,
                 mapLocationResult:
                     cubit.hotelBuildings.first.mapLocationResult ??
-                    mapLocationResult,
+                    widget.mapLocationResult,
                 title: 'المبنى الرئيسي (1)',
                 buttonLabel: isComplete ? 'تعديل' : 'استكمال البيانات',
                 onBtnTapped: () {
@@ -418,14 +463,14 @@ class _HotelBuildingsSection extends StatelessWidget {
                     screen: BlocProvider.value(
                       value: cubit,
                       child: HotelBuildingLocationData(
-                        mapLocationResult: mapLocationResult,
+                        mapLocationResult: widget.mapLocationResult,
                         index: 0,
-                        isUrban: isUrban,
+                        isUrban: widget.isUrban,
                       ),
                     ),
                     withNavBar: false,
                     pageTransitionAnimation: PageTransitionAnimation.slideUp,
-                  );
+                  ).then((_) => _refresh());
                 },
               ),
               25.hs,
@@ -438,7 +483,9 @@ class _HotelBuildingsSection extends StatelessWidget {
                   index: entry.key,
                   building: entry.value,
                   cubit: cubit,
-                  isUrban: isUrban,
+                  isUrban: widget.isUrban,
+                  onReturned: _refresh,
+                  locationData: widget.locationData,
                 );
               }),
               25.hs,
@@ -457,7 +504,30 @@ class _HotelBuildingsSection extends StatelessWidget {
                     : AppColors.neutralDarkLight,
                 height: 55.h,
                 onTap: isComplete
-                    ? () => cubit.incrementHotelBuildings(mapLocationResult)
+                    ? () async {
+                        cubit.incrementHotelBuildings();
+                        final newIndex = cubit.hotelBuildings.length - 1;
+                        final result =
+                            await PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen: BlocProvider.value(
+                                value: cubit,
+                                child: HotelBuildingLocationData(
+                                  mapLocationResult: null,
+                                  index: newIndex,
+                                  isUrban: widget.isUrban,
+                                ),
+                              ),
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.slideUp,
+                            );
+
+                        if (result != true) {
+                          await cubit.decrementHotelBuildings(newIndex);
+                        }
+                        _refresh();
+                      }
                     : null,
               ),
             ],
@@ -477,12 +547,16 @@ class _HotelBuildingItemWidget extends StatelessWidget {
     required this.building,
     required this.cubit,
     required this.isUrban,
+    required this.onReturned,
+    required this.locationData,
   });
 
   final int index;
   final HotelBuildingInfo building;
   final UnitDataCubit cubit;
   final bool isUrban;
+  final VoidCallback onReturned;
+  final Map<String, dynamic>? locationData;
 
   @override
   Widget build(BuildContext context) {
@@ -490,6 +564,7 @@ class _HotelBuildingItemWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         LocationCard(
+          hideEditButton: locationData != null,
           title: 'مبنى (${index + 1})',
           mapLocationResult: building.mapLocationResult,
           onBtnTapped: () {
@@ -505,7 +580,7 @@ class _HotelBuildingItemWidget extends StatelessWidget {
               ),
               withNavBar: false,
               pageTransitionAnimation: PageTransitionAnimation.slideUp,
-            );
+            ).then((_) => onReturned());
           },
           onDeleteTapped: () => cubit.decrementHotelBuildings(index),
         ),

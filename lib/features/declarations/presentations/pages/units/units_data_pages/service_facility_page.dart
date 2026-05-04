@@ -30,25 +30,36 @@ class ServiceFacilityPage extends StatelessWidget {
     required this.unitCubit,
     this.mapLocationResult,
     required this.isUrban,
+    required this.locationData,
   });
   final UnitDataCubit unitCubit;
   final MapLocationResult? mapLocationResult;
   final bool isUrban;
+  final Map<String, dynamic>? locationData;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: unitCubit,
-      child: _ServiceFacilityView(mapLocationResult, isUrban: isUrban),
+      child: _ServiceFacilityView(
+        mapLocationResult,
+        isUrban: isUrban,
+        locationData: locationData,
+      ),
     );
   }
 }
 
 class _ServiceFacilityView extends StatelessWidget {
-  const _ServiceFacilityView(this.mapLocationResult, {required this.isUrban});
+  const _ServiceFacilityView(
+    this.mapLocationResult, {
+    required this.isUrban,
+    required this.locationData,
+  });
 
   final MapLocationResult? mapLocationResult;
   final bool isUrban;
+  final Map<String, dynamic>? locationData;
 
   @override
   Widget build(BuildContext context) {
@@ -238,6 +249,7 @@ class _ServiceFacilityView extends StatelessWidget {
             cubit: cubit,
             mapLocationResult: mapLocationResult,
             isUrban: isUrban,
+            locationData: locationData,
           ),
           16.hs,
 
@@ -252,115 +264,142 @@ class _ServiceFacilityView extends StatelessWidget {
 // ─────────────────────────────────────────
 // Buildings Section
 // ─────────────────────────────────────────
-class _BuildingsSection extends StatelessWidget {
+class _BuildingsSection extends StatefulWidget {
   const _BuildingsSection({
     required this.cubit,
     this.mapLocationResult,
     required this.isUrban,
+    required this.locationData,
   });
   final UnitDataCubit cubit;
   final MapLocationResult? mapLocationResult;
   final bool isUrban;
+  final Map<String, dynamic>? locationData;
+
+  @override
+  State<_BuildingsSection> createState() => _BuildingsSectionState();
+}
+
+class _BuildingsSectionState extends State<_BuildingsSection> {
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
+    final cubit = widget.cubit;
     return BlocBuilder<UnitDataCubit, UnitDataState>(
       buildWhen: (prev, curr) => prev.buildingsCount != curr.buildingsCount,
       builder: (context, state) {
+        final isComplete =
+            cubit.facilityBuildings[0].areaController.text.isNotEmpty;
         return BuildingContainer(
-          child: AnimatedBuilder(
-            animation: cubit.facilityBuildings[0].areaController,
-            builder: (context, _) {
-              final isComplete =
-                  cubit.facilityBuildings[0].areaController.text.isNotEmpty;
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              // --- divider + title ------------------
+              TitleWithDivider(title: 'المباني المضافة داخل المنشأة'),
+              12.hs,
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  // --- divider + title ------------------
-                  TitleWithDivider(title: 'المباني المضافة داخل المنشأة'),
-                  12.hs,
-
-                  // --- عدد المباني counter ------------------
-                  BuildingsTitle(),
-                  16.hs,
-                  LocationCard(
-                    mapLocationResult:
-                        cubit.facilityBuildings.first.mapLocationResult ??
-                        mapLocationResult,
-                    title: 'المبنى الرئيسي (1)',
-                    buttonLabel: isComplete ? 'تعديل' : 'استكمال البيانات',
-                    onBtnTapped: () {
-                      PersistentNavBarNavigator.pushNewScreen(
-                        context,
-                        screen: BlocProvider.value(
-                          value: cubit,
-                          child: FacilityBuildingLocationData(
-                            mapLocationResult: mapLocationResult,
-                            index: 0,
-                            isUrban: isUrban,
-                          ),
-                        ),
-                        withNavBar: false,
-                        pageTransitionAnimation:
-                            PageTransitionAnimation.slideUp,
-                      );
-                    },
-                  ),
-                  25.hs,
-                  if (!isComplete)
-                    WarningCard(
-                      label:
-                          'يجب استكمال بيانات المبنى الرئيسي لتستطيع المتابعه',
+              // --- عدد المباني counter ------------------
+              BuildingsTitle(),
+              16.hs,
+              LocationCard(
+                hideEditButton: widget.locationData != null,
+                mapLocationResult:
+                    cubit.facilityBuildings.first.mapLocationResult ??
+                    widget.mapLocationResult,
+                title: 'المبنى الرئيسي (1)',
+                buttonLabel: isComplete ? 'تعديل' : 'استكمال البيانات',
+                onBtnTapped: () {
+                  PersistentNavBarNavigator.pushNewScreen(
+                    context,
+                    screen: BlocProvider.value(
+                      value: cubit,
+                      child: FacilityBuildingLocationData(
+                        mapLocationResult:
+                            cubit.facilityBuildings.first.mapLocationResult ??
+                            widget.mapLocationResult,
+                        index: 0,
+                        isUrban: widget.isUrban,
+                      ),
                     ),
-                  // --- قائمة المباني (من المبنى الثاني فصاعداً) ------------------
-                  ...cubit.facilityBuildings.asMap().entries.skip(1).map((
-                    entry,
-                  ) {
-                    return _BuildingItemWidget(
-                      index: entry.key,
-                      building: entry.value,
-                      cubit: cubit,
-                      isLast: entry.key == cubit.facilityBuildings.length - 1,
-                      canDelete: cubit.facilityBuildings.length > 1,
-                      isUrban: isUrban,
-                    );
-                  }),
+                    withNavBar: false,
+                    pageTransitionAnimation: PageTransitionAnimation.slideUp,
+                  ).then((_) => _refresh());
+                },
+              ),
+              25.hs,
+              if (!isComplete)
+                WarningCard(
+                  label: 'يجب استكمال بيانات المبنى الرئيسي لتستطيع المتابعه',
+                ),
+              // --- قائمة المباني (من المبنى الثاني فصاعداً) ------------------
+              ...cubit.facilityBuildings.asMap().entries.skip(1).map((entry) {
+                return _BuildingItemWidget(
+                  index: entry.key,
+                  building: entry.value,
+                  cubit: cubit,
+                  isLast: entry.key == cubit.facilityBuildings.length - 1,
+                  canDelete: cubit.facilityBuildings.length > 1,
+                  isUrban: widget.isUrban,
+                  onReturned: _refresh,
+                  locationData: widget.locationData,
+                );
+              }),
 
-                  25.hs,
-                  AppButton(
-                    label: 'إضافة مبنى جديد',
-                    iconLeft: false,
-                    icon: ImageSvgCustomWidget(
-                      imgPath: FixedAssets.instance.addIcon,
-                      color: isComplete ? null : AppColors.neutralLightDarkest,
-                    ),
-                    backgroundColor: isComplete
-                        ? AppColors.highlightDark
-                        : AppColors.neutralLightDarkest,
-                    textColor: isComplete
-                        ? Colors.white
-                        : AppColors.neutralDarkLight,
-                    height: 55.h,
-                    onTap: isComplete
-                        ? () => cubit.incrementFacilityBuildings(
-                            mapLocationResult,
-                          )
-                        : null,
-                  ),
+              25.hs,
+              AppButton(
+                label: 'إضافة مبنى جديد',
+                iconLeft: false,
+                icon: ImageSvgCustomWidget(
+                  imgPath: FixedAssets.instance.addIcon,
+                  color: isComplete ? null : AppColors.neutralLightDarkest,
+                ),
+                backgroundColor: isComplete
+                    ? AppColors.highlightDark
+                    : AppColors.neutralLightDarkest,
+                textColor: isComplete
+                    ? Colors.white
+                    : AppColors.neutralDarkLight,
+                height: 55.h,
+                onTap: isComplete
+                    ? () async {
+                        cubit.incrementFacilityBuildings();
+                        final newIndex = cubit.facilityBuildings.length - 1;
+                        final result =
+                            await PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen: BlocProvider.value(
+                                value: cubit,
+                                child: FacilityBuildingLocationData(
+                                  mapLocationResult: null,
+                                  index: newIndex,
+                                  isUrban: widget.isUrban,
+                                ),
+                              ),
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.slideUp,
+                            );
+                        if (result != true) {
+                          cubit.decrementFacilityBuildings(newIndex);
+                        }
+                        _refresh();
+                      }
+                    : null,
+              ),
 
-                  // ---- إجمالي مساحة المباني ------------------
-                  12.hs,
-                  AppTextFormField(
-                    labelText: 'إجمالي مساحة المباني',
-                    controller: cubit.totalBuildingAreaController,
-                    enabled: false,
-                    filledColor: AppColors.neutralLightLight,
-                    hintText: 'يُحسب تلقائياً',
-                  ),
-                ],
-              );
-            },
+              // ---- إجمالي مساحة المباني ------------------
+              12.hs,
+              AppTextFormField(
+                labelText: 'إجمالي مساحة المباني',
+                controller: cubit.totalBuildingAreaController,
+                enabled: false,
+                filledColor: AppColors.neutralLightLight,
+                hintText: 'يُحسب تلقائياً',
+              ),
+            ],
           ),
         );
       },
@@ -371,15 +410,16 @@ class _BuildingsSection extends StatelessWidget {
 // ─────────────────────────────────────────
 // Building Item Widget
 // ─────────────────────────────────────────
-class _BuildingItemWidget extends StatefulWidget {
+class _BuildingItemWidget extends StatelessWidget {
   const _BuildingItemWidget({
     required this.index,
     required this.building,
     required this.cubit,
     required this.isLast,
     required this.canDelete,
-    this.mapLocationResult,
     required this.isUrban,
+    required this.onReturned,
+    required this.locationData,
   });
 
   final int index;
@@ -387,39 +427,35 @@ class _BuildingItemWidget extends StatefulWidget {
   final UnitDataCubit cubit;
   final bool isLast;
   final bool canDelete;
-  final MapLocationResult? mapLocationResult;
   final bool isUrban;
+  final VoidCallback onReturned;
+  final Map<String, dynamic>? locationData;
 
-  @override
-  State<_BuildingItemWidget> createState() => _BuildingItemWidgetState();
-}
-
-class _BuildingItemWidgetState extends State<_BuildingItemWidget> {
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         LocationCard(
-          title: 'مبنى (${widget.index + 1})',
-          mapLocationResult: widget.building.mapLocationResult,
+          hideEditButton: locationData != null,
+          title: 'مبنى (${index + 1})',
+          mapLocationResult: building.mapLocationResult,
           onBtnTapped: () {
             PersistentNavBarNavigator.pushNewScreen(
               context,
               screen: BlocProvider.value(
-                value: widget.cubit,
+                value: cubit,
                 child: FacilityBuildingLocationData(
-                  mapLocationResult: widget.building.mapLocationResult,
-                  index: widget.index,
-                  isUrban: widget.isUrban,
+                  mapLocationResult: building.mapLocationResult,
+                  index: index,
+                  isUrban: isUrban,
                 ),
               ),
               withNavBar: false,
               pageTransitionAnimation: PageTransitionAnimation.slideUp,
-            );
+            ).then((_) => onReturned());
           },
-          onDeleteTapped: () =>
-              widget.cubit.decrementFacilityBuildings(widget.index),
+          onDeleteTapped: () => cubit.decrementFacilityBuildings(index),
         ),
 
         15.hs,
