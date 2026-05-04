@@ -42,7 +42,7 @@ class _FixedInstallationsView extends StatelessWidget {
         builder: (context, state) {
           return Column(
             children: [
-              const FloorUnitSection(),
+              const FloorUnitSection(hideUnit: true),
               16.hs,
 
               const TaxContactSection(
@@ -104,6 +104,18 @@ class _FixedInstallationsView extends StatelessWidget {
                       v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
                 ),
               16.hs,
+
+              if (cubit.unitData != null) ...[
+                AppTextFormField(
+                  labelText: 'رقم التركيب الثابت',
+                  controller: cubit.fixedInstallationNumberController,
+                  filledColor: AppColors.neutralLightLight,
+                  labelColor: AppColors.neutralDarkLightest,
+                  readOnly: true,
+                  enabled: false,
+                ),
+                16.hs,
+              ],
 
               AppDropdownField<String>(
                 labelText: 'هل المكلف بأداء الضريبة هو مالك التركيبة؟',

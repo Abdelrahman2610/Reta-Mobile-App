@@ -10,6 +10,7 @@ class HotelBuildingInfo {
   final TextEditingController knownBuildingNumber;
   MapLocationResult? mapLocationResult;
   bool? isNearestProperty;
+  bool isServerRecord = false;
   final List<HotelSubUnit> hotelUnits = [];
 
   HotelBuildingInfo({

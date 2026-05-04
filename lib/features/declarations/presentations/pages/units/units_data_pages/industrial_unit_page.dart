@@ -1,42 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:reta/core/helpers/fixed_assets.dart';
 import 'package:reta/features/components/app_button.dart';
 import 'package:reta/features/components/app_check_box.dart';
+import 'package:reta/features/components/image_svg_custom_widget.dart';
+import 'package:reta/features/declarations/presentations/pages/units/units_data_pages/buildings/industrial_building_location_data.dart';
 
 import '../../../../../../core/helpers/extensions/dimensions.dart';
-import '../../../../../../core/helpers/fixed_assets.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../components/app_text.dart';
 import '../../../../../components/app_text_form_field.dart';
-import '../../../../../components/image_svg_custom_widget.dart';
-import '../../../../data/models/industrial_building.dart';
+import '../../../../data/models/map_location_result.dart';
 import '../../../components/app_drop_down.dart';
 import '../../../components/app_drop_down_option.dart';
+import '../../../components/warning_card.dart';
 import '../../../cubit/units/unit_data/unit_data_cubit.dart';
 import '../../../cubit/units/unit_data/unit_data_state.dart';
 import 'components/additional_documents_section.dart';
-import 'components/app_counter.dart';
-import 'components/calendar_icon.dart';
+import 'components/building_container.dart';
+import 'components/buildings_title.dart';
 import 'components/file_upload_field.dart';
+import 'components/location_card.dart';
 import 'components/tax_contact_section.dart';
-import 'components/title_with_divider.dart';
 
 class IndustrialFacilityPage extends StatelessWidget {
-  const IndustrialFacilityPage({super.key, required this.unitCubit});
+  const IndustrialFacilityPage({
+    super.key,
+    required this.unitCubit,
+    this.mapLocationResult,
+    required this.isUrban,
+    required this.locationData,
+  });
   final UnitDataCubit unitCubit;
+  final MapLocationResult? mapLocationResult;
+  final bool isUrban;
+  final Map<String, dynamic>? locationData;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: unitCubit,
-      child: const _IndustrialFacilityView(),
+      child: _IndustrialFacilityView(
+        mapLocationResult: mapLocationResult,
+        isUrban: isUrban,
+        locationData: locationData,
+      ),
     );
   }
 }
 
 class _IndustrialFacilityView extends StatelessWidget {
-  const _IndustrialFacilityView();
+  const _IndustrialFacilityView({
+    this.mapLocationResult,
+    required this.isUrban,
+    required this.locationData,
+  });
+
+  final MapLocationResult? mapLocationResult;
+  final bool isUrban;
+  final Map<String, dynamic>? locationData;
 
   @override
   Widget build(BuildContext context) {
@@ -83,17 +107,14 @@ class _IndustrialFacilityView extends StatelessWidget {
             keyboardType: TextInputType.number,
             validator: (v) {
               if (v == null || v.isEmpty) return 'هذا الحقل مطلوب';
-
               final total = double.tryParse(
                 cubit.totalLandAreaFacilityController.text,
               );
               final exploited = double.tryParse(v);
-
               if (exploited == null) return 'يرجى إدخال رقم صحيح';
               if (total != null && exploited > total) {
                 return 'يجب أن تكون المساحة المستغلة أصغر من أو تساوي المساحة الكلية';
               }
-
               return null;
             },
           ),
@@ -104,58 +125,6 @@ class _IndustrialFacilityView extends StatelessWidget {
             controller: cubit.landMarketValueController,
             hintText: 'ادخل القيمة السوقية للأرض',
             keyboardType: TextInputType.number,
-          ),
-          16.hs,
-
-          TitleWithDivider(title: 'وصف المباني'),
-          12.hs,
-
-          BlocBuilder<UnitDataCubit, UnitDataState>(
-            buildWhen: (prev, curr) =>
-                prev.industrialBuildingsCount != curr.industrialBuildingsCount,
-            builder: (context, state) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      AppText(
-                        text: 'عدد المباني',
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.neutralDarkDark,
-                      ),
-                      AppText(
-                        text: ' *',
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.errorDark,
-                      ),
-                      const Spacer(),
-                      AppCounter(
-                        count: cubit.industrialBuildings.length,
-                        onDecrement: () => cubit.removeIndustrialBuilding(
-                          cubit.industrialBuildings.length - 1,
-                        ),
-                        onIncrement: cubit.addIndustrialBuilding,
-                      ),
-                    ],
-                  ),
-                  12.hs,
-
-                  ...cubit.industrialBuildings.asMap().entries.map(
-                    (e) => _BuildingItem(
-                      index: e.key,
-                      building: e.value,
-                      cubit: cubit,
-                      isLast: e.key == cubit.industrialBuildings.length - 1,
-                      canDelete: cubit.industrialBuildings.length > 1,
-                    ),
-                  ),
-                ],
-              );
-            },
           ),
           16.hs,
 
@@ -209,7 +178,6 @@ class _IndustrialFacilityView extends StatelessWidget {
                       ),
                     ],
                   ),
-
                   if (state.ministryBurden == true) ...[
                     16.hs,
                     AppDropdownField<String>(
@@ -234,23 +202,18 @@ class _IndustrialFacilityView extends StatelessWidget {
             buildWhen: (prev, curr) =>
                 prev.constructionLicenseFullUrl !=
                 curr.constructionLicenseFullUrl,
-            builder: (context, state) {
-              print(
-                "MSG: UI: constructionLicenseFullUrl: ${state.constructionLicenseFilePath}",
-              );
-              return FileUploadField(
-                labelText: 'صورة من التراخيص الإنشائية',
-                text: 'حمل ملف',
-                backgroundColor: AppColors.highlightDarkest,
-                textColor: AppColors.white,
-                filePath: state.constructionLicenseFullUrl,
-                onFilePicked: () async {
-                  final path = await cubit.pickFile();
-                  if (path != null) cubit.setConstructionLicenseFile(path);
-                },
-                onFileRemoved: () => cubit.removeConstructionLicenseFile(),
-              );
-            },
+            builder: (context, state) => FileUploadField(
+              labelText: 'صورة من التراخيص الإنشائية',
+              text: 'حمل ملف',
+              backgroundColor: AppColors.highlightDarkest,
+              textColor: AppColors.white,
+              filePath: state.constructionLicenseFullUrl,
+              onFilePicked: () async {
+                final path = await cubit.pickFile();
+                if (path != null) cubit.setConstructionLicenseFile(path);
+              },
+              onFileRemoved: () => cubit.removeConstructionLicenseFile(),
+            ),
           ),
           16.hs,
 
@@ -291,6 +254,15 @@ class _IndustrialFacilityView extends StatelessWidget {
           ),
           16.hs,
 
+          // ── وصف المباني ───────────────────────────
+          _BuildingsSection(
+            cubit: cubit,
+            mapLocationResult: mapLocationResult,
+            isUrban: isUrban,
+            locationData: locationData,
+          ),
+          16.hs,
+
           const AdditionalDocumentsSection(),
         ],
       ),
@@ -299,162 +271,183 @@ class _IndustrialFacilityView extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────
+// Buildings Section
+// ─────────────────────────────────────────
+class _BuildingsSection extends StatefulWidget {
+  const _BuildingsSection({
+    required this.cubit,
+    this.mapLocationResult,
+    required this.isUrban,
+    required this.locationData,
+  });
+  final UnitDataCubit cubit;
+  final MapLocationResult? mapLocationResult;
+  final bool isUrban;
+  final Map<String, dynamic>? locationData;
+
+  @override
+  State<_BuildingsSection> createState() => _BuildingsSectionState();
+}
+
+class _BuildingsSectionState extends State<_BuildingsSection> {
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = widget.cubit;
+    return BlocBuilder<UnitDataCubit, UnitDataState>(
+      buildWhen: (prev, curr) =>
+          prev.industrialBuildingsCount != curr.industrialBuildingsCount,
+      builder: (context, state) {
+        final bool isComplete =
+            cubit.industrialBuildings.first.buildingType != null &&
+            cubit.industrialBuildings.first.totalArea.text.isNotEmpty &&
+            cubit.industrialBuildings.first.constructionDate.text.isNotEmpty;
+        return BuildingContainer(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              BuildingsTitle(),
+              16.hs,
+              LocationCard(
+                hideEditButton: widget.locationData != null,
+                mapLocationResult:
+                    cubit.industrialBuildings.first.mapLocationResult ??
+                    widget.mapLocationResult,
+                title: 'المبنى الرئيسي (1)',
+                buttonLabel: isComplete ? 'تعديل' : 'استكمال البيانات',
+                onBtnTapped: () {
+                  PersistentNavBarNavigator.pushNewScreen(
+                    context,
+                    screen: BlocProvider.value(
+                      value: cubit,
+                      child: IndustrialBuildingLocationData(
+                        index: 0,
+                        isUrban: widget.isUrban,
+                        isNew: false,
+                      ),
+                    ),
+                    withNavBar: false,
+                    pageTransitionAnimation: PageTransitionAnimation.slideUp,
+                  ).then((_) => _refresh());
+                },
+              ),
+              25.hs,
+              if (!isComplete)
+                WarningCard(
+                  label: 'يجب استكمال بيانات المبنى الرئيسي لتستطيع المتابعه',
+                ),
+              16.hs,
+              ...cubit.industrialBuildings.asMap().entries.skip(1).map((entry) {
+                final index = entry.key;
+                final building = entry.value;
+                return _BuildingItemWidget(
+                  index: index,
+                  building: building,
+                  cubit: cubit,
+                  mapLocationResult: building.mapLocationResult,
+                  isUrban: widget.isUrban,
+                  onReturned: _refresh,
+                  locationData: widget.locationData,
+                );
+              }),
+              16.hs,
+              AppButton(
+                label: 'إضافة مبنى جديد',
+                iconLeft: false,
+                icon: ImageSvgCustomWidget(
+                  imgPath: FixedAssets.instance.addIcon,
+                  color: isComplete ? null : AppColors.neutralLightDarkest,
+                ),
+                backgroundColor: isComplete
+                    ? AppColors.highlightDark
+                    : AppColors.neutralLightDarkest,
+                textColor: isComplete
+                    ? Colors.white
+                    : AppColors.neutralDarkLight,
+                height: 55.h,
+                onTap: isComplete
+                    ? () async {
+                        cubit.addIndustrialBuilding();
+                        final newIndex = cubit.industrialBuildings.length - 1;
+                        final result =
+                            await PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen: BlocProvider.value(
+                                value: cubit,
+                                child: IndustrialBuildingLocationData(
+                                  index: newIndex,
+                                  isUrban: widget.isUrban,
+                                  isNew: true,
+                                ),
+                              ),
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.slideUp,
+                            );
+
+                        _refresh();
+                      }
+                    : null,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ─────────────────────────────────────────
 // Building Item Widget
 // ─────────────────────────────────────────
-
-class _BuildingItem extends StatefulWidget {
-  const _BuildingItem({
+class _BuildingItemWidget extends StatelessWidget {
+  const _BuildingItemWidget({
     required this.index,
     required this.building,
     required this.cubit,
-    required this.isLast,
-    required this.canDelete,
+    this.mapLocationResult,
+    required this.isUrban,
+    required this.onReturned,
+    required this.locationData,
   });
 
   final int index;
-  final IndustrialBuilding building;
+  final dynamic building;
   final UnitDataCubit cubit;
-  final bool isLast;
-  final bool canDelete;
+  final MapLocationResult? mapLocationResult;
+  final bool isUrban;
+  final VoidCallback onReturned;
+  final Map<String, dynamic>? locationData;
 
-  @override
-  State<_BuildingItem> createState() => _BuildingItemState();
-}
-
-class _BuildingItemState extends State<_BuildingItem> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: AppColors.neutralLightLight,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          TitleWithDivider(
-            title: 'مبنى (${widget.index + 1})',
-            fontSize: 14.sp,
-          ),
-          15.hs,
-
-          AppDropdownField<String>(
-            labelText: 'نوع المبنى',
-            labelRequired: true,
-            hintText: 'اختر نوع المبنى',
-            value: widget.building.buildingType,
-            items: widget.cubit.lookups.buildingTypes
-                .map((b) => appDropDownOption(label: b.name))
-                .toList(),
-            onChanged: (v) => setState(() => widget.building.buildingType = v),
-            validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
-          ),
-          16.hs,
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              AppText(
-                text: 'عدد الأدوار',
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w700,
-                color: AppColors.neutralDarkDark,
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: LocationCard(
+        hideEditButton: locationData != null,
+        title: 'مبنى (${index + 1})',
+        mapLocationResult: building.mapLocationResult,
+        onBtnTapped: () {
+          PersistentNavBarNavigator.pushNewScreen(
+            context,
+            screen: BlocProvider.value(
+              value: cubit,
+              child: IndustrialBuildingLocationData(
+                index: index,
+                isUrban: isUrban,
+                isNew: false,
               ),
-              AppText(
-                text: ' *',
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w700,
-                color: AppColors.errorDark,
-              ),
-              const Spacer(),
-              AppCounter(
-                count: widget.building.floorsCount,
-                onDecrement: () {
-                  if (widget.building.floorsCount > 1) {
-                    setState(() => widget.building.floorsCount--);
-                  }
-                },
-                onIncrement: () =>
-                    setState(() => widget.building.floorsCount++),
-              ),
-            ],
-          ),
-          16.hs,
-
-          AppTextFormField(
-            labelText: 'المساحة الإجمالية للمبنى',
-            labelRequired: true,
-            controller: widget.building.totalArea,
-            hintText: 'المساحة الإجمالية بالمتر المربع',
-            keyboardType: TextInputType.number,
-            validator: (v) => v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
-          ),
-          15.hs,
-
-          AppTextFormField(
-            labelText: 'تاريخ الإنشاء للمبنى',
-            labelRequired: true,
-            controller: widget.building.constructionDate,
-            hintText: 'ادخل تاريخ الإنشاء للمبنى',
-            readOnly: true,
-            onTap: () async {
-              final picked = await showDatePicker(
-                context: context,
-                initialDate: DateTime.now(),
-                firstDate: DateTime(1900),
-                lastDate: DateTime.now(),
-                locale: const Locale('en'),
-              );
-              if (picked != null) {
-                setState(() {
-                  widget.building.constructionDate.text =
-                      '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
-                });
-              }
-            },
-            suffixWidget: CalendarIcon(color: AppColors.neutralDarkLightest),
-            validator: (v) => v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
-          ),
-          15.hs,
-
-          AppTextFormField(
-            labelText: 'القيمة السوقية للمبنى',
-            controller: widget.building.marketValue,
-            hintText: 'ادخل القيمة السوقية للمبنى',
-            keyboardType: TextInputType.number,
-          ),
-          15.hs,
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (widget.isLast)
-                Expanded(
-                  child: AppButton(
-                    label: 'إضافة مبنى',
-                    backgroundColor: AppColors.highlightDarkest,
-                    icon: Icon(Icons.add, color: AppColors.white),
-                    iconLeft: false,
-                    onTap: widget.cubit.addIndustrialBuilding,
-                    fontWeight: FontWeight.w600,
-                  ),
-                )
-              else
-                const SizedBox.shrink(),
-              if (widget.isLast && widget.canDelete) 15.ws,
-              if (widget.canDelete)
-                GestureDetector(
-                  onTap: () =>
-                      widget.cubit.removeIndustrialBuilding(widget.index),
-                  child: ImageSvgCustomWidget(
-                    imgPath: FixedAssets.instance.deleteIC,
-                  ),
-                ),
-            ],
-          ),
-        ],
+            ),
+            withNavBar: false,
+            pageTransitionAnimation: PageTransitionAnimation.slideUp,
+          ).then((_) => onReturned());
+        },
+        onDeleteTapped: cubit.industrialBuildings.length > 1
+            ? () => cubit.deleteIndustrialBuilding(index)
+            : null,
       ),
     );
   }

@@ -202,8 +202,10 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         _initVacantLandData();
         break;
       case UnitType.serviceFacility:
-      case UnitType.productionFacility:
         _initFacilityData();
+        break;
+      case UnitType.productionFacility:
+        _initProductionData();
         break;
       case UnitType.industrialFacility:
         _initIndustrialData();
@@ -407,6 +409,9 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     otherInstallationTypeController.text =
         unitData!['installation_type_other'] ?? '';
 
+    fixedInstallationNumberController.text =
+        unitData!['fixed_installation_number'] ?? '';
+
     bool isTaxpayerOwner = unitData!['is_taxpayer_owner_of_installation'] == 1
         ? true
         : false;
@@ -571,6 +576,66 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     );
   }
 
+  void _initProductionData() {
+    productionFacilityNameController.text = unitData!["facility_name"] ?? "";
+    productionUsageTypeController.text = unitData!["activity_type"] ?? "";
+    totalLandArea.text = unitData!["total_land_area"]?.toString() ?? "";
+    totalLandUtilized.text = unitData!["used_land_area"]?.toString() ?? "";
+    bookValueController.text = unitData!["market_value"]?.toString() ?? "";
+    unitCodeController.text = unitData!["account_code"] ?? "";
+
+    final burdenActivityId = unitData!["burden_activity_id"];
+    String? burdenActivityText;
+    if (burdenActivityId != null) {
+      final found = lookups.productionBurdenActivityTypes.firstWhere(
+        (b) => b.id == int.tryParse(burdenActivityId.toString()),
+        orElse: () => DeclarationLookup(id: -1, name: ""),
+      );
+      burdenActivityText = found.id == -1 ? null : found.name;
+    }
+
+    final buildingsData = unitData!["buildings"] as List? ?? [];
+    if (buildingsData.isNotEmpty) {
+      for (final b in productionBuildings) {
+        b.dispose();
+      }
+      productionBuildings.clear();
+      for (final b in buildingsData) {
+        final building = ProductionBuilding();
+        building.initFromMap(b as Map<String, dynamic>, lookups.buildingTypes);
+        productionBuildings.add(building);
+      }
+    }
+
+    final constructionLicense = unitData!["construction_license"];
+    final operationLicense = unitData!["operation_license"];
+    final allocationContract = unitData!["allocation_contract"];
+
+    emit(
+      state.copyWith(
+        productionBuildingsCount: productionBuildings.length,
+        isExempt:
+            unitData!["ministry_burden"] == true ||
+            unitData!["ministry_burden"] == 1,
+        selectedBurdenActivity: burdenActivityText,
+        contactedTaxAuthority: unitData!["reta_contact_about_unit"] == 1,
+        hasAdditionalDocuments:
+            unitData!["submit_other_supporting_documents"] == 1,
+        constructionLicenseFilePath: constructionLicense?["url"],
+        constructionLicenseOriginalName:
+            constructionLicense?["original_file_name"],
+        constructionLicenseFullUrl: constructionLicense?["full_url"],
+        operationLicenseFilePath: operationLicense?["url"],
+        operationLicenseOriginalName: operationLicense?["original_file_name"],
+        operationLicenseFullUrl: operationLicense?["full_url"],
+        allocationContractFilePath: allocationContract?["url"],
+        allocationContractOriginalName:
+            allocationContract?["original_file_name"],
+        allocationContractFullUrl: allocationContract?["full_url"],
+      ),
+    );
+  }
+
   void _initHotelData() {
     facilityNameController.text = unitData!['trade_name'] ?? '';
     operatingLicenseDateController.text = unitData!['license_date'] ?? '';
@@ -639,7 +704,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       for (int i = 0; i < buildingsData.length; i++) {
         final bData = buildingsData[i] as Map<String, dynamic>;
         final building = HotelBuildingInfo(
-          id: '${i + 1}',
+          id: bData['id'].toString(),
           mapLocationResult: MapLocationResult.fromMap(bData),
           isNearestProperty: bData['is_nearest_property'] == 1,
         );
@@ -766,12 +831,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   void _initPetroleumData() {
     petroleumFacilityNameController.text = unitData!['facility_name'] ?? '';
     usageTypeController.text = unitData!['usage_type'] ?? '';
-    totalLandArea.text = unitData!['total_land_area'] ?? '';
-    totalLandUtilized.text = unitData!['used_land_area'] ?? '';
-    bookValueController.text = unitData!['land_book_value'] ?? '';
+    totalLandArea.text = unitData!['total_land_area']?.toString() ?? '';
+    totalLandUtilized.text = unitData!['used_land_area']?.toString() ?? '';
+    bookValueController.text = unitData!['land_book_value']?.toString() ?? '';
+    unitCodeController.text = unitData!['account_code'] ?? '';
 
-    totalLandAreaFacilityController.text =
-        unitData!['total_land_area']?.toString() ?? '';
     final buildingsData = unitData!['buildings'] as List? ?? [];
     if (buildingsData.isNotEmpty) {
       for (final b in petroBuildings) {
@@ -791,17 +855,18 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
     emit(
       state.copyWith(
-        constructionLicenseFilePath: constructionLicense?['path'],
+        petroBuildingsCount: petroBuildings.length,
+        contactedTaxAuthority: unitData!['reta_contact_about_unit'] == 1,
+        hasAdditionalDocuments:
+            unitData!['submit_other_supporting_documents'] == 1,
+        constructionLicenseFilePath: constructionLicense?['url'],
         constructionLicenseOriginalName:
             constructionLicense?['original_file_name'],
         constructionLicenseFullUrl: constructionLicense?['full_url'],
-        constructionLicenseFileId: constructionLicense?['field_name'],
-
-        openingBudgetFilePath: openingBudget?['path'],
+        openingBudgetFilePath: openingBudget?['url'],
         openingBudgetOriginalName: openingBudget?['original_file_name'],
         openingBudgetFullUrl: openingBudget?['full_url'],
-
-        allBookBValueFilePath: allBookValue?['path'],
+        allBookBValueFilePath: allBookValue?['url'],
         allBookBValueOriginalName: allBookValue?['original_file_name'],
         allBookBValueFullUrl: allBookValue?['full_url'],
       ),
@@ -941,6 +1006,9 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   TextEditingController knownBuildNumController = TextEditingController();
 
+  TextEditingController fixedInstallationNumberController =
+      TextEditingController();
+
   // ─────────────────────────────────────────
   // Shared Actions
   // ─────────────────────────────────────────
@@ -1079,11 +1147,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   // Actions - منشآت
   // ─────────────────────────────────────────
 
-  void incrementFacilityBuildings(MapLocationResult? mapLocationResult) {
-    final newBuilding = ServiceFacilityBuildingInfo(
-      id: _uuid.v4(),
-      mapLocationResult: mapLocationResult,
-    );
+  void incrementFacilityBuildings() {
+    final newBuilding = ServiceFacilityBuildingInfo(id: _uuid.v4());
 
     facilityBuildings.add(newBuilding);
     emit(state.copyWith(buildingsCount: facilityBuildings.length));
@@ -1091,31 +1156,51 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   void decrementFacilityBuildings(int index) {
     if (facilityBuildings.length > 1) {
-      facilityBuildings[index].dispose();
+      final building = facilityBuildings[index];
       facilityBuildings.removeAt(index);
       _updateTotalBuildingArea();
       emit(state.copyWith(buildingsCount: facilityBuildings.length));
+      WidgetsBinding.instance.addPostFrameCallback((_) => building.dispose());
     }
   }
 
   void updateBuildingArea() => _updateTotalBuildingArea();
 
-  void incrementHotelBuildings(MapLocationResult? mapLocationResult) {
-    hotelBuildings.add(
-      HotelBuildingInfo(id: _uuid.v4(), mapLocationResult: mapLocationResult),
-    );
+  void incrementHotelBuildings() {
+    hotelBuildings.add(HotelBuildingInfo(id: _uuid.v4()));
     emit(state.copyWith(buildingsCount: hotelBuildings.length));
   }
 
   Future<void> decrementHotelBuildings(int index) async {
-    if (hotelBuildings.length > 1) {
-      hotelBuildings[index].dispose();
-      String id = hotelBuildings[index].id;
+    if (hotelBuildings.length <= 1) return;
+    final building = hotelBuildings[index];
+    if (unitData == null) {
       hotelBuildings.removeAt(index);
-
-      await deleteBuilding('hotel', 'hotel_building', id);
-
       emit(state.copyWith(buildingsCount: hotelBuildings.length));
+      WidgetsBinding.instance.addPostFrameCallback((_) => building.dispose());
+      return;
+    }
+    try {
+      emit(state.copyWith(isLoading: true));
+      final unitId = unitData!['id'];
+      final result = await safeApiCall(() async {
+        await DioClient.instance.dio.delete(
+          '${ApiConstants.baseUrl}/declaration-system/declarations/$declarationId/units/hotel/$unitId/hotel_building/${building.id}',
+        );
+      });
+      emit(state.copyWith(isLoading: false));
+      switch (result) {
+        case ApiSuccess():
+          hotelBuildings.removeAt(index);
+          emit(state.copyWith(buildingsCount: hotelBuildings.length));
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => building.dispose(),
+          );
+        case ApiError(:final message):
+          emit(state.copyWith(errorMessage: message));
+      }
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
     }
   }
 
@@ -1163,9 +1248,90 @@ class UnitDataCubit extends Cubit<UnitDataState> {
 
   void removeIndustrialBuilding(int index) {
     if (industrialBuildings.length <= 1) return;
-    industrialBuildings[index].dispose();
+    final building = industrialBuildings[index];
     industrialBuildings.removeAt(index);
     emit(state.copyWith(industrialBuildingsCount: industrialBuildings.length));
+    WidgetsBinding.instance.addPostFrameCallback((_) => building.dispose());
+  }
+
+  Future<bool> saveIndustrialBuilding(int index) async {
+    if (unitData == null) return true;
+    final building = industrialBuildings[index];
+    final unitId = unitData!['id'];
+    final buildingPayload = building.toPayload(lookups.buildingTypes);
+    if (!building.isServerRecord) buildingPayload.remove('id');
+    try {
+      emit(state.copyWith(isLoading: true));
+      final result = await safeApiCall(() async {
+        return await DioClient.instance.dio.post(
+          '${ApiConstants.baseUrl}/declaration-system/declarations/$declarationId/units/industrial/$unitId',
+          data: {
+            'buildings_count': industrialBuildings.length + 1,
+            'building': buildingPayload,
+          },
+        );
+      });
+      emit(state.copyWith(isLoading: false));
+      switch (result) {
+        case ApiSuccess(:final data):
+          if (!building.isServerRecord) {
+            final body = data.data;
+            final returnedId =
+                (body?['unit']?['buildings'] as List?)?.last?['id'];
+            // (body?['unit']?['Hamada'] as List?)?.last?['id'];
+            if (returnedId != null) {
+              building.id = returnedId.toString();
+            }
+            building.isServerRecord = true;
+          }
+          return true;
+        case ApiError(:final message):
+          emit(state.copyWith(errorMessage: message));
+          return false;
+      }
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
+      return false;
+    }
+  }
+
+  Future<void> deleteIndustrialBuilding(int index) async {
+    if (industrialBuildings.length <= 1) return;
+    final building = industrialBuildings[index];
+    if (!building.isServerRecord || unitData == null) {
+      industrialBuildings.removeAt(index);
+      emit(
+        state.copyWith(industrialBuildingsCount: industrialBuildings.length),
+      );
+      WidgetsBinding.instance.addPostFrameCallback((_) => building.dispose());
+      return;
+    }
+    try {
+      emit(state.copyWith(isLoading: true));
+      final unitId = unitData!['id'];
+      final result = await safeApiCall(() async {
+        await DioClient.instance.dio.delete(
+          '${ApiConstants.baseUrl}/declaration-system/declarations/$declarationId/units/industrial/$unitId/${building.id}',
+        );
+      });
+      emit(state.copyWith(isLoading: false));
+      switch (result) {
+        case ApiSuccess():
+          industrialBuildings.removeAt(index);
+          emit(
+            state.copyWith(
+              industrialBuildingsCount: industrialBuildings.length,
+            ),
+          );
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => building.dispose(),
+          );
+        case ApiError(:final message):
+          emit(state.copyWith(errorMessage: message));
+      }
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
+    }
   }
 
   void addPetroBuilding() {
@@ -1174,22 +1340,176 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   void addProductionBuilding() {
-    productionBuildings.add(ProductionBuilding());
+    ProductionBuilding productionBuilding = ProductionBuilding(id: Uuid().v4());
+    productionBuildings.add(productionBuilding);
     emit(state.copyWith(productionBuildingsCount: productionBuildings.length));
   }
 
   void removePetroBuilding(int index) {
     if (petroBuildings.length <= 1) return;
-    petroBuildings[index].dispose();
+    final building = petroBuildings[index];
     petroBuildings.removeAt(index);
     emit(state.copyWith(petroBuildingsCount: petroBuildings.length));
+    WidgetsBinding.instance.addPostFrameCallback((_) => building.dispose());
+  }
+
+  Future<bool> savePetroleumBuilding(int index) async {
+    if (unitData == null) return true;
+    final building = petroBuildings[index];
+    final unitId = unitData!['id'];
+    final buildingPayload = building.toPayload(lookups.buildingTypes);
+    if (!building.isServerRecord) buildingPayload.remove('id');
+    try {
+      emit(state.copyWith(isLoading: true));
+      final result = await safeApiCall(() async {
+        return await DioClient.instance.dio.post(
+          '${ApiConstants.baseUrl}/declaration-system/declarations/$declarationId/units/petroleum/$unitId',
+          data: {
+            'buildings_count': petroBuildings.length + 1,
+            'building': buildingPayload,
+          },
+        );
+      });
+      emit(state.copyWith(isLoading: false));
+      switch (result) {
+        case ApiSuccess(:final data):
+          if (!building.isServerRecord) {
+            final body = data.data;
+            final returnedId =
+                body?['data']?['id'] ?? body?['data']?['building']?['id'];
+            if (returnedId != null) building.id = returnedId.toString();
+            building.isServerRecord = true;
+          }
+          return true;
+        case ApiError(:final message):
+          emit(state.copyWith(errorMessage: message));
+          return false;
+      }
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
+      return false;
+    }
+  }
+
+  Future<void> deletePetroleumBuilding(int index) async {
+    if (petroBuildings.length <= 1) return;
+    final building = petroBuildings[index];
+    if (!building.isServerRecord || unitData == null) {
+      petroBuildings.removeAt(index);
+      emit(state.copyWith(petroBuildingsCount: petroBuildings.length));
+      WidgetsBinding.instance.addPostFrameCallback((_) => building.dispose());
+      return;
+    }
+    try {
+      emit(state.copyWith(isLoading: true));
+      final unitId = unitData!['id'];
+      final result = await safeApiCall(() async {
+        await DioClient.instance.dio.delete(
+          '${ApiConstants.baseUrl}/declaration-system/declarations/$declarationId/units/petroleum/$unitId/${building.id}',
+        );
+      });
+      emit(state.copyWith(isLoading: false));
+      switch (result) {
+        case ApiSuccess():
+          petroBuildings.removeAt(index);
+          emit(state.copyWith(petroBuildingsCount: petroBuildings.length));
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => building.dispose(),
+          );
+        case ApiError(:final message):
+          emit(state.copyWith(errorMessage: message));
+      }
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
+    }
   }
 
   void removeProductionBuilding(int index) {
     if (productionBuildings.length <= 1) return;
-    productionBuildings[index].dispose();
+    final building = productionBuildings[index];
     productionBuildings.removeAt(index);
     emit(state.copyWith(productionBuildingsCount: productionBuildings.length));
+    WidgetsBinding.instance.addPostFrameCallback((_) => building.dispose());
+  }
+
+  Future<bool> saveProductionBuilding(int index) async {
+    if (unitData == null) return true;
+    final building = productionBuildings[index];
+    final unitId = unitData!["id"];
+    final buildingPayload = building.toPayload(lookups.buildingTypes);
+    if (!building.isServerRecord) buildingPayload.remove("id");
+    try {
+      emit(state.copyWith(isLoading: true));
+      final result = await safeApiCall(() async {
+        return await DioClient.instance.dio.post(
+          "${ApiConstants.baseUrl}/declaration-system/declarations/$declarationId/units/production/$unitId",
+          data: {
+            "buildings_count": productionBuildings.length + 1,
+            "building": buildingPayload,
+          },
+        );
+      });
+
+      emit(state.copyWith(isLoading: false));
+      switch (result) {
+        case ApiSuccess(:final data):
+          if (!building.isServerRecord) {
+            final body = data.data;
+            final returnedId =
+                (body?["unit"]?["buildings"] as List?)?.last?["id"];
+            if (returnedId != null) {
+              building.id = returnedId.toString();
+            }
+            building.isServerRecord = true;
+          }
+          return true;
+        case ApiError(:final message):
+          emit(state.copyWith(errorMessage: message));
+          return false;
+      }
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
+      return false;
+    }
+  }
+
+  Future<void> deleteProductionBuilding(int index) async {
+    if (productionBuildings.length <= 1) return;
+    final building = productionBuildings[index];
+    if (!building.isServerRecord || unitData == null) {
+      productionBuildings.removeAt(index);
+      emit(
+        state.copyWith(productionBuildingsCount: productionBuildings.length),
+      );
+      WidgetsBinding.instance.addPostFrameCallback((_) => building.dispose());
+      return;
+    }
+    try {
+      emit(state.copyWith(isLoading: true));
+      final unitId = unitData!["id"];
+      final result = await safeApiCall(() async {
+        await DioClient.instance.dio.delete(
+          "${ApiConstants.baseUrl}/declaration-system/declarations/$declarationId/units/production/$unitId/${building.id}",
+        );
+      });
+      emit(state.copyWith(isLoading: false));
+      switch (result) {
+        case ApiSuccess():
+          productionBuildings.removeAt(index);
+          emit(
+            state.copyWith(
+              productionBuildingsCount: productionBuildings.length,
+            ),
+          );
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => building.dispose(),
+          );
+        case ApiError(:final message):
+          emit(state.copyWith(errorMessage: message));
+      }
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
+    }
   }
 
   Future<void> setAllocationContractFile(String path) async {
@@ -1223,11 +1543,24 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   void setHasSubUnits(bool? value) {
+    // if (state.hotelSubUnitsUpdateCount == 0) {
+    //   addHotelSubUnit();
+    // }
     emit(state.copyWith(hasSubUnits: value));
   }
 
   void addHotelSubUnit() {
     final updated = [...state.hotelSubUnits, HotelSubUnit()];
+    emit(
+      state.copyWith(
+        hotelSubUnits: updated,
+        hotelSubUnitsUpdateCount: state.hotelSubUnitsUpdateCount + 1,
+      ),
+    );
+  }
+
+  void confirmAddHotelSubUnit(HotelSubUnit unit) {
+    final updated = [...state.hotelSubUnits, unit];
     emit(
       state.copyWith(
         hotelSubUnits: updated,
@@ -1816,15 +2149,23 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     }
   }
 
-  Future<void> onSaveDataTapped(BuildContext context, UnitType unitType) async {
-    if (unitType == UnitType.industrialFacility ||
-        unitType == UnitType.petroleumFacility ||
-        unitType == UnitType.productionFacility) {
-      await _syncBuildingsIfNeeded(unitType);
-    }
+  Future<void> onSaveDataTapped(
+    BuildContext context,
+    UnitType unitType,
+    MapLocationResult? mapLocationResult,
+  ) async {
+    // if (unitType == UnitType.industrialFacility ||
+    //     unitType == UnitType.petroleumFacility ||
+    //     unitType == UnitType.productionFacility) {
+    //   await _syncBuildingsIfNeeded(unitType);
+    // }
 
     final declarationCubit = context.read<DeclarationCubit>();
-    int declarationId = await submit(context, unitType);
+    int declarationId = await submit(
+      context,
+      unitType,
+      mapLocationResult: mapLocationResult,
+    );
     if (context.mounted && state.successMessage != null) {
       await declarationCubit.fetchList();
       await Future.delayed(const Duration(milliseconds: 100));
@@ -1847,13 +2188,8 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   Future<void> onSaveAndAddOther(
     BuildContext context,
     UnitType unitType,
+    MapLocationResult? mapLocationResult,
   ) async {
-    if (unitType == UnitType.industrialFacility ||
-        unitType == UnitType.petroleumFacility ||
-        unitType == UnitType.productionFacility) {
-      await _syncBuildingsIfNeeded(unitType);
-    }
-
     final lookupsCubit = context.read<DeclarationLookupsCubit>();
     ApplicantCubit applicantCubit;
     try {
@@ -1892,37 +2228,22 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         if (isEdit) "id": unitData?['id'],
         'property_type_id': propertyTypeId,
         ...locationCubit.buildLocationPayload(),
-        ..._buildUnitPayload(unitType, lookups),
+        ..._buildUnitPayload(unitType, lookups, mapLocationResult),
       },
     };
 
-    int _declarationId = await submit(context, unitType, payload: payload);
+    int _declarationId = await submit(
+      context,
+      unitType,
+      payload: payload,
+      mapLocationResult: mapLocationResult,
+    );
     if (context.mounted && state.successMessage != null) {
       final locationCubit = context.read<UnitLocationCubit>();
       Map<String, dynamic> locationData = {
-        'governorate': locationCubit.state.selectedGovernorate,
-        'district': locationCubit.state.selectedDistrict,
-        'neighborhood': locationCubit.state.selectedNeighborhood,
-        'street': locationCubit.state.selectedStreet,
-        'buildingNumber': locationCubit.state.selectedBuildingNumber,
+        "buildingProfile": locationCubit.mapData,
       };
-      locationData['village_other'] = locationCubit
-          .neighborhoodOtherController
-          .text
-          .trim();
-      locationData['is_other_village'] =
-          locationCubit.state.isNeighborhoodOther;
-      locationData['region_other'] = locationCubit.streetOtherController.text
-          .trim();
-      locationData['is_other_region'] = locationCubit.state.isStreetOther;
-      locationData['real_estate_other'] = locationCubit
-          .buildingNumberOtherController
-          .text
-          .trim();
-      locationData['is_other_real_state'] =
-          locationCubit.state.isBuildingNumberOther;
 
-      locationData['applicant'] = applicantPayload;
       await Future.delayed(const Duration(milliseconds: 100));
       if (!context.mounted) return;
       Navigator.pop(context);
@@ -1952,6 +2273,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     BuildContext context,
     UnitType unitType, {
     Map<String, dynamic>? payload,
+    MapLocationResult? mapLocationResult,
   }) async {
     final locationCubit = context.read<UnitLocationCubit>();
     final lookups = context.read<DeclarationLookupsCubit>().lookups!;
@@ -1984,7 +2306,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
             if (isEdit) "id": unitData?['id'],
             'property_type_id': propertyTypeId,
             ...locationCubit.buildLocationPayload(),
-            ..._buildUnitPayload(unitType, lookups),
+            ..._buildUnitPayload(unitType, lookups, mapLocationResult),
           },
         };
       }
@@ -2024,6 +2346,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   Map<String, dynamic> _buildUnitPayload(
     UnitType unitType,
     DeclarationLookupsModel lookups,
+    MapLocationResult? mapLocationResult,
   ) {
     switch (unitType) {
       case UnitType.residential:
@@ -2044,13 +2367,17 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       case UnitType.serviceFacility:
         return buildFacilityPayload(lookups);
       case UnitType.productionFacility:
-        return buildProductionPayload(lookups);
+        return buildProductionPayload(lookups, mapLocationResult);
       case UnitType.industrialFacility:
-        return buildIndustrialPayload(lookups, industrialBuildings);
+        return buildIndustrialPayload(
+          lookups,
+          industrialBuildings,
+          mapLocationResult,
+        );
       case UnitType.hotelFacility:
         return buildHotelPayload(lookups);
       case UnitType.petroleumFacility:
-        return buildPetroleumPayload();
+        return buildPetroleumPayload(mapLocationResult);
       case UnitType.minesAndQuarries:
         return buildMinesPayload();
     }
@@ -2221,6 +2548,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   Map<String, dynamic> buildIndustrialPayload(
     DeclarationLookupsModel lookups,
     List<IndustrialBuilding> buildings,
+    MapLocationResult? mapLocationResult,
   ) {
     final burdenActivityId = state.selectedBurdenActivity == null
         ? null
@@ -2262,6 +2590,9 @@ class UnitDataCubit extends Cubit<UnitDataState> {
                     .id;
           return {
             if (unitData != null) 'id': b.id,
+            ...?(b.mapLocationResult ?? mapLocationResult)?.toMap(),
+            'known_build_num': b.knownBuildingNumber.text.trim(),
+            'is_nearest_property': b.isNearestProperty == true ? 1 : 2,
             'building_type_id': buildingTypeId == -1 ? null : buildingTypeId,
             'floors_count': b.floorsCount,
             'total_area': double.tryParse(b.totalArea.text.trim()),
@@ -2320,22 +2651,28 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       'buildings_count': hotelBuildings.length,
       'rooms_count': totalRooms,
       'star_rating_id': starRatingId,
-      'has_sub_units': state.hasSubUnits == true ? 1 : 0,
-      'buildings': hotelBuildings
-          .map(
-            (b) => {
-              ...?b.mapLocationResult?.toMap(),
-              'known_build_num': b.knownBuildingNumber.text.trim(),
-              'is_nearest_property': b.isNearestProperty == true ? 1 : 0,
-              'floors_number': b.floorsCount,
-              'rooms_number': b.roomsCount,
-              // 'hotelUnits': b.hotelUnits
-              'hotelUnits': state.hotelSubUnits
-                  .map((u) => u.toPayload(lookups.realEstateFloors))
-                  .toList(),
-            },
-          )
+      'has_sub_units': state.hasSubUnits == true ? 1 : 2,
+      'hotelUnits': state.hotelSubUnits
+          .map((u) => u.toPayload(lookups.realEstateFloors))
           .toList(),
+      'buildings': hotelBuildings.asMap().entries.map((entry) {
+        final buildingNum = '${entry.value.mapLocationResult?.streetNumber}';
+        final b = entry.value;
+        final units = state.hotelSubUnits
+            .where((u) => u.buildingNumber.text == buildingNum)
+            .map((u) => u.toPayload(lookups.realEstateFloors))
+            .toList();
+
+        return {
+          ...?b.mapLocationResult?.toMap(),
+          if (unitData != null) 'id': b.id,
+          'known_build_num': b.knownBuildingNumber.text.trim(),
+          'is_nearest_property': b.isNearestProperty == true ? 1 : 0,
+          'floors_number': b.floorsCount,
+          'rooms_number': b.roomsCount,
+          'hotelUnits': units,
+        };
+      }).toList(),
       if (state.constructionLicenseFilePath != null)
         'copy_of_the_construction_permits': {
           'path': state.constructionLicenseFilePath,
@@ -2435,7 +2772,10 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   // منشآت إنتاجية
-  Map<String, dynamic> buildProductionPayload(DeclarationLookupsModel lookups) {
+  Map<String, dynamic> buildProductionPayload(
+    DeclarationLookupsModel lookups,
+    MapLocationResult? mapLocationResult,
+  ) {
     final burdenActivityId = state.selectedBurdenActivity == null
         ? null
         : lookups.productionBurdenActivityTypes
@@ -2453,12 +2793,14 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       'market_value': bookValueController.text.trim(),
       "ministry_burden": state.isExempt,
       "burden_activity_id": state.isExempt == true ? burdenActivityId : null,
-      if (unitData == null) 'buildings_count': facilityBuildings.length,
+      if (unitData == null) 'buildings_count': productionBuildings.length,
       if (unitData == null)
         'buildings': productionBuildings
             .map(
               (b) => {
-                if (unitData != null) 'id': b.id,
+                ...?(b.mapLocationResult ?? mapLocationResult)?.toMap(),
+                'known_build_num': b.knownBuildingNumber.text.trim(),
+                'is_nearest_property': b.isNearestProperty == true ? 1 : 0,
                 'floors_count': b.floorsCount,
                 'total_area': double.tryParse(b.totalArea.text.trim()) ?? 0,
                 'market_value': double.tryParse(b.marketValue.text.trim()),
@@ -2476,18 +2818,20 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           'path': state.constructionLicenseFilePath,
           'full_url': state.constructionLicenseFullUrl,
         },
-      if (state.operatingLicenseFilePath != null)
-        'operating_licenses': {
-          'path': state.operatingLicenseFilePath,
-          'original_file_name': state.operatingLicenseOriginalName,
-          'full_url': state.operatingLicenseFullUrl,
+      if (state.operationLicenseFilePath != null)
+        'operation_license': {
+          'path': state.operationLicenseFilePath,
+          'original_file_name': state.operationLicenseOriginalName,
+          'full_url': state.operationLicenseFullUrl,
         },
       ..._buildSupportingDocsPayload(),
     };
   }
 
   // منشآت بترولية
-  Map<String, dynamic> buildPetroleumPayload() {
+  Map<String, dynamic> buildPetroleumPayload(
+    MapLocationResult? mapLocationResult,
+  ) {
     return {
       ..._buildBaseUnitPayload(),
       'facility_name': petroleumFacilityNameController.text.trim(),
@@ -2516,18 +2860,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
           'full_url': state.allBookBValueFullUrl,
         },
       if (unitData == null)
-        'buildings': petroBuildings
-            .map(
-              (b) => {
-                if (unitData != null) 'id': b.id,
-                'building_type_text': b.buildingType.text.trim(),
-                'total_area': double.tryParse(b.totalArea.text.trim()),
-                'construction_date': b.buildingDate.text.trim(),
-                'book_value':
-                    double.tryParse(b.bookCostBuilding.text.trim()) ?? 0,
-              },
-            )
-            .toList(),
+        'buildings': petroBuildings.map((b) {
+          final payload = b.toPayload(lookups.buildingTypes);
+          payload.remove('id');
+          return payload;
+        }).toList(),
       ..._buildSupportingDocsPayload(),
     };
   }
@@ -2572,16 +2909,16 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     };
   }
 
-  Map<String, dynamic> _buildBaseUnitPayload() {
+  Map<String, dynamic> _buildBaseUnitPayload({bool hideUnit = false}) {
     final floorId = state.isFloorNumberOther ? -1 : _getFloorOtherId();
     final unitID = state.isUnitNumberOther ? -1 : _getUnitID();
     return {
       'real_estate_floor_id': floorId,
       if (state.isFloorNumberOther)
         'real_estate_floor_other': floorNumberOtherController.text.trim(),
-      'unit_id': unitID,
+      if (!hideUnit) 'unit_id': unitID,
       // if (state.isUnitNumberOther)
-      'unit_number': unitNumberOtherController.text.trim(),
+      if (!hideUnit) 'unit_number': unitNumberOtherController.text.trim(),
       'reta_contact_about_unit': state.contactedTaxAuthority == true ? 1 : 2,
       'account_code': unitCodeController.text.trim().isEmpty
           ? null
