@@ -78,7 +78,9 @@ class _LoginPageState extends State<LoginPage> {
       create: (_) => LoginCubit(),
       child: BlocListener<LoginCubit, LoginState>(
         listener: (context, state) {
-          if (state.unverifiedMobile != null && state.pendingOtp != null) {
+          if (state.unverifiedMobile != null &&
+              state.pendingOtp != null &&
+              !state.isLoading) {
             final cubit = SignupCubit();
             cubit.seedPendingOtp(
               userId: state.pendingOtp!.userId ?? '',
@@ -182,7 +184,7 @@ class _LoginPageState extends State<LoginPage> {
             _buildMobileFields(state, cubit)
           else
             _buildNationalIdFields(state, cubit),
-          _buildErrorBannerSection(state),
+          _buildErrorBannerSection(state, cubit),
           const SizedBox(height: 10),
           _buildForgotPasswordButton(),
           const SizedBox(height: 10),
@@ -282,12 +284,81 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildErrorBannerSection(LoginState state) {
+  Widget _buildErrorBannerSection(LoginState state, LoginCubit cubit) {
+    if (state.isNotActive) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: _buildNotActiveBanner(state, cubit),
+      );
+    }
+
     final errorMessage = state.credentialError ?? state.localError;
     if (errorMessage == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: _buildErrorBanner(errorMessage),
+    );
+  }
+
+  Widget _buildNotActiveBanner(LoginState state, LoginCubit cubit) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFDE8E8),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFF5C6C6)),
+      ),
+      child: Row(
+        textDirection: TextDirection.rtl,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 2),
+            child: Icon(Icons.info_outline, color: Color(0xFFE53935), size: 18),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Wrap(
+              textDirection: TextDirection.rtl,
+              alignment: WrapAlignment.end,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  'الحساب لم يتم تفعيله بعد. ',
+                  textDirection: TextDirection.rtl,
+                  style: AppTextStyles.bodyM.copyWith(
+                    color: AppColors.neutralDarkMedium,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: state.isLoading ? null : cubit.resendActivationOtp,
+                  child: state.isLoading
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Color(0xFFE53935),
+                          ),
+                        )
+                      : Text(
+                          'إعادة إرسال رسالة التفعيل',
+                          textDirection: TextDirection.rtl,
+                          style: AppTextStyles.bodyM.copyWith(
+                            color: const Color(0xFFE53935),
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.underline,
+                            decorationColor: const Color(0xFFE53935),
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -14,8 +14,14 @@ final class ApiError<T> extends ApiResult<T> {
   final String message;
   final int? statusCode;
   final Map<String, List<String>>? validationErrors;
+  final Map<String, dynamic>? rawData;
 
-  const ApiError(this.message, {this.statusCode, this.validationErrors});
+  const ApiError(
+    this.message, {
+    this.statusCode,
+    this.validationErrors,
+    this.rawData,
+  });
 
   bool get isValidationError => statusCode == 422;
   bool get isUnauthorized => statusCode == 401;
@@ -36,6 +42,9 @@ Future<ApiResult<T>> safeApiCall<T>(Future<T> Function() call) async {
       _extractMessage(e),
       statusCode: e.response?.statusCode,
       validationErrors: _extractValidationErrors(e),
+      rawData: e.response?.data is Map<String, dynamic>
+          ? e.response!.data as Map<String, dynamic>
+          : null,
     );
   } catch (e) {
     log('❌ [safeApiCall] Unknown error: $e');

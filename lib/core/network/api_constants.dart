@@ -4,10 +4,10 @@ class ApiConstants {
   //     'https://dev-rta-services.etax.com.eg/reta-services/public/api';
 
   ///Prod env
-  static const String baseEnvUrl = "https://services.rta.gov.eg";
+  // static const String baseEnvUrl = "https://services.rta.gov.eg";
 
   ///Test env
-  // static const String baseEnvUrl = "https://tst-rta-services.etax.com.eg";
+  static const String baseEnvUrl = "https://tst-rta-services.etax.com.eg";
 
   static const String baseUrl = '$baseEnvUrl/reta-services/public/api';
 
@@ -40,6 +40,7 @@ class ApiConstants {
   // ─── Profile Edit ────────────────────────────────────────────────────────────
   static const String editProfile = '/edit-profile';
   static const String updateprofileConfirmOtp = '/validatePhone/confirmOtp';
+  static const String verifyMobileSendOtp = '/verify-mobile/sendOtp';
   static const String editpassword = '/edit-password';
 
   // ─── Profile Files ───────────────────────────────────────────────────────────

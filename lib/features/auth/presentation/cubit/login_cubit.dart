@@ -34,6 +34,8 @@ class LoginState {
 
   final RegisterOtpResponse? pendingOtp;
 
+  final bool isNotActive;
+
   const LoginState({
     this.selectedTab = LoginTab.mobile,
     this.phone = '',
@@ -51,6 +53,7 @@ class LoginState {
     this.localError,
     this.unverifiedMobile,
     this.pendingOtp,
+    this.isNotActive = false,
   });
 
   bool get isFormValid {
@@ -91,6 +94,7 @@ class LoginState {
     String? Function()? localError,
     String? Function()? unverifiedMobile,
     RegisterOtpResponse? Function()? pendingOtp,
+    bool? isNotActive,
   }) {
     return LoginState(
       selectedTab: selectedTab ?? this.selectedTab,
@@ -119,6 +123,7 @@ class LoginState {
           ? unverifiedMobile()
           : this.unverifiedMobile,
       pendingOtp: pendingOtp != null ? pendingOtp() : this.pendingOtp,
+      isNotActive: isNotActive ?? this.isNotActive,
     );
   }
 }
@@ -157,6 +162,7 @@ class LoginCubit extends Cubit<LoginState> {
       phoneError: () => null,
       credentialError: () => null,
       localError: () => null,
+      isNotActive: false,
     ),
   );
 
@@ -175,6 +181,7 @@ class LoginCubit extends Cubit<LoginState> {
       nationalIdError: () => null,
       credentialError: () => null,
       localError: () => null,
+      isNotActive: false,
     ),
   );
 
@@ -256,7 +263,38 @@ class LoginCubit extends Cubit<LoginState> {
           ),
         );
 
-      case ApiError(:final message, :final statusCode):
+      case ApiError(:final message, :final statusCode, :final rawData):
+        final responseData = rawData?['data'] as Map<String, dynamic>?;
+        final isNotActive = responseData?['is_not_active'] == true;
+
+        if (statusCode == 401 && isNotActive) {
+          final mobile = responseData?['mobile']?.toString() ?? state.phone;
+
+          final otpResult = await _authRepository.resendOtpForUnverifiedUser(
+            mobile: mobile,
+          );
+
+          switch (otpResult) {
+            case ApiSuccess(:final data as RegisterOtpResponse):
+              emit(
+                state.copyWith(
+                  isLoading: false,
+                  isNotActive: true,
+                  unverifiedMobile: () => mobile,
+                  pendingOtp: () => data,
+                ),
+              );
+            case ApiError(:final message):
+              emit(
+                state.copyWith(
+                  isLoading: false,
+                  credentialError: () => message,
+                ),
+              );
+          }
+          return;
+        }
+
         _handleApiError(statusCode: statusCode, message: message);
     }
     // switch (result) {
@@ -293,6 +331,31 @@ class LoginCubit extends Cubit<LoginState> {
       }
     } else {
       emit(state.copyWith(isLoading: false, credentialError: () => message));
+    }
+  }
+
+  Future<void> resendActivationOtp() async {
+    final mobile = state.unverifiedMobile ?? state.phone;
+    if (mobile.isEmpty) return;
+
+    emit(state.copyWith(isLoading: true, credentialError: () => null));
+
+    final otpResult = await _authRepository.resendOtpForUnverifiedUser(
+      mobile: mobile,
+    );
+
+    switch (otpResult) {
+      case ApiSuccess(:final data as RegisterOtpResponse):
+        emit(
+          state.copyWith(
+            isLoading: false,
+            isNotActive: false,
+            unverifiedMobile: () => mobile,
+            pendingOtp: () => data,
+          ),
+        );
+      case ApiError(:final message):
+        emit(state.copyWith(isLoading: false, credentialError: () => message));
     }
   }
 
