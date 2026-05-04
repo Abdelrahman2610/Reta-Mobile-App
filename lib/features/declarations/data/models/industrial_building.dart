@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'declarations_lookups.dart';
+import 'map_location_result.dart';
 
 class IndustrialBuilding {
   String id;
@@ -8,9 +9,13 @@ class IndustrialBuilding {
   final TextEditingController totalArea = TextEditingController();
   final TextEditingController constructionDate = TextEditingController();
   final TextEditingController marketValue = TextEditingController();
+  final TextEditingController knownBuildingNumber = TextEditingController();
 
   String? buildingType;
   int floorsCount = 1;
+  MapLocationResult? mapLocationResult;
+  bool? isNearestProperty;
+  bool isServerRecord = false;
 
   IndustrialBuilding({String? id})
     : id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
@@ -19,6 +24,7 @@ class IndustrialBuilding {
     totalArea.dispose();
     constructionDate.dispose();
     marketValue.dispose();
+    knownBuildingNumber.dispose();
   }
 
   Map<String, dynamic> toPayload(List<DeclarationLookup> buildingTypeLookups) {
@@ -32,7 +38,10 @@ class IndustrialBuilding {
               .id;
 
     return {
-      id: id.toString(),
+      'id': id.toString(),
+      ...?mapLocationResult?.toMap(),
+      'known_build_num': knownBuildingNumber.text.trim(),
+      'is_nearest_property': isNearestProperty == true ? 1 : 0,
       'building_type_id': (typeId == null || typeId == -1) ? null : typeId,
       'floors_count': floorsCount,
       'total_area': double.tryParse(totalArea.text.trim()),
@@ -52,6 +61,11 @@ class IndustrialBuilding {
     constructionDate.text = data['construction_date']?.toString() ?? '';
     marketValue.text = data['market_value']?.toString() ?? '';
     floorsCount = data['floors_count'] ?? 1;
+    knownBuildingNumber.text = data['known_build_num']?.toString() ?? '';
+    isNearestProperty = data['is_nearest_property'] == 1;
+    mapLocationResult = MapLocationResult.fromMap(data);
+
+    isServerRecord = true;
 
     final typeId = data['building_type_id'];
     if (typeId != null) {

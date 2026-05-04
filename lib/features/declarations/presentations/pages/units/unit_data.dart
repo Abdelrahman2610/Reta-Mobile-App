@@ -41,12 +41,14 @@ class UnitData extends StatelessWidget {
     this.applicantPayload,
     this.mapLocationResult,
     required this.isUrban,
+    required this.locationData,
   });
 
   final String? otherName;
   final ApplicantType applicantType;
   final UnitType unitType;
   final Map<String, dynamic>? applicantPayload;
+  final Map<String, dynamic>? locationData;
   final MapLocationResult? mapLocationResult;
   final bool isUrban;
 
@@ -147,10 +149,12 @@ class UnitData extends StatelessWidget {
                                   unitType == UnitType.commercial ||
                                   unitType == UnitType.administrative ||
                                   unitType == UnitType.fixedInstallations ||
+                                  unitType == UnitType.minesAndQuarries ||
                                   unitType == UnitType.vacantLand)
                                 if (mapLocationResult != null) ...[
                                   LocationCard(
                                     mapLocationResult: mapLocationResult,
+                                    hideEditButton: locationData != null,
                                   ),
                                 ],
                               switch (unitType) {
@@ -176,18 +180,35 @@ class UnitData extends StatelessWidget {
                                   unitCubit: cubit,
                                   mapLocationResult: mapLocationResult,
                                   isUrban: isUrban,
+                                  locationData: locationData,
                                 ),
                                 UnitType.hotelFacility => HotelFacilityPage(
                                   unitCubit: cubit,
                                   mapLocationResult: mapLocationResult,
                                   isUrban: isUrban,
+                                  locationData: locationData,
                                 ),
                                 UnitType.industrialFacility =>
-                                  IndustrialFacilityPage(unitCubit: cubit),
+                                  IndustrialFacilityPage(
+                                    unitCubit: cubit,
+                                    mapLocationResult: mapLocationResult,
+                                    isUrban: isUrban,
+                                    locationData: locationData,
+                                  ),
                                 UnitType.productionFacility =>
-                                  ProductionFacilityUnitPage(unitCubit: cubit),
+                                  ProductionFacilityUnitPage(
+                                    unitCubit: cubit,
+                                    mapLocationResult: mapLocationResult,
+                                    isUrban: isUrban,
+                                    locationData: locationData,
+                                  ),
                                 UnitType.petroleumFacility =>
-                                  PetroleumFacilityUnitPage(unitCubit: cubit),
+                                  PetroleumFacilityUnitPage(
+                                    unitCubit: cubit,
+                                    mapLocationResult: mapLocationResult,
+                                    isUrban: isUrban,
+                                    locationData: locationData,
+                                  ),
                                 UnitType.minesAndQuarries => MineUnitPage(
                                   unitCubit: cubit,
                                 ),
@@ -202,13 +223,21 @@ class UnitData extends StatelessWidget {
                           cubit: cubit,
                           onSaveData: () {
                             if (cubit.validate()) {
-                              cubit.onSaveDataTapped(context, unitType);
+                              cubit.onSaveDataTapped(
+                                context,
+                                unitType,
+                                mapLocationResult,
+                              );
                             }
                           },
                           onCancel: () => cubit.onCancelButtonTapped(context),
                           onSaveAndAddOther: () {
                             if (cubit.validate()) {
-                              cubit.onSaveAndAddOther(context, unitType);
+                              cubit.onSaveAndAddOther(
+                                context,
+                                unitType,
+                                mapLocationResult,
+                              );
                             }
                           },
                           unitType: unitType,

@@ -10,7 +10,9 @@ import '../../../../cubit/units/unit_data/unit_data_cubit.dart';
 import '../../../../cubit/units/unit_data/unit_data_state.dart';
 
 class FloorUnitSection extends StatelessWidget {
-  const FloorUnitSection({super.key});
+  const FloorUnitSection({super.key, this.hideUnit = false});
+
+  final bool hideUnit;
 
   @override
   Widget build(BuildContext context) {
@@ -50,16 +52,18 @@ class FloorUnitSection extends StatelessWidget {
                     v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
               ),
             ],
-            16.hs,
-            AppTextFormField(
-              labelText: 'رقم الوحدة',
-              labelRequired: true,
-              labelColor: AppColors.neutralDarkDark,
-              controller: cubit.unitNumberOtherController,
-              hintText: 'ادخل رقم الوحدة',
-              validator: (v) =>
-                  v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
-            ),
+            if (!hideUnit) ...[
+              16.hs,
+              AppTextFormField(
+                labelText: 'رقم الوحدة',
+                labelRequired: true,
+                labelColor: AppColors.neutralDarkDark,
+                controller: cubit.unitNumberOtherController,
+                hintText: 'ادخل رقم الوحدة',
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'هذا الحقل مطلوب' : null,
+              ),
+            ],
           ],
         );
       },

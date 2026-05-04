@@ -19,6 +19,7 @@ class LocationCard extends StatelessWidget {
     this.onBtnTapped,
     this.onDeleteTapped,
     this.onAddLocationTapped,
+    this.hideEditButton = false,
   });
 
   final MapLocationResult? mapLocationResult;
@@ -27,6 +28,7 @@ class LocationCard extends StatelessWidget {
   final VoidCallback? onBtnTapped;
   final VoidCallback? onDeleteTapped;
   final VoidCallback? onAddLocationTapped;
+  final bool hideEditButton;
 
   @override
   Widget build(BuildContext context) {
@@ -37,8 +39,11 @@ class LocationCard extends StatelessWidget {
             buttonLabel: buttonLabel,
             onBtnTapped: onBtnTapped,
             onDeleteTapped: onDeleteTapped,
+            hideEditButton: hideEditButton,
           )
-        : EmptyLocation(onAddLocationTapped: onAddLocationTapped);
+        : EmptyLocation(
+            onAddLocationTapped: onAddLocationTapped ?? onBtnTapped,
+          );
   }
 }
 
@@ -97,6 +102,7 @@ class ExistLocation extends StatelessWidget {
     this.buttonLabel,
     this.onBtnTapped,
     this.onDeleteTapped,
+    required this.hideEditButton,
   });
 
   final MapLocationResult? mapLocationResult;
@@ -104,6 +110,7 @@ class ExistLocation extends StatelessWidget {
   final String? buttonLabel;
   final VoidCallback? onBtnTapped;
   final VoidCallback? onDeleteTapped;
+  final bool hideEditButton;
 
   @override
   Widget build(BuildContext context) {
@@ -172,17 +179,18 @@ class ExistLocation extends StatelessWidget {
           20.hs,
           Row(
             children: [
-              Expanded(
-                child: AppButton(
-                  label: buttonLabel ?? 'تعديل',
-                  backgroundColor: AppColors.highlightDarkest,
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                  textColor: AppColors.neutralLightLightest,
-                  height: 50.h,
-                  onTap: onBtnTapped ?? () => Navigator.pop(context),
+              if (!hideEditButton)
+                Expanded(
+                  child: AppButton(
+                    label: buttonLabel ?? 'تعديل',
+                    backgroundColor: AppColors.highlightDarkest,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                    textColor: AppColors.neutralLightLightest,
+                    height: 50.h,
+                    onTap: onBtnTapped ?? () => Navigator.pop(context),
+                  ),
                 ),
-              ),
 
               if (onDeleteTapped != null)
                 Padding(
