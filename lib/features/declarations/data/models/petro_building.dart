@@ -31,7 +31,9 @@ class PetroBuilding {
     return {
       'id': id,
       ...?mapLocationResult?.toMap(),
-      'known_build_num': knownBuildingNumber.text.trim(),
+      'known_build_num': knownBuildingNumber.text.trim().isEmpty
+          ? null
+          : knownBuildingNumber.text.trim(),
       'is_nearest_property': isNearestProperty == true ? 1 : 0,
       'building_type_text': buildingType.text.trim(),
       'total_area': double.tryParse(totalArea.text.trim()) ?? 0,

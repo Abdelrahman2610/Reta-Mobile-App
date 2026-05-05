@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -535,16 +537,17 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         return true;
       case ApplicantType.sharedOwnership:
       case ApplicantType.agent:
-        if (taxpayerNationalIdFilePath == null &&
-            taxpayerNationality == Nationality.egyptian &&
-            taxpayerTypes == 'طبيعي') {
-          emit(state.copyWith(errorMessage: 'يرجى رفع صورة الرقم القومي'));
-          return false;
-        }
-        if (taxpayerPassportFilePath == null &&
-            taxpayerNationality != Nationality.egyptian) {
-          emit(state.copyWith(errorMessage: 'يرجى رفع صورة جواز السفر'));
-          return false;
+        if (taxpayerTypes == 'طبيعي') {
+          if (taxpayerNationalIdFilePath == null &&
+              taxpayerNationality == Nationality.egyptian) {
+            emit(state.copyWith(errorMessage: 'يرجى رفع صورة الرقم القومي'));
+            return false;
+          }
+          if (taxpayerPassportFilePath == null &&
+              taxpayerNationality != Nationality.egyptian) {
+            emit(state.copyWith(errorMessage: 'يرجى رفع صورة جواز السفر'));
+            return false;
+          }
         }
         if (ownershipProofDocumentPath == null &&
             applicantType == ApplicantType.sharedOwnership) {
@@ -901,7 +904,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
             .text
             .trim();
       }
-      if (taxpayerTaxCardFilePath != null) {
+      if (taxpayerTaxCardUrl != null) {
         taxpayer['tax_card_attachment'] = {
           if (isEdit) 'id': taxpayerTaxCardFileId,
           if (!isEdit) 'file_id': taxpayerTaxCardFileId,
@@ -912,7 +915,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
           'full_url': taxpayerTaxCardUrl,
         };
       }
-      if (taxpayerCommercialRegisterFilePath != null) {
+      if (taxpayerCommercialRegisterUrl != null) {
         taxpayer['commercial_register_attachment'] = {
           if (isEdit) 'id': taxpayerCommercialRegisterFileId,
           if (!isEdit) 'file_id': taxpayerCommercialRegisterFileId,
@@ -926,7 +929,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
         taxpayer['other_attachment_name'] =
             taxpayerOtherAttachmentNameController.text.trim();
       }
-      if (taxpayerOtherAttachmentFilePath != null) {
+      if (taxpayerOtherAttachmentUrl != null) {
         taxpayer['other_attachment'] = {
           if (isEdit) 'id': taxpayerOtherAttachmentFileId,
           if (!isEdit) 'file_id': taxpayerOtherAttachmentFileId,
@@ -938,6 +941,7 @@ class ApplicantCubit extends Cubit<ApplicantState> {
       }
     }
 
+    log('MSG: TaxpayerData: $taxpayer');
     return taxpayer;
   }
 

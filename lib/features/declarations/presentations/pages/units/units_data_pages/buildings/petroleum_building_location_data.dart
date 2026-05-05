@@ -28,11 +28,13 @@ class PetroleumBuildingLocationData extends StatefulWidget {
     required this.index,
     required this.isUrban,
     required this.isNew,
+    this.mapLocationResult,
   });
 
   final int index;
   final bool isUrban;
   final bool isNew;
+  final MapLocationResult? mapLocationResult;
 
   @override
   State<PetroleumBuildingLocationData> createState() =>
@@ -78,7 +80,9 @@ class _PetroleumBuildingLocationDataState
                           ),
                           16.hs,
                           LocationCard(
-                            mapLocationResult: building.mapLocationResult,
+                            mapLocationResult:
+                                building.mapLocationResult ??
+                                widget.mapLocationResult,
                             onBtnTapped: () async {
                               final result =
                                   await Navigator.push<MapLocationResult?>(
@@ -203,6 +207,7 @@ class _PetroleumBuildingLocationDataState
                             final nav = Navigator.of(context);
                             final saved = await cubit.savePetroleumBuilding(
                               widget.index,
+                              widget.mapLocationResult,
                             );
                             if (saved) nav.pop(true);
                           },

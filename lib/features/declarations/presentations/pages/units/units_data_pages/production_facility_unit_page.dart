@@ -314,6 +314,7 @@ class _BuildingsSectionState extends State<_BuildingsSection> {
                         index: 0,
                         isUrban: widget.isUrban,
                         isNew: false,
+                        mapLocationResult: widget.mapLocationResult,
                       ),
                     ),
                     withNavBar: false,

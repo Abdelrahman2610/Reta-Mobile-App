@@ -28,11 +28,13 @@ class ProductionBuildingLocationData extends StatefulWidget {
     required this.index,
     required this.isUrban,
     required this.isNew,
+    this.mapLocationResult,
   });
 
   final int index;
   final bool isUrban;
   final bool isNew;
+  final MapLocationResult? mapLocationResult;
 
   @override
   State<ProductionBuildingLocationData> createState() =>
@@ -114,7 +116,9 @@ class _ProductionBuildingLocationDataState
                           ),
                           16.hs,
                           LocationCard(
-                            mapLocationResult: building.mapLocationResult,
+                            mapLocationResult:
+                                building.mapLocationResult ??
+                                widget.mapLocationResult,
                             onBtnTapped: () async {
                               final result =
                                   await Navigator.push<MapLocationResult?>(
@@ -212,6 +216,7 @@ class _ProductionBuildingLocationDataState
                             final nav = Navigator.of(context);
                             final saved = await cubit.saveProductionBuilding(
                               widget.index,
+                              widget.mapLocationResult,
                             );
                             if (saved) nav.pop(true);
                           },
