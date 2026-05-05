@@ -483,8 +483,8 @@ class AuthRepository {
   }) async {
     return safeApiCall(() async {
       final response = await _dio.post(
-        ApiConstants.validatePhoneSendOtp,
-        data: {'mobile': mobile},
+        '/verify-mobile/sendOtp',
+        data: {'mobile': mobile, 'context': 'register'},
       );
       log('[Repo] resendOtpForUnverifiedUser response: ${response.data}');
       return RegisterOtpResponse.fromJson(
