@@ -4,10 +4,10 @@ class ApiConstants {
   //     'https://dev-rta-services.etax.com.eg/reta-services/public/api';
 
   ///Prod env
-  static const String baseEnvUrl = "https://services.rta.gov.eg";
+  // static const String baseEnvUrl = "https://services.rta.gov.eg";
 
   ///Test env
-  // static const String baseEnvUrl = "https://tst-rta-services.etax.com.eg";
+  static const String baseEnvUrl = "https://tst-rta-services.etax.com.eg";
 
   ///Dev env
   // static const String baseEnvUrl = "https://dev-rta-services.etax.com.eg";
