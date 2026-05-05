@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -52,7 +51,6 @@ class _ClaimReceiptSheetState extends State<_ClaimReceiptSheet> {
 
   Future<void> _fetchPdf() async {
     try {
-      log('MSG: PDF url: ${widget.pdfUrl}');
       final response = await DioClient.instance.dio.get(
         widget.pdfUrl,
         options: Options(responseType: ResponseType.bytes),

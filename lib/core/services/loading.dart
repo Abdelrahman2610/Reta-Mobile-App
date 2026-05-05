@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
@@ -38,7 +36,6 @@ class LoadingService {
   }
 
   Future<void> hideLoading(BuildContext context) async {
-    log('MSG: isShowing: $_isShowing');
     if (!_isShowing) return;
 
     _isShowing = false;

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -123,9 +121,6 @@ class TaxpayerDataPage extends StatelessWidget {
                                   fontSize: 12.sp,
                                   alignment: Alignment.center,
                                   onTap: () {
-                                    log(
-                                      'MSG: OnNextTapped: ${cubit.validate()}',
-                                    );
                                     if (cubit.validate()) {
                                       cubit.onTaxpayerNextTapped(
                                         context,

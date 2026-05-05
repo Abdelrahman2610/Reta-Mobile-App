@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -188,7 +186,6 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                       itemCount: state.claims.length,
                       itemBuilder: (context, index) {
                         final claim = state.claims[index];
-                        log('MSG: Claim: ${claim.claimDetails}');
                         return PaymentClaimCard(
                           claim: claim,
                           onPayElectronically: claim.canPayElectronically
@@ -208,7 +205,6 @@ class _PaymentRequestsViewState extends State<_PaymentRequestsView> {
                                 }
                               : null,
                           onShare: () {
-                            log('MSG: Open: ${claim.claimDetails}');
                             if (claim.claimDetails != null) {
                               showClaimReceiptSheet(
                                 context,

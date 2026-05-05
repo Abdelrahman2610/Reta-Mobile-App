@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -2326,8 +2324,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
         };
       }
 
-      log("MSG: UnitPayload: ${payload['unit']}");
-
       final result = isEdit
           ? await DeclarationService.instance.updateDeclaration(
               payload,
@@ -2945,9 +2941,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       // if (state.isUnitNumberOther)
       if (!hideUnit) 'unit_number': unitNumberOtherController.text.trim(),
       'reta_contact_about_unit': state.contactedTaxAuthority == true ? 1 : 2,
-      'account_code': state.contactedTaxAuthority == true? unitCodeController.text.trim().isEmpty
-          ? null
-          : unitCodeController.text.trim() : null,
+      'account_code': state.contactedTaxAuthority == true
+          ? unitCodeController.text.trim().isEmpty
+                ? null
+                : unitCodeController.text.trim()
+          : null,
       if (marketValueController.text.trim() != '')
         'market_value': double.tryParse(marketValueController.text.trim()),
       'submit_other_supporting_documents': state.hasAdditionalDocuments ? 1 : 2,
@@ -2983,7 +2981,6 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   int _getFloorOtherId() {
-    log('SelectedFloorNumber: ${state.selectedFloorNumber}');
     int floorId = lookups.realEstateFloors
         .firstWhere(
           (a) => a.name == state.selectedFloorNumber,
