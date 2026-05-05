@@ -1140,11 +1140,10 @@ class _AttachmentFieldState extends State<_AttachmentField> {
               children: files.asMap().entries.map((entry) {
                 final index = entry.key;
                 final file = entry.value;
-
-                // final fileId = file['id'] as int?;
+                final fileId = file['id'] as int?;
 
                 return _AttachmentRow(
-                  key: ValueKey(widget.profileId ?? index),
+                  key: ValueKey(fileId ?? index),
                   fileId: widget.profileId,
                   isEgyptian: widget.isEgyptian,
                   fileName:
