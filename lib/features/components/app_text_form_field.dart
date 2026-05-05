@@ -127,7 +127,12 @@ class AppTextFormField extends StatelessWidget {
           onTap: onTap,
           enabled: enabled,
           validator: validator,
-          inputFormatters: inputFormatters,
+          inputFormatters: [
+            FilteringTextInputFormatter.deny(
+              RegExp(r'[٠-٩۰-۹]'),
+            ),
+            ...?inputFormatters,
+          ],
           textInputAction: textInputAction,
           textDirection: textDirection,
           textAlign: textAlign ?? TextAlign.start,

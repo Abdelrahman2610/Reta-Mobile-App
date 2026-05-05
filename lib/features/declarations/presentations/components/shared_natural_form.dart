@@ -29,7 +29,11 @@ class SharedNaturalForm extends StatelessWidget {
           labelRequired: true,
           labelColor: AppColors.neutralDarkDark,
           validator: (value) {
-            return (value == null || value.isEmpty) ? 'هذا الحقل مطلوب' : null;
+            if (value == null || value.isEmpty) return 'هذا الحقل مطلوب';
+            if (' '.allMatches(value.trim()).length > 1) {
+              return 'الإسم الأول يجب أن يكون اسماً واحداً فقط';
+            }
+            return null;
           },
           labelFontSize: 14.sp,
           controller: cubit.taxpayerFirstNameController,

@@ -13,8 +13,25 @@ class LoadingService {
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black54,
-      builder: (_) =>
-          const Center(child: SpinKitPulse(color: Colors.white, size: 40)),
+      builder: (_) => SizedBox(
+        width: double.infinity,
+        height: MediaQuery.of(context).size.height,
+        child: GestureDetector(
+          onTap: () => hideLoading(context),
+          child: Container(
+            color: Colors.transparent,
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Center(
+                  child: SpinKitPulse(color: Colors.white, size: 40),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -23,6 +40,7 @@ class LoadingService {
 
     _isShowing = false;
 
+    if (Navigator.canPop(context)) ;
     Navigator.of(context, rootNavigator: true).pop();
     await Future.delayed(const Duration(milliseconds: 100));
   }

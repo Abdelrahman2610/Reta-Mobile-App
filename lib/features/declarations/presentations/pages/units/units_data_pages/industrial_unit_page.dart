@@ -324,6 +324,9 @@ class _BuildingsSectionState extends State<_BuildingsSection> {
                     screen: BlocProvider.value(
                       value: cubit,
                       child: IndustrialBuildingLocationData(
+                        mapLocationResult:
+                            cubit.hotelBuildings.first.mapLocationResult ??
+                            widget.mapLocationResult,
                         index: 0,
                         isUrban: widget.isUrban,
                         isNew: false,

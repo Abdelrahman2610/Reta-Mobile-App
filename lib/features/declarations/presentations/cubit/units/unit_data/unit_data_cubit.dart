@@ -1046,6 +1046,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   Future<void> selectFloorNumberOther(String? value) async {
     emit(
       state.copyWith(
+        selectedFloorNumber: value,
         selectedFloorNumberOther: value,
         isFloorNumberOther: value == kOther,
         selectedUnitNumber: null,
@@ -1254,9 +1255,13 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     WidgetsBinding.instance.addPostFrameCallback((_) => building.dispose());
   }
 
-  Future<bool> saveIndustrialBuilding(int index) async {
+  Future<bool> saveIndustrialBuilding(
+    int index,
+    MapLocationResult? mapLocationResult,
+  ) async {
     if (unitData == null) return true;
     final building = industrialBuildings[index];
+    if (index == 0) building.mapLocationResult = mapLocationResult;
     final unitId = unitData!['id'];
     final buildingPayload = building.toPayload(lookups.buildingTypes);
     if (!building.isServerRecord) buildingPayload.remove('id');
@@ -1353,9 +1358,13 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     WidgetsBinding.instance.addPostFrameCallback((_) => building.dispose());
   }
 
-  Future<bool> savePetroleumBuilding(int index) async {
+  Future<bool> savePetroleumBuilding(
+    int index,
+    MapLocationResult? mapLocationResult,
+  ) async {
     if (unitData == null) return true;
     final building = petroBuildings[index];
+    if (index == 0) building.mapLocationResult = mapLocationResult;
     final unitId = unitData!['id'];
     final buildingPayload = building.toPayload(lookups.buildingTypes);
     if (!building.isServerRecord) buildingPayload.remove('id');
@@ -1432,9 +1441,13 @@ class UnitDataCubit extends Cubit<UnitDataState> {
     WidgetsBinding.instance.addPostFrameCallback((_) => building.dispose());
   }
 
-  Future<bool> saveProductionBuilding(int index) async {
+  Future<bool> saveProductionBuilding(
+    int index,
+    MapLocationResult? mapLocationResult,
+  ) async {
     if (unitData == null) return true;
     final building = productionBuildings[index];
+    if (index == 0) building.mapLocationResult = mapLocationResult;
     final unitId = unitData!["id"];
     final buildingPayload = building.toPayload(lookups.buildingTypes);
     if (!building.isServerRecord) buildingPayload.remove("id");
@@ -2365,7 +2378,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       case UnitType.vacantLand:
         return buildVacantLandPayload();
       case UnitType.serviceFacility:
-        return buildFacilityPayload(lookups);
+        return buildFacilityPayload(lookups, mapLocationResult);
       case UnitType.productionFacility:
         return buildProductionPayload(lookups, mapLocationResult);
       case UnitType.industrialFacility:
@@ -2696,7 +2709,10 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   }
 
   // منشآت صناعية
-  Map<String, dynamic> buildFacilityPayload(DeclarationLookupsModel lookups) {
+  Map<String, dynamic> buildFacilityPayload(
+    DeclarationLookupsModel lookups,
+    MapLocationResult? mapLocationResult,
+  ) {
     final totalBuildingArea = facilityBuildings.fold<double>(
       0,
       (sum, b) => sum + (double.tryParse(b.areaController.text) ?? 0),
@@ -2724,19 +2740,24 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       'total_land_area': totalLandAreaFacilityController.text.trim(),
       'total_building_area': totalBuildingArea,
       'buildings_count': facilityBuildings.length,
-      'buildings': facilityBuildings
-          .map(
-            (b) => {
-              if (unitData != null) 'id': b.id,
-              'floors_count': b.floorsCount,
-              'building_area':
-                  double.tryParse(b.areaController.text.trim()) ?? 0,
-              ...?b.mapLocationResult?.toMap(),
-              'known_build_num': b.knownBuildingNumber.text.trim(),
-              'is_nearest_property': b.isNearestProperty == true ? 1 : 2,
-            },
-          )
-          .toList(),
+      'buildings': facilityBuildings.asMap().entries.map((entry) {
+        final index = entry.key;
+        final b = entry.value;
+
+        return {
+          if (unitData != null) 'id': b.id,
+          'floors_count': b.floorsCount,
+          'building_area': double.tryParse(b.areaController.text.trim()) ?? 0,
+
+          ...?((index == 0
+                  ? (b.mapLocationResult ?? mapLocationResult)
+                  : b.mapLocationResult)
+              ?.toMap()),
+
+          'known_build_num': b.knownBuildingNumber.text.trim(),
+          'is_nearest_property': b.isNearestProperty == true ? 1 : 2,
+        };
+      }).toList(),
       'exempted': state.isExempt,
       if (state.isExempt) 'exemption_reason': exemptionReasonId,
       if (state.isExempt && lawNumberController.text.isNotEmpty)
@@ -2920,9 +2941,11 @@ class UnitDataCubit extends Cubit<UnitDataState> {
       // if (state.isUnitNumberOther)
       if (!hideUnit) 'unit_number': unitNumberOtherController.text.trim(),
       'reta_contact_about_unit': state.contactedTaxAuthority == true ? 1 : 2,
-      'account_code': unitCodeController.text.trim().isEmpty
-          ? null
-          : unitCodeController.text.trim(),
+      'account_code': state.contactedTaxAuthority == true
+          ? unitCodeController.text.trim().isEmpty
+                ? null
+                : unitCodeController.text.trim()
+          : null,
       if (marketValueController.text.trim() != '')
         'market_value': double.tryParse(marketValueController.text.trim()),
       'submit_other_supporting_documents': state.hasAdditionalDocuments ? 1 : 2,
@@ -2960,7 +2983,7 @@ class UnitDataCubit extends Cubit<UnitDataState> {
   int _getFloorOtherId() {
     int floorId = lookups.realEstateFloors
         .firstWhere(
-          (a) => a.name == state.selectedFloorNumberOther,
+          (a) => a.name == state.selectedFloorNumber,
           orElse: () => DeclarationLookup(id: 0, name: ''),
         )
         .id;

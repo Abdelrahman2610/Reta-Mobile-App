@@ -46,7 +46,7 @@ class _HotelSubUnitDetailPageState extends State<HotelSubUnitDetailPage> {
     final buildingItems = cubit.hotelBuildings.asMap().entries.map((e) {
       final i = e.key;
       final known = e.value.mapLocationResult?.streetNumber;
-      final label = known.isNotEmpty ? '$known' : 'مبنى ${i + 1}';
+      final label = known != null ? '$known' : 'مبنى ${i + 1}';
       return DropdownMenuItem<String>(
         value: '$known',
         child: Align(
